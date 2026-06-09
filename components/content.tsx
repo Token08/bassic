@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
@@ -165,9 +166,9 @@ export function EventsTeaser({ events }: { events: EventItem[] }) {
         <p className="section-lead">
           最新イベントは管理画面から更新できます。日付、出演者、料金、予約方法を分かりやすく表示します。
         </p>
-        <a className="text-link" href="/events">
+        <Link className="text-link" href="/events">
           イベントページを見る <ExternalLink size={16} />
-        </a>
+        </Link>
       </div>
       <EventList events={events.slice(0, 2)} includePoster={false} />
     </section>
