@@ -1,0 +1,36 @@
+{
+  "name": "bassic",
+  "version": "1.0.0",
+  "description": "public bar Bassic. website rebuilt for new visitors, SEO, Google Maps, and CMS updates.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "bassic",
+    "fukuoka",
+    "tenjin",
+    "music-bar"
+  ],
+  "author": "public bar Bassic.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@types/node": "22.19.3",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "0.468.0",
+    "microcms-js-sdk": "^3.4.0",
+    "next": "15.5.19",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "postcss": "8.5.10"
+  }
+}
