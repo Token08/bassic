@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EventList, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 import { mailHref } from "@/lib/site";
 import { ExternalLink } from "lucide-react";
@@ -26,7 +27,7 @@ export default async function EventsPage() {
             </>
           }
           lead="日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。"
-          image="/assets/drive/bassic/drums.jpg"
+          image={assetPath("/assets/drive/bassic/drums.jpg")}
           imageAlt="Bassic.のドラムセット"
         />
         <section className="section split">

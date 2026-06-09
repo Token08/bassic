@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { AccessContent, EventsTeaser, FirstVisitBlock, PageHero, heroImagePath } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 import { site } from "@/lib/site";
 
@@ -107,7 +108,7 @@ export default async function Home() {
             </Link>
           </div>
           <figure className="wide-photo">
-            <Image src="/assets/drive/index_back/table-food.jpg" alt="Bassic.の料理が並ぶテーブル" fill sizes="100vw" />
+            <Image src={assetPath("/assets/drive/index_back/table-food.jpg")} alt="Bassic.の料理が並ぶテーブル" fill sizes="100vw" />
           </figure>
         </section>
 

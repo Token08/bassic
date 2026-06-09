@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FirstVisitBlock, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function FirstVisitPage() {
             </>
           }
           lead="ひとりでも、ライブ前後でも、音楽の話をしたい夜でも。来店前に知りたいことをまとめました。"
-          image="/assets/drive/index_back/warm-interior.jpg"
+          image={assetPath("/assets/drive/index_back/warm-interior.jpg")}
           imageAlt="温かい照明のBassic.店内"
         />
         <FirstVisitBlock lead={contents.home.firstVisitLead} />

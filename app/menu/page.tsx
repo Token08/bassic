@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MenuContent, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function MenuPage() {
             </>
           }
           lead="初めての方にも選びやすいよう、人気メニューと価格感を見やすく整理しました。"
-          image="/assets/drive/index_back/table-food.jpg"
+          image={assetPath("/assets/drive/index_back/table-food.jpg")}
           imageAlt="Bassic.の料理とドリンク"
         />
         <MenuContent menu={contents.menu} />

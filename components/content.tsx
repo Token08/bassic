@@ -1,22 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
+import { assetPath } from "@/lib/assets";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { PrimaryActions } from "./site-shell";
 
-export const heroImagePath = "/assets/drive/index_back/bar-counter.jpg";
+export const heroImagePath = assetPath("/assets/drive/index_back/bar-counter.jpg");
 
 export const atmosphereImages = [
-  { src: "/assets/drive/bassic/drums.jpg", alt: "Bassic.のドラムセットがあるライブスペース" },
-  { src: "/assets/drive/index_back/live-room.jpg", alt: "赤い照明のBassic.店内" },
-  { src: "/assets/drive/index_back/warm-interior.jpg", alt: "温かい照明のBassic.店内" }
+  { src: assetPath("/assets/drive/bassic/drums.jpg"), alt: "Bassic.のドラムセットがあるライブスペース" },
+  { src: assetPath("/assets/drive/index_back/live-room.jpg"), alt: "赤い照明のBassic.店内" },
+  { src: assetPath("/assets/drive/index_back/warm-interior.jpg"), alt: "温かい照明のBassic.店内" }
 ];
 
 const fallbackMenuImages = {
-  food: "/assets/drive/menu/fuzz-curry.jpg",
-  drink: "/assets/drive/menu/cocktails.jpg"
+  food: assetPath("/assets/drive/menu/fuzz-curry.jpg"),
+  drink: assetPath("/assets/drive/menu/cocktails.jpg")
 } as const;
+
+function imageSrc(path: string) {
+  return path.startsWith("/assets/") ? assetPath(path) : path;
+}
 
 export function PageHero({
   eyebrow,
@@ -36,7 +41,7 @@ export function PageHero({
       <Image className="hero-image" src={image} alt={imageAlt} fill priority sizes="100vw" />
       <div className="hero-overlay" />
       <div className="hero-content">
-        <Image className="hero-logo" src="/assets/drive/logo.png" alt="public bar Bassic." width={220} height={220} />
+        <Image className="hero-logo" src={assetPath("/assets/drive/logo.png")} alt="public bar Bassic." width={220} height={220} />
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="lead">{lead}</p>
@@ -139,7 +144,7 @@ export function EventList({ events, includePoster = true }: { events: EventItem[
       {includePoster ? (
         <figure className="event-poster">
           <Image
-            src="/assets/drive/brf-2023.jpg"
+            src={assetPath("/assets/drive/brf-2023.jpg")}
             alt="Bassic Rock Fesのイベントポスター"
             fill
             sizes="(max-width: 900px) 100vw, 42vw"
@@ -176,7 +181,7 @@ export function EventsTeaser({ events }: { events: EventItem[] }) {
 }
 
 function MenuCard({ item }: { item: MenuItem }) {
-  const image = item.image?.url || fallbackMenuImages[item.category];
+  const image = item.image?.url ? imageSrc(item.image.url) : fallbackMenuImages[item.category];
 
   return (
     <article className="menu-card">

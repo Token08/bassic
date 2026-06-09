@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PartyContent } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function PartyPage() {
             </>
           }
           lead="親不孝通りで、音楽と料理を楽しめるパーティーやレンタル利用に対応しています。"
-          image="/assets/drive/index_back/live-room.jpg"
+          image={assetPath("/assets/drive/index_back/live-room.jpg")}
           imageAlt="赤い照明のBassic.店内"
         />
         <PartyContent plans={contents.partyPlans} />

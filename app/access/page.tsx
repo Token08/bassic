@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AccessContent, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
+import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function AccessPage() {
             </>
           }
           lead="Google Map、住所、電話、メールをまとめました。初めての方も地図から迷わず来店できます。"
-          image="/assets/drive/index_back/bar-counter.jpg"
+          image={assetPath("/assets/drive/index_back/bar-counter.jpg")}
           imageAlt="Bassic.のバーカウンター"
         />
         <AccessContent note={contents.home.accessNote} />

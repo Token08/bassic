@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { assetPath } from "@/lib/assets";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
 
 export function SiteHeader() {
   return (
     <header className="site-header">
       <Link href="/" className="brand" aria-label="public bar Bassic. ホーム">
-        <Image src="/assets/drive/logo.png" alt="public bar Bassic." width={132} height={132} priority />
+        <Image src={assetPath("/assets/drive/logo.png")} alt="public bar Bassic." width={132} height={132} priority />
       </Link>
       <nav aria-label="主要ナビゲーション">
         {navItems.map((item) => (
