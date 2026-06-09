@@ -4,6 +4,7 @@ import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } fro
 import { assetPath } from "@/lib/assets";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
+import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 
 export const heroImagePath = assetPath("/assets/drive/index_back/bar-counter.jpg");
@@ -180,32 +181,19 @@ export function EventsTeaser({ events }: { events: EventItem[] }) {
   );
 }
 
-function MenuCard({ item }: { item: MenuItem }) {
+function resolveMenuItem(item: MenuItem) {
   const image = item.image?.url ? imageSrc(item.image.url) : fallbackMenuImages[item.category];
 
-  return (
-    <article className="menu-card">
-      <figure>
-        <Image src={image} alt={item.image?.alt || `${item.name}の写真`} fill sizes="(max-width: 900px) 100vw, 33vw" />
-      </figure>
-      <div className="menu-card-copy">
-        <div className="menu-card-heading">
-          <div>
-            <p className="menu-category">{item.category === "food" ? "Food" : "Drink"}</p>
-            <h3>{item.name}</h3>
-            {item.englishName ? <p>{item.englishName}</p> : null}
-          </div>
-          {item.price ? <strong>{item.price}</strong> : null}
-        </div>
-        {item.description ? <p className="muted">{item.description}</p> : null}
-      </div>
-    </article>
-  );
+  return {
+    ...item,
+    resolvedImage: image,
+    imageAlt: item.image?.alt || `${item.name}の写真`
+  };
 }
 
 export function MenuContent({ menu }: { menu: MenuItem[] }) {
-  const foods = menu.filter((item) => item.category === "food");
-  const drinks = menu.filter((item) => item.category === "drink");
+  const foods = menu.filter((item) => item.category === "food").map(resolveMenuItem);
+  const drinks = menu.filter((item) => item.category === "drink").map(resolveMenuItem);
 
   return (
     <section className="section menu-section">
@@ -226,11 +214,7 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
           <p className="eyebrow">Foods</p>
           <h2>料理</h2>
         </div>
-        <div className="menu-card-grid">
-          {foods.map((item) => (
-            <MenuCard key={`${item.category}-${item.name}`} item={item} />
-          ))}
-        </div>
+        <MenuGallery items={foods} />
       </div>
 
       <div className="menu-block">
@@ -238,11 +222,7 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
           <p className="eyebrow">Drinks</p>
           <h2>ドリンク</h2>
         </div>
-        <div className="menu-card-grid">
-          {drinks.map((item) => (
-            <MenuCard key={`${item.category}-${item.name}`} item={item} />
-          ))}
-        </div>
+        <MenuGallery items={drinks} />
       </div>
     </section>
   );

@@ -472,15 +472,45 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.menu-card figure {
+.menu-image-button {
   position: relative;
+  display: block;
+  width: 100%;
   min-height: 265px;
-  margin: 0;
+  border: 0;
+  padding: 0;
   background: #d8d1c5;
+  cursor: zoom-in;
 }
 
-.menu-card figure img {
+.menu-image-button::after {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: rgba(21, 18, 15, 0.72);
+  color: #fffaf2;
+  content: "拡大";
+  font-size: 0.76rem;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.menu-image-button:hover::after,
+.menu-image-button:focus-visible::after {
+  opacity: 1;
+}
+
+.menu-image-button img {
   object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.menu-image-button:hover img,
+.menu-image-button:focus-visible img {
+  transform: scale(1.035);
 }
 
 .menu-card-copy {
@@ -515,6 +545,72 @@ h3 {
   min-width: max-content;
   color: var(--green);
   font-size: 1.08rem;
+}
+
+.modal-open {
+  overflow: hidden;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 48px);
+  background: rgba(11, 9, 7, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.image-modal-close {
+  position: fixed;
+  top: clamp(14px, 3vw, 28px);
+  right: clamp(14px, 3vw, 28px);
+  z-index: 101;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(255, 250, 242, 0.4);
+  border-radius: 999px;
+  background: rgba(21, 18, 15, 0.86);
+  color: #fffaf2;
+  cursor: pointer;
+}
+
+.image-modal-content {
+  position: relative;
+  width: min(1080px, 94vw);
+  height: min(76vh, 760px);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #100d0b;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+}
+
+.image-modal-content img {
+  object-fit: contain;
+}
+
+.image-modal-content figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  background: linear-gradient(0deg, rgba(10, 8, 6, 0.86), rgba(10, 8, 6, 0.08));
+  color: #fffaf2;
+}
+
+.image-modal-content figcaption strong,
+.image-modal-content figcaption span {
+  position: relative;
+  z-index: 1;
 }
 
 .party-section {
@@ -679,7 +775,7 @@ h3 {
   .photo-strip figure,
   .photo-strip figure:first-child,
   .menu-photos figure,
-  .menu-card figure,
+  .menu-image-button,
   .event-poster {
     min-height: 260px;
   }
