@@ -544,6 +544,10 @@ h3 {
   color: var(--ivory);
 }
 
+.intro h2 {
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
+}
+
 .intro-light {
   background: linear-gradient(180deg, #fff9ea, #f2e4cc);
   color: var(--ink);
