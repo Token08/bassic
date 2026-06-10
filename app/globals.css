@@ -548,6 +548,10 @@ h3 {
   font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
 }
 
+.intro > .section-lead {
+  white-space: pre-line;
+}
+
 .intro-light {
   background: linear-gradient(180deg, #fff9ea, #f2e4cc);
   color: var(--ink);
