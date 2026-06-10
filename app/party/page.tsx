@@ -5,12 +5,9 @@ import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
 
 const partyHeroSlides = [
-  { src: assetPath("/assets/brand/party-slides/party-01.jpg"), alt: "Bassic.のライブイベント風景" },
-  { src: assetPath("/assets/brand/party-slides/party-02.jpg"), alt: "Bassic.のステージと客席" },
-  { src: assetPath("/assets/brand/party-slides/party-06.jpg"), alt: "Bassic.のライブフロア" },
-  { src: assetPath("/assets/brand/party-slides/party-03.jpg"), alt: "Bassic.のライブ写真" },
-  { src: assetPath("/assets/brand/party-slides/party-04.jpg"), alt: "Bassic.のイベント写真" },
-  { src: assetPath("/assets/brand/party-slides/party-05.jpg"), alt: "Bassic.の音楽イベント写真" }
+  { src: assetPath("/assets/brand/party-slides/party-01.jpg"), alt: "Bassic.のパーティー利用イメージ" },
+  { src: assetPath("/assets/brand/party-slides/party-02.jpg"), alt: "Bassic.の貸切イベントイメージ" },
+  { src: assetPath("/assets/brand/party-slides/party-03.jpg"), alt: "Bassic.の音楽とパーティーの夜" }
 ];
 
 export const metadata: Metadata = {
