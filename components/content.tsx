@@ -7,7 +7,7 @@ import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 
-export const heroImagePath = assetPath("/assets/drive/index_back/bar-counter.jpg");
+export const heroImagePath = assetPath("/assets/brand/toppage.jpg");
 
 export const atmosphereImages = [
   { src: assetPath("/assets/drive/bassic/drums.jpg"), alt: "Bassic.のドラムセットがあるライブスペース" },
@@ -42,7 +42,7 @@ export function PageHero({
       <Image className="hero-image" src={image} alt={imageAlt} fill priority sizes="100vw" />
       <div className="hero-overlay" />
       <div className="hero-content">
-        <Image className="hero-logo" src={assetPath("/assets/drive/logo.png")} alt="public bar Bassic." width={220} height={220} />
+        <img className="hero-logo" src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={220} height={220} />
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="lead">{lead}</p>

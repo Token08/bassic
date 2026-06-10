@@ -47,16 +47,21 @@ export default async function Home() {
       <main id="top">
         <PageHero
           eyebrow={site.tagline}
-          title={
-            <span className="home-hero-title">
-              <span>初めてでも入りやすい、</span>
-              <span>音楽と料理の夜。</span>
-            </span>
-          }
-          lead={contents.home.heroLead}
-          image={contents.home.heroImage?.url || heroImagePath}
-          imageAlt={contents.home.heroImage?.alt || "public bar Bassic.のバーカウンター"}
+          title="public bar Bassic."
+          lead="パブリックバー・ベーシックは福岡・天神 親不孝通りのミュージックバー。初めてでも入りやすい音楽と料理のお店です"
+          image={heroImagePath}
+          imageAlt="public bar Bassic.の赤い天井と客席が見える店内"
         />
+
+        <section className="top-photo-showcase" aria-label="public bar Bassic. 店内写真">
+          <Image
+            src={assetPath("/assets/brand/toppage.jpg")}
+            alt="public bar Bassic.の赤い天井と客席が広がる店内"
+            fill
+            priority
+            sizes="100vw"
+          />
+        </section>
 
         <section className="section route-section">
           <div className="section-heading narrow-copy">

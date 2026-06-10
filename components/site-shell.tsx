@@ -7,14 +7,21 @@ import { mailHref, navItems, site, telHref } from "@/lib/site";
 export function SiteHeader() {
   return (
     <header className="site-header">
+      <Image className="site-header-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill priority sizes="100vw" />
       <Link href="/" className="brand" aria-label="public bar Bassic. ホーム">
-        <Image src={assetPath("/assets/drive/logo.png")} alt="public bar Bassic." width={132} height={132} priority />
+        <img src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={132} height={132} />
       </Link>
       <nav aria-label="主要ナビゲーション">
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            {item.label}
-          </Link>
+          "external" in item && item.external ? (
+            <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
+              {item.label}
+            </a>
+          ) : (
+            <Link key={item.href} href={item.href}>
+              {item.label}
+            </Link>
+          )
         ))}
       </nav>
     </header>

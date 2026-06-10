@@ -28,12 +28,12 @@ export const site = {
 } as const;
 
 export const navItems = [
-  { href: "/", label: "ホーム" },
-  { href: "/first-visit", label: "初めての方へ" },
-  { href: "/events", label: "イベント" },
-  { href: "/menu", label: "メニュー" },
-  { href: "/party", label: "貸切" },
-  { href: "/access", label: "アクセス" }
+  { href: "/", label: "H O M E" },
+  { href: "/events", label: "EVENT SCHEDULE" },
+  { href: "/menu", label: "M E N U" },
+  { href: site.onlineStoreUrl, label: "ONLINE STORE", external: true },
+  { href: "/party", label: "PARTY & RENTAL" },
+  { href: "/access", label: "A C C E S S" }
 ] as const;
 
 export function absoluteUrl(path = "") {

@@ -2,9 +2,9 @@ import type { CmsContents } from "./types";
 
 export const fallbackContents: CmsContents = {
   home: {
-    heroTitle: "音楽好きが、初めてでもふらっと入れる夜へ。",
+    heroTitle: "public bar Bassic.",
     heroLead:
-      "public bar Bassic.は、福岡・天神 親不孝通りのミュージックバー。渡辺圭一が営む、ライブと料理とお酒を気軽に楽しめる場所です。",
+      "パブリックバー・ベーシックは福岡・天神 親不孝通りのミュージックバー。初めてでも入りやすい音楽と料理のお店です",
     firstVisitLead:
       "ひとりでも、ライブ前後でも、音楽の話をしたい夜でも。価格感、場所、予約方法が分かるように整理しました。",
     accessNote:
