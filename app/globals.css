@@ -176,6 +176,28 @@ iframe {
   object-position: 50% center;
 }
 
+.party-hero .hero-slide {
+  animation-duration: 36s;
+}
+
+.party-hero .hero-slide-1 {
+  object-position: 50% center;
+}
+
+.party-hero .hero-slide-2 {
+  object-position: 50% center;
+}
+
+.party-hero .hero-slide-3 {
+  object-position: 50% center;
+}
+
+.party-hero .hero-slide-4,
+.party-hero .hero-slide-5,
+.party-hero .hero-slide-6 {
+  object-position: 50% center;
+}
+
 @keyframes heroFade {
   0%,
   12% {
