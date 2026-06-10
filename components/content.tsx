@@ -12,11 +12,11 @@ export const heroImagePath = assetPath("/assets/brand/top-slides/hero-01.jpg");
 export const homeHeroSlides = [
   { src: assetPath("/assets/brand/top-slides/hero-01.jpg"), alt: "public bar Bassic.の客席とバーカウンターが見える店内" },
   { src: assetPath("/assets/brand/top-slides/hero-02.jpg"), alt: "public bar Bassic.のバーカウンター" },
-  { src: assetPath("/assets/brand/top-slides/hero-05.jpg"), alt: "public bar Bassic.の入口へ続く通路" },
-  { src: assetPath("/assets/brand/top-slides/hero-03.jpg"), alt: "Bassic.の壁面ロゴ" },
-  { src: assetPath("/assets/brand/top-slides/hero-04.jpg"), alt: "Bassic.のボトルとグラス" },
-  { src: assetPath("/assets/brand/top-slides/hero-08.jpg"), alt: "ミラーボールの光" },
-  { src: assetPath("/assets/brand/top-slides/hero-09.jpg"), alt: "DJターンテーブル" }
+  { src: assetPath("/assets/brand/top-slides/hero-03.jpg"), alt: "Bassic.のボトルとグラス" },
+  { src: assetPath("/assets/brand/top-slides/hero-04.jpg"), alt: "public bar Bassic.の入口へ続く通路" },
+  { src: assetPath("/assets/brand/top-slides/hero-05.jpg"), alt: "ミラーボールの光" },
+  { src: assetPath("/assets/brand/top-slides/hero-06.jpg"), alt: "DJターンテーブル" },
+  { src: assetPath("/assets/brand/top-slides/hero-07.jpg"), alt: "Bassic.のステージと音楽のある夜" }
 ];
 
 export const atmosphereImages = [
