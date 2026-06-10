@@ -127,8 +127,8 @@ iframe {
 .hero-image,
 .hero-slide {
   object-fit: cover;
-  object-position: center bottom;
-  filter: saturate(1.02) contrast(1.08);
+  object-position: center center;
+  filter: saturate(1.06) contrast(1.08) brightness(0.95);
 }
 
 .hero-slideshow {
@@ -138,26 +138,53 @@ iframe {
 
 .hero-slide {
   opacity: 0;
-  animation: heroFade 18s infinite;
+  animation: heroFade 42s infinite;
+  will-change: opacity, transform;
 }
 
-.hero-slide:nth-child(2) {
+.hero-slide-1 {
+  object-position: 44% center;
+}
+
+.hero-slide-2 {
   animation-delay: 6s;
+  object-position: 50% center;
 }
 
-.hero-slide:nth-child(3) {
+.hero-slide-3 {
   animation-delay: 12s;
+  object-position: 50% 58%;
+}
+
+.hero-slide-4 {
+  animation-delay: 18s;
+  object-position: 50% 48%;
+}
+
+.hero-slide-5 {
+  animation-delay: 24s;
+  object-position: 50% center;
+}
+
+.hero-slide-6 {
+  animation-delay: 30s;
+  object-position: 50% center;
+}
+
+.hero-slide-7 {
+  animation-delay: 36s;
+  object-position: 50% center;
 }
 
 @keyframes heroFade {
   0%,
-  30% {
+  12% {
     opacity: 1;
     transform: scale(1);
   }
 
-  38%,
-  92% {
+  16%,
+  96% {
     opacity: 0;
     transform: scale(1.035);
   }
@@ -172,8 +199,8 @@ iframe {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(10, 7, 6, 0.86), rgba(58, 8, 12, 0.48) 42%, rgba(10, 7, 6, 0.18)),
-    linear-gradient(0deg, rgba(10, 7, 6, 0.8), rgba(10, 7, 6, 0.02) 58%);
+    linear-gradient(90deg, rgba(10, 7, 6, 0.86), rgba(58, 8, 12, 0.4) 42%, rgba(10, 7, 6, 0.12)),
+    linear-gradient(0deg, rgba(10, 7, 6, 0.76), rgba(10, 7, 6, 0.02) 58%);
 }
 
 .hero-content {
@@ -1010,8 +1037,16 @@ h3 {
     padding-top: 90px;
   }
 
-  .home-hero .hero-slide:first-child {
-    object-position: 30% bottom;
+  .home-hero .hero-slide-1 {
+    object-position: 34% center;
+  }
+
+  .home-hero .hero-slide-2 {
+    object-position: 58% center;
+  }
+
+  .home-hero .hero-slide-3 {
+    object-position: center center;
   }
 
   .feature-grid,

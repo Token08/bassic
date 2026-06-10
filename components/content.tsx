@@ -7,12 +7,16 @@ import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 
-export const heroImagePath = assetPath("/assets/brand/toppage.jpg");
+export const heroImagePath = assetPath("/assets/brand/top-slides/hero-01.jpg");
 
 export const homeHeroSlides = [
-  { src: assetPath("/assets/brand/toppage.jpg"), alt: "public bar Bassic.の赤い天井と客席が見える店内" },
-  { src: assetPath("/assets/drive/index_back/live-room.jpg"), alt: "赤い照明のBassic.店内" },
-  { src: assetPath("/assets/drive/index_back/warm-interior.jpg"), alt: "温かい照明のBassic.店内" }
+  { src: assetPath("/assets/brand/top-slides/hero-01.jpg"), alt: "public bar Bassic.の客席とバーカウンターが見える店内" },
+  { src: assetPath("/assets/brand/top-slides/hero-02.jpg"), alt: "public bar Bassic.のバーカウンター" },
+  { src: assetPath("/assets/brand/top-slides/hero-05.jpg"), alt: "public bar Bassic.の入口へ続く通路" },
+  { src: assetPath("/assets/brand/top-slides/hero-03.jpg"), alt: "Bassic.の壁面ロゴ" },
+  { src: assetPath("/assets/brand/top-slides/hero-04.jpg"), alt: "Bassic.のボトルとグラス" },
+  { src: assetPath("/assets/brand/top-slides/hero-08.jpg"), alt: "ミラーボールの光" },
+  { src: assetPath("/assets/brand/top-slides/hero-09.jpg"), alt: "DJターンテーブル" }
 ];
 
 export const atmosphereImages = [
@@ -54,7 +58,7 @@ export function PageHero({
           {slides.map((slide, index) => (
             <Image
               key={slide.src}
-              className="hero-slide"
+              className={`hero-slide hero-slide-${index + 1}`}
               src={slide.src}
               alt=""
               fill
