@@ -138,7 +138,7 @@ iframe {
 
 .hero-slide {
   opacity: 0;
-  animation: heroFade 42s infinite;
+  animation: heroFade 60s infinite;
   will-change: opacity, transform;
 }
 
@@ -176,6 +176,21 @@ iframe {
   object-position: 50% center;
 }
 
+.hero-slide-8 {
+  animation-delay: 42s;
+  object-position: 50% center;
+}
+
+.hero-slide-9 {
+  animation-delay: 48s;
+  object-position: 50% center;
+}
+
+.hero-slide-10 {
+  animation-delay: 54s;
+  object-position: 50% center;
+}
+
 .party-hero .hero-slide {
   animation: eventHeroFade 18s infinite;
 }
@@ -195,7 +210,7 @@ iframe {
 }
 
 .event-hero .hero-slide {
-  animation: eventHeroFade 18s infinite;
+  animation: eventHeroFadeLong 36s infinite;
 }
 
 .event-hero .hero-slide-1 {
@@ -209,6 +224,21 @@ iframe {
 
 .event-hero .hero-slide-3 {
   animation-delay: 12s;
+  object-position: 50% center;
+}
+
+.event-hero .hero-slide-4 {
+  animation-delay: 18s;
+  object-position: 50% center;
+}
+
+.event-hero .hero-slide-5 {
+  animation-delay: 24s;
+  object-position: 50% center;
+}
+
+.event-hero .hero-slide-6 {
+  animation-delay: 30s;
   object-position: 50% center;
 }
 
@@ -233,12 +263,31 @@ iframe {
 
 @keyframes heroFade {
   0%,
-  12% {
+  8% {
     opacity: 1;
     transform: scale(1);
   }
 
-  16%,
+  12%,
+  96% {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes eventHeroFadeLong {
+  0%,
+  13% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  18%,
   96% {
     opacity: 0;
     transform: scale(1.035);

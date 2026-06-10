@@ -9,7 +9,10 @@ import { ExternalLink } from "lucide-react";
 const eventHeroSlides = [
   { src: assetPath("/assets/brand/event-slides/event-01.jpg"), alt: "Bassic.のライブイベント風景" },
   { src: assetPath("/assets/brand/event-slides/event-02.jpg"), alt: "Bassic.のステージと客席" },
-  { src: assetPath("/assets/brand/event-slides/event-03.jpg"), alt: "Bassic.のライブフロア" }
+  { src: assetPath("/assets/brand/event-slides/event-03.jpg"), alt: "Bassic.のライブフロア" },
+  { src: assetPath("/assets/brand/event-slides/event-04.jpg"), alt: "Bassic.のイベント風景" },
+  { src: assetPath("/assets/brand/event-slides/event-05.jpg"), alt: "Bassic.の音楽イベント" },
+  { src: assetPath("/assets/brand/event-slides/event-06.jpg"), alt: "Bassic.のライブとDJの夜" }
 ];
 
 export const metadata: Metadata = {

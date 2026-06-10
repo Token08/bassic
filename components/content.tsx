@@ -16,7 +16,10 @@ export const homeHeroSlides = [
   { src: assetPath("/assets/brand/top-slides/hero-04.jpg"), alt: "public bar Bassic.の入口へ続く通路" },
   { src: assetPath("/assets/brand/top-slides/hero-05.jpg"), alt: "ミラーボールの光" },
   { src: assetPath("/assets/brand/top-slides/hero-06.jpg"), alt: "DJターンテーブル" },
-  { src: assetPath("/assets/brand/top-slides/hero-07.jpg"), alt: "Bassic.のステージと音楽のある夜" }
+  { src: assetPath("/assets/brand/top-slides/hero-07.jpg"), alt: "Bassic.のステージと音楽のある夜" },
+  { src: assetPath("/assets/brand/top-slides/hero-08.jpg"), alt: "Bassic.の店内風景" },
+  { src: assetPath("/assets/brand/top-slides/hero-09.jpg"), alt: "Bassic.の夜の空間" },
+  { src: assetPath("/assets/brand/top-slides/hero-10.jpg"), alt: "public bar Bassic.の店内写真" }
 ];
 
 export const atmosphereImages = [
