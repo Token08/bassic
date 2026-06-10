@@ -6,6 +6,12 @@ import { getCmsContents } from "@/lib/microcms";
 import { mailHref } from "@/lib/site";
 import { ExternalLink } from "lucide-react";
 
+const eventHeroSlides = [
+  { src: assetPath("/assets/brand/event-slides/event-01.jpg"), alt: "Bassic.のライブイベント風景" },
+  { src: assetPath("/assets/brand/event-slides/event-02.jpg"), alt: "Bassic.のステージと客席" },
+  { src: assetPath("/assets/brand/event-slides/event-03.jpg"), alt: "Bassic.のライブフロア" }
+];
+
 export const metadata: Metadata = {
   title: "イベント | ライブ・DJ・予約情報",
   description: "public bar Bassic.のライブ、DJ、イベント予定、出演者、料金、予約方法を掲載しています。"
@@ -27,8 +33,8 @@ export default async function EventsPage() {
             </>
           }
           lead="日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。"
-          image={assetPath("/assets/drive/bassic/drums.jpg")}
-          imageAlt="Bassic.のドラムセット"
+          slides={eventHeroSlides}
+          className="event-hero"
         />
         <section className="section split">
           <div className="narrow-copy">

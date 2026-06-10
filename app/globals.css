@@ -198,6 +198,43 @@ iframe {
   object-position: 50% center;
 }
 
+.event-hero .hero-slide {
+  animation: eventHeroFade 18s infinite;
+}
+
+.event-hero .hero-slide-1 {
+  object-position: 50% center;
+}
+
+.event-hero .hero-slide-2 {
+  animation-delay: 6s;
+  object-position: 50% center;
+}
+
+.event-hero .hero-slide-3 {
+  animation-delay: 12s;
+  object-position: 50% center;
+}
+
+@keyframes eventHeroFade {
+  0%,
+  28% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  36%,
+  94% {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes heroFade {
   0%,
   12% {
