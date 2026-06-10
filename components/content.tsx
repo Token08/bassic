@@ -9,6 +9,12 @@ import { PrimaryActions } from "./site-shell";
 
 export const heroImagePath = assetPath("/assets/brand/toppage.jpg");
 
+export const homeHeroSlides = [
+  { src: assetPath("/assets/brand/toppage.jpg"), alt: "public bar Bassic.の赤い天井と客席が見える店内" },
+  { src: assetPath("/assets/drive/index_back/live-room.jpg"), alt: "赤い照明のBassic.店内" },
+  { src: assetPath("/assets/drive/index_back/warm-interior.jpg"), alt: "温かい照明のBassic.店内" }
+];
+
 export const atmosphereImages = [
   { src: assetPath("/assets/drive/bassic/drums.jpg"), alt: "Bassic.のドラムセットがあるライブスペース" },
   { src: assetPath("/assets/drive/index_back/live-room.jpg"), alt: "赤い照明のBassic.店内" },
@@ -29,20 +35,40 @@ export function PageHero({
   title,
   lead,
   image = heroImagePath,
-  imageAlt = "public bar Bassic.の店内"
+  imageAlt = "public bar Bassic.の店内",
+  slides,
+  className
 }: {
   eyebrow: string;
   title: React.ReactNode;
   lead: string;
   image?: string;
   imageAlt?: string;
+  slides?: { src: string; alt: string }[];
+  className?: string;
 }) {
   return (
-    <section className="hero page-hero">
-      <Image className="hero-image" src={image} alt={imageAlt} fill priority sizes="100vw" />
+    <section className={`hero page-hero${className ? ` ${className}` : ""}`}>
+      {slides?.length ? (
+        <div className="hero-slideshow" aria-hidden="true">
+          {slides.map((slide, index) => (
+            <Image
+              key={slide.src}
+              className="hero-slide"
+              src={slide.src}
+              alt=""
+              fill
+              priority={index === 0}
+              sizes="100vw"
+            />
+          ))}
+        </div>
+      ) : (
+        <Image className="hero-image" src={image} alt={imageAlt} fill priority sizes="100vw" />
+      )}
       <div className="hero-overlay" />
       <div className="hero-content">
-        <img className="hero-logo" src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={220} height={220} />
+        <img className="hero-logo" src={assetPath("/assets/brand/index-logo.png")} alt="public bar Bassic." width={800} height={800} />
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="lead">{lead}</p>

@@ -31,6 +31,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="footer">
+      <Image className="footer-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill sizes="100vw" />
       <p>
         {site.name} / {site.address}
       </p>

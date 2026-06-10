@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
-import { AccessContent, EventsTeaser, FirstVisitBlock, PageHero, heroImagePath } from "@/components/content";
+import { AccessContent, EventsTeaser, FirstVisitBlock, PageHero, heroImagePath, homeHeroSlides } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
@@ -51,17 +51,9 @@ export default async function Home() {
           lead="パブリックバー・ベーシックは福岡・天神 親不孝通りのミュージックバー。初めてでも入りやすい音楽と料理のお店です"
           image={heroImagePath}
           imageAlt="public bar Bassic.の赤い天井と客席が見える店内"
+          slides={homeHeroSlides}
+          className="home-hero"
         />
-
-        <section className="top-photo-showcase" aria-label="public bar Bassic. 店内写真">
-          <Image
-            src={assetPath("/assets/brand/toppage.jpg")}
-            alt="public bar Bassic.の赤い天井と客席が広がる店内"
-            fill
-            priority
-            sizes="100vw"
-          />
-        </section>
 
         <section className="section route-section">
           <div className="section-heading narrow-copy">
