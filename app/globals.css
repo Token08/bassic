@@ -117,7 +117,7 @@ iframe {
 }
 
 .page-hero {
-  min-height: 66vh;
+  min-height: 100vh;
 }
 
 .home-hero {
@@ -265,9 +265,12 @@ iframe {
 }
 
 .hero-logo {
+  position: absolute;
+  top: clamp(156px, 27.5vh, 248px);
+  left: clamp(20px, 5vw, 72px);
+  z-index: 1;
   width: clamp(156px, 22vw, 260px);
   height: auto;
-  margin-bottom: 22px;
   object-fit: contain;
   filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.52));
 }

@@ -71,8 +71,8 @@ export function PageHero({
         <Image className="hero-image" src={image} alt={imageAlt} fill priority sizes="100vw" />
       )}
       <div className="hero-overlay" />
+      <img className="hero-logo" src={assetPath("/assets/brand/index-logo.png")} alt="public bar Bassic." width={800} height={800} />
       <div className="hero-content">
-        <img className="hero-logo" src={assetPath("/assets/brand/index-logo.png")} alt="public bar Bassic." width={800} height={800} />
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="lead">{lead}</p>
