@@ -28,7 +28,7 @@ export default async function FirstVisitPage() {
           image={assetPath("/assets/drive/index_back/warm-interior.jpg")}
           imageAlt="温かい照明のBassic.店内"
         />
-        <FirstVisitBlock lead={contents.home.firstVisitLead} />
+        <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <section className="section faq-section">
           <div className="section-heading narrow-copy">
             <p className="eyebrow">Before You Come</p>

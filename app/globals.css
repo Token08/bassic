@@ -4,6 +4,7 @@
   --paper-strong: #fffdf5;
   --muted: #71655b;
   --line: rgba(18, 13, 11, 0.16);
+  --line-light: rgba(255, 247, 217, 0.16);
   --gold: #d7b66a;
   --red: #6f0f15;
   --red-bright: #9f1720;
@@ -298,6 +299,40 @@ h3 {
   padding: clamp(64px, 7vw, 96px) clamp(20px, 5vw, 72px);
 }
 
+.section {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.section h2,
+.section h3 {
+  color: inherit;
+}
+
+.section-dark {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
+    linear-gradient(135deg, #0b0908, #190b0b 58%, #0b0908);
+  color: var(--ivory);
+}
+
+.section-light {
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
+  color: var(--ink);
+}
+
+.section-dark .section-lead,
+.section-dark .muted,
+.section-dark p {
+  color: rgba(255, 247, 217, 0.74);
+}
+
+.section-light .section-lead,
+.section-light .muted,
+.section-light p {
+  color: var(--muted);
+}
+
 .section-heading,
 .section-lead {
   max-width: 860px;
@@ -315,7 +350,7 @@ h3 {
 }
 
 .route-section {
-  background: linear-gradient(180deg, var(--paper-strong), #f7ead4);
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
 }
 
 .route-grid {
@@ -354,7 +389,15 @@ h3 {
 }
 
 .intro {
-  background: #fff4de;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
+    linear-gradient(135deg, #0b0908, #190b0b 58%, #0b0908);
+  color: var(--ivory);
+}
+
+.intro-light {
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
+  color: var(--ink);
 }
 
 .feature-grid,
@@ -381,6 +424,28 @@ h3 {
 .faq-grid article p,
 .menu-card-copy p {
   line-height: 1.85;
+}
+
+.intro .feature-grid article {
+  border-color: var(--line-light);
+  background: rgba(255, 247, 217, 0.055);
+  color: var(--ivory);
+}
+
+.intro .feature-grid article p,
+.intro .feature-grid p {
+  color: rgba(255, 247, 217, 0.72);
+}
+
+.intro-light .feature-grid article {
+  border-color: var(--line);
+  background: #fffaf0;
+  color: var(--ink);
+}
+
+.intro-light .feature-grid article p,
+.intro-light .feature-grid p {
+  color: var(--muted);
 }
 
 .feature-grid svg {
@@ -435,13 +500,13 @@ h3 {
   display: grid;
   grid-template-columns: minmax(260px, 0.85fr) minmax(320px, 1.15fr);
   gap: clamp(28px, 5vw, 68px);
-  background: var(--night);
-  color: var(--ivory);
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
+  color: var(--ink);
 }
 
 .split .section-lead,
 .split .muted {
-  color: rgba(255, 250, 242, 0.68);
+  color: var(--muted);
 }
 
 .text-link {
@@ -459,17 +524,18 @@ h3 {
 
 .event-poster {
   min-height: 420px;
-  border: 1px solid rgba(255, 250, 242, 0.18);
+  border: 1px solid var(--line);
 }
 
 .event-card {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   gap: 18px;
-  border: 1px solid rgba(255, 250, 242, 0.18);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 18px;
-  background: rgba(255, 247, 217, 0.055);
+  background: #fffaf0;
+  box-shadow: var(--shadow);
 }
 
 .event-date {
@@ -501,7 +567,7 @@ h3 {
 }
 
 .menu-section {
-  background: #f2e4cc;
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
 }
 
 .menu-block {
@@ -679,7 +745,7 @@ h3 {
 }
 
 .party-section {
-  background: #fff4de;
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
 }
 
 .home-menu-teaser {
@@ -687,7 +753,14 @@ h3 {
   grid-template-columns: minmax(320px, 0.8fr) minmax(320px, 1.2fr);
   gap: clamp(30px, 6vw, 78px);
   align-items: center;
-  background: #f2e4cc;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
+    linear-gradient(135deg, #0b0908, #190b0b 58%, #0b0908);
+  color: var(--ivory);
+}
+
+.home-menu-teaser .section-lead {
+  color: rgba(255, 247, 217, 0.72);
 }
 
 .wide-photo {
@@ -700,7 +773,10 @@ h3 {
 }
 
 .faq-section {
-  background: #f2e4cc;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
+    linear-gradient(135deg, #0b0908, #190b0b 58%, #0b0908);
+  color: var(--ivory);
 }
 
 .faq-grid {
@@ -711,11 +787,15 @@ h3 {
 }
 
 .faq-grid article {
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-light);
   border-radius: 8px;
-  background: #fff;
+  background: rgba(255, 247, 217, 0.055);
   padding: 24px;
   box-shadow: var(--shadow);
+}
+
+.faq-grid article p {
+  color: rgba(255, 247, 217, 0.72);
 }
 
 .plan-grid article strong {
@@ -726,10 +806,8 @@ h3 {
   display: grid;
   grid-template-columns: minmax(320px, 0.9fr) minmax(320px, 1.1fr);
   gap: 28px;
-  background:
-    linear-gradient(90deg, rgba(11, 9, 8, 0.98), rgba(45, 12, 12, 0.92)),
-    var(--night-soft);
-  color: #fffaf2;
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
+  color: var(--ink);
 }
 
 .access-copy {
@@ -738,7 +816,7 @@ h3 {
 
 .access-copy p,
 .access-list dd {
-  color: rgba(255, 250, 242, 0.78);
+  color: var(--muted);
 }
 
 .access-list {
@@ -749,7 +827,7 @@ h3 {
 }
 
 .access-list dt {
-  color: var(--gold);
+  color: var(--red);
   font-weight: 900;
 }
 

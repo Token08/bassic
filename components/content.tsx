@@ -78,9 +78,9 @@ export function PageHero({
   );
 }
 
-export function FirstVisitBlock({ lead }: { lead: string }) {
+export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: "dark" | "light" }) {
   return (
-    <section className="section intro">
+    <section className={`section intro intro-${tone}`}>
       <div className="section-heading narrow-copy">
         <p className="eyebrow">First Visit</p>
         <h2>
