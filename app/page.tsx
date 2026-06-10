@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
-import { AccessContent, EventsTeaser, FirstVisitBlock, PageHero, heroImagePath, homeHeroSlides } from "@/components/content";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { AccessContent, FirstVisitBlock, PageHero, heroImagePath, homeHeroSlides } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
@@ -38,6 +38,63 @@ function JsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
+const socialLinks = [
+  {
+    label: "Instagram",
+    handle: "@bassic_official",
+    description: "イベント、おすすめフード、店内の雰囲気を写真で更新しています。",
+    href: site.instagramUrl
+  },
+  {
+    label: "X",
+    handle: "@bar_Bassic",
+    description: "ライブ、DJ、営業情報など直近のお知らせはこちらから。",
+    href: site.xUrl
+  },
+  {
+    label: "Facebook",
+    handle: "bar.Bassic",
+    description: "イベント情報やお店からのお知らせをまとめて確認できます。",
+    href: site.facebookUrl
+  },
+  {
+    label: "Online Store",
+    handle: "bassic.official.ec",
+    description: "Bassic.関連アイテムやオンライン販売はこちらから。",
+    href: site.onlineStoreUrl
+  }
+];
+
+function SocialUpdatesSection() {
+  return (
+    <section className="section social-section">
+      <div className="section-heading narrow-copy">
+        <p className="eyebrow">Social Updates</p>
+        <h2>
+          最新情報は、
+          <br />
+          公式SNSから。
+        </h2>
+        <p className="section-lead">
+          Instagram、X、Facebook、Online Storeへつながる導線をまとめました。イベントや営業情報はSNSでも確認できます。
+        </p>
+      </div>
+      <div className="social-grid">
+        {socialLinks.map((link) => (
+          <a key={link.label} className="social-card" href={link.href} target="_blank" rel="noreferrer">
+            <span className="social-label">{link.label}</span>
+            <strong>{link.handle}</strong>
+            <p>{link.description}</p>
+            <span className="social-action">
+              開く <ExternalLink size={16} />
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function Home() {
   const contents = await getCmsContents();
 
@@ -55,41 +112,8 @@ export default async function Home() {
           className="home-hero"
         />
 
-        <section className="section route-section">
-          <div className="section-heading narrow-copy">
-            <p className="eyebrow">Find What You Need</p>
-            <h2>
-              知りたいことへ、
-              <br />
-              すぐ進めるサイトにしました。
-            </h2>
-          </div>
-          <div className="route-grid">
-            <Link href="/first-visit">
-              <span>初めての方へ</span>
-              <strong>雰囲気・価格感・来店前の不安を確認</strong>
-              <ArrowRight size={18} />
-            </Link>
-            <Link href="/events">
-              <span>イベント</span>
-              <strong>ライブ、DJ、予約方法を見る</strong>
-              <ArrowRight size={18} />
-            </Link>
-            <Link href="/menu">
-              <span>メニュー</span>
-              <strong>料理とドリンクの写真・価格を見る</strong>
-              <ArrowRight size={18} />
-            </Link>
-            <Link href="/access">
-              <span>アクセス</span>
-              <strong>Google Mapと駅からの行き方を見る</strong>
-              <MapPin size={18} />
-            </Link>
-          </div>
-        </section>
-
         <FirstVisitBlock lead={contents.home.firstVisitLead} />
-        <EventsTeaser events={contents.events} />
+        <SocialUpdatesSection />
 
         <section className="section home-menu-teaser">
           <div className="section-heading narrow-copy">
