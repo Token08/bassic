@@ -112,7 +112,7 @@ export default async function Home() {
           className="home-hero"
         />
 
-        <FirstVisitBlock lead={contents.home.firstVisitLead} />
+        <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <SocialUpdatesSection />
 
         <section className="section home-menu-teaser">
