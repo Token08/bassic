@@ -1056,6 +1056,70 @@ h3 {
   box-shadow: var(--shadow);
 }
 
+main > .section:nth-of-type(even):not(.hero) {
+  background: linear-gradient(180deg, #fff9ea, #f2e4cc);
+  color: var(--ink);
+}
+
+main > .section:nth-of-type(odd):not(.hero) {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
+    linear-gradient(135deg, #0b0908, #190b0b 58%, #0b0908);
+  color: var(--ivory);
+}
+
+main > .section:nth-of-type(even):not(.hero) .section-lead,
+main > .section:nth-of-type(even):not(.hero) .muted,
+main > .section:nth-of-type(even):not(.hero) p,
+main > .section:nth-of-type(even):not(.hero) .access-copy p,
+main > .section:nth-of-type(even):not(.hero) .access-list dd {
+  color: var(--muted);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .section-lead,
+main > .section:nth-of-type(odd):not(.hero) .muted,
+main > .section:nth-of-type(odd):not(.hero) p,
+main > .section:nth-of-type(odd):not(.hero) .access-copy p,
+main > .section:nth-of-type(odd):not(.hero) .access-list dd {
+  color: rgba(255, 247, 217, 0.74);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .access-list dt,
+main > .section:nth-of-type(odd):not(.hero) .event-meta dt,
+main > .section:nth-of-type(odd):not(.hero) .eyebrow {
+  color: var(--gold);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .feature-grid article,
+main > .section:nth-of-type(odd):not(.hero) .plan-grid article,
+main > .section:nth-of-type(odd):not(.hero) .faq-grid article {
+  border-color: var(--line-light);
+  background: rgba(255, 247, 217, 0.055);
+  color: var(--ivory);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .feature-grid article p,
+main > .section:nth-of-type(odd):not(.hero) .plan-grid article p,
+main > .section:nth-of-type(odd):not(.hero) .faq-grid article p {
+  color: rgba(255, 247, 217, 0.72);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .button {
+  border-color: rgba(255, 247, 217, 0.32);
+  background: rgba(255, 247, 217, 0.08);
+  color: var(--ivory);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .button.primary {
+  border-color: var(--red-bright);
+  background: var(--red-bright);
+  color: var(--ivory);
+}
+
+main > .section:nth-of-type(odd):not(.hero) .map {
+  border-color: rgba(255, 247, 217, 0.16);
+}
+
 .footer {
   position: relative;
   display: flex;
