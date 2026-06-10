@@ -13,6 +13,7 @@
   --night-soft: #18110f;
   --ivory: #fff7d9;
   --shadow: 0 14px 34px rgba(18, 13, 11, 0.14);
+  --shadow-strong: 0 18px 44px rgba(18, 13, 11, 0.2);
 }
 
 * {
@@ -271,12 +272,44 @@ h3 {
   color: var(--ivory);
   font-weight: 800;
   white-space: nowrap;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
 }
 
 .button.primary {
   border-color: var(--red-bright);
   background: var(--red-bright);
   color: var(--ivory);
+}
+
+.section-light .button,
+.route-section .button,
+.split .button,
+.menu-section .button,
+.party-section .button,
+.access-section .button {
+  border-color: rgba(18, 13, 11, 0.34);
+  background: rgba(18, 13, 11, 0.04);
+  color: var(--ink);
+}
+
+.section-light .button.primary,
+.route-section .button.primary,
+.split .button.primary,
+.menu-section .button.primary,
+.party-section .button.primary,
+.access-section .button.primary {
+  border-color: var(--red-bright);
+  background: var(--red-bright);
+  color: var(--ivory);
+  box-shadow: 0 10px 24px rgba(159, 23, 32, 0.18);
 }
 
 .quick-info {
@@ -370,6 +403,20 @@ h3 {
   padding: 22px;
   background: #fffdf5;
   box-shadow: var(--shadow);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.route-grid a:hover,
+.menu-card:hover,
+.feature-grid article:hover,
+.plan-grid article:hover,
+.faq-grid article:hover {
+  border-color: rgba(111, 15, 21, 0.28);
+  box-shadow: var(--shadow-strong);
+  transform: translateY(-2px);
 }
 
 .route-grid span {
@@ -479,6 +526,7 @@ h3 {
   margin: 0;
   border-radius: 8px;
   background: #d8d1c5;
+  box-shadow: var(--shadow);
 }
 
 .photo-strip figure {
@@ -601,6 +649,10 @@ h3 {
   border-radius: 8px;
   background: #fffaf0;
   box-shadow: var(--shadow);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .menu-image-button {
@@ -772,6 +824,16 @@ h3 {
   box-shadow: var(--shadow);
 }
 
+.wide-photo::after,
+.photo-strip figure::after,
+.event-poster::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(11, 9, 8, 0.18), transparent 45%);
+  content: "";
+  pointer-events: none;
+}
+
 .faq-section {
   background:
     radial-gradient(circle at 18% 0%, rgba(111, 15, 21, 0.34), transparent 34%),
@@ -804,8 +866,8 @@ h3 {
 
 .access-section {
   display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(320px, 1.1fr);
-  gap: 28px;
+  grid-template-columns: minmax(320px, 0.88fr) minmax(320px, 1.12fr);
+  gap: clamp(28px, 5vw, 64px);
   background: linear-gradient(180deg, #fff9ea, #f2e4cc);
   color: var(--ink);
 }
@@ -821,9 +883,9 @@ h3 {
 
 .access-list {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr);
-  gap: 10px 18px;
-  margin: 26px 0 0;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 11px 18px;
+  margin: 28px 0 0;
 }
 
 .access-list dt {
@@ -838,9 +900,10 @@ h3 {
 .map {
   width: 100%;
   min-height: 520px;
-  border: 0;
+  border: 1px solid rgba(18, 13, 11, 0.12);
   border-radius: 8px;
   background: #d8d1c5;
+  box-shadow: var(--shadow);
 }
 
 .footer {
