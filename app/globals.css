@@ -653,9 +653,18 @@ h3 {
 }
 
 .intro .feature-grid article {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 14px;
   border-color: var(--line-light);
   background: rgba(255, 247, 217, 0.055);
   color: var(--ivory);
+}
+
+.intro .feature-grid article svg,
+.intro .feature-grid article h3,
+.intro .feature-grid article p {
+  margin: 0;
 }
 
 .intro .feature-grid article p,
@@ -713,16 +722,23 @@ h3 {
   min-height: clamp(320px, 30vw, 430px);
 }
 
-.feature-mobile-photo {
-  display: none;
-}
-
 .photo-strip img,
 .menu-photos img,
 .event-poster img,
 .feature-mobile-photo img,
 .wide-photo img {
   object-fit: cover;
+}
+
+.feature-mobile-photo {
+  position: relative;
+  display: block;
+  min-height: clamp(220px, 18vw, 300px);
+  margin: 4px 0 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #d8d1c5;
+  box-shadow: var(--shadow);
 }
 
 .split {
@@ -1462,34 +1478,8 @@ main > .section:nth-of-type(odd):not(.hero) .map {
     gap: 18px;
   }
 
-  .intro .feature-grid article {
-    display: grid;
-    gap: 12px;
-    padding: 18px;
-  }
-
-  .intro .feature-grid article svg {
-    margin-bottom: 0;
-  }
-
-  .intro .feature-grid article h3,
-  .intro .feature-grid article p {
-    margin: 0;
-  }
-
-  .intro .photo-strip {
-    display: none;
-  }
-
   .feature-mobile-photo {
-    position: relative;
-    display: block;
     min-height: clamp(220px, 58vw, 300px);
-    margin: 6px 0 0;
-    overflow: hidden;
-    border-radius: 8px;
-    background: #d8d1c5;
-    box-shadow: var(--shadow);
   }
 
   .event-card {
