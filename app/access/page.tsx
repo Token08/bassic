@@ -3,11 +3,9 @@ import { AccessContent, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "アクセス | Google Map・天神駅からの行き方",
-  description: "public bar Bassic.へのアクセス。福岡市中央区天神3-4-19 WITH天神5F、天神駅から徒歩約4分。"
-};
+export const metadata: Metadata = buildMetadata("access");
 
 export default async function AccessPage() {
   const contents = await getCmsContents();

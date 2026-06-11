@@ -3,6 +3,7 @@ import { PageHero, PartyContent } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
+import { buildMetadata } from "@/lib/seo";
 
 const partyHeroSlides = [
   { src: assetPath("/assets/brand/party-slides/party-01.jpg"), alt: "Bassic.のパーティー利用イメージ" },
@@ -10,10 +11,7 @@ const partyHeroSlides = [
   { src: assetPath("/assets/brand/party-slides/party-03.jpg"), alt: "Bassic.の音楽とパーティーの夜" }
 ];
 
-export const metadata: Metadata = {
-  title: "貸切・パーティー | 天神の二次会・打ち上げ",
-  description: "public bar Bassic.の貸切、パーティープラン、ライブ後の打ち上げ、レンタル利用について紹介します。"
-};
+export const metadata: Metadata = buildMetadata("party");
 
 export default async function PartyPage() {
   const contents = await getCmsContents();

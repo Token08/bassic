@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, site } from "@/lib/site";
+import { languageAlternates } from "@/lib/seo";
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ["latin"],
@@ -26,7 +27,8 @@ export const metadata: Metadata = {
     "貸切 パーティー 天神"
   ],
   alternates: {
-    canonical: "/"
+    canonical: site.siteUrl,
+    languages: languageAlternates("/")
   },
   openGraph: {
     type: "website",

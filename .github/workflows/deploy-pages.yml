@@ -33,8 +33,7 @@ jobs:
 
       - name: Build static site
         env:
-          NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
-          NEXT_PUBLIC_BASE_PATH: /bassic
+          NEXT_PUBLIC_SITE_URL: https://www.bassic.jp
         run: npm run build
 
       - name: Upload artifact

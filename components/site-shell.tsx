@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarDays, Instagram, Mail, MapPin, Menu, Phone } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
+import { LanguageSwitcher } from "./language-switcher";
 
 function HeaderNavLinks() {
   return (
@@ -32,12 +33,14 @@ export function SiteHeader() {
       <nav className="desktop-nav" aria-label="主要ナビゲーション">
         <HeaderNavLinks />
       </nav>
+      <LanguageSwitcher />
       <details className="mobile-menu">
         <summary aria-label="メニューを開く">
           <Menu size={24} />
         </summary>
         <nav aria-label="スマートフォン用ナビゲーション">
           <HeaderNavLinks />
+          <LanguageSwitcher compact />
         </nav>
       </details>
     </header>
@@ -90,20 +93,28 @@ export function PageShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function PrimaryActions() {
+export function PrimaryActions({
+  mapLabel = "Google Mapで開く",
+  callLabel = "電話する",
+  reserveLabel = "メール予約"
+}: {
+  mapLabel?: string;
+  callLabel?: string;
+  reserveLabel?: string;
+} = {}) {
   return (
     <div className="hero-actions">
       <a className="button primary" href={site.googleMapsUrl} target="_blank" rel="noreferrer">
         <MapPin size={18} />
-        Google Mapで開く
+        {mapLabel}
       </a>
       <a className="button" href={telHref()}>
         <Phone size={18} />
-        電話する
+        {callLabel}
       </a>
       <a className="button" href={mailHref("Bassic.予約問い合わせ")}>
         <Mail size={18} />
-        メール予約
+        {reserveLabel}
       </a>
     </div>
   );

@@ -1,4 +1,4 @@
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || (process.env.GITHUB_ACTIONS === "true" ? "/bassic" : "");
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export function assetPath(path: string) {
   if (/^https?:\/\//.test(path)) {

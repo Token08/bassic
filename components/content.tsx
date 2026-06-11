@@ -50,7 +50,9 @@ export function PageHero({
   image = heroImagePath,
   imageAlt = "public bar Bassic.の店内",
   slides,
-  className
+  className,
+  highlights,
+  actionLabels
 }: {
   eyebrow: string;
   title: React.ReactNode;
@@ -59,6 +61,12 @@ export function PageHero({
   imageAlt?: string;
   slides?: { src: string; alt: string }[];
   className?: string;
+  highlights?: string[];
+  actionLabels?: {
+    mapLabel?: string;
+    callLabel?: string;
+    reserveLabel?: string;
+  };
 }) {
   return (
     <section className={`hero page-hero${className ? ` ${className}` : ""}`}>
@@ -85,7 +93,14 @@ export function PageHero({
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
         <p className="lead">{lead}</p>
-        <PrimaryActions />
+        <PrimaryActions {...actionLabels} />
+        {highlights?.length ? (
+          <div className="quick-info" aria-label="来店前の基本情報">
+            {highlights.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -337,6 +352,10 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
         <p className="section-lead">
           料理やドリンクの雰囲気が初めての方にも伝わるよう、画像と紹介文をセットで見られる形にしました。
         </p>
+        <div className="notice-row" aria-label="メニュー利用時の基本情報">
+          <span>{site.chargeLabel}</span>
+          <span>{site.hoursLabel}</span>
+        </div>
       </div>
 
       <div className="menu-block">
@@ -401,7 +420,13 @@ export function AccessContent({ note }: { note: string }) {
           <dt>メール</dt>
           <dd>{site.email}</dd>
           <dt>営業時間</dt>
-          <dd>{site.hoursLabel}</dd>
+          <dd>
+            {site.hoursLabel}
+            <br />
+            {site.eventHoursNote}
+          </dd>
+          <dt>喫煙</dt>
+          <dd>{site.smokingLabel}</dd>
         </dl>
         <div className="hero-actions">
           <a className="button primary" href={site.directionsUrl} target="_blank" rel="noreferrer">

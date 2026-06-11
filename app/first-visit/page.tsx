@@ -3,17 +3,50 @@ import { FirstVisitBlock, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
+import { buildMetadata } from "@/lib/seo";
+import { absoluteUrl, site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "初めての方へ | 福岡 天神 親不孝通りのバー",
-  description: "public bar Bassic.に初めて来る方へ。雰囲気、価格感、ひとり来店、予約、アクセスを分かりやすく案内します。"
-};
+export const metadata: Metadata = buildMetadata("firstVisit");
+
+const faqs = [
+  {
+    question: "ひとりでも大丈夫？",
+    answer: "大丈夫です。カウンターで音楽やイベントの話をしながら、気軽に過ごせます。"
+  },
+  {
+    question: "予約は必要？",
+    answer: "通常営業は予約なしでも利用できます。ライブや貸切日は、事前確認がおすすめです。"
+  },
+  {
+    question: "どんな使い方が多い？",
+    answer: "ライブ前後の一杯、食事、DJイベント、二次会、貸切パーティーなど幅広く使えます。"
+  }
+];
+
+function FaqJsonLd() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    url: absoluteUrl("/first-visit/"),
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${faq.answer} ${site.hoursLabel}。${site.chargeLabel}。${site.smokingLabel}。`
+      }
+    }))
+  };
+
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+}
 
 export default async function FirstVisitPage() {
   const contents = await getCmsContents();
 
   return (
     <PageShell>
+      <FaqJsonLd />
       <main>
         <PageHero
           eyebrow="First Visit"
@@ -33,18 +66,12 @@ export default async function FirstVisitPage() {
             </h2>
           </div>
           <div className="faq-grid">
-            <article>
-              <h3>ひとりでも大丈夫？</h3>
-              <p>大丈夫です。カウンターで音楽やイベントの話をしながら、気軽に過ごせます。</p>
-            </article>
-            <article>
-              <h3>予約は必要？</h3>
-              <p>通常営業は予約なしでも利用できます。ライブや貸切日は、事前確認がおすすめです。</p>
-            </article>
-            <article>
-              <h3>どんな使い方が多い？</h3>
-              <p>ライブ前後の一杯、食事、DJイベント、二次会、貸切パーティーなど幅広く使えます。</p>
-            </article>
+            {faqs.map((faq) => (
+              <article key={faq.question}>
+                <h3>{faq.question}</h3>
+                <p>{faq.answer}</p>
+              </article>
+            ))}
           </div>
         </section>
       </main>

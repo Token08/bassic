@@ -1,16 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, heroImagePath, homeHeroSlides } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
+import { buildMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
+
+export const metadata: Metadata = buildMetadata("home");
 
 function JsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "BarOrPub",
+    "@id": `${site.siteUrl}/#bar`,
     name: site.name,
     alternateName: site.japaneseName,
     description: site.description,
@@ -20,6 +25,33 @@ function JsonLd() {
     priceRange: site.priceRange,
     image: `${site.siteUrl}/ogp.png`,
     hasMap: site.googleMapsUrl,
+    smokingAllowed: true,
+    publicAccess: true,
+    additionalProperty: [
+      {
+        "@type": "PropertyValue",
+        name: "通常営業時間",
+        value: site.hoursLabel
+      },
+      {
+        "@type": "PropertyValue",
+        name: "チャージ",
+        value: site.chargeLabel
+      },
+      {
+        "@type": "PropertyValue",
+        name: "喫煙",
+        value: site.smokingLabel
+      }
+    ],
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        opens: "20:00",
+        closes: "02:00"
+      }
+    ],
     sameAs: [site.instagramUrl, site.xUrl, site.facebookUrl, site.onlineStoreUrl],
     address: {
       "@type": "PostalAddress",
@@ -53,6 +85,7 @@ export default async function Home() {
           imageAlt="public bar Bassic.の赤い天井と客席が見える店内"
           slides={homeHeroSlides}
           className="home-hero"
+          highlights={[site.hoursLabel, site.smokingLabel, site.chargeLabel]}
         />
 
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
