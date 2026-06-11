@@ -1423,6 +1423,12 @@ main > .visit-info-strip .visit-info-grid p {
   color: #241b17;
 }
 
+main > section.visit-info-strip:nth-of-type(odd) .visit-info-grid article p,
+main > section.visit-info-strip:nth-of-type(even) .visit-info-grid article p,
+main > section.visit-info-strip .visit-info-grid article p {
+  color: #241b17;
+}
+
 .footer {
   position: relative;
   display: flex;
@@ -1579,6 +1585,52 @@ main > .visit-info-strip .visit-info-grid p {
   .mobile-menu nav a:hover,
   .mobile-menu nav a:focus-visible {
     background: rgba(111, 15, 21, 0.58);
+  }
+
+  .mobile-menu .language-switcher-compact {
+    width: 100%;
+    border-top: 1px solid rgba(255, 247, 217, 0.12);
+  }
+
+  .mobile-menu .language-switcher-compact summary {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    border: 0;
+    border-radius: 0;
+    padding: 13px 16px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ivory);
+    font-size: 0.92rem;
+    font-weight: 900;
+    line-height: 1.4;
+  }
+
+  .mobile-menu .language-switcher-compact[open] summary {
+    background: rgba(111, 15, 21, 0.42);
+  }
+
+  .mobile-menu .language-switcher-compact div {
+    position: static;
+    display: grid;
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    background: rgba(255, 247, 217, 0.055);
+    box-shadow: none;
+  }
+
+  .mobile-menu .language-switcher-compact a {
+    display: block;
+    padding: 12px 16px 12px 28px;
+    border-bottom: 1px solid rgba(255, 247, 217, 0.1);
+    color: rgba(255, 247, 217, 0.92);
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1.35;
   }
 
   .hero {
