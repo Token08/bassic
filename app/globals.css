@@ -621,7 +621,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fffaf0;
-  padding: 24px;
+  padding: 22px;
   box-shadow: var(--shadow);
 }
 
@@ -656,7 +656,7 @@ h3 {
 
 .feature-grid svg {
   color: var(--red);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .feature-grid p,
@@ -674,7 +674,8 @@ h3 {
 }
 
 .photo-strip {
-  grid-template-columns: 1.15fr 0.85fr 0.85fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .photo-strip figure,
@@ -689,11 +690,7 @@ h3 {
 }
 
 .photo-strip figure {
-  min-height: 280px;
-}
-
-.photo-strip figure:first-child {
-  min-height: 360px;
+  min-height: clamp(320px, 30vw, 430px);
 }
 
 .photo-strip img,
