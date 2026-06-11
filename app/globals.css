@@ -1760,6 +1760,10 @@ main > section.visit-info-strip .visit-info-grid article p {
     pointer-events: none;
   }
 
+  .social-embed-frame > * {
+    pointer-events: none;
+  }
+
   .social-fallback-link {
     min-height: 100%;
     padding: 18px;
