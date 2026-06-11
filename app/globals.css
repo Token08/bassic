@@ -571,49 +571,51 @@ h3 {
 }
 
 .visit-info-strip {
-  padding: 0 clamp(20px, 4vw, 72px) clamp(56px, 7vw, 92px);
-  background: #f2e4cc;
+  padding: clamp(48px, 5.5vw, 76px) clamp(20px, 4vw, 72px);
+  background: var(--section-dark-bg);
+  color: var(--ivory);
 }
 
 .visit-info-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  max-width: 1440px;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 18px;
+  max-width: 1560px;
   margin: 0 auto;
 }
 
 .visit-info-grid article {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 14px;
+  gap: 16px;
   align-items: start;
-  min-height: 132px;
+  min-height: 152px;
   border: 1px solid rgba(18, 13, 11, 0.14);
   border-radius: 8px;
-  padding: 20px;
-  background: rgba(255, 253, 245, 0.74);
-  box-shadow: 0 14px 34px rgba(18, 13, 11, 0.1);
+  padding: 24px;
+  background: rgba(255, 253, 245, 0.94);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
 }
 
 .visit-info-grid svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: var(--red);
 }
 
 .visit-info-grid h3 {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   color: #5d090f;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1.35;
 }
 
 .visit-info-grid p {
   margin: 0;
   color: #2b211d;
-  font-size: 0.94rem;
+  font-size: 1.02rem;
   font-weight: 700;
-  line-height: 1.65;
+  line-height: 1.72;
 }
 
 .notice-row {
@@ -1343,66 +1345,82 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-main > .section:nth-of-type(even):not(.hero) {
+main > section:not(.hero):nth-of-type(even) {
   background: var(--section-light-bg);
   color: var(--ink);
 }
 
-main > .section:nth-of-type(odd):not(.hero) {
+main > section:not(.hero):nth-of-type(odd) {
   background: var(--section-dark-bg);
   color: var(--ivory);
 }
 
-main > .section:nth-of-type(even):not(.hero) .section-lead,
-main > .section:nth-of-type(even):not(.hero) .muted,
-main > .section:nth-of-type(even):not(.hero) p,
-main > .section:nth-of-type(even):not(.hero) .access-copy p,
-main > .section:nth-of-type(even):not(.hero) .access-list dd {
+main > section:not(.hero):nth-of-type(even) .section-lead,
+main > section:not(.hero):nth-of-type(even) .muted,
+main > section:not(.hero):nth-of-type(even) p,
+main > section:not(.hero):nth-of-type(even) .access-copy p,
+main > section:not(.hero):nth-of-type(even) .access-list dd {
   color: var(--muted);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .section-lead,
-main > .section:nth-of-type(odd):not(.hero) .muted,
-main > .section:nth-of-type(odd):not(.hero) p,
-main > .section:nth-of-type(odd):not(.hero) .access-copy p,
-main > .section:nth-of-type(odd):not(.hero) .access-list dd {
+main > section:not(.hero):nth-of-type(odd) .section-lead,
+main > section:not(.hero):nth-of-type(odd) .muted,
+main > section:not(.hero):nth-of-type(odd) p,
+main > section:not(.hero):nth-of-type(odd) .access-copy p,
+main > section:not(.hero):nth-of-type(odd) .access-list dd {
   color: rgba(255, 247, 217, 0.74);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .access-list dt,
-main > .section:nth-of-type(odd):not(.hero) .event-meta dt,
-main > .section:nth-of-type(odd):not(.hero) .eyebrow {
+main > section:not(.hero):nth-of-type(odd) .access-list dt,
+main > section:not(.hero):nth-of-type(odd) .event-meta dt,
+main > section:not(.hero):nth-of-type(odd) .eyebrow {
   color: var(--gold);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .feature-grid article,
-main > .section:nth-of-type(odd):not(.hero) .plan-grid article,
-main > .section:nth-of-type(odd):not(.hero) .faq-grid article {
+main > section:not(.hero):nth-of-type(odd) .feature-grid article,
+main > section:not(.hero):nth-of-type(odd) .plan-grid article,
+main > section:not(.hero):nth-of-type(odd) .faq-grid article {
   border-color: var(--line-light);
   background: rgba(255, 247, 217, 0.055);
   color: var(--ivory);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .feature-grid article p,
-main > .section:nth-of-type(odd):not(.hero) .plan-grid article p,
-main > .section:nth-of-type(odd):not(.hero) .faq-grid article p {
+main > section:not(.hero):nth-of-type(odd) .feature-grid article p,
+main > section:not(.hero):nth-of-type(odd) .plan-grid article p,
+main > section:not(.hero):nth-of-type(odd) .faq-grid article p {
   color: rgba(255, 247, 217, 0.72);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .button {
+main > section:not(.hero):nth-of-type(odd) .button {
   border-color: rgba(255, 247, 217, 0.32);
   background: rgba(255, 247, 217, 0.08);
   color: var(--ivory);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .button.primary {
+main > section:not(.hero):nth-of-type(odd) .button.primary {
   border-color: var(--red-bright);
   background: var(--red-bright);
   color: var(--ivory);
 }
 
-main > .section:nth-of-type(odd):not(.hero) .map {
+main > section:not(.hero):nth-of-type(odd) .map {
   border-color: rgba(255, 247, 217, 0.16);
+}
+
+main > .visit-info-strip .visit-info-grid article,
+main > .visit-info-strip:nth-of-type(odd) .visit-info-grid article,
+main > .visit-info-strip:nth-of-type(even) .visit-info-grid article {
+  border-color: rgba(18, 13, 11, 0.14);
+  background: rgba(255, 253, 245, 0.94);
+  color: var(--ink);
+}
+
+main > .visit-info-strip .visit-info-grid h3 {
+  color: var(--red);
+}
+
+main > .visit-info-strip .visit-info-grid p {
+  color: #241b17;
 }
 
 .footer {
