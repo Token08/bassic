@@ -51,13 +51,13 @@ iframe {
 .site-header {
   position: fixed;
   inset: 0 0 auto;
-  z-index: 20;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
   padding: 5px clamp(16px, 3vw, 42px);
-  overflow: hidden;
+  overflow: visible;
   background: var(--night);
   color: var(--ivory);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
@@ -124,6 +124,7 @@ iframe {
 
 .language-switcher {
   position: relative;
+  z-index: 45;
   color: var(--ivory);
 }
 
@@ -149,6 +150,7 @@ iframe {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
+  z-index: 50;
   display: grid;
   min-width: 168px;
   overflow: hidden;
@@ -409,10 +411,10 @@ iframe {
 
 .hero-logo {
   position: absolute;
-  top: clamp(156px, 27.5vh, 248px);
+  top: clamp(112px, 16vh, 178px);
   left: clamp(20px, 5vw, 72px);
   z-index: 1;
-  width: clamp(156px, 22vw, 260px);
+  width: clamp(132px, 14vw, 210px);
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.52));
@@ -566,6 +568,52 @@ h3 {
   border-radius: 999px;
   padding: 5px 12px;
   background: rgba(0, 0, 0, 0.22);
+}
+
+.visit-info-strip {
+  padding: 0 clamp(20px, 4vw, 72px) clamp(56px, 7vw, 92px);
+  background: #f2e4cc;
+}
+
+.visit-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.visit-info-grid article {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  min-height: 132px;
+  border: 1px solid rgba(18, 13, 11, 0.14);
+  border-radius: 8px;
+  padding: 20px;
+  background: rgba(255, 253, 245, 0.74);
+  box-shadow: 0 14px 34px rgba(18, 13, 11, 0.1);
+}
+
+.visit-info-grid svg {
+  width: 24px;
+  height: 24px;
+  color: var(--red);
+}
+
+.visit-info-grid h3 {
+  margin-bottom: 4px;
+  color: #5d090f;
+  font-size: 0.9rem;
+}
+
+.visit-info-grid p {
+  margin: 0;
+  color: #2b211d;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.65;
 }
 
 .notice-row {
@@ -1547,6 +1595,7 @@ main > .section:nth-of-type(odd):not(.hero) .map {
   .menu-grid,
   .menu-card-grid,
   .localized-info-grid,
+  .visit-info-grid,
   .menu-photos,
   .home-menu-teaser,
   .social-section,
@@ -1571,6 +1620,11 @@ main > .section:nth-of-type(odd):not(.hero) .map {
 
   .intro .feature-grid {
     gap: 18px;
+  }
+
+  .visit-info-strip {
+    padding-right: 20px;
+    padding-left: 20px;
   }
 
   .feature-photo {
@@ -1665,6 +1719,11 @@ main > .section:nth-of-type(odd):not(.hero) .map {
 
   .quick-info span {
     width: 100%;
+  }
+
+  .visit-info-grid article {
+    min-height: auto;
+    padding: 18px;
   }
 
   .hero-indent {

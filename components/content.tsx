@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
-import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
+import { CalendarDays, Cigarette, CircleDollarSign, Clock3, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
@@ -135,6 +135,47 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
           <p>お一人でふらっと来店、待ち合わせ、貸切パーティーまで用途に合わせてご利用いただけます。</p>
           <PairedFeaturePhoto photo={atmosphereImages[2]} />
         </article>
+      </div>
+    </section>
+  );
+}
+
+export function VisitInfoCards() {
+  const items = [
+    {
+      icon: <Clock3 />,
+      title: "通常営業",
+      text: site.hoursLabel
+    },
+    {
+      icon: <CalendarDays />,
+      title: "イベント時の営業時間",
+      text: site.eventHoursNote
+    },
+    {
+      icon: <Cigarette />,
+      title: "喫煙について",
+      text: site.smokingLabel
+    },
+    {
+      icon: <CircleDollarSign />,
+      title: "チャージ",
+      text: site.chargeLabel
+    }
+  ];
+
+  return (
+    <section className="visit-info-strip" aria-label="来店前の基本情報">
+      <div className="visit-info-grid">
+        {items.map((item) => (
+          <article key={item.title}>
+            {item.icon}
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );

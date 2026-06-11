@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
-import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, heroImagePath, homeHeroSlides } from "@/components/content";
+import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, VisitInfoCards, heroImagePath, homeHeroSlides } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { assetPath } from "@/lib/assets";
 import { getCmsContents } from "@/lib/microcms";
@@ -85,10 +85,10 @@ export default async function Home() {
           imageAlt="public bar Bassic.の赤い天井と客席が見える店内"
           slides={homeHeroSlides}
           className="home-hero"
-          highlights={[site.hoursLabel, site.smokingLabel, site.chargeLabel]}
         />
 
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
+        <VisitInfoCards />
         <SocialUpdatesSection />
 
         <section className="section home-menu-teaser">

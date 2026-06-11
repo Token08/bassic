@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const locales = [
   { code: "ja", label: "日本語", prefix: "" },
   { code: "en", label: "English", prefix: "/en" },
@@ -10,21 +12,34 @@ const locales = [
   { code: "zh-hans", label: "简体中文", prefix: "/zh-hans" }
 ] as const;
 
-function stripLocalePrefix(pathname: string) {
-  const locale = locales.find((item) => item.prefix && (pathname === item.prefix || pathname.startsWith(`${item.prefix}/`)));
-
-  if (!locale?.prefix) {
-    return pathname || "/";
+function stripBasePath(pathname: string) {
+  if (!basePath || pathname === basePath) {
+    return pathname === basePath ? "/" : pathname;
   }
 
-  const stripped = pathname.slice(locale.prefix.length);
+  if (pathname.startsWith(`${basePath}/`)) {
+    return pathname.slice(basePath.length) || "/";
+  }
+
+  return pathname;
+}
+
+function stripLocalePrefix(pathname: string) {
+  const path = stripBasePath(pathname);
+  const locale = locales.find((item) => item.prefix && (path === item.prefix || path.startsWith(`${item.prefix}/`)));
+
+  if (!locale?.prefix) {
+    return path || "/";
+  }
+
+  const stripped = path.slice(locale.prefix.length);
   return stripped || "/";
 }
 
 function localizedHref(prefix: string, currentPath: string) {
   const path = stripLocalePrefix(currentPath);
   const normalizedPath = path === "/" ? "/" : `/${path.replace(/^\/|\/$/g, "")}/`;
-  return `${prefix}${normalizedPath}`;
+  return `${basePath}${prefix}${normalizedPath}`;
 }
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
