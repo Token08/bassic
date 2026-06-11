@@ -1,8 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { CalendarDays, Instagram, Mail, MapPin, Menu, Phone } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
+
+const mobileNavItems = [
+  { href: "/", label: "HOME" },
+  { href: "/first-visit", label: "初めての方" },
+  { href: "/events", label: "イベント" },
+  { href: "/menu", label: "メニュー" },
+  { href: site.onlineStoreUrl, label: "オンラインストア", external: true },
+  { href: "/party", label: "貸切・パーティー" },
+  { href: "/access", label: "アクセス" }
+] as const;
 
 export function SiteHeader() {
   return (
@@ -11,7 +21,7 @@ export function SiteHeader() {
       <Link href="/" className="brand" aria-label="public bar Bassic. ホーム">
         <img src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={132} height={132} />
       </Link>
-      <nav aria-label="主要ナビゲーション">
+      <nav className="desktop-nav" aria-label="主要ナビゲーション">
         {navItems.map((item) => (
           "external" in item && item.external ? (
             <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
@@ -24,6 +34,24 @@ export function SiteHeader() {
           )
         ))}
       </nav>
+      <details className="mobile-menu">
+        <summary aria-label="メニューを開く">
+          <Menu size={24} />
+        </summary>
+        <nav aria-label="スマートフォン用ナビゲーション">
+          {mobileNavItems.map((item) => (
+            "external" in item && item.external ? (
+              <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
+                {item.label}
+              </a>
+            ) : (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            )
+          ))}
+        </nav>
+      </details>
     </header>
   );
 }
