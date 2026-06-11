@@ -1423,6 +1423,12 @@ main > .section:nth-of-type(odd):not(.hero) .map {
     font-size: 16px;
   }
 
+  .hero,
+  .home-hero,
+  .page-hero {
+    min-height: 820px;
+  }
+
   h1 {
     font-size: 2rem;
     line-height: 1.28;
