@@ -1705,6 +1705,82 @@ main > section.visit-info-strip .visit-info-grid article p {
     grid-column: 1;
   }
 
+  .social-section {
+    padding-top: 54px;
+    padding-bottom: 72px;
+  }
+
+  .social-section .section-heading {
+    max-width: 100%;
+  }
+
+  .social-section h2 {
+    font-size: 1.7rem;
+  }
+
+  .social-section .section-lead {
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  .social-embed-grid {
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .social-embed-card {
+    gap: 8px;
+  }
+
+  .social-embed-heading {
+    min-height: auto;
+  }
+
+  .social-embed-heading span {
+    font-size: 0.72rem;
+  }
+
+  .social-embed-heading a {
+    font-size: 0.82rem;
+  }
+
+  .social-embed-frame {
+    height: 228px;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 7px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  }
+
+  .instagram-frame {
+    align-items: start;
+  }
+
+  .social-embed-frame iframe {
+    pointer-events: none;
+  }
+
+  .social-fallback-link {
+    min-height: 100%;
+    padding: 18px;
+  }
+
+  .social-direct-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .social-direct-links a {
+    justify-content: center;
+    min-height: 42px;
+    border: 1px solid rgba(255, 247, 217, 0.18);
+    border-radius: 7px;
+    background: rgba(255, 247, 217, 0.06);
+    font-size: 0.84rem;
+  }
+
   .menu-photos figure,
   .menu-image-button,
   .event-poster {
