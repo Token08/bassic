@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FirstVisitBlock, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { assetPath } from "@/lib/assets";
+import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
@@ -52,8 +52,8 @@ export default async function FirstVisitPage() {
           eyebrow="First Visit"
           title="初めてでも、入りやすい音楽バー。"
           lead="ひとりでも、ライブ前後でも、音楽の話をしたい夜でも。来店前に知りたいことをまとめました。"
-          image={assetPath("/assets/drive/index_back/warm-interior.jpg")}
-          imageAlt="温かい照明のBassic.店内"
+          image={editableMedia.pageHeroImages.firstVisit.src}
+          imageAlt={editableMedia.pageHeroImages.firstVisit.alt}
         />
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <section className="section faq-section">

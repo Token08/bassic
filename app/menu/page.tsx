@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { MenuContent, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { assetPath } from "@/lib/assets";
+import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
@@ -36,8 +36,8 @@ export default async function MenuPage() {
           eyebrow="Food & Drink"
           title="Bassic.の料理と、音楽に合うお酒。"
           lead="初めての方にも選びやすいよう、人気メニューと価格感を見やすく整理しました。"
-          image={assetPath("/assets/drive/index_back/table-food.jpg")}
-          imageAlt="Bassic.の料理とドリンク"
+          image={editableMedia.pageHeroImages.menu.src}
+          imageAlt={editableMedia.pageHeroImages.menu.alt}
         />
         <MenuContent menu={contents.menu} />
       </main>

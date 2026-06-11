@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
 import { EventList, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { assetPath } from "@/lib/assets";
+import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, mailHref, site } from "@/lib/site";
 import { ExternalLink } from "lucide-react";
-
-const eventHeroSlides = [
-  { src: assetPath("/assets/brand/event-slides/event-01.jpg"), alt: "Bassic.のライブイベント風景" },
-  { src: assetPath("/assets/brand/event-slides/event-02.jpg"), alt: "Bassic.のステージと客席" },
-  { src: assetPath("/assets/brand/event-slides/event-03.jpg"), alt: "Bassic.のライブフロア" },
-  { src: assetPath("/assets/brand/event-slides/event-04.jpg"), alt: "Bassic.のイベント風景" },
-  { src: assetPath("/assets/brand/event-slides/event-05.jpg"), alt: "Bassic.の音楽イベント" },
-  { src: assetPath("/assets/brand/event-slides/event-06.jpg"), alt: "Bassic.のライブとDJの夜" }
-];
 
 export const metadata: Metadata = {
   ...buildMetadata("events")
@@ -56,7 +47,7 @@ export default async function EventsPage() {
           eyebrow="Event Schedule"
           title="ライブ・DJ・イベント予定。"
           lead="日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。"
-          slides={eventHeroSlides}
+          slides={editableMedia.eventHeroSlides}
           className="event-hero"
         />
         <section className="section split">

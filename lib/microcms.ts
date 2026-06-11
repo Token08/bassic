@@ -17,9 +17,35 @@ type MicroCmsList<T> = {
   contents: T[];
 };
 
+function mergeHomeContent(home?: Partial<HomeContent> | null): HomeContent {
+  return {
+    ...fallbackContents.home,
+    ...home
+  };
+}
+
+function visibleEvents(events?: EventItem[]) {
+  return (events?.length ? events : fallbackContents.events)
+    .filter((event) => event.isPublished)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function withFallbackList<T>(items: T[] | undefined, fallback: T[]) {
+  return items?.length ? items : fallback;
+}
+
+function normalizeContents(contents: Partial<CmsContents>): CmsContents {
+  return {
+    home: mergeHomeContent(contents.home),
+    events: visibleEvents(contents.events),
+    menu: withFallbackList(contents.menu, fallbackContents.menu),
+    partyPlans: withFallbackList(contents.partyPlans, fallbackContents.partyPlans)
+  };
+}
+
 export async function getCmsContents(): Promise<CmsContents> {
   if (!client) {
-    return fallbackContents;
+    return normalizeContents(fallbackContents);
   }
 
   try {
@@ -33,14 +59,14 @@ export async function getCmsContents(): Promise<CmsContents> {
       client.get<MicroCmsList<PartyPlan>>({ endpoint: "party-plans", queries: { limit: 20 } })
     ]);
 
-    return {
-      home: home || fallbackContents.home,
-      events: events.contents.length ? events.contents : fallbackContents.events,
-      menu: menu.contents.length ? menu.contents : fallbackContents.menu,
-      partyPlans: partyPlans.contents.length ? partyPlans.contents : fallbackContents.partyPlans
-    };
+    return normalizeContents({
+      home,
+      events: events.contents,
+      menu: menu.contents,
+      partyPlans: partyPlans.contents
+    });
   } catch (error) {
     console.error("microCMS fetch failed. Falling back to local content.", error);
-    return fallbackContents;
+    return normalizeContents(fallbackContents);
   }
 }

@@ -24,6 +24,8 @@ NEXT_PUBLIC_GOOGLE_MAPS_URL=https://www.google.com/maps/search/?api=1&query=publ
 
 microCMSが未設定の場合は、`lib/fallback-data.ts` の初期データで表示されます。
 
+将来の管理画面/API連携に向けたコンテンツ配置方針は `docs/content-architecture.md` を参照してください。
+
 ## 更新できる内容
 
 - `home`: トップ画像、トップ文言、初めての方向け文言、アクセス補足

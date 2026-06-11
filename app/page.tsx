@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
-import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, VisitInfoCards, heroImagePath, homeHeroSlides } from "@/components/content";
+import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, VisitInfoCards } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { assetPath } from "@/lib/assets";
+import { editableMedia, resolveEditableImage } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -72,6 +72,7 @@ function JsonLd() {
 
 export default async function Home() {
   const contents = await getCmsContents();
+  const homeHeroImage = resolveEditableImage(contents.home.heroImage, editableMedia.homeHeroImage);
 
   return (
     <PageShell>
@@ -79,11 +80,11 @@ export default async function Home() {
       <main id="top">
         <PageHero
           eyebrow={site.tagline}
-          title="public bar Bassic."
-          lead="パブリックバー・ベーシックは福岡・天神 親不孝通りのミュージックバー。初めてでも入りやすい音楽と料理のお店です"
-          image={heroImagePath}
-          imageAlt="public bar Bassic.の赤い天井と客席が見える店内"
-          slides={homeHeroSlides}
+          title={contents.home.heroTitle}
+          lead={contents.home.heroLead}
+          image={homeHeroImage.src}
+          imageAlt={homeHeroImage.alt}
+          slides={editableMedia.homeHeroSlides}
           className="home-hero"
         />
 
@@ -105,7 +106,7 @@ export default async function Home() {
             </Link>
           </div>
           <figure className="wide-photo">
-            <Image src={assetPath("/assets/drive/index_back/table-food.jpg")} alt="Bassic.の料理が並ぶテーブル" fill sizes="100vw" />
+            <Image src={editableMedia.foodTeaser.src} alt={editableMedia.foodTeaser.alt} fill sizes="100vw" />
           </figure>
         </section>
 

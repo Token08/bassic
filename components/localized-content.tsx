@@ -11,18 +11,18 @@ import {
   Store,
   UsersRound
 } from "lucide-react";
-import { PageHero, atmosphereImages, heroImagePath, homeHeroSlides } from "@/components/content";
+import { PageHero } from "@/components/content";
 import { SocialUpdates } from "@/components/social-updates";
-import { assetPath } from "@/lib/assets";
+import { editableMedia } from "@/lib/editable-content";
 import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@/lib/i18n";
 import { mailHref, site } from "@/lib/site";
 
 const pageImages: Record<LocalizedPageKey, string> = {
-  home: heroImagePath,
-  events: assetPath("/assets/brand/event-slides/event-01.jpg"),
-  menu: assetPath("/assets/drive/index_back/table-food.jpg"),
-  party: assetPath("/assets/brand/party-slides/party-01.jpg"),
-  access: assetPath("/assets/drive/index_back/bar-counter.jpg")
+  home: editableMedia.homeHeroImage.src,
+  events: editableMedia.eventHeroSlides[0].src,
+  menu: editableMedia.pageHeroImages.menu.src,
+  party: editableMedia.partyHeroSlides[0].src,
+  access: editableMedia.pageHeroImages.access.src
 };
 
 const eventScheduleLinkLabels: Record<LocaleCode, string> = {
@@ -166,7 +166,7 @@ function LocalizedFirstVisit({ locale }: { locale: LocaleCode }) {
             <h3>{title}</h3>
             <p>{text}</p>
             <figure className="feature-photo">
-              <Image src={atmosphereImages[index].src} alt={atmosphereImages[index].alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
+              <Image src={editableMedia.atmosphereImages[index].src} alt={editableMedia.atmosphereImages[index].alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
             </figure>
           </article>
         ))}
@@ -197,7 +197,7 @@ function LocalizedMenuTeaser({ locale }: { locale: LocaleCode }) {
         </Link>
       </div>
       <figure className="wide-photo">
-        <Image src={assetPath("/assets/drive/index_back/table-food.jpg")} alt="Bassic. food and drinks" fill sizes="100vw" />
+        <Image src={editableMedia.foodTeaser.src} alt={editableMedia.foodTeaser.alt} fill sizes="100vw" />
       </figure>
     </section>
   );
@@ -266,9 +266,9 @@ function LocalizedHomePage({ locale }: { locale: LocaleCode }) {
         eyebrow={page.eyebrow}
         title={page.title}
         lead={page.lead}
-        image={heroImagePath}
+        image={editableMedia.homeHeroImage.src}
         imageAlt={page.title}
-        slides={homeHeroSlides}
+        slides={editableMedia.homeHeroSlides}
         className="home-hero"
         actionLabels={{ mapLabel: labels.map, callLabel: labels.call, reserveLabel: labels.reserve }}
       />

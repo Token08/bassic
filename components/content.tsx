@@ -2,37 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Cigarette, CircleDollarSign, Clock3, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
+import { editableMedia } from "@/lib/editable-content";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
 
-export const heroImagePath = assetPath("/assets/brand/top-slides/hero-01.jpg");
-
-export const homeHeroSlides = [
-  { src: assetPath("/assets/brand/top-slides/hero-01.jpg"), alt: "public bar Bassic.の客席とバーカウンターが見える店内" },
-  { src: assetPath("/assets/brand/top-slides/hero-02.jpg"), alt: "public bar Bassic.のバーカウンター" },
-  { src: assetPath("/assets/brand/top-slides/hero-03.jpg"), alt: "Bassic.のボトルとグラス" },
-  { src: assetPath("/assets/brand/top-slides/hero-04.jpg"), alt: "public bar Bassic.の入口へ続く通路" },
-  { src: assetPath("/assets/brand/top-slides/hero-05.jpg"), alt: "ミラーボールの光" },
-  { src: assetPath("/assets/brand/top-slides/hero-06.jpg"), alt: "DJターンテーブル" },
-  { src: assetPath("/assets/brand/top-slides/hero-07.jpg"), alt: "Bassic.のステージと音楽のある夜" },
-  { src: assetPath("/assets/brand/top-slides/hero-08.jpg"), alt: "Bassic.の店内風景" },
-  { src: assetPath("/assets/brand/top-slides/hero-09.jpg"), alt: "Bassic.の夜の空間" },
-  { src: assetPath("/assets/brand/top-slides/hero-10.jpg"), alt: "public bar Bassic.の店内写真" }
-];
-
-export const atmosphereImages = [
-  { src: assetPath("/assets/drive/bassic/drums.jpg"), alt: "Bassic.のドラムセットがあるライブスペース" },
-  { src: assetPath("/assets/drive/index_back/live-room.jpg"), alt: "赤い照明のBassic.店内" },
-  { src: assetPath("/assets/drive/index_back/warm-interior.jpg"), alt: "温かい照明のBassic.店内" }
-];
-
-const fallbackMenuImages = {
-  food: assetPath("/assets/drive/menu/fuzz-curry.jpg"),
-  drink: assetPath("/assets/drive/menu/cocktails.jpg")
-} as const;
+const heroImagePath = editableMedia.homeHeroImage.src;
+const atmosphereImages = editableMedia.atmosphereImages;
 
 function imageSrc(path: string) {
   return path.startsWith("/assets/") ? assetPath(path) : path;
@@ -54,7 +32,7 @@ export function PageHero({
   lead: string;
   image?: string;
   imageAlt?: string;
-  slides?: { src: string; alt: string }[];
+  slides?: readonly { src: string; alt: string }[];
   className?: string;
   highlights?: string[];
   actionLabels?: {
@@ -246,8 +224,8 @@ export function EventList({ events, includePoster = true }: { events: EventItem[
       {includePoster ? (
         <figure className="event-poster">
           <Image
-            src={assetPath("/assets/drive/brf-2023.jpg")}
-            alt="Bassic Rock Fesのイベントポスター"
+            src={editableMedia.eventPoster.src}
+            alt={editableMedia.eventPoster.alt}
             fill
             sizes="(max-width: 900px) 100vw, 42vw"
           />
@@ -283,7 +261,7 @@ export function EventsTeaser({ events }: { events: EventItem[] }) {
 }
 
 function resolveMenuItem(item: MenuItem) {
-  const image = item.image?.url ? imageSrc(item.image.url) : fallbackMenuImages[item.category];
+  const image = item.image?.url ? imageSrc(item.image.url) : editableMedia.fallbackMenuImages[item.category];
 
   return {
     ...item,
