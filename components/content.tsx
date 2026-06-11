@@ -465,6 +465,10 @@ export function AccessContent({ note }: { note: string }) {
             {site.hoursLabel}
             <br />
             {site.eventHoursNote}
+            <br />
+            <Link className="inline-access-link" href="/events">
+              イベントスケジュールページを見る
+            </Link>
           </dd>
           <dt>喫煙</dt>
           <dd>{site.smokingLabel}</dd>

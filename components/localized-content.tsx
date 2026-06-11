@@ -26,6 +26,13 @@ const pageImages: Record<LocalizedPageKey, string> = {
   access: assetPath("/assets/drive/index_back/bar-counter.jpg")
 };
 
+const eventScheduleLinkLabels: Record<LocaleCode, string> = {
+  en: "View event schedule",
+  ko: "이벤트 일정 보기",
+  "zh-hant": "查看活動日程",
+  "zh-hans": "查看活动日程"
+};
+
 const localeCopy = {
   en: {
     firstVisitTitle: "High ceilings, soft light, and a comfortable night.",
@@ -290,6 +297,10 @@ function LocalizedAccessPreview({ locale }: { locale: LocaleCode }) {
             {labels.hours}
             <br />
             {labels.eventHours}
+            <br />
+            <Link className="inline-access-link" href={`/${locale}/events/`}>
+              {eventScheduleLinkLabels[locale]}
+            </Link>
           </dd>
           <dt>{titles.smoking}</dt>
           <dd>{labels.smoking}</dd>

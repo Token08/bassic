@@ -1336,6 +1336,28 @@ h3 {
   margin: 0;
 }
 
+.inline-access-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  margin-top: 8px;
+  border-bottom: 1px solid currentcolor;
+  color: var(--red);
+  font-weight: 900;
+  line-height: 1.55;
+}
+
+.inline-access-link::after {
+  content: "→";
+  font-size: 0.95em;
+}
+
+.inline-access-link:hover,
+.inline-access-link:focus-visible {
+  color: var(--red-bright);
+}
+
 .map {
   width: 100%;
   min-height: 520px;
