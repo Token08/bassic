@@ -91,9 +91,7 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
       <div className="section-heading narrow-copy">
         <p className="eyebrow">First Visit</p>
         <h2>
-          初めてでも入りやすい、
-          <br />
-          音楽と料理の夜。
+          高い天井と柔らかな灯り。豊富なお酒と心地よい空間が、それぞれの夜をゆっくりと深めていく。
         </h2>
       </div>
       <p className="section-lead narrow-copy">{lead}</p>
