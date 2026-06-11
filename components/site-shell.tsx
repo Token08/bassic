@@ -1,11 +1,44 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CalendarDays, Instagram, Mail, MapPin, Menu, Phone } from "lucide-react";
 import { assetPath } from "@/lib/assets";
+import { localeCodes, type LocaleCode } from "@/lib/i18n";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
 import { LanguageSwitcher } from "./language-switcher";
 
-function HeaderNavLinks() {
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+function pathWithoutBase(pathname: string) {
+  if (!basePath || pathname === basePath) {
+    return pathname === basePath ? "/" : pathname;
+  }
+
+  if (pathname.startsWith(`${basePath}/`)) {
+    return pathname.slice(basePath.length) || "/";
+  }
+
+  return pathname;
+}
+
+function currentLocale(pathname: string): LocaleCode | undefined {
+  const path = pathWithoutBase(pathname);
+  const segment = path.split("/").filter(Boolean)[0];
+  return localeCodes.includes(segment as LocaleCode) ? (segment as LocaleCode) : undefined;
+}
+
+function localizedInternalHref(href: string, locale?: LocaleCode) {
+  if (!locale) {
+    return href;
+  }
+
+  const normalized = href === "/" ? "/" : `/${href.replace(/^\/|\/$/g, "")}/`;
+  return `/${locale}${normalized}`;
+}
+
+function HeaderNavLinks({ locale }: { locale?: LocaleCode }) {
   return (
     <>
       {navItems.map((item) =>
@@ -14,7 +47,7 @@ function HeaderNavLinks() {
             {item.label}
           </a>
         ) : (
-          <Link key={item.href} href={item.href}>
+          <Link key={item.href} href={localizedInternalHref(item.href, locale)}>
             {item.label}
           </Link>
         )
@@ -24,14 +57,18 @@ function HeaderNavLinks() {
 }
 
 export function SiteHeader() {
+  const pathname = usePathname() || "/";
+  const locale = currentLocale(pathname);
+  const homeHref = localizedInternalHref("/", locale);
+
   return (
     <header className="site-header">
       <Image className="site-header-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill priority sizes="100vw" />
-      <Link href="/" className="brand" aria-label="public bar Bassic. ホーム">
+      <Link href={homeHref} className="brand" aria-label="public bar Bassic. ホーム">
         <img src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={132} height={132} />
       </Link>
       <nav className="desktop-nav" aria-label="主要ナビゲーション">
-        <HeaderNavLinks />
+        <HeaderNavLinks locale={locale} />
       </nav>
       <LanguageSwitcher />
       <details className="mobile-menu">
@@ -39,7 +76,7 @@ export function SiteHeader() {
           <Menu size={24} />
         </summary>
         <nav aria-label="スマートフォン用ナビゲーション">
-          <HeaderNavLinks />
+          <HeaderNavLinks locale={locale} />
           <LanguageSwitcher compact />
         </nav>
       </details>
