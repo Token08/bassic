@@ -1687,16 +1687,17 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .hero {
-    min-height: 92vh;
-    padding-top: 72px;
+    min-height: 100svh;
+    padding-top: 68px;
+    padding-bottom: 96px;
   }
 
   .hero-content {
-    padding-top: 160px;
+    padding-top: clamp(118px, 18svh, 150px);
   }
 
   .page-hero:not(.home-hero) h1 {
-    font-size: clamp(0.92rem, 4.05vw, 3.2rem);
+    font-size: clamp(1.5rem, 5vw, 3.2rem);
   }
 
   .home-hero .hero-slide-1 {
@@ -1879,7 +1880,8 @@ main > section.visit-info-strip .visit-info-grid article p {
   .hero,
   .home-hero,
   .page-hero {
-    min-height: 820px;
+    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   h1 {
@@ -1888,12 +1890,14 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .hero h1 {
-    font-size: 2rem;
-    line-height: 1.28;
+    font-size: clamp(2rem, 9vw, 2.45rem);
+    line-height: 1.18;
   }
 
   .page-hero:not(.home-hero) h1 {
-    font-size: clamp(0.92rem, 4.05vw, 1.55rem);
+    max-width: calc(100vw - 40px);
+    font-size: clamp(1.45rem, 6.4vw, 2.05rem);
+    line-height: 1.18;
   }
 
   h2 {
@@ -1907,17 +1911,30 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .hero-logo {
-    top: 108px;
-    width: 136px;
-  }
-
-  .hero-actions {
-    align-items: stretch;
-    flex-direction: column;
+    top: 88px;
+    width: clamp(108px, 30vw, 128px);
   }
 
   .button {
     width: 100%;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .hero-actions .button:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .hero-actions .button {
+    width: auto;
+    min-height: 48px;
+    padding: 10px 12px;
+    font-size: 0.94rem;
   }
 
   .quick-info span {
