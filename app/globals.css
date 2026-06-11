@@ -1515,14 +1515,16 @@ main > section.visit-info-strip .visit-info-grid article p {
 
 @media (max-width: 900px) {
   .site-header {
-    position: absolute;
-    align-items: flex-start;
+    position: fixed;
+    align-items: center;
+    min-height: 56px;
+    padding: 4px 16px;
     overflow: visible;
   }
 
   .brand img {
-    width: 58px;
-    height: 58px;
+    width: 46px;
+    height: 46px;
   }
 
   .desktop-nav {
@@ -1536,14 +1538,13 @@ main > section.visit-info-strip .visit-info-grid article p {
   .mobile-menu {
     position: relative;
     display: block;
-    margin-top: 5px;
     color: var(--ivory);
   }
 
   .mobile-menu summary {
     display: grid;
-    width: 46px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
     place-items: center;
     border: 1px solid rgba(255, 247, 217, 0.28);
     border-radius: 8px;
@@ -1635,7 +1636,7 @@ main > section.visit-info-strip .visit-info-grid article p {
 
   .hero {
     min-height: 92vh;
-    padding-top: 90px;
+    padding-top: 72px;
   }
 
   .hero-content {
