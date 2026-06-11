@@ -713,9 +713,14 @@ h3 {
   min-height: clamp(320px, 30vw, 430px);
 }
 
+.feature-mobile-photo {
+  display: none;
+}
+
 .photo-strip img,
 .menu-photos img,
 .event-poster img,
+.feature-mobile-photo img,
 .wide-photo img {
   object-fit: cover;
 }
@@ -1451,6 +1456,40 @@ main > .section:nth-of-type(odd):not(.hero) .map {
   .menu-image-button,
   .event-poster {
     min-height: 260px;
+  }
+
+  .intro .feature-grid {
+    gap: 18px;
+  }
+
+  .intro .feature-grid article {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .intro .feature-grid article svg {
+    margin-bottom: 0;
+  }
+
+  .intro .feature-grid article h3,
+  .intro .feature-grid article p {
+    margin: 0;
+  }
+
+  .intro .photo-strip {
+    display: none;
+  }
+
+  .feature-mobile-photo {
+    position: relative;
+    display: block;
+    min-height: clamp(220px, 58vw, 300px);
+    margin: 6px 0 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #d8d1c5;
+    box-shadow: var(--shadow);
   }
 
   .event-card {

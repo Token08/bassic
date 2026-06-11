@@ -100,20 +100,31 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
           <Music2 />
           <h3>天神の夜に、音楽という余白を。</h3>
           <p>ライヴ、DJ、イベントの余韻まで。当店イベント後は通常バータイムでそれぞれお楽しみいただけます。</p>
+          <FeatureMobilePhoto photo={atmosphereImages[0]} />
         </article>
         <article>
           <Store />
           <h3>ノンアルコールでも、お食事だけでも。</h3>
           <p>当店名物のファズカレーやタコス＆ポテトなど、自家製のサングリアや珈琲焼酎も人気です。</p>
+          <FeatureMobilePhoto photo={atmosphereImages[1]} />
         </article>
         <article>
           <UsersRound />
           <h3>お一人様でもグループでも。</h3>
           <p>お一人でふらっと来店、待ち合わせ、貸切パーティーまで用途に合わせてご利用いただけます。</p>
+          <FeatureMobilePhoto photo={atmosphereImages[2]} />
         </article>
       </div>
       <PhotoStrip />
     </section>
+  );
+}
+
+function FeatureMobilePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {
+  return (
+    <figure className="feature-mobile-photo">
+      <Image src={photo.src} alt={photo.alt} fill sizes="100vw" />
+    </figure>
   );
 }
 
