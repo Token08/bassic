@@ -1,19 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import {
   ArrowRight,
   CalendarDays,
   Cigarette,
   CircleDollarSign,
   Clock3,
-  ExternalLink,
   Music2,
   Navigation,
   Store,
   UsersRound
 } from "lucide-react";
 import { PageHero, atmosphereImages, heroImagePath, homeHeroSlides } from "@/components/content";
+import { SocialUpdates } from "@/components/social-updates";
 import { assetPath } from "@/lib/assets";
 import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@/lib/i18n";
 import { mailHref, site } from "@/lib/site";
@@ -114,10 +113,6 @@ const pageEyebrow: Record<LocaleCode, string> = {
   "zh-hans": "简体中文"
 };
 
-const instagramPostUrl = "https://www.instagram.com/p/BTbP44JFyJt/";
-const facebookPluginUrl =
-  "https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fbar.Bassic%2F&tabs=timeline&width=340&height=675&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830";
-
 function localizedHref(locale: LocaleCode, href: string) {
   if (/^https?:\/\//.test(href)) {
     return href;
@@ -180,77 +175,11 @@ function LocalizedFirstVisit({ locale }: { locale: LocaleCode }) {
   );
 }
 
-function SocialCard({ label, href, account, children }: { label: string; href: string; account: string; children: React.ReactNode }) {
-  return (
-    <article className="social-embed-card">
-      <div className="social-embed-heading">
-        <span>{label}</span>
-        <a href={href} target="_blank" rel="noreferrer">
-          {account} <ExternalLink size={15} />
-        </a>
-      </div>
-      {children}
-    </article>
-  );
-}
-
 function LocalizedSocialIntro({ locale }: { locale: LocaleCode }) {
   const copy = localeCopy[locale];
 
   return (
-    <section className="section social-section">
-      <div className="section-heading narrow-copy">
-        <p className="eyebrow">Social Updates</p>
-        <h2>{copy.socialTitle}</h2>
-        <p className="section-lead">{copy.socialLead}</p>
-      </div>
-      <div className="social-embed-grid">
-        <SocialCard label="Instagram" href={site.instagramUrl} account="@bassic_official">
-          <div className="social-embed-frame instagram-frame">
-            <blockquote className="instagram-media" data-instgrm-captioned data-instgrm-permalink={instagramPostUrl} data-instgrm-version="14">
-              <a href={instagramPostUrl} target="_blank" rel="noreferrer">
-                Instagram
-              </a>
-            </blockquote>
-          </div>
-        </SocialCard>
-        <SocialCard label="Facebook" href={site.facebookUrl} account="bar.Bassic">
-          <div className="social-embed-frame">
-            <iframe
-              title="public bar Bassic. Facebook timeline"
-              src={facebookPluginUrl}
-              width="340"
-              height="675"
-              loading="lazy"
-              referrerPolicy="origin-when-cross-origin"
-            />
-          </div>
-        </SocialCard>
-        <SocialCard label="X" href={site.xUrl} account="@bar_Bassic">
-          <div className="social-embed-frame">
-            <a className="twitter-timeline" data-height="675" data-theme="dark" href="https://twitter.com/bar_Bassic?ref_src=twsrc%5Etfw">
-              Tweets by bar_Bassic
-            </a>
-            <a className="social-fallback-link" href={site.xUrl} target="_blank" rel="noreferrer">
-              X <ExternalLink size={15} />
-            </a>
-          </div>
-        </SocialCard>
-      </div>
-      <div className="social-direct-links">
-        <a href={site.instagramUrl} target="_blank" rel="noreferrer">
-          Instagram <ExternalLink size={15} />
-        </a>
-        <a href={site.xUrl} target="_blank" rel="noreferrer">
-          X <ExternalLink size={15} />
-        </a>
-        <a href={site.facebookUrl} target="_blank" rel="noreferrer">
-          Facebook <ExternalLink size={15} />
-        </a>
-      </div>
-      <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
-      <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
-    </section>
+    <SocialUpdates title={copy.socialTitle} lead={copy.socialLead} instagramFallbackLabel="Instagram" xFallbackLabel="X" />
   );
 }
 

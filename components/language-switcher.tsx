@@ -47,7 +47,10 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
 
   return (
     <details className={compact ? "language-switcher language-switcher-compact" : "language-switcher"}>
-      <summary>Language</summary>
+      <summary>
+        <span className="language-flag-jp" aria-hidden="true" />
+        Language
+      </summary>
       <div>
         {locales.map((locale) => (
           <a key={locale.code} href={localizedHref(locale.prefix, pathname)} hrefLang={locale.code}>

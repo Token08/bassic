@@ -132,6 +132,7 @@ iframe {
   display: inline-flex;
   min-height: 38px;
   align-items: center;
+  gap: 8px;
   border: 1px solid rgba(255, 247, 217, 0.24);
   border-radius: 6px;
   padding: 7px 12px;
@@ -140,6 +141,30 @@ iframe {
   cursor: pointer;
   font-size: 0.74rem;
   font-weight: 900;
+}
+
+.language-flag-jp {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 12px;
+  border: 1px solid rgba(255, 247, 217, 0.46);
+  border-radius: 2px;
+  background: #fffaf2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.24);
+}
+
+.language-flag-jp::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--red-bright);
+  content: "";
+  transform: translate(-50%, -50%);
 }
 
 .language-switcher summary::-webkit-details-marker {
@@ -187,6 +212,11 @@ iframe {
   border-radius: 0;
   padding: 13px 16px;
   background: transparent;
+}
+
+.language-switcher-compact .language-flag-jp {
+  margin-right: 8px;
+  vertical-align: -1px;
 }
 
 .language-switcher-compact div {
