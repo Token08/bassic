@@ -594,7 +594,15 @@ h3 {
 }
 
 .intro h2 {
+  max-width: 1120px;
   font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
+  font-size: clamp(2rem, 3vw, 3.05rem);
+  line-height: 1.26;
+  text-wrap: balance;
+}
+
+.intro .section-heading.narrow-copy {
+  max-width: 1120px;
 }
 
 .intro > .section-lead {
@@ -1443,6 +1451,11 @@ main > .section:nth-of-type(odd):not(.hero) .map {
   h2 {
     font-size: 1.84rem;
     line-height: 1.28;
+  }
+
+  .intro h2 {
+    font-size: clamp(1.55rem, 7vw, 1.78rem);
+    line-height: 1.32;
   }
 
   .hero-logo {
