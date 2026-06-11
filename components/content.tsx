@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { mailHref, site } from "@/lib/site";
@@ -32,6 +33,11 @@ const fallbackMenuImages = {
   food: assetPath("/assets/drive/menu/fuzz-curry.jpg"),
   drink: assetPath("/assets/drive/menu/cocktails.jpg")
 } as const;
+
+const instagramPostUrl = "https://www.instagram.com/p/BTbP44JFyJt/";
+const facebookPluginUrl = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
+  site.facebookUrl
+)}&tabs=timeline&width=340&height=675&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`;
 
 function imageSrc(path: string) {
   return path.startsWith("/assets/") ? assetPath(path) : path;
@@ -100,42 +106,125 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
           <Music2 />
           <h3>天神の夜に、音楽という余白を。</h3>
           <p>ライヴ、DJ、イベントの余韻まで。当店イベント後は通常バータイムでそれぞれお楽しみいただけます。</p>
-          <FeaturePhoto photo={atmosphereImages[0]} />
+          <PairedFeaturePhoto photo={atmosphereImages[0]} />
         </article>
         <article>
           <Store />
           <h3>ノンアルコールでも、お食事だけでも。</h3>
           <p>当店名物のファズカレーやタコス＆ポテトなど、自家製のサングリアや珈琲焼酎も人気です。</p>
-          <FeaturePhoto photo={atmosphereImages[1]} />
+          <PairedFeaturePhoto photo={atmosphereImages[1]} />
         </article>
         <article>
           <UsersRound />
           <h3>お一人様でもグループでも。</h3>
           <p>お一人でふらっと来店、待ち合わせ、貸切パーティーまで用途に合わせてご利用いただけます。</p>
-          <FeaturePhoto photo={atmosphereImages[2]} />
+          <PairedFeaturePhoto photo={atmosphereImages[2]} />
         </article>
       </div>
     </section>
   );
 }
 
-function FeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {
+function PairedFeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {
   return (
-    <figure className="feature-mobile-photo">
+    <figure className="feature-photo">
       <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
     </figure>
   );
 }
 
-export function PhotoStrip() {
+export function SocialUpdatesSection() {
   return (
-    <div className="photo-strip" aria-label="Bassic.の店内写真">
-      {atmosphereImages.map((photo) => (
-        <figure key={photo.src}>
-          <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
-        </figure>
-      ))}
-    </div>
+    <section className="section social-section">
+      <div className="section-heading narrow-copy">
+        <p className="eyebrow">Social Updates</p>
+        <h2>
+          最新情報は、
+          <br />
+          公式SNSから。
+        </h2>
+        <p className="section-lead">
+          Instagram、Facebook、Xの公式投稿をまとめて確認できます。イベント、営業情報、店内の空気感はSNSでも更新しています。
+        </p>
+      </div>
+      <div className="social-embed-grid">
+        <SocialEmbedCard label="Instagram" href={site.instagramUrl} account="@bassic_official">
+          <div className="social-embed-frame instagram-frame">
+            <blockquote
+              className="instagram-media"
+              data-instgrm-captioned
+              data-instgrm-permalink={instagramPostUrl}
+              data-instgrm-version="14"
+            >
+              <a href={instagramPostUrl} target="_blank" rel="noreferrer">
+                Instagramで投稿を見る
+              </a>
+            </blockquote>
+          </div>
+        </SocialEmbedCard>
+
+        <SocialEmbedCard label="Facebook" href={site.facebookUrl} account="bar.Bassic">
+          <div className="social-embed-frame">
+            <iframe
+              title="public bar Bassic. Facebook timeline"
+              src={facebookPluginUrl}
+              width="340"
+              height="675"
+              loading="lazy"
+              referrerPolicy="origin-when-cross-origin"
+            />
+          </div>
+        </SocialEmbedCard>
+
+        <SocialEmbedCard label="X" href={site.xUrl} account="@bar_Bassic">
+          <div className="social-embed-frame">
+            <a className="twitter-timeline" data-height="675" data-theme="dark" href="https://twitter.com/bar_Bassic?ref_src=twsrc%5Etfw">
+              Tweets by bar_Bassic
+            </a>
+            <a className="social-fallback-link" href={site.xUrl} target="_blank" rel="noreferrer">
+              Xで最新情報を見る <ExternalLink size={15} />
+            </a>
+          </div>
+        </SocialEmbedCard>
+      </div>
+      <div className="social-direct-links">
+        <a href={site.instagramUrl} target="_blank" rel="noreferrer">
+          Instagram <ExternalLink size={15} />
+        </a>
+        <a href={site.xUrl} target="_blank" rel="noreferrer">
+          X <ExternalLink size={15} />
+        </a>
+        <a href={site.facebookUrl} target="_blank" rel="noreferrer">
+          Facebook <ExternalLink size={15} />
+        </a>
+      </div>
+      <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
+      <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
+    </section>
+  );
+}
+
+function SocialEmbedCard({
+  label,
+  href,
+  account,
+  children
+}: {
+  label: string;
+  href: string;
+  account: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <article className="social-embed-card">
+      <div className="social-embed-heading">
+        <span>{label}</span>
+        <a href={href} target="_blank" rel="noreferrer">
+          {account} <ExternalLink size={15} />
+        </a>
+      </div>
+      {children}
+    </article>
   );
 }
 

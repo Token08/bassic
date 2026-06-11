@@ -28,13 +28,7 @@ export default async function EventsPage() {
       <main>
         <PageHero
           eyebrow="Event Schedule"
-          title={
-            <>
-              ライブ・DJ・
-              <br />
-              イベント予定。
-            </>
-          }
+          title="ライブ・DJ・イベント予定。"
           lead="日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。"
           slides={eventHeroSlides}
           className="event-hero"

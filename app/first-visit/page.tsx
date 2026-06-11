@@ -17,13 +17,7 @@ export default async function FirstVisitPage() {
       <main>
         <PageHero
           eyebrow="First Visit"
-          title={
-            <>
-              初めてでも、
-              <br />
-              入りやすい音楽バー。
-            </>
-          }
+          title="初めてでも、入りやすい音楽バー。"
           lead="ひとりでも、ライブ前後でも、音楽の話をしたい夜でも。来店前に知りたいことをまとめました。"
           image={assetPath("/assets/drive/index_back/warm-interior.jpg")}
           imageAlt="温かい照明のBassic.店内"

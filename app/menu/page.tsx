@@ -17,13 +17,7 @@ export default async function MenuPage() {
       <main>
         <PageHero
           eyebrow="Food & Drink"
-          title={
-            <>
-              Bassic.の料理と、
-              <br />
-              音楽に合うお酒。
-            </>
-          }
+          title="Bassic.の料理と、音楽に合うお酒。"
           lead="初めての方にも選びやすいよう、人気メニューと価格感を見やすく整理しました。"
           image={assetPath("/assets/drive/index_back/table-food.jpg")}
           imageAlt="Bassic.の料理とドリンク"

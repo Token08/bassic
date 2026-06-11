@@ -23,13 +23,7 @@ export default async function PartyPage() {
       <main>
         <PageHero
           eyebrow="Party & Rental"
-          title={
-            <>
-              貸切、二次会、
-              <br />
-              ライブ後の打ち上げに。
-            </>
-          }
+          title="貸切、二次会、ライブ後の打ち上げに。"
           lead="親不孝通りで、音楽と料理を楽しめるパーティーやレンタル利用に対応しています。"
           slides={partyHeroSlides}
           className="party-hero"
