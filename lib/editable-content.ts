@@ -84,6 +84,8 @@ export const externalEmbeds = {
   xTimelineUrl: "https://twitter.com/bar_Bassic?ref_src=twsrc%5Etfw",
   googleCalendarPublicUrl:
     "https://calendar.google.com/calendar/embed?src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&ctz=Asia%2FTokyo",
+  googleCalendarIcsUrl:
+    "https://calendar.google.com/calendar/ical/bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com/public/basic.ics",
   googleCalendarEmbedUrl:
     "https://calendar.google.com/calendar/embed?showCalendars=0&showTz=0&height=600&wkst=1&bgcolor=%23FFFFFF&src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&color=%23B1365F&ctz=Asia%2FTokyo",
   facebookPluginUrl: `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(

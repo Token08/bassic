@@ -4,6 +4,7 @@ import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { getCmsContents } from "@/lib/microcms";
 import { pageHeroes } from "@/lib/page-content";
+import { getPublicCalendarItems } from "@/lib/public-calendar";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, mailHref, site } from "@/lib/site";
 import { ExternalLink } from "lucide-react";
@@ -39,6 +40,7 @@ function EventsJsonLd({ events }: { events: Awaited<ReturnType<typeof getCmsCont
 
 export default async function EventsPage() {
   const contents = await getCmsContents();
+  const publicCalendarItems = await getPublicCalendarItems();
 
   return (
     <PageShell>
@@ -51,7 +53,7 @@ export default async function EventsPage() {
           slides={pageHeroes.events.slides}
           className={pageHeroes.events.className}
         />
-        <EventCalendarSection events={contents.events} />
+        <EventCalendarSection events={contents.events} calendarItems={publicCalendarItems} />
         <section className="section split">
           <div className="narrow-copy">
             <p className="eyebrow">Reservation</p>

@@ -1178,6 +1178,13 @@ h3 {
   opacity: 0.28;
 }
 
+.event-mini-day.is-holiday {
+  border-color: rgba(80, 72, 62, 0.5);
+  background: linear-gradient(180deg, #8a8174, #5d554c);
+  color: var(--ivory);
+  box-shadow: 0 8px 18px rgba(50, 42, 34, 0.18);
+}
+
 .event-mini-day.is-event-day {
   border-color: rgba(174, 20, 38, 0.72);
   background: linear-gradient(180deg, #c51b2d, var(--red));

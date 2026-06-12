@@ -1,6 +1,7 @@
 import { CalendarDays, Clock, Mail, Sparkles } from "lucide-react";
 import { externalEmbeds } from "@/lib/editable-content";
 import { mailHref, site } from "@/lib/site";
+import type { PublicCalendarItem } from "@/lib/public-calendar";
 import type { EventItem } from "@/lib/types";
 
 const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
@@ -21,7 +22,13 @@ function addMonths(date: Date, amount: number) {
   return new Date(date.getFullYear(), date.getMonth() + amount, 1);
 }
 
-function buildMonthDays(monthDate: Date, eventsByDate: Map<string, EventItem[]>) {
+type CalendarDayItem = {
+  date: string;
+  title: string;
+  type: "event" | "holiday";
+};
+
+function buildMonthDays(monthDate: Date, itemsByDate: Map<string, CalendarDayItem[]>) {
   const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
   const startOffset = firstDay.getDay();
   const startDate = new Date(firstDay);
@@ -36,21 +43,24 @@ function buildMonthDays(monthDate: Date, eventsByDate: Map<string, EventItem[]>)
       key,
       day: current.getDate(),
       inMonth: current.getMonth() === monthDate.getMonth(),
-      events: eventsByDate.get(key) || []
+      items: itemsByDate.get(key) || []
     };
   });
 }
 
-function EventColorCalendar({ events }: { events: EventItem[] }) {
-  const visibleEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
-  const baseDate = visibleEvents[0]?.date ? parseDateKey(visibleEvents[0].date) : new Date();
+function EventColorCalendar({ events, calendarItems = [] }: { events: EventItem[]; calendarItems?: PublicCalendarItem[] }) {
+  const visibleItems: CalendarDayItem[] = calendarItems.length
+    ? calendarItems.map((item) => ({ date: item.date, title: item.title, type: item.type }))
+    : events.map((event) => ({ date: event.date, title: event.title, type: "event" }));
+  const sortedItems = [...visibleItems].sort((a, b) => a.date.localeCompare(b.date));
+  const baseDate = sortedItems[0]?.date ? parseDateKey(sortedItems[0].date) : new Date();
   const months = [baseDate, addMonths(baseDate, 1)];
-  const eventsByDate = new Map<string, EventItem[]>();
+  const itemsByDate = new Map<string, CalendarDayItem[]>();
 
-  visibleEvents.forEach((event) => {
-    const items = eventsByDate.get(event.date) || [];
-    items.push(event);
-    eventsByDate.set(event.date, items);
+  sortedItems.forEach((item) => {
+    const items = itemsByDate.get(item.date) || [];
+    items.push(item);
+    itemsByDate.set(item.date, items);
   });
 
   return (
@@ -62,7 +72,7 @@ function EventColorCalendar({ events }: { events: EventItem[] }) {
         </span>
         <span>
           <i className="legend-dot legend-dot-holiday" />
-          店休日はGoogle Calendar側の表示を確認
+          店休日
         </span>
       </div>
       <div className="event-mini-months">
@@ -77,15 +87,19 @@ function EventColorCalendar({ events }: { events: EventItem[] }) {
               ))}
             </div>
             <div className="event-mini-days">
-              {buildMonthDays(monthDate, eventsByDate).map((day) => (
+              {buildMonthDays(monthDate, itemsByDate).map((day) => {
+                const hasEvent = day.items.some((item) => item.type === "event");
+                const hasHoliday = day.items.some((item) => item.type === "holiday");
+                return (
                 <div
-                  className={`event-mini-day${day.inMonth ? "" : " is-outside"}${day.events.length ? " is-event-day" : ""}`}
+                  className={`event-mini-day${day.inMonth ? "" : " is-outside"}${hasHoliday ? " is-holiday" : ""}${hasEvent ? " is-event-day" : ""}`}
                   key={day.key}
-                  title={day.events.map((event) => event.title).join(" / ")}
+                  title={day.items.map((item) => item.title).join(" / ")}
                 >
                   <span>{day.day}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </article>
         ))}
@@ -94,7 +108,7 @@ function EventColorCalendar({ events }: { events: EventItem[] }) {
   );
 }
 
-export function EventCalendarSection({ events }: { events: EventItem[] }) {
+export function EventCalendarSection({ events, calendarItems }: { events: EventItem[]; calendarItems?: PublicCalendarItem[] }) {
   return (
     <section className="section event-calendar-section">
       <div className="event-calendar-copy">
@@ -133,7 +147,7 @@ export function EventCalendarSection({ events }: { events: EventItem[] }) {
             イベント予約メール
           </a>
         </div>
-        <EventColorCalendar events={events} />
+        <EventColorCalendar events={events} calendarItems={calendarItems} />
       </div>
       <div className="event-calendar-frame-wrap">
         <iframe
