@@ -14,9 +14,25 @@ const visitInfoIcons: Record<VisitInfoIcon, React.ReactNode> = {
   charge: <CircleDollarSign />
 };
 
-export function VisitInfoGrid({ ariaLabel, items }: { ariaLabel: string; items: VisitInfoGridItem[] }) {
+export function VisitInfoGrid({
+  ariaLabel,
+  items,
+  title,
+  lead
+}: {
+  ariaLabel: string;
+  items: VisitInfoGridItem[];
+  title?: string;
+  lead?: string;
+}) {
   return (
     <section className="visit-info-strip" aria-label={ariaLabel}>
+      {title || lead ? (
+        <div className="visit-info-heading">
+          {title ? <h2>{title}</h2> : null}
+          {lead ? <p>{lead}</p> : null}
+        </div>
+      ) : null}
       <div className="visit-info-grid">
         {items.map((item) => (
           <article key={`${item.title}-${item.text}`}>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EventList, PageHero } from "@/components/content";
+import { EventList, FeaturedEventsSection, PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { getCmsContents } from "@/lib/microcms";
@@ -51,6 +51,7 @@ export default async function EventsPage() {
           slides={pageHeroes.events.slides}
           className={pageHeroes.events.className}
         />
+        <FeaturedEventsSection events={contents.events} />
         <EventCalendarSection />
         <section className="section split">
           <div className="narrow-copy">

@@ -100,7 +100,14 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
 }
 
 export function VisitInfoCards() {
-  return <VisitInfoGrid ariaLabel="来店前の基本情報" items={visitInfoItems} />;
+  return (
+    <VisitInfoGrid
+      ariaLabel="来店前の基本情報"
+      title="初めての来店前に、知っておくと安心なこと。"
+      lead="営業時間、チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
+      items={visitInfoItems}
+    />
+  );
 }
 
 function PairedFeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {
@@ -226,6 +233,59 @@ export function EventList({ events, includePoster = true }: { events: EventItem[
         <EventCard key={event.id} event={event} />
       ))}
     </div>
+  );
+}
+
+export function FeaturedEventsSection({ events }: { events: EventItem[] }) {
+  const featuredEvents = events.slice(0, 3);
+
+  if (!featuredEvents.length) return null;
+
+  return (
+    <section className="section featured-events-section">
+      <div className="section-heading narrow-copy">
+        <p className="eyebrow">Pickup</p>
+        <h2>
+          直近のイベントを、
+          <br />
+          先にチェック。
+        </h2>
+        <p className="section-lead">
+          ライブ、DJ、バータイムの予定から直近のものを表示しています。全体の予定は下のGoogle Calendarで確認できます。
+        </p>
+      </div>
+      <div className="featured-event-grid">
+        {featuredEvents.map((event) => (
+          <article className="featured-event-card" key={event.id}>
+            <div className="featured-event-date">{formatDate(event.date)}</div>
+            <div className="featured-event-copy">
+              <h3>{event.title}</h3>
+              <dl className="event-meta">
+                {event.openTime ? (
+                  <>
+                    <dt>OPEN</dt>
+                    <dd>{event.openTime}</dd>
+                  </>
+                ) : null}
+                {event.startTime ? (
+                  <>
+                    <dt>START</dt>
+                    <dd>{event.startTime}</dd>
+                  </>
+                ) : null}
+                {event.price ? (
+                  <>
+                    <dt>PRICE</dt>
+                    <dd>{event.price}</dd>
+                  </>
+                ) : null}
+              </dl>
+              {event.performers ? <p>{event.performers}</p> : null}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
