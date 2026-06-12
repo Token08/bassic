@@ -5,38 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, Instagram, Mail, MapPin, Menu, Phone } from "lucide-react";
 import { assetPath } from "@/lib/assets";
-import { localeCodes, type LocaleCode } from "@/lib/i18n";
+import { type LocaleCode } from "@/lib/i18n";
+import { currentLocale, localizedInternalHref } from "@/lib/path-utils";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
 import { LanguageSwitcher } from "./language-switcher";
-
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-function pathWithoutBase(pathname: string) {
-  if (!basePath || pathname === basePath) {
-    return pathname === basePath ? "/" : pathname;
-  }
-
-  if (pathname.startsWith(`${basePath}/`)) {
-    return pathname.slice(basePath.length) || "/";
-  }
-
-  return pathname;
-}
-
-function currentLocale(pathname: string): LocaleCode | undefined {
-  const path = pathWithoutBase(pathname);
-  const segment = path.split("/").filter(Boolean)[0];
-  return localeCodes.includes(segment as LocaleCode) ? (segment as LocaleCode) : undefined;
-}
-
-function localizedInternalHref(href: string, locale?: LocaleCode) {
-  if (!locale) {
-    return href;
-  }
-
-  const normalized = href === "/" ? "/" : `/${href.replace(/^\/|\/$/g, "")}/`;
-  return `/${locale}${normalized}`;
-}
 
 function HeaderNavLinks({ locale }: { locale?: LocaleCode }) {
   return (

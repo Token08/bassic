@@ -2,6 +2,8 @@ import type { FeatureCardContent } from "./page-content";
 import type { LocaleCode } from "./i18n";
 
 export type LocalizedVisitInfoTitles = {
+  heading: string;
+  lead: string;
   hours: string;
   events: string;
   smoking: string;
@@ -104,10 +106,42 @@ export const localizedHomeSections: Record<LocaleCode, LocalizedHomeSections> = 
 };
 
 export const localizedVisitInfoTitles: Record<LocaleCode, LocalizedVisitInfoTitles> = {
-  en: { hours: "Regular hours", events: "Event hours", smoking: "Smoking", charge: "Charge", aria: "Visit information" },
-  ko: { hours: "일반 영업", events: "이벤트 영업", smoking: "흡연", charge: "차지", aria: "방문 정보" },
-  "zh-hant": { hours: "一般營業", events: "活動營業", smoking: "吸菸", charge: "座席費", aria: "來店資訊" },
-  "zh-hans": { hours: "普通营业", events: "活动营业", smoking: "吸烟", charge: "座位费", aria: "到店信息" }
+  en: {
+    heading: "Helpful details before your first visit.",
+    lead: "Regular hours, cover charge, smoking policy, and event-day hours are gathered here for an easier first visit.",
+    hours: "Regular hours",
+    events: "Event hours",
+    smoking: "Smoking",
+    charge: "Charge",
+    aria: "Visit information"
+  },
+  ko: {
+    heading: "처음 방문 전에 알아두면 좋은 정보.",
+    lead: "영업 시간, 차지, 흡연 가능 여부, 이벤트 당일 영업 정보를 한곳에 정리했습니다.",
+    hours: "일반 영업",
+    events: "이벤트 영업",
+    smoking: "흡연",
+    charge: "차지",
+    aria: "방문 정보"
+  },
+  "zh-hant": {
+    heading: "第一次來店前可先確認的資訊。",
+    lead: "一般營業時間、座位費、吸菸規則與活動日營業資訊，都整理在這裡。",
+    hours: "一般營業",
+    events: "活動營業",
+    smoking: "吸菸",
+    charge: "座席費",
+    aria: "來店資訊"
+  },
+  "zh-hans": {
+    heading: "第一次到店前可先确认的信息。",
+    lead: "普通营业时间、座位费、吸烟规则和活动日营业信息，都整理在这里。",
+    hours: "普通营业",
+    events: "活动营业",
+    smoking: "吸烟",
+    charge: "座位费",
+    aria: "到店信息"
+  }
 };
 
 export const localizedPageEyebrow: Record<LocaleCode, string> = {

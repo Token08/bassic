@@ -28,7 +28,7 @@ function LocalizedVisitInfoCards({ locale, labels }: { locale: LocaleCode; label
     { icon: "charge", title: titles.charge, text: labels.charge }
   ];
 
-  return <VisitInfoGrid ariaLabel={titles.aria} items={items} />;
+  return <VisitInfoGrid ariaLabel={titles.aria} title={titles.heading} lead={titles.lead} items={items} />;
 }
 
 function LocalizedFirstVisit({ locale }: { locale: LocaleCode }) {

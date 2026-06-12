@@ -38,6 +38,11 @@ This site is structured so future admin/CMS work can replace content data withou
   - Store canonical internal page paths, localized path generation, and sitemap route priorities.
   - Update this first when adding a page or changing a URL.
 
+- `lib/path-utils.ts`
+  - Store runtime path helpers used by the header and language switcher.
+  - Keep base path stripping, current locale detection, internal localized links, and language-switch URLs here.
+  - Update this only when URL behavior changes; avoid duplicating path logic inside UI components.
+
 - `scripts/smoke-seo.mjs`
   - Check exported HTML after `npm run build`.
   - Confirms canonical URLs, hreflang, OGP/Twitter tags, and sitemap registration for representative pages.
@@ -50,7 +55,7 @@ This site is structured so future admin/CMS work can replace content data withou
 
 Components should render data. They should avoid owning prices, event dates, image paths, or operational facts.
 
-Shared UI pieces should be reused across Japanese and localized pages when they render the same concept. For example, visit information cards are rendered through `components/visit-info.tsx` so hours, charge, and smoking policy stay visually consistent across languages. First-visit feature cards use `FeatureCardGrid` from `components/content.tsx`, with copy supplied by `lib/page-content.ts` or `lib/localized-content.ts`.
+Shared UI pieces should be reused across Japanese and localized pages when they render the same concept. For example, visit information cards are rendered through `components/visit-info.tsx` so hours, charge, and smoking policy stay visually consistent across languages. First-visit feature cards use `FeatureCardGrid` from `components/content.tsx`, with copy supplied by `lib/page-content.ts` or `lib/localized-content.ts`. Header navigation and the language switcher should use `lib/path-utils.ts` so the selected language is preserved across internal page transitions.
 
 Preferred flow:
 

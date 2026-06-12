@@ -1855,6 +1855,7 @@ main > section.visit-info-strip .visit-info-grid article p {
 
   .hero {
     min-height: 100svh;
+    min-height: 100dvh;
     padding-top: 68px;
     padding-bottom: 96px;
   }
@@ -2073,7 +2074,9 @@ main > section.visit-info-strip .visit-info-grid article p {
   .home-hero,
   .page-hero {
     min-height: 100svh;
-    min-height: 100dvh;
+    min-height: min(100dvh, 760px);
+    padding-top: 62px;
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
   }
 
   h1 {
@@ -2082,7 +2085,7 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .hero h1 {
-    font-size: clamp(2rem, 9vw, 2.45rem);
+    font-size: clamp(1.9rem, 8.4vw, 2.35rem);
     line-height: 1.18;
   }
 
@@ -2115,8 +2118,12 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .hero-logo {
-    top: 88px;
-    width: clamp(108px, 30vw, 128px);
+    top: clamp(82px, 12svh, 112px);
+    width: clamp(96px, 28vw, 124px);
+  }
+
+  .hero-content {
+    padding-top: clamp(96px, 16svh, 128px);
   }
 
   .button {
