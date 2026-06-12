@@ -32,7 +32,8 @@ export const pageHeroes = {
     title: "Bassic.の料理と、音楽に合うお酒。",
     lead: "初めての方にも選びやすいよう、人気メニューと価格感を見やすく整理しました。",
     image: editableMedia.pageHeroImages.menu.src,
-    imageAlt: editableMedia.pageHeroImages.menu.alt
+    imageAlt: editableMedia.pageHeroImages.menu.alt,
+    className: "menu-hero"
   },
   party: {
     eyebrow: "Party & Rental",

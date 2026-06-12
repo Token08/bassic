@@ -38,6 +38,7 @@ export default async function MenuPage() {
           lead={pageHeroes.menu.lead}
           image={pageHeroes.menu.image}
           imageAlt={pageHeroes.menu.imageAlt}
+          className={pageHeroes.menu.className}
         />
         <MenuContent menu={contents.menu} />
       </main>
