@@ -26,6 +26,7 @@ microCMSが未設定の場合は、`lib/fallback-data.ts` の初期データで�
 
 将来の管理画面/API連携に向けたコンテンツ配置方針は `docs/content-architecture.md` を参照してください。
 画像差し替え時の推奨サイズと容量は `docs/image-guidelines.md` を参照してください。
+Google Map検索向けの運用は `docs/google-business-profile-checklist.md` を参照してください。
 
 ## 更新できる内容
 

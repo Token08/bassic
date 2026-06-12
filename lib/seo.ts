@@ -16,7 +16,7 @@ export const pageSeo = {
     path: pageRoutes.home.path,
     title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
     description:
-      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。初めてでも入りやすく、音楽、お酒、料理、ライブイベントを楽しめます。"
+      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。初めてでも入りやすく、音楽、お酒、料理、ライブ・DJイベント、貸切を楽しめます。"
   },
   events: {
     path: pageRoutes.events.path,
@@ -34,7 +34,7 @@ export const pageSeo = {
     path: pageRoutes.party.path,
     title: "貸切・パーティー | 天神の二次会・打ち上げ・レンタル",
     description:
-      "福岡・天神 親不孝通りで貸切、二次会、ライブ後の打ち上げ、レンタル利用に対応するpublic bar Bassic.のプラン案内。"
+      "福岡・天神 親不孝通りで貸切、二次会、ライブ後の打ち上げ、DJイベント、レンタル利用に対応するpublic bar Bassic.のプラン案内。"
   },
   access: {
     path: pageRoutes.access.path,

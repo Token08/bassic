@@ -1,9 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, Mic2, Music2, Navigation, Store, Utensils, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
-import { firstVisitSection, homeMenuTeaser, socialUpdatesCopy, visitInfoItems, type FeatureCardContent } from "@/lib/page-content";
+import {
+  accessRouteTips,
+  firstVisitSection,
+  homeMenuTeaser,
+  localSearchSection,
+  partyUseCases,
+  socialUpdatesCopy,
+  visitInfoItems,
+  type FeatureCardContent
+} from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
@@ -17,6 +26,12 @@ const featureIcons = {
   music: Music2,
   store: Store,
   users: UsersRound
+} as const;
+const localSearchIcons = {
+  map: MapPin,
+  music: Mic2,
+  food: Utensils,
+  party: UsersRound
 } as const;
 
 function imageSrc(path: string) {
@@ -107,6 +122,31 @@ export function VisitInfoCards() {
       lead="営業時間、チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
       items={visitInfoItems}
     />
+  );
+}
+
+export function LocalSearchSection() {
+  return (
+    <section className="section local-search-section">
+      <div className="section-heading">
+        <p className="eyebrow">{localSearchSection.eyebrow}</p>
+        <h2>{localSearchSection.title}</h2>
+        <p className="section-lead">{localSearchSection.lead}</p>
+      </div>
+      <div className="local-search-grid">
+        {localSearchSection.cards.map((card) => {
+          const Icon = localSearchIcons[card.icon];
+
+          return (
+            <article key={card.title}>
+              <Icon />
+              <h3>{card.title}</h3>
+              <p>{card.text}</p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -335,7 +375,7 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
           Bassic.のメニュー。
         </h2>
         <p className="section-lead">
-          料理やドリンクの雰囲気が初めての方にも伝わるよう、画像と紹介文をセットで見られる形にしました。
+          福岡・天神 親不孝通りのバーで、食事もドリンクも楽しみたい方へ。料理やドリンクの雰囲気が初めての方にも伝わるよう、画像と紹介文をセットで見られる形にしました。
         </p>
         <div className="notice-row" aria-label="メニュー利用時の基本情報">
           <span>{site.chargeLabel}</span>
@@ -382,6 +422,21 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
           </article>
         ))}
       </div>
+      <div className="use-case-panel" aria-label="貸切やパーティーの利用シーン">
+        <div>
+          <p className="eyebrow">Use Case</p>
+          <h3>天神・親不孝通りで、音楽のある集まりに。</h3>
+          <p>
+            Bassic.は、バー営業だけでなく、貸切、二次会、ライブ後の打ち上げ、DJイベント、レンタル利用まで相談できます。
+            料理やドリンク、音響のある空間をまとめて検討したい方はメールでお問い合わせください。
+          </p>
+        </div>
+        <ul>
+          {partyUseCases.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
@@ -417,6 +472,14 @@ export function AccessContent({ note }: { note: string }) {
           <dt>喫煙</dt>
           <dd>{site.smokingLabel}</dd>
         </dl>
+        <div className="route-tips" aria-label="初来店向けの行き方案内">
+          <h3>Google Mapから来店する方へ</h3>
+          <ul>
+            {accessRouteTips.map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
+        </div>
         <div className="hero-actions">
           <a className="button primary" href={site.directionsUrl} target="_blank" rel="noreferrer">
             <Navigation size={18} />

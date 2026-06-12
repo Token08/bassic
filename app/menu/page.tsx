@@ -14,7 +14,13 @@ function MenuJsonLd() {
     "@type": "OfferCatalog",
     name: "public bar Bassic. Food & Drink",
     url: absoluteUrl("/menu/"),
-    description: `${site.chargeLabel}。ファズカレー、タコス、ドリンクなどを提供しています。`,
+    description: `${site.chargeLabel}。福岡・天神 親不孝通りのミュージックバーで、ファズカレー、タコス、ドリンクなどを提供しています。`,
+    provider: {
+      "@type": "BarOrPub",
+      name: site.name,
+      address: site.address,
+      telephone: site.phone
+    },
     itemListElement: [
       { "@type": "Offer", itemOffered: { "@type": "MenuItem", name: "ファズ・カレー" } },
       { "@type": "Offer", itemOffered: { "@type": "MenuItem", name: "タコス＆ポテト" } },

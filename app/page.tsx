@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { AccessContent, FirstVisitBlock, HomeMenuTeaser, PageHero, SocialUpdatesSection, VisitInfoCards } from "@/components/content";
+import {
+  AccessContent,
+  FirstVisitBlock,
+  HomeMenuTeaser,
+  LocalSearchSection,
+  PageHero,
+  SocialUpdatesSection,
+  VisitInfoCards
+} from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveEditableImage } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
@@ -22,6 +30,18 @@ function JsonLd() {
     priceRange: site.priceRange,
     image: `${site.siteUrl}/ogp.png`,
     hasMap: site.googleMapsUrl,
+    hasMenu: `${site.siteUrl}/menu/`,
+    keywords: "福岡 ミュージックバー, 天神 バー, 親不孝通り バー, 福岡 ライブバー, 天神 貸切, ファズカレー",
+    areaServed: [
+      { "@type": "City", name: "福岡市" },
+      { "@type": "Place", name: "天神" },
+      { "@type": "Place", name: "親不孝通り" }
+    ],
+    amenityFeature: [
+      { "@type": "LocationFeatureSpecification", name: "喫煙可", value: true },
+      { "@type": "LocationFeatureSpecification", name: "ライブ・DJイベント", value: true },
+      { "@type": "LocationFeatureSpecification", name: "貸切相談", value: true }
+    ],
     smokingAllowed: true,
     publicAccess: true,
     additionalProperty: [
@@ -87,6 +107,7 @@ export default async function Home() {
 
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <VisitInfoCards />
+        <LocalSearchSection />
         <SocialUpdatesSection />
 
         <HomeMenuTeaser />

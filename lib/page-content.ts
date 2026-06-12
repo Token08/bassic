@@ -25,6 +25,12 @@ export type FeatureCardContent = {
   text: string;
 };
 
+export type LocalSearchCardContent = {
+  icon: "map" | "music" | "food" | "party";
+  title: string;
+  text: string;
+};
+
 export const pageHeroes = {
   events: {
     eyebrow: "Event Schedule",
@@ -129,3 +135,45 @@ export const homeMenuTeaser = {
   lead: "ファズ・カレー、タコス、カクテルなど。詳しい一覧はメニューページへ。",
   linkLabel: "メニューページを見る"
 };
+
+export const localSearchSection = {
+  eyebrow: "Local Search",
+  title: "福岡・天神で、音楽も料理も楽しめるバーを探している方へ。",
+  lead:
+    "public bar Bassic.は、福岡市中央区天神・親不孝通りにあるミュージックバーです。ライブバー、DJイベント、バーご飯、貸切パーティーまで、Google検索やGoogle Mapから初めて来る方にも分かりやすい情報をまとめています。",
+  cards: [
+    {
+      icon: "map",
+      title: "天神駅から徒歩約4分",
+      text: "親不孝通りのWITH天神5F。Google Mapから現在地ルートを開けるので、初来店でも迷いにくい導線です。"
+    },
+    {
+      icon: "music",
+      title: "ライブ・DJ・音楽イベント",
+      text: "ライブバー、DJバー、イベント後のバータイムとして利用できます。イベント日はスケジュールページで最新情報を確認できます。"
+    },
+    {
+      icon: "food",
+      title: "ファズカレーとバーご飯",
+      text: "名物ファズカレー、タコス＆ポテト、ドリンクを写真付きで掲載。食事だけ、ノンアルコールでも利用しやすいお店です。"
+    },
+    {
+      icon: "party",
+      title: "貸切・二次会・打ち上げ",
+      text: "天神・親不孝通りでの貸切パーティー、ライブ後の打ち上げ、二次会、レンタル利用の相談に対応しています。"
+    }
+  ] satisfies LocalSearchCardContent[]
+};
+
+export const accessRouteTips = [
+  "Google Mapで「public bar Bassic.」を開き、WITH天神ビルを目印にしてください。",
+  "ビル到着後は5Fまで上がってください。初めての方は地図リンクから現在地ルートを開くと安心です。",
+  "イベント日は通常営業開始時間が変わる場合があります。来店前にイベントスケジュールをご確認ください。"
+] as const;
+
+export const partyUseCases = [
+  "天神・親不孝通りでの二次会",
+  "ライブ後の打ち上げ",
+  "DJイベントや音楽イベント",
+  "少人数パーティーや貸切利用"
+] as const;
