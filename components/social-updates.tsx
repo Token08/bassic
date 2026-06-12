@@ -13,7 +13,7 @@ type SocialUpdatesProps = {
 export function SocialUpdates({
   title,
   lead,
-  instagramFallbackLabel = "Instagramで投稿を見る",
+  instagramFallbackLabel = "Instagramで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
   return (
@@ -29,10 +29,10 @@ export function SocialUpdates({
             <blockquote
               className="instagram-media"
               data-instgrm-captioned
-              data-instgrm-permalink={externalEmbeds.instagramPostUrl}
+              data-instgrm-permalink={externalEmbeds.instagramProfileUrl}
               data-instgrm-version="14"
             >
-              <a href={externalEmbeds.instagramPostUrl} target="_blank" rel="noreferrer">
+              <a href={externalEmbeds.instagramProfileUrl} target="_blank" rel="noreferrer">
                 {instagramFallbackLabel}
               </a>
             </blockquote>
@@ -55,7 +55,7 @@ export function SocialUpdates({
         <SocialEmbedCard {...editableSocialLinks[2]}>
           <div className="social-embed-frame">
             <a className="twitter-timeline" data-height="675" data-theme="dark" href={externalEmbeds.xTimelineUrl}>
-              Tweets by bar_Bassic
+              X timeline by bar_Bassic
             </a>
             <a className="social-fallback-link" href={site.xUrl} target="_blank" rel="noreferrer">
               {xFallbackLabel} <ExternalLink size={15} />

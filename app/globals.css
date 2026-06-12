@@ -1103,12 +1103,15 @@ h3 {
 .instagram-frame {
   display: grid;
   align-items: start;
+  justify-items: center;
+  padding: 0;
   background: #fffaf0;
 }
 
 .instagram-frame .instagram-media {
   min-width: 0 !important;
   width: 100% !important;
+  max-width: 100% !important;
   margin: 0 !important;
 }
 
