@@ -1100,6 +1100,27 @@ h3 {
   display: none;
 }
 
+.x-frame .twitter-timeline-rendered {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.x-frame .twitter-timeline-rendered iframe {
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  visibility: visible !important;
+}
+
+.x-frame:has(.twitter-timeline-rendered iframe) .social-fallback-link {
+  display: none;
+}
+
 .social-profile-card {
   display: grid;
   align-content: center;
@@ -1158,7 +1179,7 @@ h3 {
   font-weight: 900;
 }
 
-.x-frame .twitter-timeline {
+.x-frame a.twitter-timeline {
   display: flex;
   align-items: center;
   justify-content: center;
