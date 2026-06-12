@@ -19,6 +19,7 @@ export default async function AccessPage() {
           lead="Google Map、住所、電話、メールをまとめました。初めての方も地図から迷わず来店できます。"
           image={editableMedia.pageHeroImages.access.src}
           imageAlt={editableMedia.pageHeroImages.access.alt}
+          className="access-hero"
         />
         <AccessContent note={contents.home.accessNote} />
       </main>
