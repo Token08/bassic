@@ -1104,17 +1104,23 @@ h3 {
   display: block !important;
   width: 100% !important;
   max-width: 100% !important;
+  height: 100% !important;
   min-height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 .x-frame .twitter-timeline-rendered iframe {
   width: 100% !important;
   min-width: 100% !important;
+  max-width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
+  max-height: 100% !important;
   visibility: visible !important;
+  box-sizing: border-box !important;
 }
 
 .x-frame:has(.twitter-timeline-rendered iframe) .social-fallback-link {
