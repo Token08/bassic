@@ -81,7 +81,8 @@ export const editableSocialLinks: SocialLink[] = [
 
 export const externalEmbeds = {
   instagramWidgetSrc: process.env.NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC?.trim() || "",
-  xTimelineUrl: "https://twitter.com/bar_Bassic?ref_src=twsrc%5Etfw",
+  xWidgetSrc: process.env.NEXT_PUBLIC_X_WIDGET_SRC?.trim() || "",
+  xTimelineUrl: "https://twitter.com/bar_Bassic",
   googleCalendarPublicUrl:
     "https://calendar.google.com/calendar/embed?src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&ctz=Asia%2FTokyo",
   googleCalendarEmbedUrl:

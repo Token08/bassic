@@ -7,22 +7,29 @@ declare global {
   interface Window {
     twttr?: {
       widgets?: {
-        load: () => void;
+        load: (element?: HTMLElement) => void;
       };
     };
   }
 }
 
 export function XTimelineScript() {
+  const loadTimeline = () => {
+    const container = document.querySelector<HTMLElement>(".x-frame");
+    window.twttr?.widgets?.load(container || undefined);
+  };
+
   useEffect(() => {
-    window.twttr?.widgets?.load();
+    loadTimeline();
+    const timeout = window.setTimeout(loadTimeline, 1200);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   return (
     <Script
       src="https://platform.twitter.com/widgets.js"
       strategy="afterInteractive"
-      onLoad={() => window.twttr?.widgets?.load()}
+      onLoad={loadTimeline}
     />
   );
 }

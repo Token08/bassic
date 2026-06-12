@@ -24,4 +24,12 @@ Facebook uses the official Page Plugin timeline iframe.
 
 ## X
 
-X uses the official `twitter-timeline` widget. The site reloads the widget after hydration so the timeline has another chance to render after client-side page load.
+X uses the official `twitter-timeline` widget by default. The site reloads the widget after hydration so the timeline has another chance to render after client-side page load.
+
+If the official X widget is blocked or does not render, set an external iframe widget URL as:
+
+```text
+NEXT_PUBLIC_X_WIDGET_SRC
+```
+
+When this value is set to an HTTPS URL, the homepage uses that iframe instead of the official X widget.
