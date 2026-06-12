@@ -4,6 +4,7 @@ import {
   FirstVisitBlock,
   HomeMenuTeaser,
   LocalSearchSection,
+  ReviewSignalSection,
   PageHero,
   SocialUpdatesSection,
   VisitInfoCards
@@ -108,6 +109,7 @@ export default async function Home() {
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <VisitInfoCards />
         <LocalSearchSection />
+        <ReviewSignalSection />
         <SocialUpdatesSection />
 
         <HomeMenuTeaser />

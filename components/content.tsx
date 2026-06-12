@@ -9,6 +9,7 @@ import {
   homeMenuTeaser,
   localSearchSection,
   partyUseCases,
+  reviewSignalSection,
   socialUpdatesCopy,
   visitInfoItems,
   type FeatureCardContent
@@ -145,6 +146,27 @@ export function LocalSearchSection() {
             </article>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+export function ReviewSignalSection() {
+  return (
+    <section className="section review-signal-section">
+      <div className="section-heading">
+        <p className="eyebrow">{reviewSignalSection.eyebrow}</p>
+        <h2>{reviewSignalSection.title}</h2>
+        <p className="section-lead">{reviewSignalSection.lead}</p>
+      </div>
+      <div className="review-signal-grid">
+        {reviewSignalSection.cards.map((card) => (
+          <article key={card.title}>
+            <span>{card.source}</span>
+            <h3>{card.title}</h3>
+            <p>{card.text}</p>
+          </article>
+        ))}
       </div>
     </section>
   );

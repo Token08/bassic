@@ -31,6 +31,12 @@ export type LocalSearchCardContent = {
   text: string;
 };
 
+export type ReviewSignalCardContent = {
+  title: string;
+  text: string;
+  source: string;
+};
+
 export const pageHeroes = {
   events: {
     eyebrow: "Event Schedule",
@@ -163,6 +169,35 @@ export const localSearchSection = {
       text: "天神・親不孝通りでの貸切パーティー、ライブ後の打ち上げ、二次会、レンタル利用の相談に対応しています。"
     }
   ] satisfies LocalSearchCardContent[]
+};
+
+export const reviewSignalSection = {
+  eyebrow: "Review Signals",
+  title: "口コミや紹介記事で伝わる、Bassic.の使いやすさ。",
+  lead:
+    "公開されているレビューや紹介記事では、音楽好きが集まる雰囲気、ひとりでも過ごしやすい距離感、ファズカレーなどの料理、ライブやイベント利用がよく触れられています。初めて来る方が来店前に知りたい安心材料として整理しました。",
+  cards: [
+    {
+      title: "ひとりでもふらっと入りやすい",
+      text: "旅行中や初来店でも、落ち着いて飲めるバーとして紹介されています。Google Mapから来店する方にも、入口前の不安を減らせる見せ方を意識しています。",
+      source: "公開口コミ・ローカル紹介より"
+    },
+    {
+      title: "音楽好きが集まるミュージックバー",
+      text: "ライブ、DJ、音楽イベント、打ち上げまで相談できる場所として複数の外部ページで紹介されています。親不孝通りらしい音楽の導線を強めます。",
+      source: "SNS・イベント掲載より"
+    },
+    {
+      title: "ファズカレーとバーご飯",
+      text: "ファズカレー、タコス＆ポテトなど、料理目的でも選びやすい点が紹介されています。メニュー写真と価格感を見せ、食事だけでも使いやすくします。",
+      source: "飲食レビュー・紹介記事より"
+    },
+    {
+      title: "天神で二次会・貸切に使える",
+      text: "天神駅から近く、ライブ後の打ち上げや二次会にも合う会場性があります。貸切、レンタル、イベント相談への導線を各ページに残します。",
+      source: "会場情報・紹介記事より"
+    }
+  ] satisfies ReviewSignalCardContent[]
 };
 
 export const accessRouteTips = [
