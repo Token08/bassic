@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarDays, Cigarette, CircleDollarSign, Clock3, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
+import { homeMenuTeaser, socialUpdatesCopy, visitInfoItems, type VisitInfoIcon } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
@@ -11,6 +12,13 @@ import { SocialUpdates } from "./social-updates";
 
 const heroImagePath = editableMedia.homeHeroImage.src;
 const atmosphereImages = editableMedia.atmosphereImages;
+
+const visitInfoIcons: Record<VisitInfoIcon, React.ReactNode> = {
+  clock: <Clock3 />,
+  calendar: <CalendarDays />,
+  smoking: <Cigarette />,
+  charge: <CircleDollarSign />
+};
 
 function imageSrc(path: string) {
   return path.startsWith("/assets/") ? assetPath(path) : path;
@@ -114,35 +122,12 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
 }
 
 export function VisitInfoCards() {
-  const items = [
-    {
-      icon: <Clock3 />,
-      title: "通常営業",
-      text: site.hoursLabel
-    },
-    {
-      icon: <CalendarDays />,
-      title: "イベント時の営業時間",
-      text: site.eventHoursNote
-    },
-    {
-      icon: <Cigarette />,
-      title: "喫煙について",
-      text: site.smokingLabel
-    },
-    {
-      icon: <CircleDollarSign />,
-      title: "チャージ",
-      text: site.chargeLabel
-    }
-  ];
-
   return (
     <section className="visit-info-strip" aria-label="来店前の基本情報">
       <div className="visit-info-grid">
-        {items.map((item) => (
+        {visitInfoItems.map((item) => (
           <article key={item.title}>
-            {item.icon}
+            {visitInfoIcons[item.icon]}
             <div>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
@@ -167,13 +152,35 @@ export function SocialUpdatesSection() {
     <SocialUpdates
       title={
         <>
-          最新情報は、
+          {socialUpdatesCopy.titleLines[0]}
           <br />
-          公式SNSから。
+          {socialUpdatesCopy.titleLines[1]}
         </>
       }
-      lead="Instagram、Facebook、Xの公式投稿をまとめて確認できます。イベント、営業情報、店内の空気感はSNSでも更新しています。"
+      lead={socialUpdatesCopy.lead}
     />
+  );
+}
+
+export function HomeMenuTeaser() {
+  return (
+    <section className="section home-menu-teaser">
+      <div className="section-heading narrow-copy">
+        <p className="eyebrow">{homeMenuTeaser.eyebrow}</p>
+        <h2>
+          {homeMenuTeaser.titleLines[0]}
+          <br />
+          {homeMenuTeaser.titleLines[1]}
+        </h2>
+        <p className="section-lead">{homeMenuTeaser.lead}</p>
+        <Link className="text-link" href="/menu">
+          {homeMenuTeaser.linkLabel} <ExternalLink size={16} />
+        </Link>
+      </div>
+      <figure className="wide-photo">
+        <Image src={editableMedia.foodTeaser.src} alt={editableMedia.foodTeaser.alt} fill sizes="100vw" />
+      </figure>
+    </section>
   );
 }
 

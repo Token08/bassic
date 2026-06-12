@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { EventList, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
+import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, mailHref, site } from "@/lib/site";
 import { ExternalLink } from "lucide-react";
@@ -44,11 +44,11 @@ export default async function EventsPage() {
       <EventsJsonLd events={contents.events} />
       <main>
         <PageHero
-          eyebrow="Event Schedule"
-          title="ライブ・DJ・イベント予定。"
-          lead="日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。"
-          slides={editableMedia.eventHeroSlides}
-          className="event-hero"
+          eyebrow={pageHeroes.events.eyebrow}
+          title={pageHeroes.events.title}
+          lead={pageHeroes.events.lead}
+          slides={pageHeroes.events.slides}
+          className={pageHeroes.events.className}
         />
         <section className="section split">
           <div className="narrow-copy">

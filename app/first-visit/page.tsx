@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { FirstVisitBlock, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
+import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
 
@@ -49,11 +49,11 @@ export default async function FirstVisitPage() {
       <FaqJsonLd />
       <main>
         <PageHero
-          eyebrow="First Visit"
-          title="初めてでも、入りやすい音楽バー。"
-          lead="ひとりでも、ライブ前後でも、音楽の話をしたい夜でも。来店前に知りたいことをまとめました。"
-          image={editableMedia.pageHeroImages.firstVisit.src}
-          imageAlt={editableMedia.pageHeroImages.firstVisit.alt}
+          eyebrow={pageHeroes.firstVisit.eyebrow}
+          title={pageHeroes.firstVisit.title}
+          lead={pageHeroes.firstVisit.lead}
+          image={pageHeroes.firstVisit.image}
+          imageAlt={pageHeroes.firstVisit.imageAlt}
         />
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <section className="section faq-section">

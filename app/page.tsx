@@ -1,8 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
-import { AccessContent, FirstVisitBlock, PageHero, SocialUpdatesSection, VisitInfoCards } from "@/components/content";
+import { AccessContent, FirstVisitBlock, HomeMenuTeaser, PageHero, SocialUpdatesSection, VisitInfoCards } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveEditableImage } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
@@ -92,23 +89,7 @@ export default async function Home() {
         <VisitInfoCards />
         <SocialUpdatesSection />
 
-        <section className="section home-menu-teaser">
-          <div className="section-heading narrow-copy">
-            <p className="eyebrow">Food & Drink</p>
-            <h2>
-              料理もドリンクも、
-              <br />
-              写真で先に見られます。
-            </h2>
-            <p className="section-lead">ファズ・カレー、タコス、カクテルなど。詳しい一覧はメニューページへ。</p>
-            <Link className="text-link" href="/menu">
-              メニューページを見る <ArrowRight size={16} />
-            </Link>
-          </div>
-          <figure className="wide-photo">
-            <Image src={editableMedia.foodTeaser.src} alt={editableMedia.foodTeaser.alt} fill sizes="100vw" />
-          </figure>
-        </section>
+        <HomeMenuTeaser />
 
         <AccessContent note={contents.home.accessNote} />
       </main>

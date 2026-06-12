@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { MenuContent, PageHero } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { editableMedia } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
+import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
 
@@ -33,11 +33,11 @@ export default async function MenuPage() {
       <MenuJsonLd />
       <main>
         <PageHero
-          eyebrow="Food & Drink"
-          title="Bassic.の料理と、音楽に合うお酒。"
-          lead="初めての方にも選びやすいよう、人気メニューと価格感を見やすく整理しました。"
-          image={editableMedia.pageHeroImages.menu.src}
-          imageAlt={editableMedia.pageHeroImages.menu.alt}
+          eyebrow={pageHeroes.menu.eyebrow}
+          title={pageHeroes.menu.title}
+          lead={pageHeroes.menu.lead}
+          image={pageHeroes.menu.image}
+          imageAlt={pageHeroes.menu.imageAlt}
         />
         <MenuContent menu={contents.menu} />
       </main>

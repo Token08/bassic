@@ -12,6 +12,11 @@ This site is structured so future admin/CMS work can replace content data withou
   - Store visual assets, hero slides, fallback menu images, SNS embed URLs, and social links.
   - Replace or extend this file when a future admin site manages images or visual configuration.
 
+- `lib/page-content.ts`
+  - Store page-level copy and reusable section copy that is still static today.
+  - Move these values into CMS/admin fields later without changing page layout components.
+  - Current examples: page hero text, visit information card labels, SNS section copy, and the home menu teaser.
+
 - `lib/fallback-data.ts`
   - Store local fallback content for home copy, events, menu items, and party plans.
   - This keeps the static site usable when microCMS is not configured or fetches fail.
