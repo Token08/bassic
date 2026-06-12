@@ -1907,6 +1907,11 @@ main > section.visit-info-strip .visit-info-grid article p {
     line-height: 1.22;
   }
 
+  .page-hero.localized-hero:not(.home-hero) h1 {
+    font-size: clamp(0.94rem, 4.25vw, 1.08rem);
+    line-height: 1.24;
+  }
+
   h2 {
     font-size: 1.84rem;
     line-height: 1.28;

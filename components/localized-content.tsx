@@ -297,6 +297,7 @@ export function LocalizedPage({ locale, pageKey }: { locale: LocaleCode; pageKey
         lead={page.lead}
         image={pageImages[pageKey]}
         imageAlt={page.title}
+        className={`localized-hero localized-${pageKey}-hero`}
         actionLabels={{ mapLabel: labels.map, callLabel: labels.call, reserveLabel: labels.reserve }}
       />
       <section className="section intro intro-light localized-section">
