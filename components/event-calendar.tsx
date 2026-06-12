@@ -1,114 +1,8 @@
 import { CalendarDays, Clock, Mail, Sparkles } from "lucide-react";
 import { externalEmbeds } from "@/lib/editable-content";
 import { mailHref, site } from "@/lib/site";
-import type { PublicCalendarItem } from "@/lib/public-calendar";
-import type { EventItem } from "@/lib/types";
 
-const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
-
-function parseDateKey(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function dateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function addMonths(date: Date, amount: number) {
-  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
-}
-
-type CalendarDayItem = {
-  date: string;
-  title: string;
-  type: "event" | "holiday";
-};
-
-function buildMonthDays(monthDate: Date, itemsByDate: Map<string, CalendarDayItem[]>) {
-  const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-  const startOffset = firstDay.getDay();
-  const startDate = new Date(firstDay);
-  startDate.setDate(firstDay.getDate() - startOffset);
-
-  return Array.from({ length: 42 }, (_, index) => {
-    const current = new Date(startDate);
-    current.setDate(startDate.getDate() + index);
-    const key = dateKey(current);
-
-    return {
-      key,
-      day: current.getDate(),
-      inMonth: current.getMonth() === monthDate.getMonth(),
-      items: itemsByDate.get(key) || []
-    };
-  });
-}
-
-function EventColorCalendar({ events, calendarItems = [] }: { events: EventItem[]; calendarItems?: PublicCalendarItem[] }) {
-  const visibleItems: CalendarDayItem[] = calendarItems.length
-    ? calendarItems.map((item) => ({ date: item.date, title: item.title, type: item.type }))
-    : events.map((event) => ({ date: event.date, title: event.title, type: "event" }));
-  const sortedItems = [...visibleItems].sort((a, b) => a.date.localeCompare(b.date));
-  const baseDate = sortedItems[0]?.date ? parseDateKey(sortedItems[0].date) : new Date();
-  const months = [baseDate, addMonths(baseDate, 1)];
-  const itemsByDate = new Map<string, CalendarDayItem[]>();
-
-  sortedItems.forEach((item) => {
-    const items = itemsByDate.get(item.date) || [];
-    items.push(item);
-    itemsByDate.set(item.date, items);
-  });
-
-  return (
-    <div className="event-color-calendar" aria-label="イベント日の色分けカレンダー">
-      <div className="calendar-legend" aria-label="カレンダーの色分け">
-        <span>
-          <i className="legend-dot legend-dot-event" />
-          イベント日
-        </span>
-        <span>
-          <i className="legend-dot legend-dot-holiday" />
-          店休日
-        </span>
-      </div>
-      <div className="event-mini-months">
-        {months.map((monthDate) => (
-          <article className="event-mini-month" key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}>
-            <h3>
-              {monthDate.getFullYear()}年{monthDate.getMonth() + 1}月
-            </h3>
-            <div className="event-mini-weekdays" aria-hidden="true">
-              {weekdays.map((weekday) => (
-                <span key={weekday}>{weekday}</span>
-              ))}
-            </div>
-            <div className="event-mini-days">
-              {buildMonthDays(monthDate, itemsByDate).map((day) => {
-                const hasEvent = day.items.some((item) => item.type === "event");
-                const hasHoliday = day.items.some((item) => item.type === "holiday");
-                return (
-                <div
-                  className={`event-mini-day${day.inMonth ? "" : " is-outside"}${hasHoliday ? " is-holiday" : ""}${hasEvent ? " is-event-day" : ""}`}
-                  key={day.key}
-                  title={day.items.map((item) => item.title).join(" / ")}
-                >
-                  <span>{day.day}</span>
-                </div>
-                );
-              })}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function EventCalendarSection({ events, calendarItems }: { events: EventItem[]; calendarItems?: PublicCalendarItem[] }) {
+export function EventCalendarSection() {
   return (
     <section className="section event-calendar-section">
       <div className="event-calendar-copy">
@@ -117,10 +11,10 @@ export function EventCalendarSection({ events, calendarItems }: { events: EventI
           <h2>
             最新イベントを、
             <br />
-            カレンダーで確認。
+            Google Calendarで確認。
           </h2>
           <p className="section-lead">
-            元ページで使っていたGoogle Calendarを引き継ぎました。ライブ、DJ、貸切予定を確認できます。
+            元ページで使っていたGoogle Calendarを引き継ぎました。ライブ、DJ、貸切予定、店休日をまとめて確認できます。
           </p>
         </div>
         <div className="calendar-note-grid" aria-label="イベント確認の補足">
@@ -147,7 +41,6 @@ export function EventCalendarSection({ events, calendarItems }: { events: EventI
             イベント予約メール
           </a>
         </div>
-        <EventColorCalendar events={events} calendarItems={calendarItems} />
       </div>
       <div className="event-calendar-frame-wrap">
         <iframe
