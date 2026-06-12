@@ -8,16 +8,8 @@ import { editableMedia } from "@/lib/editable-content";
 import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@/lib/i18n";
 import { eventScheduleLinkLabels, localizedHomeSections, localizedPageEyebrow, localizedVisitInfoTitles } from "@/lib/localized-content";
 import { localizedPageImages } from "@/lib/page-content";
+import { localizedInternalHref } from "@/lib/path-utils";
 import { mailHref, site } from "@/lib/site";
-
-function localizedHref(locale: LocaleCode, href: string) {
-  if (/^https?:\/\//.test(href)) {
-    return href;
-  }
-
-  const normalized = href === "/" ? "" : href.replace(/\/$/, "");
-  return `/${locale}${normalized}/`;
-}
 
 function LocalizedVisitInfoCards({ locale, labels }: { locale: LocaleCode; labels: (typeof localizedLabels)[LocaleCode] }) {
   const titles = localizedVisitInfoTitles[locale];
@@ -63,7 +55,7 @@ function LocalizedMenuTeaser({ locale }: { locale: LocaleCode }) {
         <p className="eyebrow">Food & Drink</p>
         <h2>{copy.menuTitle}</h2>
         <p className="section-lead">{copy.menuLead}</p>
-        <Link className="text-link" href={localizedHref(locale, "/menu")}>
+        <Link className="text-link" href={localizedInternalHref("/menu", locale)}>
           {localizedLabels[locale].menuLink} <ArrowRight size={16} />
         </Link>
       </div>
@@ -98,7 +90,7 @@ function LocalizedAccessPreview({ locale }: { locale: LocaleCode }) {
             <br />
             {labels.eventHours}
             <br />
-            <Link className="inline-access-link" href={`/${locale}/events/`}>
+            <Link className="inline-access-link" href={localizedInternalHref("/events", locale)}>
               {eventScheduleLinkLabels[locale]}
             </Link>
           </dd>
