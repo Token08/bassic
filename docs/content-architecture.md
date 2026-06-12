@@ -11,11 +11,17 @@ This site is structured so future admin/CMS work can replace content data withou
 - `lib/editable-content.ts`
   - Store visual assets, hero slides, fallback menu images, SNS embed URLs, and social links.
   - Replace or extend this file when a future admin site manages images or visual configuration.
+  - The event calendar embed URL is also stored here. It reuses the Google Calendar ID from the legacy `calendar.html` page.
 
 - `lib/page-content.ts`
   - Store page-level copy and reusable section copy that is still static today.
   - Move these values into CMS/admin fields later without changing page layout components.
-  - Current examples: page hero text, visit information card labels, SNS section copy, and the home menu teaser.
+  - Current examples: page hero text, first-visit feature cards, visit information card labels, SNS section copy, and the home menu teaser.
+
+- `lib/localized-content.ts`
+  - Store translated section copy that is not page metadata.
+  - Keep localized first-visit cards, SNS intro copy, access teaser copy, and language-specific helper labels here.
+  - Move these values into translated CMS/admin fields later if multilingual editing becomes part of the management workflow.
 
 - `lib/fallback-data.ts`
   - Store local fallback content for home copy, events, menu items, and party plans.
@@ -28,11 +34,23 @@ This site is structured so future admin/CMS work can replace content data withou
 - `lib/i18n.ts`
   - Store localized labels and page metadata for non-Japanese pages.
 
+- `lib/routes.ts`
+  - Store canonical internal page paths, localized path generation, and sitemap route priorities.
+  - Update this first when adding a page or changing a URL.
+
+- `scripts/smoke-seo.mjs`
+  - Check exported HTML after `npm run build`.
+  - Confirms canonical URLs, hreflang, OGP/Twitter tags, and sitemap registration for representative pages.
+
+- `scripts/smoke-links.mjs`
+  - Check exported HTML after `npm run build`.
+  - Confirms internal links and local asset references resolve inside `out/`.
+
 ## UI Layer Rule
 
 Components should render data. They should avoid owning prices, event dates, image paths, or operational facts.
 
-Shared UI pieces should be reused across Japanese and localized pages when they render the same concept. For example, visit information cards are rendered through `components/visit-info.tsx` so hours, charge, and smoking policy stay visually consistent across languages.
+Shared UI pieces should be reused across Japanese and localized pages when they render the same concept. For example, visit information cards are rendered through `components/visit-info.tsx` so hours, charge, and smoking policy stay visually consistent across languages. First-visit feature cards use `FeatureCardGrid` from `components/content.tsx`, with copy supplied by `lib/page-content.ts` or `lib/localized-content.ts`.
 
 Preferred flow:
 

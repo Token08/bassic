@@ -1,0 +1,69 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const outDir = join(process.cwd(), "out");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://token08.github.io/bassic").replace(/\/$/, "");
+
+const pages = [
+  { path: "/", file: "index.html" },
+  { path: "/first-visit/", file: "first-visit/index.html" },
+  { path: "/events/", file: "events/index.html" },
+  { path: "/menu/", file: "menu/index.html" },
+  { path: "/party/", file: "party/index.html" },
+  { path: "/access/", file: "access/index.html" },
+  { path: "/en/", file: "en/index.html" },
+  { path: "/en/events/", file: "en/events/index.html" },
+  { path: "/ko/menu/", file: "ko/menu/index.html" },
+  { path: "/zh-hant/party/", file: "zh-hant/party/index.html" },
+  { path: "/zh-hans/access/", file: "zh-hans/access/index.html" }
+];
+
+const requiredHreflang = ["ja", "en", "ko", "zh-Hant", "zh-Hans", "x-default"];
+const failures = [];
+
+function readOutFile(file) {
+  const path = join(outDir, file);
+  if (!existsSync(path)) {
+    failures.push(`Missing exported file: out/${file}`);
+    return "";
+  }
+
+  return readFileSync(path, "utf8");
+}
+
+for (const page of pages) {
+  const html = readOutFile(page.file);
+  if (!html) {
+    continue;
+  }
+
+  const canonical = `${siteUrl}${page.path}`;
+  if (!html.includes(`rel="canonical" href="${canonical}"`)) {
+    failures.push(`Missing canonical for ${page.path}: ${canonical}`);
+  }
+
+  for (const lang of requiredHreflang) {
+    if (!html.includes(`hrefLang="${lang}"`) && !html.includes(`hreflang="${lang}"`)) {
+      failures.push(`Missing hreflang ${lang} on ${page.path}`);
+    }
+  }
+
+  if (!html.includes("og:image") || !html.includes("twitter:card")) {
+    failures.push(`Missing OGP/Twitter metadata on ${page.path}`);
+  }
+}
+
+const sitemap = readOutFile("sitemap.xml");
+for (const page of pages) {
+  const expected = `${siteUrl}${page.path}`;
+  if (sitemap && !sitemap.includes(expected)) {
+    failures.push(`Missing sitemap URL: ${expected}`);
+  }
+}
+
+if (failures.length) {
+  console.error(failures.map((failure) => `- ${failure}`).join("\n"));
+  process.exit(1);
+}
+
+console.log(`SEO smoke check passed for ${pages.length} pages.`);

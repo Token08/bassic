@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
-import { homeMenuTeaser, socialUpdatesCopy, visitInfoItems } from "@/lib/page-content";
+import { firstVisitSection, homeMenuTeaser, socialUpdatesCopy, visitInfoItems, type FeatureCardContent } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
@@ -13,6 +13,11 @@ import { VisitInfoGrid } from "./visit-info";
 
 const heroImagePath = editableMedia.homeHeroImage.src;
 const atmosphereImages = editableMedia.atmosphereImages;
+const featureIcons = {
+  music: Music2,
+  store: Store,
+  users: UsersRound
+} as const;
 
 function imageSrc(path: string) {
   return path.startsWith("/assets/") ? assetPath(path) : path;
@@ -85,32 +90,11 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
   return (
     <section className={`section intro intro-${tone}`}>
       <div className="section-heading narrow-copy">
-        <p className="eyebrow">First Visit</p>
-        <h2>
-          高い天井と柔らかな灯り。豊富なお酒と心地よい空間が、それぞれの夜をゆっくりと深めていく。
-        </h2>
+        <p className="eyebrow">{firstVisitSection.eyebrow}</p>
+        <h2>{firstVisitSection.title}</h2>
       </div>
       <p className="section-lead narrow-copy">{lead}</p>
-      <div className="feature-grid">
-        <article>
-          <Music2 />
-          <h3>天神の夜に、音楽という余白を。</h3>
-          <p>ライヴ、DJ、イベントの余韻まで。当店イベント後は通常バータイムでそれぞれお楽しみいただけます。</p>
-          <PairedFeaturePhoto photo={atmosphereImages[0]} />
-        </article>
-        <article>
-          <Store />
-          <h3>ノンアルコールでも、お食事だけでも。</h3>
-          <p>当店名物のファズカレーやタコス＆ポテトなど、自家製のサングリアや珈琲焼酎も人気です。</p>
-          <PairedFeaturePhoto photo={atmosphereImages[1]} />
-        </article>
-        <article>
-          <UsersRound />
-          <h3>お一人様でもグループでも。</h3>
-          <p>お一人でふらっと来店、待ち合わせ、貸切パーティーまで用途に合わせてご利用いただけます。</p>
-          <PairedFeaturePhoto photo={atmosphereImages[2]} />
-        </article>
-      </div>
+      <FeatureCardGrid features={firstVisitSection.features} />
     </section>
   );
 }
@@ -124,6 +108,26 @@ function PairedFeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number
     <figure className="feature-photo">
       <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
     </figure>
+  );
+}
+
+export function FeatureCardGrid({ features }: { features: readonly FeatureCardContent[] }) {
+  return (
+    <div className="feature-grid">
+      {features.map((feature, index) => {
+        const Icon = featureIcons[feature.icon];
+        const photo = atmosphereImages[index % atmosphereImages.length];
+
+        return (
+          <article key={feature.title}>
+            <Icon />
+            <h3>{feature.title}</h3>
+            <p>{feature.text}</p>
+            <PairedFeaturePhoto photo={photo} />
+          </article>
+        );
+      })}
+    </div>
   );
 }
 

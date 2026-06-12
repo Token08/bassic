@@ -1,16 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { languageOptions } from "@/lib/i18n";
+import { localizedPageSegments } from "@/lib/routes";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-const locales = [
-  { code: "ja", label: "日本語", prefix: "" },
-  { code: "en", label: "English", prefix: "/en" },
-  { code: "ko", label: "한국어", prefix: "/ko" },
-  { code: "zh-hant", label: "繁體中文", prefix: "/zh-hant" },
-  { code: "zh-hans", label: "简体中文", prefix: "/zh-hans" }
-] as const;
 
 function stripBasePath(pathname: string) {
   if (!basePath || pathname === basePath) {
@@ -26,7 +20,7 @@ function stripBasePath(pathname: string) {
 
 function stripLocalePrefix(pathname: string) {
   const path = stripBasePath(pathname);
-  const locale = locales.find((item) => item.prefix && (path === item.prefix || path.startsWith(`${item.prefix}/`)));
+  const locale = languageOptions.find((item) => item.prefix && (path === item.prefix || path.startsWith(`${item.prefix}/`)));
 
   if (!locale?.prefix) {
     return path || "/";
@@ -39,7 +33,9 @@ function stripLocalePrefix(pathname: string) {
 function localizedHref(prefix: string, currentPath: string) {
   const path = stripLocalePrefix(currentPath);
   const normalizedPath = path === "/" ? "/" : `/${path.replace(/^\/|\/$/g, "")}/`;
-  return `${basePath}${prefix}${normalizedPath}`;
+  const localizedPaths = new Set(["/", ...Object.values(localizedPageSegments).filter(Boolean).map((segment) => `/${segment}/`)]);
+  const safePath = prefix && !localizedPaths.has(normalizedPath) ? "/" : normalizedPath;
+  return `${basePath}${prefix}${safePath}`;
 }
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
@@ -52,7 +48,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         Language
       </summary>
       <div>
-        {locales.map((locale) => (
+        {languageOptions.map((locale) => (
           <a key={locale.code} href={localizedHref(locale.prefix, pathname)} hrefLang={locale.code}>
             {locale.label}
           </a>

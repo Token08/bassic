@@ -8,6 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "smoke:links": "node scripts/smoke-links.mjs",
+    "smoke:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

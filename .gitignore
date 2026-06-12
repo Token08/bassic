@@ -6,3 +6,4 @@ out/
 *.log
 tsconfig.tsbuildinfo
 Desktop.ini
+.codex-remote-attachments/

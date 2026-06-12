@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { type LocaleCode, type LocalizedPageKey, localizedPages } from "./i18n";
+import { localizedPath } from "./routes";
 import { absoluteUrl, site } from "./site";
 
 const localeOg: Record<LocaleCode, string> = {
@@ -15,18 +16,6 @@ const hreflang: Record<LocaleCode, string> = {
   "zh-hant": "zh-Hant",
   "zh-hans": "zh-Hans"
 };
-
-export function localizedPath(locale: LocaleCode, pageKey: LocalizedPageKey) {
-  const segment: Record<LocalizedPageKey, string> = {
-    home: "",
-    events: "events",
-    menu: "menu",
-    party: "party",
-    access: "access"
-  };
-  const suffix = segment[pageKey] ? `/${segment[pageKey]}/` : "/";
-  return `/${locale}${suffix}`;
-}
 
 export function localizedMetadata(locale: LocaleCode, pageKey: LocalizedPageKey): Metadata {
   const page = localizedPages[locale][pageKey];

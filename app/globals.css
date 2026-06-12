@@ -564,6 +564,7 @@ h3 {
 .section-light .button,
 .route-section .button,
 .split .button,
+.event-calendar-section .button,
 .menu-section .button,
 .party-section .button,
 .access-section .button {
@@ -575,6 +576,7 @@ h3 {
 .section-light .button.primary,
 .route-section .button.primary,
 .split .button.primary,
+.event-calendar-section .button.primary,
 .menu-section .button.primary,
 .party-section .button.primary,
 .access-section .button.primary {
@@ -1042,6 +1044,66 @@ h3 {
 .event-list {
   display: grid;
   gap: 14px;
+}
+
+.event-calendar-section {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.72fr) minmax(420px, 1.28fr);
+  gap: clamp(30px, 5vw, 72px);
+  align-items: center;
+  background:
+    linear-gradient(90deg, rgba(255, 249, 234, 0.96), rgba(242, 228, 204, 0.9)),
+    var(--section-light-bg);
+  color: var(--ink);
+}
+
+.event-calendar-copy {
+  display: grid;
+  gap: 22px;
+}
+
+.calendar-note-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.calendar-note-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  border: 1px solid rgba(18, 13, 11, 0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 253, 245, 0.82);
+  box-shadow: 0 12px 28px rgba(65, 45, 20, 0.08);
+  color: var(--brown);
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.calendar-note-card svg {
+  color: var(--red);
+}
+
+.event-calendar-actions {
+  margin-top: 2px;
+}
+
+.event-calendar-frame-wrap {
+  overflow: hidden;
+  border: 1px solid rgba(18, 13, 11, 0.12);
+  border-radius: 8px;
+  background: #fffdf5;
+  box-shadow: 0 22px 50px rgba(65, 45, 20, 0.18);
+}
+
+.event-calendar-frame {
+  width: 100%;
+  min-height: 640px;
+  border: 0;
+  background: #fff;
 }
 
 .event-poster {
@@ -1724,6 +1786,7 @@ main > section.visit-info-strip .visit-info-grid article p {
   .home-menu-teaser,
   .social-section,
   .split,
+  .event-calendar-section,
   .access-section {
     grid-template-columns: 1fr;
   }
@@ -1837,6 +1900,18 @@ main > section.visit-info-strip .visit-info-grid article p {
 
   .event-card {
     grid-template-columns: 1fr;
+  }
+
+  .event-calendar-copy {
+    gap: 18px;
+  }
+
+  .calendar-note-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-calendar-frame {
+    min-height: min(560px, 72vh);
   }
 
   .event-date {

@@ -25,15 +25,28 @@ NEXT_PUBLIC_GOOGLE_MAPS_URL=https://www.google.com/maps/search/?api=1&query=publ
 microCMSが未設定の場合は、`lib/fallback-data.ts` の初期データで表示されます。
 
 将来の管理画面/API連携に向けたコンテンツ配置方針は `docs/content-architecture.md` を参照してください。
+画像差し替え時の推奨サイズと容量は `docs/image-guidelines.md` を参照してください。
 
 ## 更新できる内容
 
 - `home`: トップ画像、トップ文言、初めての方向け文言、アクセス補足
 - `events`: イベント日付、タイトル、出演者、開場/開演、料金、予約方法、画像、公開/非公開
-- `menu`: フード/ドリンク名、英語名、価格、説明、カテゴリ
+- `menu`: フード/ドリンク名、英語名、価格、説明、カテゴリ、画像
 - `party-plans`: 貸切/パーティープラン名、価格、説明
 
 詳しいフィールドは `docs/microcms-schema.md` を参照してください。
+
+## 公開前チェック
+
+```bash
+npm run typecheck
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run build
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; npm run smoke:seo
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run smoke:links
+```
+
+`smoke:seo` は `out/` に出力されたHTMLを読み、主要ページのcanonical、hreflang、OGP、sitemap登録を確認します。
+`smoke:links` は `out/` に出力されたHTML内の内部リンクとローカル画像/スクリプト/スタイル参照を確認します。
 
 ## SEO / Google Map
 

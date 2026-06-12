@@ -82,6 +82,10 @@ export const editableSocialLinks: SocialLink[] = [
 export const externalEmbeds = {
   instagramPostUrl: "https://www.instagram.com/p/BTbP44JFyJt/",
   xTimelineUrl: "https://twitter.com/bar_Bassic?ref_src=twsrc%5Etfw",
+  googleCalendarPublicUrl:
+    "https://calendar.google.com/calendar/embed?src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&ctz=Asia%2FTokyo",
+  googleCalendarEmbedUrl:
+    "https://calendar.google.com/calendar/embed?showCalendars=0&showTz=0&height=600&wkst=1&bgcolor=%23FFFFFF&src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&color=%23B1365F&ctz=Asia%2FTokyo",
   facebookPluginUrl: `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
     site.facebookUrl
   )}&tabs=timeline&width=340&height=675&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`

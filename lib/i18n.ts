@@ -3,6 +3,14 @@ export const localeCodes = ["en", "ko", "zh-hant", "zh-hans"] as const;
 export type LocaleCode = (typeof localeCodes)[number];
 export type LocalizedPageKey = "home" | "events" | "menu" | "party" | "access";
 
+export const languageOptions = [
+  { code: "ja", label: "日本語", prefix: "" },
+  { code: "en", label: "English", prefix: "/en" },
+  { code: "ko", label: "한국어", prefix: "/ko" },
+  { code: "zh-hant", label: "繁體中文", prefix: "/zh-hant" },
+  { code: "zh-hans", label: "简体中文", prefix: "/zh-hans" }
+] as const;
+
 export const localizedLabels = {
   en: {
     language: "English",

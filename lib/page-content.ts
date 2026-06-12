@@ -19,6 +19,12 @@ export type VisitInfoItem = {
   text: string;
 };
 
+export type FeatureCardContent = {
+  icon: "music" | "store" | "users";
+  title: string;
+  text: string;
+};
+
 export const pageHeroes = {
   events: {
     eyebrow: "Event Schedule",
@@ -89,6 +95,28 @@ export const visitInfoItems: VisitInfoItem[] = [
     text: site.chargeLabel
   }
 ];
+
+export const firstVisitSection = {
+  eyebrow: "First Visit",
+  title: "高い天井と柔らかな灯り。豊富なお酒と心地よい空間が、それぞれの夜をゆっくりと深めていく。",
+  features: [
+    {
+      icon: "music",
+      title: "天神の夜に、音楽という余白を。",
+      text: "ライヴ、DJ、イベントの余韻まで。当店イベント後は通常バータイムでそれぞれお楽しみいただけます。"
+    },
+    {
+      icon: "store",
+      title: "ノンアルコールでも、お食事だけでも。",
+      text: "当店名物のファズカレーやタコス＆ポテトなど、自家製のサングリアや珈琲焼酎も人気です。"
+    },
+    {
+      icon: "users",
+      title: "お一人様でもグループでも。",
+      text: "お一人でふらっと来店、待ち合わせ、貸切パーティーまで用途に合わせてご利用いただけます。"
+    }
+  ] satisfies FeatureCardContent[]
+};
 
 export const socialUpdatesCopy = {
   titleLines: ["最新情報は、", "公式SNSから。"],
