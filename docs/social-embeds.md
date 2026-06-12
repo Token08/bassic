@@ -24,12 +24,14 @@ Facebook uses the official Page Plugin timeline iframe.
 
 ## X
 
-X uses the official `twitter-timeline` widget by default. The site reloads the widget after hydration so the timeline has another chance to render after client-side page load.
+The official X timeline widget can show rate-limit errors in embedded pages.
+To avoid showing a broken black widget to visitors, the site uses a safe profile card by default.
 
-If the official X widget is blocked or does not render, set an external iframe widget URL as:
+To show a timeline, set an external iframe widget URL as:
 
 ```text
 NEXT_PUBLIC_X_WIDGET_SRC
 ```
 
-When this value is set to an HTTPS URL, the homepage uses that iframe instead of the official X widget.
+When this value is set to an HTTPS URL, the homepage uses that iframe.
+If the value is empty, the site keeps the clean X profile card and links to the official X page.

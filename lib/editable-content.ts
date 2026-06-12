@@ -82,12 +82,11 @@ export const editableSocialLinks: SocialLink[] = [
 export const externalEmbeds = {
   instagramWidgetSrc: process.env.NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC?.trim() || "",
   xWidgetSrc: process.env.NEXT_PUBLIC_X_WIDGET_SRC?.trim() || "",
-  xTimelineUrl: "https://twitter.com/bar_Bassic",
   googleCalendarPublicUrl:
     "https://calendar.google.com/calendar/embed?src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&ctz=Asia%2FTokyo",
   googleCalendarEmbedUrl:
     "https://calendar.google.com/calendar/embed?showCalendars=0&showTz=0&height=600&wkst=1&bgcolor=%23FFFFFF&src=bpi41sabm94gp0sni0ps7vajkc%40group.calendar.google.com&color=%23B1365F&ctz=Asia%2FTokyo",
   facebookPluginUrl: `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
     site.facebookUrl
-  )}&tabs=timeline&width=340&height=675&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`
+  )}&tabs=timeline&width=500&height=620&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`
 } as const;

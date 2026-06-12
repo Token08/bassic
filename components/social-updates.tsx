@@ -2,7 +2,6 @@ import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
-import { XTimelineScript } from "./x-timeline-script";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
@@ -52,12 +51,12 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
-          <div className="social-embed-frame">
+          <div className="social-embed-frame facebook-frame">
             <iframe
               title="public bar Bassic. Facebook timeline"
               src={externalEmbeds.facebookPluginUrl}
-              width="340"
-              height="675"
+              width="500"
+              height="620"
               loading="lazy"
               referrerPolicy="origin-when-cross-origin"
             />
@@ -66,7 +65,7 @@ export function SocialUpdates({
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
           {xWidgetSrc ? (
-            <div className="social-embed-frame x-frame">
+            <div className="social-embed-frame external-social-frame x-frame">
               <iframe
                 title="public bar Bassic. X timeline"
                 src={xWidgetSrc}
@@ -75,19 +74,14 @@ export function SocialUpdates({
               />
             </div>
           ) : (
-            <div className="social-embed-frame x-frame">
-              <a
-                className="twitter-timeline"
-                data-width="340"
-                data-height="675"
-                href={externalEmbeds.xTimelineUrl}
-              >
-                Tweets by bar_Bassic
-              </a>
-              <a className="social-fallback-link" href={site.xUrl} target="_blank" rel="noreferrer">
-                {xFallbackLabel} <ExternalLink size={15} />
-              </a>
-            </div>
+            <SocialProfileCard
+              href={site.xUrl}
+              account="@bar_Bassic"
+              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
+              title="X"
+              lead="イベント告知や営業情報は公式Xでも更新しています。表示制限が出る場合は公式ページでご確認ください。"
+              buttonLabel={xFallbackLabel}
+            />
           )}
         </SocialEmbedCard>
       </div>
@@ -99,8 +93,6 @@ export function SocialUpdates({
           </a>
         ))}
       </div>
-
-      <XTimelineScript />
     </section>
   );
 }
