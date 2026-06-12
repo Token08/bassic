@@ -1103,6 +1103,52 @@ h3 {
   background: #fffaf0;
 }
 
+.x-timeline-frame {
+  position: relative;
+  display: grid;
+  place-items: stretch;
+  background:
+    linear-gradient(180deg, rgba(16, 12, 10, 0.2), rgba(16, 12, 10, 0.7)),
+    #080605;
+  color: var(--ivory);
+}
+
+.x-timeline-frame iframe,
+.x-timeline-frame .twitter-timeline-rendered {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+.x-timeline-frame > .twitter-timeline {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 28px;
+  color: var(--ivory);
+  font-weight: 900;
+  text-align: center;
+}
+
+.x-timeline-direct-link {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 6px;
+  background: rgba(111, 15, 21, 0.94);
+  color: #fffaf0;
+  font-size: 0.82rem;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
 .social-profile-card {
   display: grid;
   align-content: center;
@@ -2255,6 +2301,14 @@ main > section.visit-info-strip .visit-info-grid article p {
   .facebook-frame {
     width: 100%;
     justify-items: stretch;
+  }
+
+  .x-timeline-direct-link {
+    right: 10px;
+    bottom: 10px;
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 0.76rem;
   }
 
   .social-direct-links {

@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
+import { XTimelineEmbed } from "./x-timeline-embed";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
@@ -74,14 +75,7 @@ export function SocialUpdates({
               />
             </div>
           ) : (
-            <SocialProfileCard
-              href={site.xUrl}
-              account="@bar_Bassic"
-              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
-              title="X"
-              lead="イベント告知や営業情報は公式Xでも更新しています。表示制限が出る場合は公式ページでご確認ください。"
-              buttonLabel={xFallbackLabel}
-            />
+            <XTimelineEmbed href={site.xUrl} fallbackLabel={xFallbackLabel} />
           )}
         </SocialEmbedCard>
       </div>
