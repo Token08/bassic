@@ -1,8 +1,8 @@
-import Script from "next/script";
 import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
+import { XTimelineScript } from "./x-timeline-script";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
@@ -83,7 +83,7 @@ export function SocialUpdates({
         ))}
       </div>
 
-      <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
+      <XTimelineScript />
     </section>
   );
 }
