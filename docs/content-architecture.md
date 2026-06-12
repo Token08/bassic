@@ -32,6 +32,8 @@ This site is structured so future admin/CMS work can replace content data withou
 
 Components should render data. They should avoid owning prices, event dates, image paths, or operational facts.
 
+Shared UI pieces should be reused across Japanese and localized pages when they render the same concept. For example, visit information cards are rendered through `components/visit-info.tsx` so hours, charge, and smoking policy stay visually consistent across languages.
+
 Preferred flow:
 
 1. Admin/CMS stores editable content.

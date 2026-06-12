@@ -59,6 +59,14 @@ export const pageHeroes = {
   }
 } satisfies Record<string, PageHeroContent>;
 
+export const localizedPageImages = {
+  home: editableMedia.homeHeroImage.src,
+  events: editableMedia.eventHeroSlides[0].src,
+  menu: editableMedia.pageHeroImages.menu.src,
+  party: editableMedia.partyHeroSlides[0].src,
+  access: editableMedia.pageHeroImages.access.src
+} as const;
+
 export const visitInfoItems: VisitInfoItem[] = [
   {
     icon: "clock",

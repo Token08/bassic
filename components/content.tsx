@@ -1,24 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Cigarette, CircleDollarSign, Clock3, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
+import { CalendarDays, ExternalLink, Music2, Navigation, Store, UsersRound } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
-import { homeMenuTeaser, socialUpdatesCopy, visitInfoItems, type VisitInfoIcon } from "@/lib/page-content";
+import { homeMenuTeaser, socialUpdatesCopy, visitInfoItems } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
 import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
+import { VisitInfoGrid } from "./visit-info";
 
 const heroImagePath = editableMedia.homeHeroImage.src;
 const atmosphereImages = editableMedia.atmosphereImages;
-
-const visitInfoIcons: Record<VisitInfoIcon, React.ReactNode> = {
-  clock: <Clock3 />,
-  calendar: <CalendarDays />,
-  smoking: <Cigarette />,
-  charge: <CircleDollarSign />
-};
 
 function imageSrc(path: string) {
   return path.startsWith("/assets/") ? assetPath(path) : path;
@@ -122,21 +116,7 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
 }
 
 export function VisitInfoCards() {
-  return (
-    <section className="visit-info-strip" aria-label="来店前の基本情報">
-      <div className="visit-info-grid">
-        {visitInfoItems.map((item) => (
-          <article key={item.title}>
-            {visitInfoIcons[item.icon]}
-            <div>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+  return <VisitInfoGrid ariaLabel="来店前の基本情報" items={visitInfoItems} />;
 }
 
 function PairedFeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {

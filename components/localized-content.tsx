@@ -3,9 +3,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
-  Cigarette,
-  CircleDollarSign,
-  Clock3,
   Music2,
   Navigation,
   Store,
@@ -13,17 +10,11 @@ import {
 } from "lucide-react";
 import { PageHero } from "@/components/content";
 import { SocialUpdates } from "@/components/social-updates";
+import { VisitInfoGrid, type VisitInfoGridItem } from "@/components/visit-info";
 import { editableMedia } from "@/lib/editable-content";
 import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@/lib/i18n";
+import { localizedPageImages } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
-
-const pageImages: Record<LocalizedPageKey, string> = {
-  home: editableMedia.homeHeroImage.src,
-  events: editableMedia.eventHeroSlides[0].src,
-  menu: editableMedia.pageHeroImages.menu.src,
-  party: editableMedia.partyHeroSlides[0].src,
-  access: editableMedia.pageHeroImages.access.src
-};
 
 const eventScheduleLinkLabels: Record<LocaleCode, string> = {
   en: "View event schedule",
@@ -124,28 +115,14 @@ function localizedHref(locale: LocaleCode, href: string) {
 
 function LocalizedVisitInfoCards({ locale, labels }: { locale: LocaleCode; labels: (typeof localizedLabels)[LocaleCode] }) {
   const titles = visitInfoTitles[locale];
-  const items = [
-    { icon: <Clock3 />, title: titles.hours, text: labels.hours },
-    { icon: <CalendarDays />, title: titles.events, text: labels.eventHours },
-    { icon: <Cigarette />, title: titles.smoking, text: labels.smoking },
-    { icon: <CircleDollarSign />, title: titles.charge, text: labels.charge }
+  const items: VisitInfoGridItem[] = [
+    { icon: "clock", title: titles.hours, text: labels.hours },
+    { icon: "calendar", title: titles.events, text: labels.eventHours },
+    { icon: "smoking", title: titles.smoking, text: labels.smoking },
+    { icon: "charge", title: titles.charge, text: labels.charge }
   ];
 
-  return (
-    <section className="visit-info-strip" aria-label={titles.aria}>
-      <div className="visit-info-grid">
-        {items.map((item) => (
-          <article key={item.text}>
-            {item.icon}
-            <div>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
+  return <VisitInfoGrid ariaLabel={titles.aria} items={items} />;
 }
 
 function LocalizedFirstVisit({ locale }: { locale: LocaleCode }) {
@@ -295,7 +272,7 @@ export function LocalizedPage({ locale, pageKey }: { locale: LocaleCode; pageKey
         eyebrow={page.eyebrow}
         title={page.title}
         lead={page.lead}
-        image={pageImages[pageKey]}
+        image={localizedPageImages[pageKey]}
         imageAlt={page.title}
         className={`localized-hero localized-${pageKey}-hero`}
         actionLabels={{ mapLabel: labels.map, callLabel: labels.call, reserveLabel: labels.reserve }}
