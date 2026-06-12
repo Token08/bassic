@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { ExternalLink } from "lucide-react";
+import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
 
@@ -23,20 +24,17 @@ export function SocialUpdates({
         <h2>{title}</h2>
         <p className="section-lead">{lead}</p>
       </div>
+
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          <div className="social-embed-frame instagram-frame">
-            <blockquote
-              className="instagram-media"
-              data-instgrm-captioned
-              data-instgrm-permalink={externalEmbeds.instagramProfileUrl}
-              data-instgrm-version="14"
-            >
-              <a href={externalEmbeds.instagramProfileUrl} target="_blank" rel="noreferrer">
-                {instagramFallbackLabel}
-              </a>
-            </blockquote>
-          </div>
+          <SocialProfileCard
+            href={site.instagramUrl}
+            account="@bassic_official"
+            imageSrc={assetPath("/assets/brand/index-logo.png")}
+            title="Instagram"
+            lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+            buttonLabel={instagramFallbackLabel}
+          />
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
@@ -53,7 +51,7 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          <div className="social-embed-frame">
+          <div className="social-embed-frame x-frame">
             <a className="twitter-timeline" data-height="675" data-theme="dark" href={externalEmbeds.xTimelineUrl}>
               X timeline by bar_Bassic
             </a>
@@ -63,6 +61,7 @@ export function SocialUpdates({
           </div>
         </SocialEmbedCard>
       </div>
+
       <div className="social-direct-links">
         {editableSocialLinks.map((link) => (
           <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
@@ -70,7 +69,7 @@ export function SocialUpdates({
           </a>
         ))}
       </div>
-      <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
+
       <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
     </section>
   );
@@ -97,5 +96,35 @@ function SocialEmbedCard({
       </div>
       {children}
     </article>
+  );
+}
+
+function SocialProfileCard({
+  href,
+  account,
+  imageSrc,
+  title,
+  lead,
+  buttonLabel
+}: {
+  href: string;
+  account: string;
+  imageSrc: string;
+  title: string;
+  lead: string;
+  buttonLabel: string;
+}) {
+  return (
+    <div className="social-profile-card">
+      <img src={imageSrc} alt="public bar Bassic." width={160} height={160} loading="lazy" />
+      <div>
+        <p className="social-profile-kicker">{account}</p>
+        <h3>{title}</h3>
+        <p>{lead}</p>
+      </div>
+      <a className="social-profile-button" href={href} target="_blank" rel="noreferrer">
+        {buttonLabel} <ExternalLink size={15} />
+      </a>
+    </div>
   );
 }
