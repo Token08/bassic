@@ -30,7 +30,7 @@ function JsonLd() {
     image: `${site.siteUrl}/ogp.png`,
     hasMap: site.googleMapsUrl,
     hasMenu: `${site.siteUrl}/menu/`,
-    keywords: "福岡 ミュージックバー, 天神 バー, 親不孝通り バー, 福岡 ライブバー, 天神 貸切, ファズカレー",
+    keywords: "福岡 ミュージックバー, 天神 バー, 親不孝通り バー, 福岡 ライヴバー, 天神 貸切, ファズカレー",
     areaServed: [
       { "@type": "City", name: "福岡市" },
       { "@type": "Place", name: "天神" },
@@ -38,7 +38,7 @@ function JsonLd() {
     ],
     amenityFeature: [
       { "@type": "LocationFeatureSpecification", name: "喫煙可", value: true },
-      { "@type": "LocationFeatureSpecification", name: "ライブ・DJイベント", value: true },
+      { "@type": "LocationFeatureSpecification", name: "ライヴ・DJイベント", value: true },
       { "@type": "LocationFeatureSpecification", name: "貸切相談", value: true }
     ],
     smokingAllowed: true,

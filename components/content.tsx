@@ -303,7 +303,7 @@ export function FeaturedEventsSection({ events }: { events: EventItem[] }) {
           先にチェック。
         </h2>
         <p className="section-lead">
-          ライブ、DJ、バータイムの予定から直近のものを表示しています。全体の予定は下のGoogle Calendarで確認できます。
+          ライヴ、DJ、バータイムの予定から直近のものを表示しています。全体の予定は下のGoogle Calendarで確認できます。
         </p>
       </div>
       <div className="featured-event-grid">
@@ -347,7 +347,7 @@ export function EventsTeaser({ events }: { events: EventItem[] }) {
       <div className="narrow-copy">
         <p className="eyebrow">Event Schedule</p>
         <h2>
-          ライブ・DJ・
+          ライヴ・DJ・
           <br />
           イベント情報
         </h2>
@@ -422,7 +422,7 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
         <h2>
           貸切、二次会、
           <br />
-          ライブ後の打ち上げにも。
+          ライヴ後の打ち上げにも。
         </h2>
       </div>
       <div className="plan-grid">
@@ -448,7 +448,7 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
           <p className="eyebrow">Use Case</p>
           <h3>天神・親不孝通りで、音楽のある集まりに。</h3>
           <p>
-            Bassic.は、バー営業だけでなく、貸切、二次会、ライブ後の打ち上げ、DJイベント、レンタル利用まで相談できます。
+            Bassic.は、バー営業だけでなく、貸切、二次会、ライヴ後の打ち上げ、DJイベント、レンタル利用まで相談できます。
             料理やドリンク、音響のある空間をまとめて検討したい方はメールでお問い合わせください。
           </p>
         </div>

@@ -43,12 +43,12 @@ export const editableMedia = {
     brandImage("/assets/brand/top-slides/hero-10.jpg", "public bar Bassic.の店内写真")
   ],
   eventHeroSlides: [
-    brandImage("/assets/brand/event-slides/event-01.jpg", "Bassic.のライブイベント風景"),
+    brandImage("/assets/brand/event-slides/event-01.jpg", "Bassic.のライヴイベント風景"),
     brandImage("/assets/brand/event-slides/event-02.jpg", "Bassic.のステージと客席"),
-    brandImage("/assets/brand/event-slides/event-03.jpg", "Bassic.のライブフロア"),
+    brandImage("/assets/brand/event-slides/event-03.jpg", "Bassic.のライヴフロア"),
     brandImage("/assets/brand/event-slides/event-04.jpg", "Bassic.のイベント風景"),
     brandImage("/assets/brand/event-slides/event-05.jpg", "Bassic.の音楽イベント"),
-    brandImage("/assets/brand/event-slides/event-06.jpg", "Bassic.のライブとDJの夜")
+    brandImage("/assets/brand/event-slides/event-06.jpg", "Bassic.のライヴとDJの夜")
   ],
   partyHeroSlides: [
     brandImage("/assets/brand/party-slides/party-01.jpg", "Bassic.のパーティー利用イメージ"),
@@ -56,7 +56,7 @@ export const editableMedia = {
     brandImage("/assets/brand/party-slides/party-03.jpg", "Bassic.の音楽とパーティーの夜")
   ],
   atmosphereImages: [
-    brandImage("/assets/drive/bassic/drums.jpg", "Bassic.のドラムセットがあるライブスペース"),
+    brandImage("/assets/drive/bassic/drums.jpg", "Bassic.のドラムセットがあるライヴスペース"),
     brandImage("/assets/drive/index_back/live-room.jpg", "赤い照明のBassic.店内"),
     brandImage("/assets/drive/index_back/warm-interior.jpg", "温かい照明のBassic.店内")
   ],

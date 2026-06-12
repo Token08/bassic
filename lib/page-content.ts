@@ -50,7 +50,7 @@ export const pageHeroes = {
   },
   party: {
     eyebrow: "Party & Rental",
-    title: "貸切、二次会、ライブ後の打ち上げに。",
+    title: "貸切、二次会、ライヴ後の打ち上げに。",
     lead: "親不孝通りで、音楽と料理を楽しめるパーティーやレンタル利用に対応しています。",
     slides: editableMedia.partyHeroSlides,
     className: "party-hero"
@@ -141,7 +141,7 @@ export const localSearchSection = {
   eyebrow: "Local Search",
   title: "福岡・天神で、音楽も料理も楽しめるバーを探している方へ。",
   lead:
-    "public bar Bassic.は、福岡市中央区天神・親不孝通りにあるミュージックバーです。ライブバー、DJイベント、バーご飯、貸切パーティーまで、Google検索やGoogle Mapから初めて来る方にも分かりやすい情報をまとめています。",
+    "public bar Bassic.は、福岡市中央区天神・親不孝通りにあるミュージックバーです。ライヴバー、DJイベント、バーご飯、貸切パーティーまで、Google検索やGoogle Mapから初めて来る方にも分かりやすい情報をまとめています。",
   cards: [
     {
       icon: "map",
@@ -150,8 +150,8 @@ export const localSearchSection = {
     },
     {
       icon: "music",
-      title: "ライブ・DJ・音楽イベント",
-      text: "ライブバー、DJバー、イベント後のバータイムとして利用できます。イベント日はスケジュールページで最新情報を確認できます。"
+      title: "ライヴ・DJ・音楽イベント",
+      text: "ライヴバー、DJバー、イベント後のバータイムとして利用できます。イベント日はスケジュールページで最新情報を確認できます。"
     },
     {
       icon: "food",
@@ -161,7 +161,7 @@ export const localSearchSection = {
     {
       icon: "party",
       title: "貸切・二次会・打ち上げ",
-      text: "天神・親不孝通りでの貸切パーティー、ライブ後の打ち上げ、二次会、レンタル利用の相談に対応しています。"
+      text: "天神・親不孝通りでの貸切パーティー、ライヴ後の打ち上げ、二次会、レンタル利用の相談に対応しています。"
     }
   ] satisfies LocalSearchCardContent[]
 };
@@ -176,12 +176,12 @@ export const equipmentRentalInfo = {
   eyebrow: "Equipment Rental",
   title: "機材レンタルについて",
   price: "平日 1H ￥10,000〜 / 土日祝・祝前日 1H ￥12,000〜",
-  body: "機材使用料込みで、ライブ、DJ、イベント、配信、二次会などのレンタル利用に対応しています。内容や人数により利用条件が変わる場合がありますので、詳細はお問い合わせください。"
+  body: "機材使用料込みで、ライヴ、DJ、イベント、配信、二次会などのレンタル利用に対応しています。内容や人数により利用条件が変わる場合がありますので、詳細はお問い合わせください。"
 } as const;
 
 export const partyUseCases = [
   "天神・親不孝通りでの二次会",
-  "ライブ後の打ち上げ",
+  "ライヴ後の打ち上げ",
   "DJイベントや音楽イベント",
   "少人数パーティーや貸切利用"
 ] as const;

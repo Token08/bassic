@@ -20,9 +20,9 @@ export const pageSeo = {
   },
   events: {
     path: pageRoutes.events.path,
-    title: "イベント | 福岡 天神のライブ・DJ・イベント予約",
+    title: "イベント | 福岡 天神のライヴ・DJ・イベント予約",
     description:
-      "public bar Bassic.のライブ、DJ、イベント予定を掲載。イベント終了後はバータイムとして利用でき、出演やイベント開催の相談も受け付けています。"
+      "public bar Bassic.のライヴ、DJ、イベント予定を掲載。イベント終了後はバータイムとして利用でき、出演やイベント開催の相談も受け付けています。"
   },
   menu: {
     path: pageRoutes.menu.path,
@@ -34,7 +34,7 @@ export const pageSeo = {
     path: pageRoutes.party.path,
     title: "貸切・パーティー | 天神の二次会・打ち上げ・レンタル",
     description:
-      "福岡・天神 親不孝通りで貸切、二次会、ライブ後の打ち上げ、DJイベント、レンタル利用に対応するpublic bar Bassic.のプラン案内。"
+      "福岡・天神 親不孝通りで貸切、二次会、ライヴ後の打ち上げ、DJイベント、レンタル利用に対応するpublic bar Bassic.のプラン案内。"
   },
   access: {
     path: pageRoutes.access.path,

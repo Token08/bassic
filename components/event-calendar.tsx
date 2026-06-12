@@ -14,7 +14,7 @@ export function EventCalendarSection() {
             Google Calendarで確認。
           </h2>
           <p className="section-lead">
-            元ページで使っていたGoogle Calendarを引き継ぎました。ライブ、DJ、貸切予定、店休日をまとめて確認できます。
+            元ページで使っていたGoogle Calendarを引き継ぎました。ライヴ、DJ、貸切予定、店休日をまとめて確認できます。
           </p>
         </div>
         <div className="calendar-note-grid" aria-label="イベント確認の補足">

@@ -40,7 +40,7 @@ export const fallbackContents: CmsContents = {
       englishName: "Fuzz Curry",
       price: "￥1,100",
       description:
-        "Bassic.の名物カレー。スパイスの香りとコクのあるソースで、飲む前の食事にも、ライブ後の一皿にも合います。",
+        "Bassic.の名物カレー。スパイスの香りとコクのあるソースで、飲む前の食事にも、ライヴ後の一皿にも合います。",
       image: { url: "/assets/drive/menu/fuzz-curry.jpg", alt: "Bassic.のファズ・カレー" }
     },
     {
@@ -64,7 +64,7 @@ export const fallbackContents: CmsContents = {
       name: "シェアプレート",
       englishName: "Share Plate",
       price: "￥1,200〜",
-      description: "ライブ前後や二次会でつまみやすい、人数に合わせた盛り合わせです。",
+      description: "ライヴ前後や二次会でつまみやすい、人数に合わせた盛り合わせです。",
       image: { url: "/assets/drive/index_back/table-food.jpg", alt: "Bassic.の料理が並ぶテーブル" }
     },
     {
@@ -109,7 +109,7 @@ export const fallbackContents: CmsContents = {
     {
       title: "Live After Party",
       price: "フード ￥1,500〜 / 1名",
-      body: "ライブやイベント後の打ち上げに。キャッシュオンドリンクと人数に合わせた料理をご用意します。"
+      body: "ライヴやイベント後の打ち上げに。キャッシュオンドリンクと人数に合わせた料理をご用意します。"
     },
     {
       title: "Rental",

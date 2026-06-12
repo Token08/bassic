@@ -1621,6 +1621,7 @@ h3 {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(280px, 0.9fr);
   gap: clamp(22px, 4vw, 42px);
+  width: min(980px, 100%);
   margin-top: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
