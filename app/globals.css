@@ -1033,7 +1033,7 @@ h3 {
 
 .social-embed-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(260px, 1fr) minmax(340px, 500px) minmax(260px, 1fr);
   gap: 18px;
   margin-top: 36px;
 }
@@ -1088,11 +1088,14 @@ h3 {
   display: grid;
   justify-items: center;
   align-items: start;
+  width: min(500px, 100%);
+  justify-self: center;
   background: #fffaf0;
 }
 
 .facebook-frame iframe {
-  width: min(500px, 100%) !important;
+  display: block;
+  width: 100% !important;
   max-width: 100%;
 }
 
@@ -1135,8 +1138,12 @@ h3 {
 .social-profile-card p {
   max-width: 26em;
   margin: 0 auto;
-  color: rgba(42, 31, 24, 0.76);
+  color: rgba(42, 31, 24, 0.82);
   line-height: 1.85;
+}
+
+.social-section .social-profile-card p:not(.social-profile-kicker) {
+  color: rgba(42, 31, 24, 0.82);
 }
 
 .social-profile-kicker {
@@ -2246,6 +2253,7 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .facebook-frame {
+    width: 100%;
     justify-items: stretch;
   }
 
