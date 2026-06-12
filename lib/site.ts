@@ -12,11 +12,12 @@ export const site = {
   streetAddress: "3-4-19 WITH天神5F",
   phone: "092-713-1040",
   email: "mail@bassic.jp",
-  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は22:30から通常営業",
-  eventHoursNote: "イベント時は営業時間が変動します。イベント終了後は22:30から通常営業です。詳細はイベントスケジュールページをご確認ください。",
+  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は 22:30 から通常営業",
+  eventHoursNote:
+    "イベント時は営業時間が変動します。\nイベント終了後は 22:30 から通常営業です。\n詳細はイベントスケジュールページをご確認ください。",
   chargeLabel: "チャージ 500円 / お一人様",
   smokingLabel:
-    "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容により、イベント中は禁煙になる場合がございます。",
+    "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容によりイベント中は禁煙になる場合がございます。",
   priceRange: "￥2,000-￥5,000",
   nearestStation: "天神駅から徒歩約4分",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp",
