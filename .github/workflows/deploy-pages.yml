@@ -35,6 +35,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
           NEXT_PUBLIC_BASE_PATH: /bassic
+          NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC: ${{ vars.NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC }}
         run: npm run build
 
       - name: Upload artifact

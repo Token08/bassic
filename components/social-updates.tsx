@@ -17,6 +17,8 @@ export function SocialUpdates({
   instagramFallbackLabel = "Instagramで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
+  const instagramWidgetSrc = getLightWidgetSrc(externalEmbeds.instagramWidgetSrc);
+
   return (
     <section className="section social-section">
       <div className="section-heading narrow-copy">
@@ -27,14 +29,25 @@ export function SocialUpdates({
 
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          <SocialProfileCard
-            href={site.instagramUrl}
-            account="@bassic_official"
-            imageSrc={assetPath("/assets/brand/index-logo.png")}
-            title="Instagram"
-            lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
-            buttonLabel={instagramFallbackLabel}
-          />
+          {instagramWidgetSrc ? (
+            <div className="social-embed-frame instagram-widget-frame">
+              <iframe
+                title="public bar Bassic. Instagram timeline"
+                src={instagramWidgetSrc}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          ) : (
+            <SocialProfileCard
+              href={site.instagramUrl}
+              account="@bassic_official"
+              imageSrc={assetPath("/assets/brand/index-logo.png")}
+              title="Instagram"
+              lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+              buttonLabel={instagramFallbackLabel}
+            />
+          )}
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
@@ -127,4 +140,19 @@ function SocialProfileCard({
       </a>
     </div>
   );
+}
+
+function getLightWidgetSrc(src: string) {
+  if (!src) {
+    return "";
+  }
+
+  try {
+    const url = new URL(src);
+    const isLightWidgetHost = url.hostname === "cdn.lightwidget.com" || url.hostname === "lightwidget.com";
+    const isWidgetPath = url.pathname.startsWith("/widgets/");
+    return url.protocol === "https:" && isLightWidgetHost && isWidgetPath ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }
