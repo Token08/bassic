@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import {
   AccessContent,
   FirstVisitBlock,
-  HomeMenuTeaser,
   LocalSearchSection,
-  ReviewSignalSection,
   PageHero,
   SocialUpdatesSection,
   VisitInfoCards
@@ -109,10 +107,7 @@ export default async function Home() {
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <VisitInfoCards />
         <LocalSearchSection />
-        <ReviewSignalSection />
         <SocialUpdatesSection />
-
-        <HomeMenuTeaser />
 
         <AccessContent note={contents.home.accessNote} />
       </main>

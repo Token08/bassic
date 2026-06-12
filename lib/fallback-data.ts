@@ -4,7 +4,7 @@ export const fallbackContents: CmsContents = {
   home: {
     heroTitle: "public bar Bassic.",
     heroLead:
-      "パブリックバー・ベーシックは福岡・天神 親不孝通りのミュージックバー。初めてでも入りやすい音楽と料理のお店です",
+      "福岡は親不孝通りにあるミュージックバーです。LIVEやイベント等もお気軽にご相談ください。OPEN 20:00PM~2:00AM（イベントがある日は22:30~通常営業）",
     firstVisitLead:
       "お一人でも、ライヴ前後でも、会話を愉しみたい夜でも。\n初めてでも入りやすい、大人の隠れ家的なお店。\nライヴイベントのない日は通常バータイムとしてゆったりご利用いただけます。",
     accessNote:

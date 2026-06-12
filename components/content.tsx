@@ -1,15 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ExternalLink, MapPin, Mic2, Music2, Navigation, Store, Utensils, UsersRound } from "lucide-react";
+import {
+  CalendarDays,
+  ExternalLink,
+  MapPin,
+  Mic2,
+  Music2,
+  Navigation,
+  SlidersHorizontal,
+  Store,
+  Utensils,
+  UsersRound
+} from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
 import {
   accessRouteTips,
+  equipmentRentalInfo,
   firstVisitSection,
   homeMenuTeaser,
   localSearchSection,
   partyUseCases,
-  reviewSignalSection,
   socialUpdatesCopy,
   visitInfoItems,
   type FeatureCardContent
@@ -146,27 +157,6 @@ export function LocalSearchSection() {
             </article>
           );
         })}
-      </div>
-    </section>
-  );
-}
-
-export function ReviewSignalSection() {
-  return (
-    <section className="section review-signal-section">
-      <div className="section-heading">
-        <p className="eyebrow">{reviewSignalSection.eyebrow}</p>
-        <h2>{reviewSignalSection.title}</h2>
-        <p className="section-lead">{reviewSignalSection.lead}</p>
-      </div>
-      <div className="review-signal-grid">
-        {reviewSignalSection.cards.map((card) => (
-          <article key={card.title}>
-            <span>{card.source}</span>
-            <h3>{card.title}</h3>
-            <p>{card.text}</p>
-          </article>
-        ))}
       </div>
     </section>
   );
@@ -444,6 +434,15 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
           </article>
         ))}
       </div>
+      <article className="equipment-rental-card">
+        <SlidersHorizontal />
+        <div>
+          <p className="eyebrow">{equipmentRentalInfo.eyebrow}</p>
+          <h3>{equipmentRentalInfo.title}</h3>
+          <strong>{equipmentRentalInfo.price}</strong>
+          <p>{equipmentRentalInfo.body}</p>
+        </div>
+      </article>
       <div className="use-case-panel" aria-label="貸切やパーティーの利用シーン">
         <div>
           <p className="eyebrow">Use Case</p>

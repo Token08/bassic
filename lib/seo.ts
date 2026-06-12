@@ -16,13 +16,13 @@ export const pageSeo = {
     path: pageRoutes.home.path,
     title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
     description:
-      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。初めてでも入りやすく、音楽、お酒、料理、ライブ・DJイベント、貸切を楽しめます。"
+      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。通常営業20:00から2:00、LIVEやイベント相談、料理、ドリンクを楽しめます。"
   },
   events: {
     path: pageRoutes.events.path,
     title: "イベント | 福岡 天神のライブ・DJ・イベント予約",
     description:
-      "public bar Bassic.のライブ、DJ、イベント予定、開場・開演、料金、予約方法を掲載。イベント日は営業時間が変動するため詳細をご確認ください。"
+      "public bar Bassic.のライブ、DJ、イベント予定を掲載。イベント終了後はバータイムとして利用でき、出演やイベント開催の相談も受け付けています。"
   },
   menu: {
     path: pageRoutes.menu.path,

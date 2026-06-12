@@ -4,7 +4,7 @@ export const site = {
   owner: "渡辺圭一",
   tagline: "福岡・天神 親不孝通りのミュージックバー",
   description:
-    "public bar Bassic.は福岡市中央区天神、親不孝通りにあるミュージックバーです。音楽、お酒、料理、ライブイベントを初めての方も気軽に楽しめます。",
+    "public bar Bassic.は福岡市中央区天神、親不孝通りにあるミュージックバーです。LIVEやイベント、音楽、お酒、料理を初めての方も気軽に楽しめます。",
   address: "福岡市中央区天神3-4-19 WITH天神5F",
   postalCode: "810-0001",
   region: "福岡県",
@@ -12,10 +12,11 @@ export const site = {
   streetAddress: "3-4-19 WITH天神5F",
   phone: "092-713-1040",
   email: "mail@bassic.jp",
-  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE",
-  eventHoursNote: "イベント時は営業時間が変動します。詳細はイベントスケジュールページをご確認ください。",
+  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は22:30から通常営業",
+  eventHoursNote: "イベント時は営業時間が変動します。イベント終了後は22:30から通常営業です。詳細はイベントスケジュールページをご確認ください。",
   chargeLabel: "チャージ 500円 / お一人様",
-  smokingLabel: "店内喫煙OK（紙タバコ・電子タバコOK）",
+  smokingLabel:
+    "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容により、イベント中は禁煙になる場合がございます。",
   priceRange: "￥2,000-￥5,000",
   nearestStation: "天神駅から徒歩約4分",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp",

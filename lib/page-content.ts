@@ -31,17 +31,12 @@ export type LocalSearchCardContent = {
   text: string;
 };
 
-export type ReviewSignalCardContent = {
-  title: string;
-  text: string;
-  source: string;
-};
-
 export const pageHeroes = {
   events: {
     eyebrow: "Event Schedule",
-    title: "ライブ・DJ・イベント予定。",
-    lead: "日付、開場、開演、料金、予約方法をまとめています。イベント情報は管理画面から更新できます。",
+    title: "ライヴ・DJ・イベント。",
+    lead:
+      "イベント終了後はバータイムとしてご利用できます。\n各イベントについてはスケジュールページで最新情報を確認できます。\n※イベントを行いたい方はお気軽にスタッフへご相談下さい。",
     slides: editableMedia.eventHeroSlides,
     className: "event-hero"
   },
@@ -160,8 +155,8 @@ export const localSearchSection = {
     },
     {
       icon: "food",
-      title: "ファズカレーとバーご飯",
-      text: "名物ファズカレー、タコス＆ポテト、ドリンクを写真付きで掲載。食事だけ、ノンアルコールでも利用しやすいお店です。"
+      title: "ドリンク各種&フード",
+      text: "ファズカレー、タコス＆ポテト、ドリンク各種充実。お食事だけ、ノンアルコールでも利用しやすいお店です。"
     },
     {
       icon: "party",
@@ -171,40 +166,18 @@ export const localSearchSection = {
   ] satisfies LocalSearchCardContent[]
 };
 
-export const reviewSignalSection = {
-  eyebrow: "Review Signals",
-  title: "口コミや紹介記事で伝わる、Bassic.の使いやすさ。",
-  lead:
-    "公開されているレビューや紹介記事では、音楽好きが集まる雰囲気、ひとりでも過ごしやすい距離感、ファズカレーなどの料理、ライブやイベント利用がよく触れられています。初めて来る方が来店前に知りたい安心材料として整理しました。",
-  cards: [
-    {
-      title: "ひとりでもふらっと入りやすい",
-      text: "旅行中や初来店でも、落ち着いて飲めるバーとして紹介されています。Google Mapから来店する方にも、入口前の不安を減らせる見せ方を意識しています。",
-      source: "公開口コミ・ローカル紹介より"
-    },
-    {
-      title: "音楽好きが集まるミュージックバー",
-      text: "ライブ、DJ、音楽イベント、打ち上げまで相談できる場所として複数の外部ページで紹介されています。親不孝通りらしい音楽の導線を強めます。",
-      source: "SNS・イベント掲載より"
-    },
-    {
-      title: "ファズカレーとバーご飯",
-      text: "ファズカレー、タコス＆ポテトなど、料理目的でも選びやすい点が紹介されています。メニュー写真と価格感を見せ、食事だけでも使いやすくします。",
-      source: "飲食レビュー・紹介記事より"
-    },
-    {
-      title: "天神で二次会・貸切に使える",
-      text: "天神駅から近く、ライブ後の打ち上げや二次会にも合う会場性があります。貸切、レンタル、イベント相談への導線を各ページに残します。",
-      source: "会場情報・紹介記事より"
-    }
-  ] satisfies ReviewSignalCardContent[]
-};
-
 export const accessRouteTips = [
   "Google Mapで「public bar Bassic.」を開き、WITH天神ビルを目印にしてください。",
   "ビル到着後は5Fまで上がってください。初めての方は地図リンクから現在地ルートを開くと安心です。",
   "イベント日は通常営業開始時間が変わる場合があります。来店前にイベントスケジュールをご確認ください。"
 ] as const;
+
+export const equipmentRentalInfo = {
+  eyebrow: "Equipment Rental",
+  title: "機材レンタルについて",
+  price: "平日 1H ￥10,000〜 / 土日祝・祝前日 1H ￥12,000〜",
+  body: "機材使用料込みで、ライブ、DJ、イベント、配信、二次会などのレンタル利用に対応しています。内容や人数により利用条件が変わる場合がありますので、詳細はお問い合わせください。"
+} as const;
 
 export const partyUseCases = [
   "天神・親不孝通りでの二次会",
