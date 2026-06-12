@@ -51,7 +51,7 @@ export default async function EventsPage() {
           slides={pageHeroes.events.slides}
           className={pageHeroes.events.className}
         />
-        <EventCalendarSection />
+        <EventCalendarSection events={contents.events} />
         <section className="section split">
           <div className="narrow-copy">
             <p className="eyebrow">Reservation</p>
