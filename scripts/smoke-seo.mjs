@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const outDir = join(process.cwd(), "out");
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://token08.github.io/bassic").replace(/\/$/, "");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp").replace(/\/$/, "");
 
 const pages = [
   { path: "/", file: "index.html" },

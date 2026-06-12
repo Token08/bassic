@@ -18,7 +18,8 @@ export const site = {
   smokingLabel: "店内喫煙OK（紙タバコ・電子タバコOK）",
   priceRange: "￥2,000-￥5,000",
   nearestStation: "天神駅から徒歩約4分",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://token08.github.io/bassic",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp",
+  legacyHomeUrl: "https://www.bassic.jp/index.html",
   googleMapsUrl:
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_URL ||
     "https://www.google.com/maps/search/?api=1&query=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F",

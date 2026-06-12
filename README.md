@@ -38,15 +38,25 @@ microCMSが未設定の場合は、`lib/fallback-data.ts` の初期データで�
 
 ## 公開前チェック
 
+正式公開URLは `https://www.bassic.jp/index.html` を想定しています。SEO上の正規URLは `/index.html` ではなく `https://www.bassic.jp/` に統一し、評価が分散しないようにします。
+
 ```bash
 npm run typecheck
-$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run build
-$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; npm run smoke:seo
-$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run smoke:links
+$env:NEXT_PUBLIC_SITE_URL="https://www.bassic.jp"; Remove-Item Env:\NEXT_PUBLIC_BASE_PATH -ErrorAction SilentlyContinue; npm run build
+$env:NEXT_PUBLIC_SITE_URL="https://www.bassic.jp"; npm run smoke:seo
+$env:NEXT_PUBLIC_SITE_URL="https://www.bassic.jp"; npm run smoke:links
 ```
 
 `smoke:seo` は `out/` に出力されたHTMLを読み、主要ページのcanonical、hreflang、OGP、sitemap登録を確認します。
 `smoke:links` は `out/` に出力されたHTML内の内部リンクとローカル画像/スクリプト/スタイル参照を確認します。
+
+GitHub PagesのプレビューURLで確認する場合だけ、下記のように `NEXT_PUBLIC_BASE_PATH` を指定します。本番公開時は指定しません。
+
+```bash
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run build
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; npm run smoke:seo
+$env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_BASE_PATH="/bassic"; npm run smoke:links
+```
 
 ## SEO / Google Map
 
@@ -54,6 +64,7 @@ $env:NEXT_PUBLIC_SITE_URL="https://token08.github.io/bassic"; $env:NEXT_PUBLIC_B
 - `app/sitemap.ts` と `app/robots.ts` で検索エンジン向けファイルを生成
 - Google Mapの検索/経路リンクは `lib/site.ts` と `.env.local` で管理
 - 店舗情報の表記は `lib/site.ts` に集約
+- GitHub Pagesの独自ドメインは `public/CNAME` で `www.bassic.jp` に設定
 
 ## 公開前に確認すること
 
