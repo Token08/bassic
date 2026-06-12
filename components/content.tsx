@@ -415,6 +415,8 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
 }
 
 export function PartyContent({ plans }: { plans: PartyPlan[] }) {
+  const visiblePlans = plans.filter((plan) => !/rental|レンタル/i.test(plan.title));
+
   return (
     <section className="section party-section">
       <div className="section-heading narrow-copy">
@@ -426,7 +428,7 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
         </h2>
       </div>
       <div className="plan-grid">
-        {plans.map((plan) => (
+        {visiblePlans.map((plan) => (
           <article key={plan.title}>
             <h3>{plan.title}</h3>
             <strong>{plan.price}</strong>
