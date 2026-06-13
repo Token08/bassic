@@ -27,14 +27,14 @@ Facebook uses the official Page Plugin timeline iframe.
 
 ## X
 
-X uses the official timeline widget by default.
-The site loads `https://platform.twitter.com/widgets.js` in the browser and converts the timeline link into an iframe.
+X API posts from `public/data/social-feed.json` are preferred.
+The official X timeline widget is not used by default because it can render an empty or rate-limited frame.
 
-If the official X widget is rate-limited or blocked, set an external iframe widget URL as:
+If an external iframe widget is preferred, set:
 
 ```text
 NEXT_PUBLIC_X_WIDGET_SRC
 ```
 
-When this value is set to an HTTPS URL, the homepage uses that iframe instead of the official X widget.
-The X card always keeps a direct link to the official X page.
+When this value is set to an HTTPS URL and no API posts are available, the homepage uses that iframe.
+If neither API posts nor an iframe URL are available, the site shows a clean X profile card.

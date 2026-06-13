@@ -3,7 +3,6 @@ import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
 import socialFeed from "@/public/data/social-feed.json";
-import { XTimelineEmbed } from "./x-timeline-embed";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
@@ -87,7 +86,14 @@ export function SocialUpdates({
               />
             </div>
           ) : (
-            <XTimelineEmbed href={site.xUrl} fallbackLabel={xFallbackLabel} />
+            <SocialProfileCard
+              href={site.xUrl}
+              account="@bar_Bassic"
+              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
+              title="X"
+              lead="X APIの接続後、直近投稿がここに表示されます。現在は公式Xで最新情報をご確認ください。"
+              buttonLabel={xFallbackLabel}
+            />
           )}
         </SocialEmbedCard>
       </div>
