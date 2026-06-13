@@ -4,18 +4,24 @@ import { join } from "node:path";
 const outDir = join(process.cwd(), "out");
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp").replace(/\/$/, "");
 
-const pages = [
+const japanesePages = [
   { path: "/", file: "index.html" },
   { path: "/first-visit/", file: "first-visit/index.html" },
   { path: "/events/", file: "events/index.html" },
   { path: "/menu/", file: "menu/index.html" },
   { path: "/party/", file: "party/index.html" },
-  { path: "/access/", file: "access/index.html" },
-  { path: "/en/", file: "en/index.html" },
-  { path: "/en/events/", file: "en/events/index.html" },
-  { path: "/ko/menu/", file: "ko/menu/index.html" },
-  { path: "/zh-hant/party/", file: "zh-hant/party/index.html" },
-  { path: "/zh-hans/access/", file: "zh-hans/access/index.html" }
+  { path: "/access/", file: "access/index.html" }
+];
+const localizedPages = ["", "events", "menu", "party", "access"];
+const locales = ["en", "ko", "zh-hant", "zh-hans"];
+const pages = [
+  ...japanesePages,
+  ...locales.flatMap((locale) =>
+    localizedPages.map((segment) => ({
+      path: segment ? `/${locale}/${segment}/` : `/${locale}/`,
+      file: segment ? `${locale}/${segment}/index.html` : `${locale}/index.html`
+    }))
+  )
 ];
 
 const requiredHreflang = ["ja", "en", "ko", "zh-Hant", "zh-Hans", "x-default"];

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { localeCodes } from "@/lib/i18n";
 import { canonicalPath, localizedPath, sitemapPages } from "@/lib/routes";
-import { site } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
@@ -22,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return pages.map((page) => ({
-    url: `${site.siteUrl}${canonicalPath(page.path)}`,
+    url: absoluteUrl(canonicalPath(page.path)),
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: page.priority

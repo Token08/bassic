@@ -74,9 +74,9 @@ export const localizedHomeSections: Record<LocaleCode, LocalizedHomeSections> = 
   "zh-hant": {
     firstVisitTitle: "挑高天花與柔和燈光，讓夜晚慢慢展開。",
     firstVisitLead:
-      "一個人來、LIVE 前後，或只是想輕鬆聊天的夜晚都很適合。沒有 LIVE 活動的日子，也可作為一般酒吧時段悠閒使用。",
+      "一個人來、現場演出前後，或只是想輕鬆聊天的夜晚都很適合。沒有現場演出活動的日子，也可作為一般酒吧時段悠閒使用。",
     features: [
-      { icon: "music", title: "在天神的夜晚，留一點音樂的餘韻。", text: "LIVE、DJ、活動後的氣氛，都能依照自己的節奏享受。" },
+      { icon: "music", title: "在天神的夜晚，留一點音樂的餘韻。", text: "現場演出、DJ、活動後的氣氛，都能依照自己的節奏享受。" },
       { icon: "store", title: "不喝酒、只用餐也歡迎。", text: "招牌 Fuzz Curry、Tacos & Potato、自家製 Sangria 與咖啡燒酎都很受歡迎。" },
       { icon: "users", title: "一個人或團體都可以。", text: "可用於小酌、會合、包場派對等不同用途。" }
     ],
@@ -90,9 +90,9 @@ export const localizedHomeSections: Record<LocaleCode, LocalizedHomeSections> = 
   "zh-hans": {
     firstVisitTitle: "高挑天花与柔和灯光，让夜晚慢慢展开。",
     firstVisitLead:
-      "一个人来、LIVE 前后，或只是想轻松聊天的夜晚都很适合。没有 LIVE 活动的日子，也可作为普通酒吧时段悠闲使用。",
+      "一个人来、现场演出前后，或只是想轻松聊天的夜晚都很适合。没有现场演出活动的日子，也可作为普通酒吧时段悠闲使用。",
     features: [
-      { icon: "music", title: "在天神的夜晚，留一点音乐的余韵。", text: "LIVE、DJ、活动后的气氛，都能按照自己的节奏享受。" },
+      { icon: "music", title: "在天神的夜晚，留一点音乐的余韵。", text: "现场演出、DJ、活动后的气氛，都能按照自己的节奏享受。" },
       { icon: "store", title: "不喝酒、只用餐也欢迎。", text: "招牌 Fuzz Curry、Tacos & Potato、自制 Sangria 与咖啡烧酒都很受欢迎。" },
       { icon: "users", title: "一个人或团体都可以。", text: "可用于小酌、会合、包场派对等不同用途。" }
     ],

@@ -159,10 +159,10 @@ export const localizedPages = {
     },
     events: {
       eyebrow: "Event Schedule",
-      title: "LIVE、DJ、活動行程。",
+      title: "現場演出、DJ、活動行程。",
       lead: "可確認日期、開場/開始時間、費用與預約方式。活動日營業時間可能變動。",
-      titleMeta: "活動 | 福岡天神LIVE・DJ酒吧",
-      description: "public bar Bassic. 的LIVE、DJ活動、預約資訊與活動行程。"
+      titleMeta: "活動 | 福岡天神現場演出・DJ酒吧",
+      description: "public bar Bassic. 的現場演出、DJ活動、預約資訊與活動行程。"
     },
     menu: {
       eyebrow: "Food & Drink",
@@ -196,10 +196,10 @@ export const localizedPages = {
     },
     events: {
       eyebrow: "Event Schedule",
-      title: "LIVE、DJ、活动日程。",
+      title: "现场演出、DJ、活动日程。",
       lead: "可查看日期、开场/开始时间、费用和预约方式。活动日营业时间可能变动。",
-      titleMeta: "活动 | 福冈天神LIVE・DJ酒吧",
-      description: "public bar Bassic. 的LIVE、DJ活动、预约信息和活动日程。"
+      titleMeta: "活动 | 福冈天神现场演出・DJ酒吧",
+      description: "public bar Bassic. 的现场演出、DJ活动、预约信息和活动日程。"
     },
     menu: {
       eyebrow: "Food & Drink",

@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   description: site.description,
   keywords: [...site.keywords, "Bassic", "渡辺圭一"],
   alternates: {
-    canonical: site.siteUrl,
+    canonical: absoluteUrl("/"),
     languages: languageAlternates("/")
   },
   openGraph: {
     type: "website",
-    url: site.siteUrl,
+    url: absoluteUrl("/"),
     siteName: site.name,
     title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
     description: site.description,

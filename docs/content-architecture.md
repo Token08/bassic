@@ -9,7 +9,7 @@ This site is structured so future admin/CMS work can replace content data withou
   - Use this for business-wide facts that affect SEO and structured data.
 
 - `lib/editable-content.ts`
-  - Store visual assets, hero slides, fallback menu images, SNS embed URLs, and social links.
+  - Store visual assets, hero slides, fallback menu images, social links, and stable third-party embed URLs.
   - Replace or extend this file when a future admin site manages images or visual configuration.
   - The event calendar embed URL is also stored here. It reuses the Google Calendar ID from the legacy `calendar.html` page.
 
@@ -45,7 +45,7 @@ This site is structured so future admin/CMS work can replace content data withou
 
 - `scripts/smoke-seo.mjs`
   - Check exported HTML after `npm run build`.
-  - Confirms canonical URLs, hreflang, OGP/Twitter tags, and sitemap registration for representative pages.
+  - Confirms canonical URLs, hreflang, OGP/Twitter tags, and sitemap registration for Japanese and localized public pages.
 
 - `scripts/smoke-links.mjs`
   - Check exported HTML after `npm run build`.
