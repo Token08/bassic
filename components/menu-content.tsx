@@ -1,6 +1,7 @@
 import { MenuGallery } from "@/components/menu-gallery";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
+import { drinkMenuSheets } from "@/lib/menu-data";
 import { site } from "@/lib/site";
 import type { MenuItem } from "@/lib/types";
 
@@ -30,9 +31,35 @@ function MenuBlock({ eyebrow, title, items }: { eyebrow: string; title: string; 
   );
 }
 
+function DrinkMenuSheets() {
+  return (
+    <div className="menu-block drink-menu-block">
+      <div className="menu-block-heading">
+        <p className="eyebrow">Drink</p>
+        <h2>ドリンク</h2>
+      </div>
+      <div className="drink-menu-sheet-grid" aria-label="ドリンクメニュー表">
+        {drinkMenuSheets.map((sheet, index) => {
+          const src = assetPath(sheet.src);
+
+          return (
+            <figure className="drink-menu-sheet" key={sheet.src}>
+              <object data={src} type="application/pdf" aria-label={`${sheet.title}を表示`}>
+                <a href={src} target="_blank" rel="noreferrer">
+                  ドリンクメニュー{index + 1}を開く
+                </a>
+              </object>
+              <figcaption>Drink Menu {index + 1}</figcaption>
+            </figure>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function MenuContent({ menu }: { menu: MenuItem[] }) {
   const foods = menu.filter((item) => item.category === "food").map(resolveMenuItem);
-  const drinks = menu.filter((item) => item.category === "drink").map(resolveMenuItem);
 
   return (
     <section className="section menu-section">
@@ -53,8 +80,8 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
         </div>
       </div>
 
+      <DrinkMenuSheets />
       <MenuBlock eyebrow="Food" title="フード" items={foods} />
-      <MenuBlock eyebrow="Drink" title="ドリンク" items={drinks} />
     </section>
   );
 }

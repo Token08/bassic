@@ -1585,6 +1585,49 @@ h3 {
   }
 }
 
+.drink-menu-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 28px);
+  margin-top: 32px;
+}
+
+.drink-menu-sheet {
+  overflow: hidden;
+  border: 1px solid rgba(111, 15, 21, 0.2);
+  border-radius: 8px;
+  background: #fffdf5;
+  box-shadow: var(--shadow);
+}
+
+.drink-menu-sheet object {
+  display: block;
+  width: 100%;
+  height: clamp(560px, 58vw, 760px);
+  border: 0;
+  background: #fffdf5;
+}
+
+.drink-menu-sheet object a {
+  display: grid;
+  min-height: 320px;
+  place-items: center;
+  padding: 24px;
+  color: var(--red);
+  font-weight: 900;
+}
+
+.drink-menu-sheet figcaption {
+  border-top: 1px solid rgba(111, 15, 21, 0.14);
+  padding: 12px 16px;
+  background: rgba(111, 15, 21, 0.06);
+  color: var(--red);
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .modal-open {
   overflow: hidden;
 }
@@ -2230,6 +2273,7 @@ main > section.visit-info-strip .visit-info-grid article p {
   .local-search-grid,
   .menu-grid,
   .menu-card-grid,
+  .drink-menu-sheet-grid,
   .localized-info-grid,
   .visit-info-grid,
   .menu-photos,
@@ -2410,6 +2454,10 @@ main > section.visit-info-strip .visit-info-grid article p {
   .menu-image-button,
   .event-poster {
     min-height: 260px;
+  }
+
+  .drink-menu-sheet object {
+    height: 520px;
   }
 
   .intro .feature-grid {
