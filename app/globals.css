@@ -1103,6 +1103,89 @@ h3 {
   background: #fffaf0;
 }
 
+.social-api-feed {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background: #fffaf0;
+  color: var(--ink);
+}
+
+.social-feed-list {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 0;
+  padding: 14px;
+  overflow: auto;
+}
+
+.social-feed-item {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 12px;
+  min-height: 96px;
+  padding: 10px;
+  border: 1px solid rgba(111, 15, 21, 0.13);
+  border-radius: 7px;
+  background: rgba(255, 250, 240, 0.82);
+  color: var(--ink);
+}
+
+.social-feed-item.no-image {
+  grid-template-columns: 1fr;
+}
+
+.social-feed-item:hover {
+  border-color: rgba(111, 15, 21, 0.34);
+  transform: translateY(-1px);
+}
+
+.social-feed-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(16, 12, 10, 0.08);
+}
+
+.social-feed-thumb img {
+  width: 100%;
+  height: 100%;
+  min-height: 76px;
+  object-fit: cover;
+}
+
+.social-feed-copy {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.62;
+}
+
+.social-feed-date {
+  color: var(--red);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.social-feed-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  margin: 0 14px 14px;
+  border-radius: 6px;
+  background: var(--red);
+  color: #fffaf0;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
 .x-timeline-frame {
   position: relative;
   display: grid;
@@ -2301,6 +2384,36 @@ main > section.visit-info-strip .visit-info-grid article p {
   .facebook-frame {
     width: 100%;
     justify-items: stretch;
+  }
+
+  .social-feed-list {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .social-feed-item {
+    grid-template-columns: 64px 1fr;
+    min-height: 78px;
+    padding: 8px;
+  }
+
+  .social-feed-item.no-image {
+    grid-template-columns: 1fr;
+  }
+
+  .social-feed-thumb img {
+    min-height: 60px;
+  }
+
+  .social-feed-copy {
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .social-feed-more {
+    min-height: 38px;
+    margin: 0 10px 10px;
+    font-size: 0.78rem;
   }
 
   .x-timeline-direct-link {

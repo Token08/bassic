@@ -1,5 +1,8 @@
 # SNS embeds
 
+Build-time API feeds are preferred when `public/data/social-feed.json` contains posts.
+See `docs/social-api-feeds.md` for the GitHub Secrets and fetch script.
+
 ## Instagram
 
 The homepage supports a LightWidget iframe for the Instagram timeline.

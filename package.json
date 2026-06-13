@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "fetch:social": "node scripts/fetch-social-feeds.mjs",
     "build": "next build",
     "start": "next start",
     "smoke:links": "node scripts/smoke-links.mjs",

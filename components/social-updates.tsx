@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
+import socialFeed from "@/public/data/social-feed.json";
 import { XTimelineEmbed } from "./x-timeline-embed";
 
 type SocialUpdatesProps = {
@@ -19,6 +20,9 @@ export function SocialUpdates({
 }: SocialUpdatesProps) {
   const instagramWidgetSrc = getLightWidgetSrc(externalEmbeds.instagramWidgetSrc);
   const xWidgetSrc = getHttpsWidgetSrc(externalEmbeds.xWidgetSrc);
+  const instagramItems = getFeedItems("instagram");
+  const facebookItems = getFeedItems("facebook");
+  const xItems = getFeedItems("x");
 
   return (
     <section className="section social-section">
@@ -30,7 +34,9 @@ export function SocialUpdates({
 
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          {instagramWidgetSrc ? (
+          {instagramItems.length ? (
+            <SocialApiFeed platform="instagram" items={instagramItems} fallbackLabel={instagramFallbackLabel} href={site.instagramUrl} />
+          ) : instagramWidgetSrc ? (
             <div className="social-embed-frame instagram-widget-frame">
               <iframe
                 title="public bar Bassic. Instagram timeline"
@@ -52,7 +58,10 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
-          <div className="social-embed-frame facebook-frame">
+          {facebookItems.length ? (
+            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel="Facebookで最新情報を見る" href={site.facebookUrl} />
+          ) : (
+            <div className="social-embed-frame facebook-frame">
             <iframe
               title="public bar Bassic. Facebook timeline"
               src={externalEmbeds.facebookPluginUrl}
@@ -62,10 +71,13 @@ export function SocialUpdates({
               referrerPolicy="origin-when-cross-origin"
             />
           </div>
+          )}
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          {xWidgetSrc ? (
+          {xItems.length ? (
+            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={site.xUrl} />
+          ) : xWidgetSrc ? (
             <div className="social-embed-frame external-social-frame x-frame">
               <iframe
                 title="public bar Bassic. X timeline"
@@ -88,6 +100,60 @@ export function SocialUpdates({
         ))}
       </div>
     </section>
+  );
+}
+
+type SocialFeedItem = {
+  id: string;
+  platform: string;
+  text: string;
+  url: string;
+  imageUrl?: string | null;
+  createdAt?: string | null;
+};
+
+type SocialFeedData = {
+  feeds?: Record<"instagram" | "facebook" | "x", SocialFeedItem[]>;
+};
+
+function SocialApiFeed({
+  platform,
+  items,
+  href,
+  fallbackLabel
+}: {
+  platform: "instagram" | "facebook" | "x";
+  items: SocialFeedItem[];
+  href: string;
+  fallbackLabel: string;
+}) {
+  return (
+    <div className={`social-embed-frame social-api-feed social-api-feed-${platform}`}>
+      <div className="social-feed-list">
+        {items.map((item) => (
+          <a
+            key={`${platform}-${item.id}`}
+            className={`social-feed-item${item.imageUrl ? "" : " no-image"}`}
+            href={item.url || href}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {item.imageUrl ? (
+              <span className="social-feed-thumb">
+                <img src={item.imageUrl} alt="" loading="lazy" />
+              </span>
+            ) : null}
+            <span className="social-feed-copy">
+              <span className="social-feed-date">{formatFeedDate(item.createdAt)}</span>
+              <span>{item.text}</span>
+            </span>
+          </a>
+        ))}
+      </div>
+      <a className="social-feed-more" href={href} target="_blank" rel="noreferrer">
+        {fallbackLabel} <ExternalLink size={14} />
+      </a>
+    </div>
   );
 }
 
@@ -143,6 +209,25 @@ function SocialProfileCard({
       </a>
     </div>
   );
+}
+
+function getFeedItems(platform: "instagram" | "facebook" | "x"): SocialFeedItem[] {
+  const feedData = socialFeed as SocialFeedData;
+  const items = feedData.feeds?.[platform];
+  return Array.isArray(items) ? items.filter((item) => item?.url && item?.text).slice(0, 5) : [];
+}
+
+function formatFeedDate(value?: string | null) {
+  if (!value) {
+    return "Latest";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Latest";
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(date);
 }
 
 function getLightWidgetSrc(src: string) {
