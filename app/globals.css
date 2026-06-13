@@ -1596,19 +1596,72 @@ h3 {
   }
 }
 
-.drink-menu-sheet-grid {
+.drink-menu-slider {
+  --drink-slider-edge: clamp(14px, 4vw, 56px);
+
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(18px, 2.2vw, 28px);
+  gap: 18px;
   margin-top: 32px;
 }
 
+.drink-menu-slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  color: var(--red);
+  font-weight: 900;
+}
+
+.drink-menu-slider-controls button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(111, 15, 21, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 253, 245, 0.88);
+  color: var(--red);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.drink-menu-slider-controls button:hover,
+.drink-menu-slider-controls button:focus-visible {
+  border-color: rgba(111, 15, 21, 0.42);
+  background: #fffdf5;
+  transform: translateY(-1px);
+}
+
+.drink-menu-slider-controls span {
+  min-width: 54px;
+  color: rgba(21, 18, 15, 0.72);
+  font-size: 0.86rem;
+  text-align: center;
+}
+
+.drink-menu-sheet-grid {
+  display: flex;
+  gap: clamp(16px, 2.2vw, 26px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 0 calc(var(--drink-slider-edge) * -1);
+  padding: 6px var(--drink-slider-edge) 18px;
+  scroll-padding: var(--drink-slider-edge);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(111, 15, 21, 0.38) rgba(255, 253, 245, 0.6);
+  -webkit-overflow-scrolling: touch;
+}
+
 .drink-menu-sheet {
+  flex: 0 0 clamp(300px, 86vw, 620px);
   overflow: hidden;
   border: 1px solid rgba(111, 15, 21, 0.2);
   border-radius: 8px;
   background: #fffdf5;
   box-shadow: var(--shadow);
+  scroll-snap-align: center;
 }
 
 .drink-menu-sheet button {
@@ -1656,6 +1709,27 @@ h3 {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.drink-menu-slider-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.drink-menu-slider-dots button {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(111, 15, 21, 0.24);
+  cursor: pointer;
+  transition: width 160ms ease, background 160ms ease;
+}
+
+.drink-menu-slider-dots button.active {
+  width: 28px;
+  background: var(--red);
 }
 
 .drink-menu-modal-content {
