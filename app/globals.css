@@ -1773,6 +1773,38 @@ h3 {
   cursor: pointer;
 }
 
+.image-modal-nav {
+  position: fixed;
+  top: 50%;
+  z-index: 101;
+  display: grid;
+  width: 48px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid rgba(255, 250, 242, 0.26);
+  border-radius: 999px;
+  background: rgba(21, 18, 15, 0.72);
+  color: #fffaf2;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.image-modal-nav:hover,
+.image-modal-nav:focus-visible {
+  border-color: rgba(255, 250, 242, 0.5);
+  background: rgba(111, 15, 21, 0.88);
+  transform: translateY(-50%) scale(1.04);
+}
+
+.image-modal-nav-prev {
+  left: clamp(12px, 3vw, 36px);
+}
+
+.image-modal-nav-next {
+  right: clamp(12px, 3vw, 36px);
+}
+
 .image-modal-content {
   position: relative;
   width: min(1080px, 94vw);
@@ -1822,6 +1854,35 @@ h3 {
 
 .drink-menu-modal-content figcaption {
   padding: 12px 16px;
+}
+
+.image-modal-dots {
+  position: fixed;
+  bottom: clamp(14px, 3vw, 28px);
+  left: 50%;
+  z-index: 101;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 250, 242, 0.18);
+  border-radius: 999px;
+  background: rgba(21, 18, 15, 0.76);
+  transform: translateX(-50%);
+}
+
+.image-modal-dots button {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.32);
+  cursor: pointer;
+  transition: width 160ms ease, background 160ms ease;
+}
+
+.image-modal-dots button.active {
+  width: 28px;
+  background: #fffaf2;
 }
 
 .party-section {
@@ -2790,6 +2851,20 @@ main > section.visit-info-strip .visit-info-grid article p {
     height: 40px;
   }
 
+  .image-modal-nav {
+    width: 40px;
+    height: 54px;
+    background: rgba(21, 18, 15, 0.6);
+  }
+
+  .image-modal-nav-prev {
+    left: 8px;
+  }
+
+  .image-modal-nav-next {
+    right: 8px;
+  }
+
   .image-modal-content.drink-menu-modal-content {
     width: min(92vw, 430px);
     height: min(74svh, 640px);
@@ -2798,5 +2873,10 @@ main > section.visit-info-strip .visit-info-grid article p {
   .drink-menu-modal-content figcaption {
     padding: 10px 14px;
     font-size: 0.92rem;
+  }
+
+  .image-modal-dots {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 7px 9px;
   }
 }
