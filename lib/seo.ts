@@ -14,33 +14,33 @@ export const seoLanguages = {
 export const pageSeo = {
   home: {
     path: pageRoutes.home.path,
-    title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
+    title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー・バー",
     description:
-      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。通常営業20:00から2:00、LIVEやイベント相談、料理、ドリンクを楽しめます。"
+      "public bar Bassic.は福岡市中央区天神、親不孝通りのミュージックバー。通常営業20:00から2:00、ライヴやDJイベント、貸切相談、料理とドリンクを楽しめます。"
   },
   events: {
     path: pageRoutes.events.path,
-    title: "イベント | 福岡 天神のライヴ・DJ・イベント予約",
+    title: "イベントスケジュール | 福岡 天神のライヴ・DJ・イベント",
     description:
-      "public bar Bassic.のライヴ、DJ、イベント予定を掲載。イベント終了後はバータイムとして利用でき、出演やイベント開催の相談も受け付けています。"
+      "福岡・天神 親不孝通りのライヴバー public bar Bassic. のイベント予定。ライヴ、DJ、イベント後のバータイム、出演やイベント開催の相談も確認できます。"
   },
   menu: {
     path: pageRoutes.menu.path,
-    title: "メニュー | ファズカレー・タコス・バーご飯とドリンク",
+    title: "メニュー | ファズカレー・タコス・ドリンク | 福岡 天神",
     description:
-      "public bar Bassic.のフード、ドリンク、人気メニューを写真で紹介。チャージ500円/お一人様、ファズカレーやタコスも楽しめます。"
+      "福岡・天神 親不孝通りのミュージックバー public bar Bassic. のメニュー。ファズカレー、タコス＆ポテト、バーご飯、ドリンク各種、チャージ500円/お一人様を写真で確認できます。"
   },
   party: {
     path: pageRoutes.party.path,
-    title: "貸切・パーティー | 天神の二次会・打ち上げ・レンタル",
+    title: "貸切・パーティー・機材レンタル | 福岡 天神 親不孝通り",
     description:
-      "福岡・天神 親不孝通りで貸切、二次会、ライヴ後の打ち上げ、DJイベント、レンタル利用に対応するpublic bar Bassic.のプラン案内。"
+      "福岡・天神 親不孝通りで貸切、二次会、ライヴ後の打ち上げ、DJイベント、機材レンタルに対応する public bar Bassic. のパーティー案内。"
   },
   access: {
     path: pageRoutes.access.path,
-    title: "アクセス | 天神駅徒歩約4分・Google Map・WITH天神5F",
+    title: "アクセス | 福岡 天神駅徒歩約4分・親不孝通り WITH天神5F",
     description:
-      "public bar Bassic.へのアクセス。福岡市中央区天神3-4-19 WITH天神5F、天神駅から徒歩約4分。Google Mapで迷わず来店できます。"
+      "public bar Bassic.へのアクセス。福岡市中央区天神3-4-19 WITH天神5F、天神駅から徒歩約4分。Google Map、現在地からのルート、電話、メールを確認できます。"
   },
   firstVisit: {
     path: pageRoutes.firstVisit.path,

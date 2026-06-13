@@ -17,11 +17,7 @@ export function SocialUpdates({
   instagramFallbackLabel = "Instagramで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
-  const instagramWidgetSrc = getLightWidgetSrc(externalEmbeds.instagramWidgetSrc);
-  const xWidgetSrc = getHttpsWidgetSrc(externalEmbeds.xWidgetSrc);
-  const instagramItems = getFeedItems("instagram");
   const facebookItems = getFeedItems("facebook");
-  const xItems = getFeedItems("x");
 
   return (
     <section className="section social-section">
@@ -33,27 +29,14 @@ export function SocialUpdates({
 
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          {instagramItems.length ? (
-            <SocialApiFeed platform="instagram" items={instagramItems} fallbackLabel={instagramFallbackLabel} href={site.instagramUrl} />
-          ) : instagramWidgetSrc ? (
-            <div className="social-embed-frame instagram-widget-frame">
-              <iframe
-                title="public bar Bassic. Instagram timeline"
-                src={instagramWidgetSrc}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-          ) : (
-            <SocialProfileCard
-              href={site.instagramUrl}
-              account="@bassic_official"
-              imageSrc={assetPath("/assets/brand/index-logo.png")}
-              title="Instagram"
-              lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
-              buttonLabel={instagramFallbackLabel}
-            />
-          )}
+          <SocialProfileCard
+            href={site.instagramUrl}
+            account="@bassic_official"
+            imageSrc={assetPath("/assets/brand/index-logo.png")}
+            title="Instagram"
+            lead="写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+            buttonLabel={instagramFallbackLabel}
+          />
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
@@ -61,40 +44,27 @@ export function SocialUpdates({
             <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel="Facebookで最新情報を見る" href={site.facebookUrl} />
           ) : (
             <div className="social-embed-frame facebook-frame">
-            <iframe
-              title="public bar Bassic. Facebook timeline"
-              src={externalEmbeds.facebookPluginUrl}
-              width="500"
-              height="620"
-              loading="lazy"
-              referrerPolicy="origin-when-cross-origin"
-            />
-          </div>
+              <iframe
+                title="public bar Bassic. Facebook timeline"
+                src={externalEmbeds.facebookPluginUrl}
+                width="500"
+                height="620"
+                loading="lazy"
+                referrerPolicy="origin-when-cross-origin"
+              />
+            </div>
           )}
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          {xItems.length ? (
-            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={site.xUrl} />
-          ) : xWidgetSrc ? (
-            <div className="social-embed-frame external-social-frame x-frame">
-              <iframe
-                title="public bar Bassic. X timeline"
-                src={xWidgetSrc}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-          ) : (
-            <SocialProfileCard
-              href={site.xUrl}
-              account="@bar_Bassic"
-              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
-              title="X"
-              lead="X APIの接続後、直近投稿がここに表示されます。現在は公式Xで最新情報をご確認ください。"
-              buttonLabel={xFallbackLabel}
-            />
-          )}
+          <SocialProfileCard
+            href={site.xUrl}
+            account="@bar_Bassic"
+            imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
+            title="X"
+            lead="イベント告知や営業情報は公式Xでも確認できます。表示制限が出る場合も公式ページへ直接移動できます。"
+            buttonLabel={xFallbackLabel}
+          />
         </SocialEmbedCard>
       </div>
 
@@ -217,7 +187,7 @@ function SocialProfileCard({
   );
 }
 
-function getFeedItems(platform: "instagram" | "facebook" | "x"): SocialFeedItem[] {
+function getFeedItems(platform: "facebook"): SocialFeedItem[] {
   const feedData = socialFeed as SocialFeedData;
   const items = feedData.feeds?.[platform];
   return Array.isArray(items) ? items.filter((item) => item?.url && item?.text).slice(0, 5) : [];
@@ -234,32 +204,4 @@ function formatFeedDate(value?: string | null) {
   }
 
   return new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(date);
-}
-
-function getLightWidgetSrc(src: string) {
-  if (!src) {
-    return "";
-  }
-
-  try {
-    const url = new URL(src);
-    const isLightWidgetHost = url.hostname === "cdn.lightwidget.com" || url.hostname === "lightwidget.com";
-    const isWidgetPath = url.pathname.startsWith("/widgets/");
-    return url.protocol === "https:" && isLightWidgetHost && isWidgetPath ? url.toString() : "";
-  } catch {
-    return "";
-  }
-}
-
-function getHttpsWidgetSrc(src: string) {
-  if (!src) {
-    return "";
-  }
-
-  try {
-    const url = new URL(src);
-    return url.protocol === "https:" ? url.toString() : "";
-  } catch {
-    return "";
-  }
 }

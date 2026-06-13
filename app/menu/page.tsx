@@ -6,10 +6,11 @@ import { getCmsContents } from "@/lib/microcms";
 import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
+import type { MenuItem } from "@/lib/types";
 
 export const metadata: Metadata = buildMetadata("menu");
 
-function MenuJsonLd() {
+function MenuJsonLd({ menu }: { menu: MenuItem[] }) {
   const data = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
@@ -22,12 +23,19 @@ function MenuJsonLd() {
       address: site.address,
       telephone: site.phone
     },
-    itemListElement: [
-      { "@type": "Offer", price: "1200", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "ファズ・カレー" } },
-      { "@type": "Offer", price: "900", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "タコス＆ポテト" } },
-      { "@type": "Offer", price: "900", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "チョリソーコンパパス" } },
-      { "@type": "Offer", price: "500", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "ナチョス" } }
-    ]
+    itemListElement: menu.slice(0, 20).map((item) => {
+      const price = item.price?.replace(/[^\d]/g, "");
+
+      return {
+        "@type": "Offer",
+        ...(price ? { price, priceCurrency: "JPY" } : {}),
+        itemOffered: {
+          "@type": "MenuItem",
+          name: item.name,
+          ...(item.description ? { description: item.description } : {})
+        }
+      };
+    })
   };
 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
@@ -38,14 +46,14 @@ export default async function MenuPage() {
 
   return (
     <PageShell>
-      <MenuJsonLd />
+      <MenuJsonLd menu={contents.menu} />
       <main>
         <PageHero
           eyebrow={pageHeroes.menu.eyebrow}
-          title="Bassic.の料理と、音楽に合うお酒。"
-          lead="初めての方にも選びやすいよう、フードとドリンクを写真と価格で見やすく整理しました。"
-          image="/assets/menu-refresh/menu-hero.jpg"
-          imageAlt="Bassic.の料理とドリンク"
+          title={pageHeroes.menu.title}
+          lead={pageHeroes.menu.lead}
+          image={pageHeroes.menu.image}
+          imageAlt={pageHeroes.menu.imageAlt}
           className={pageHeroes.menu.className}
         />
         <MenuContent menu={contents.menu} />

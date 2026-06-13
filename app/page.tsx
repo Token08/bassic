@@ -11,7 +11,7 @@ import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveEditableImage } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
-import { site } from "@/lib/site";
+import { absoluteUrl, site } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata("home");
 
@@ -19,7 +19,7 @@ function JsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "BarOrPub",
-    "@id": `${site.siteUrl}/#bar`,
+    "@id": `${site.siteUrl.replace(/\/$/, "")}/#bar`,
     name: site.name,
     alternateName: site.japaneseName,
     description: site.description,
@@ -27,10 +27,10 @@ function JsonLd() {
     telephone: site.phone,
     email: site.email,
     priceRange: site.priceRange,
-    image: `${site.siteUrl}/ogp.png`,
+    image: absoluteUrl("/ogp.png"),
     hasMap: site.googleMapsUrl,
-    hasMenu: `${site.siteUrl}/menu/`,
-    keywords: "福岡 ミュージックバー, 天神 バー, 親不孝通り バー, 福岡 ライヴバー, 天神 貸切, ファズカレー",
+    hasMenu: absoluteUrl("/menu/"),
+    keywords: site.keywords.join(", "),
     areaServed: [
       { "@type": "City", name: "福岡市" },
       { "@type": "Place", name: "天神" },

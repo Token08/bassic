@@ -17,15 +17,7 @@ export const metadata: Metadata = {
     template: "%s | public bar Bassic."
   },
   description: site.description,
-  keywords: [
-    "福岡 ミュージックバー",
-    "天神 バー",
-    "親不孝通り バー",
-    "福岡 ライヴバー",
-    "Bassic",
-    "渡辺圭一",
-    "貸切 パーティー 天神"
-  ],
+  keywords: [...site.keywords, "Bassic", "渡辺圭一"],
   alternates: {
     canonical: site.siteUrl,
     languages: languageAlternates("/")
