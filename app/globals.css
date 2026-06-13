@@ -1617,7 +1617,7 @@ h3 {
   width: 100%;
   border: 0;
   padding: 0;
-  aspect-ratio: 1470 / 2062;
+  aspect-ratio: 4 / 5;
   background: #fffdf5;
   cursor: zoom-in;
 }
@@ -1643,7 +1643,8 @@ h3 {
 }
 
 .drink-menu-sheet img {
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center 46%;
 }
 
 .drink-menu-sheet figcaption {
@@ -1735,13 +1736,18 @@ h3 {
 
 .image-modal-content.drink-menu-modal-content {
   width: min(94vw, 620px);
-  height: min(88vh, 870px);
-  aspect-ratio: 1470 / 2062;
+  height: min(82vh, 760px);
+  aspect-ratio: auto;
   background: #fffdf5;
 }
 
 .image-modal-content.drink-menu-modal-content img {
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center 46%;
+}
+
+.drink-menu-modal-content figcaption {
+  padding: 12px 16px;
 }
 
 .party-section {
@@ -2697,5 +2703,26 @@ main > section.visit-info-strip .visit-info-grid article p {
 
   .access-list {
     grid-template-columns: 1fr;
+  }
+
+  .image-modal {
+    padding: 14px 10px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .image-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .image-modal-content.drink-menu-modal-content {
+    width: min(92vw, 430px);
+    height: min(74svh, 640px);
+  }
+
+  .drink-menu-modal-content figcaption {
+    padding: 10px 14px;
+    font-size: 0.92rem;
   }
 }
