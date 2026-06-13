@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { MenuContent, PageHero } from "@/components/content";
+import { PageHero } from "@/components/content";
+import { MenuContent } from "@/components/menu-content";
 import { PageShell } from "@/components/site-shell";
 import { getCmsContents } from "@/lib/microcms";
 import { pageHeroes } from "@/lib/page-content";
@@ -14,7 +15,7 @@ function MenuJsonLd() {
     "@type": "OfferCatalog",
     name: "public bar Bassic. Food & Drink",
     url: absoluteUrl("/menu/"),
-    description: `${site.chargeLabel}。福岡・天神 親不孝通りのミュージックバーで、ファズカレー、タコス、ドリンクなどを提供しています。`,
+    description: `${site.chargeLabel}。福岡・天神 親不孝通りのミュージックバーで、ファズ・カレー、タコス＆ポテト、ドリンク各種を提供しています。`,
     provider: {
       "@type": "BarOrPub",
       name: site.name,
@@ -22,9 +23,10 @@ function MenuJsonLd() {
       telephone: site.phone
     },
     itemListElement: [
-      { "@type": "Offer", itemOffered: { "@type": "MenuItem", name: "ファズ・カレー" } },
-      { "@type": "Offer", itemOffered: { "@type": "MenuItem", name: "タコス＆ポテト" } },
-      { "@type": "Offer", itemOffered: { "@type": "MenuItem", name: "自家製サングリア" } }
+      { "@type": "Offer", price: "1200", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "ファズ・カレー" } },
+      { "@type": "Offer", price: "900", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "タコス＆ポテト" } },
+      { "@type": "Offer", price: "900", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "チョリソーコンパパス" } },
+      { "@type": "Offer", price: "500", priceCurrency: "JPY", itemOffered: { "@type": "MenuItem", name: "ナチョス" } }
     ]
   };
 
@@ -40,10 +42,10 @@ export default async function MenuPage() {
       <main>
         <PageHero
           eyebrow={pageHeroes.menu.eyebrow}
-          title={pageHeroes.menu.title}
-          lead={pageHeroes.menu.lead}
-          image={pageHeroes.menu.image}
-          imageAlt={pageHeroes.menu.imageAlt}
+          title="Bassic.の料理と、音楽に合うお酒。"
+          lead="初めての方にも選びやすいよう、フードとドリンクを写真と価格で見やすく整理しました。"
+          image="/assets/menu-refresh/menu-hero.jpg"
+          imageAlt="Bassic.の料理とドリンク"
           className={pageHeroes.menu.className}
         />
         <MenuContent menu={contents.menu} />

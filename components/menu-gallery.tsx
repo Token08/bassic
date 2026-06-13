@@ -43,14 +43,9 @@ export function MenuGallery({ items }: { items: GalleryItem[] }) {
             </button>
             <div className="menu-card-copy">
               <div className="menu-card-heading">
-                <div>
-                  <p className="menu-category">{item.category === "food" ? "Food" : "Drink"}</p>
-                  <h3>{item.name}</h3>
-                  {item.englishName ? <p>{item.englishName}</p> : null}
-                </div>
+                <h3>{item.name}</h3>
                 {item.price ? <strong>{item.price}</strong> : null}
               </div>
-              {item.description ? <p className="muted">{item.description}</p> : null}
             </div>
           </article>
         ))}

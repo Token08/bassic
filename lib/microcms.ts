@@ -1,5 +1,6 @@
 import { createClient } from "microcms-js-sdk";
 import { fallbackContents } from "./fallback-data";
+import { defaultMenuItems } from "./menu-data";
 import type { CmsContents, EventItem, HomeContent, MenuItem, PartyPlan } from "./types";
 
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
@@ -45,7 +46,10 @@ function normalizeContents(contents: Partial<CmsContents>): CmsContents {
 
 export async function getCmsContents(): Promise<CmsContents> {
   if (!client) {
-    return normalizeContents(fallbackContents);
+    return {
+      ...normalizeContents(fallbackContents),
+      menu: defaultMenuItems
+    };
   }
 
   try {
@@ -67,6 +71,9 @@ export async function getCmsContents(): Promise<CmsContents> {
     });
   } catch (error) {
     console.error("microCMS fetch failed. Falling back to local content.", error);
-    return normalizeContents(fallbackContents);
+    return {
+      ...normalizeContents(fallbackContents),
+      menu: defaultMenuItems
+    };
   }
 }
