@@ -1,3 +1,4 @@
+import { DrinkMenuGallery } from "@/components/drink-menu-gallery";
 import { MenuGallery } from "@/components/menu-gallery";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
@@ -38,22 +39,7 @@ function DrinkMenuSheets() {
         <p className="eyebrow">Drink</p>
         <h2>ドリンク</h2>
       </div>
-      <div className="drink-menu-sheet-grid" aria-label="ドリンクメニュー表">
-        {drinkMenuSheets.map((sheet, index) => {
-          const src = assetPath(sheet.src);
-
-          return (
-            <figure className="drink-menu-sheet" key={sheet.src}>
-              <object data={src} type="application/pdf" aria-label={`${sheet.title}を表示`}>
-                <a href={src} target="_blank" rel="noreferrer">
-                  ドリンクメニュー{index + 1}を開く
-                </a>
-              </object>
-              <figcaption>Drink Menu {index + 1}</figcaption>
-            </figure>
-          );
-        })}
-      </div>
+      <DrinkMenuGallery sheets={drinkMenuSheets.map((sheet) => ({ ...sheet, src: assetPath(sheet.src) }))} />
     </div>
   );
 }

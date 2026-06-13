@@ -1600,21 +1600,39 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.drink-menu-sheet object {
+.drink-menu-sheet button {
+  position: relative;
   display: block;
   width: 100%;
-  height: clamp(560px, 58vw, 760px);
   border: 0;
+  padding: 0;
+  aspect-ratio: 1470 / 2062;
   background: #fffdf5;
+  cursor: zoom-in;
 }
 
-.drink-menu-sheet object a {
-  display: grid;
-  min-height: 320px;
-  place-items: center;
-  padding: 24px;
-  color: var(--red);
+.drink-menu-sheet button::after {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(21, 18, 15, 0.72);
+  color: #fffaf2;
+  content: "拡大";
+  font-size: 0.78rem;
   font-weight: 900;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.drink-menu-sheet button:hover::after,
+.drink-menu-sheet button:focus-visible::after {
+  opacity: 1;
+}
+
+.drink-menu-sheet img {
+  object-fit: contain;
 }
 
 .drink-menu-sheet figcaption {
@@ -1626,6 +1644,16 @@ h3 {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.drink-menu-modal-content {
+  width: min(94vw, 920px);
+  aspect-ratio: 1470 / 2062;
+}
+
+.drink-menu-modal-content img {
+  object-fit: contain;
+  background: #fffdf5;
 }
 
 .modal-open {
@@ -1692,6 +1720,17 @@ h3 {
 .image-modal-content figcaption span {
   position: relative;
   z-index: 1;
+}
+
+.image-modal-content.drink-menu-modal-content {
+  width: min(94vw, 620px);
+  height: min(88vh, 870px);
+  aspect-ratio: 1470 / 2062;
+  background: #fffdf5;
+}
+
+.image-modal-content.drink-menu-modal-content img {
+  object-fit: contain;
 }
 
 .party-section {
@@ -2454,10 +2493,6 @@ main > section.visit-info-strip .visit-info-grid article p {
   .menu-image-button,
   .event-poster {
     min-height: 260px;
-  }
-
-  .drink-menu-sheet object {
-    height: 520px;
   }
 
   .intro .feature-grid {
