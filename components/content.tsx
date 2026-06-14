@@ -26,7 +26,7 @@ import {
   type FeatureCardContent
 } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
-import type { EventItem, MenuItem, PartyPlan } from "@/lib/types";
+import type { EventItem, MenuItem, PartyPlan, SocialNotice } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -190,7 +190,7 @@ export function FeatureCardGrid({ features }: { features: readonly FeatureCardCo
   );
 }
 
-export function SocialUpdatesSection() {
+export function SocialUpdatesSection({ notices = [] }: { notices?: SocialNotice[] }) {
   return (
     <SocialUpdates
       title={
@@ -201,6 +201,7 @@ export function SocialUpdatesSection() {
         </>
       }
       lead={socialUpdatesCopy.lead}
+      notices={notices}
     />
   );
 }

@@ -1183,6 +1183,18 @@ h3 {
   text-transform: uppercase;
 }
 
+.social-notice-title {
+  color: var(--ink);
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.social-notice-description {
+  color: rgba(42, 31, 24, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
 .social-feed-more {
   display: inline-flex;
   align-items: center;

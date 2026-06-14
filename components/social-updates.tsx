@@ -2,21 +2,29 @@ import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
+import type { SocialNotice, SocialPlatform } from "@/lib/types";
 import socialFeed from "@/public/data/social-feed.json";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
   lead: React.ReactNode;
+  notices?: SocialNotice[];
   instagramFallbackLabel?: string;
+  facebookFallbackLabel?: string;
   xFallbackLabel?: string;
 };
 
 export function SocialUpdates({
   title,
   lead,
+  notices = [],
   instagramFallbackLabel = "Instagramで最新情報を見る",
+  facebookFallbackLabel = "Facebookで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
+  const instagramNotices = getNoticeItems(notices, "instagram");
+  const facebookNotices = getNoticeItems(notices, "facebook");
+  const xNotices = getNoticeItems(notices, "x");
   const facebookItems = getFeedItems("facebook");
   const xItems = getFeedItems("x");
 
@@ -30,19 +38,25 @@ export function SocialUpdates({
 
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          <SocialProfileCard
-            href={site.instagramUrl}
-            account="@bassic_official"
-            imageSrc={assetPath("/assets/brand/index-logo.png")}
-            title="Instagram"
-            lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
-            buttonLabel={instagramFallbackLabel}
-          />
+          {instagramNotices.length ? (
+            <SocialNoticeFeed platform="instagram" items={instagramNotices} fallbackLabel={instagramFallbackLabel} href={site.instagramUrl} />
+          ) : (
+            <SocialProfileCard
+              href={site.instagramUrl}
+              account="@bassic_official"
+              imageSrc={assetPath("/assets/brand/index-logo.png")}
+              title="Instagram"
+              lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+              buttonLabel={instagramFallbackLabel}
+            />
+          )}
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
-          {facebookItems.length ? (
-            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel="Facebookで最新情報を見る" href={site.facebookUrl} />
+          {facebookNotices.length ? (
+            <SocialNoticeFeed platform="facebook" items={facebookNotices} fallbackLabel={facebookFallbackLabel} href={site.facebookUrl} />
+          ) : facebookItems.length ? (
+            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel={facebookFallbackLabel} href={site.facebookUrl} />
           ) : (
             <div className="social-embed-frame facebook-frame">
               <iframe
@@ -58,7 +72,9 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          {xItems.length ? (
+          {xNotices.length ? (
+            <SocialNoticeFeed platform="x" items={xNotices} fallbackLabel={xFallbackLabel} href={site.xUrl} />
+          ) : xItems.length ? (
             <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={site.xUrl} />
           ) : (
             <SocialProfileCard
@@ -66,7 +82,7 @@ export function SocialUpdates({
               account="@bar_Bassic"
               imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
               title="X"
-              lead="イベント告知や営業情報は公式Xでも更新しています。API連携後は直近投稿がここに表示されます。"
+              lead="イベント告知や営業情報は公式Xでも更新しています。管理画面に投稿URLを登録すると、この欄にカード表示できます。"
               buttonLabel={xFallbackLabel}
             />
           )}
@@ -96,6 +112,37 @@ type SocialFeedItem = {
 type SocialFeedData = {
   feeds?: Record<"instagram" | "facebook" | "x", SocialFeedItem[]>;
 };
+
+function SocialNoticeFeed({
+  platform,
+  items,
+  href,
+  fallbackLabel
+}: {
+  platform: SocialPlatform;
+  items: SocialNotice[];
+  href: string;
+  fallbackLabel: string;
+}) {
+  return (
+    <div className={`social-embed-frame social-api-feed social-notice-feed social-notice-feed-${platform}`}>
+      <div className="social-feed-list">
+        {items.map((item) => (
+          <a key={`${platform}-${item.id}`} className="social-feed-item no-image social-notice-item" href={item.url} target="_blank" rel="noreferrer">
+            <span className="social-feed-copy">
+              <span className="social-feed-date">{formatFeedDate(item.date)}</span>
+              <span className="social-notice-title">{item.title}</span>
+              {item.description ? <span className="social-notice-description">{item.description}</span> : null}
+            </span>
+          </a>
+        ))}
+      </div>
+      <a className="social-feed-more" href={href} target="_blank" rel="noreferrer">
+        {fallbackLabel} <ExternalLink size={14} />
+      </a>
+    </div>
+  );
+}
 
 function SocialApiFeed({
   platform,
@@ -196,6 +243,13 @@ function getFeedItems(platform: "facebook" | "x"): SocialFeedItem[] {
   const feedData = socialFeed as SocialFeedData;
   const items = feedData.feeds?.[platform];
   return Array.isArray(items) ? items.filter((item) => item?.url && item?.text).slice(0, 5) : [];
+}
+
+function getNoticeItems(notices: SocialNotice[], platform: SocialPlatform): SocialNotice[] {
+  return notices
+    .filter((notice) => notice.platform === platform && notice.isPublished && notice.url && notice.title)
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+    .slice(0, 5);
 }
 
 function formatFeedDate(value?: string | null) {

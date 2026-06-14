@@ -33,6 +33,18 @@ export type PartyPlan = {
   body: string;
 };
 
+export type SocialPlatform = "instagram" | "facebook" | "x";
+
+export type SocialNotice = {
+  id: string;
+  platform: SocialPlatform;
+  title: string;
+  url: string;
+  date?: string;
+  description?: string;
+  isPublished: boolean;
+};
+
 export type HomeContent = {
   heroTitle: string;
   heroLead: string;
@@ -46,4 +58,5 @@ export type CmsContents = {
   events: EventItem[];
   menu: MenuItem[];
   partyPlans: PartyPlan[];
+  socialNotices: SocialNotice[];
 };

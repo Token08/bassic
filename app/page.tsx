@@ -107,7 +107,7 @@ export default async function Home() {
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
         <VisitInfoCards />
         <LocalSearchSection />
-        <SocialUpdatesSection />
+        <SocialUpdatesSection notices={contents.socialNotices} />
 
         <AccessContent note={contents.home.accessNote} />
       </main>

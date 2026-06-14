@@ -116,5 +116,31 @@ export const fallbackContents: CmsContents = {
       price: "平日 1H ￥10,000〜",
       body: "機材使用料込み。土日祝・祝前日は 1H ￥12,000〜。詳細はお問い合わせください。"
     }
+  ],
+  socialNotices: [
+    {
+      id: "instagram-profile",
+      platform: "instagram",
+      title: "Instagramで店内写真・イベント情報を更新中",
+      url: "https://www.instagram.com/bassic_official/",
+      description: "直近の写真、イベント告知、店内の空気感は公式Instagramで確認できます。",
+      isPublished: true
+    },
+    {
+      id: "facebook-profile",
+      platform: "facebook",
+      title: "Facebookでイベント投稿を確認",
+      url: "https://www.facebook.com/bar.Bassic/",
+      description: "ライヴ、DJ、イベント告知などをFacebookでも更新しています。",
+      isPublished: true
+    },
+    {
+      id: "x-profile",
+      platform: "x",
+      title: "Xでイベント告知・営業情報を確認",
+      url: "https://x.com/bar_Bassic",
+      description: "管理画面にXの投稿URLを貼ると、この欄にお知らせカードとして表示できます。",
+      isPublished: true
+    }
   ]
 };

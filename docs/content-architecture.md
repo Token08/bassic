@@ -24,7 +24,7 @@ This site is structured so future admin/CMS work can replace content data withou
   - Move these values into translated CMS/admin fields later if multilingual editing becomes part of the management workflow.
 
 - `lib/fallback-data.ts`
-  - Store local fallback content for home copy, events, menu items, and party plans.
+  - Store local fallback content for home copy, events, menu items, party plans, and social notice cards.
   - This keeps the static site usable when microCMS is not configured or fetches fail.
 
 - `lib/microcms.ts`
@@ -71,7 +71,10 @@ Recommended admin-managed fields:
 - Events: date, title, performers, open/start time, price, reservation text, image, published flag.
 - Menu: name, English name, category, price, description, image.
 - Home: hero title, hero lead, first-visit lead, access note, top images.
+- Social notices: platform, title, post URL, date, short description, published flag.
 - Visuals: top slideshow, event slideshow, party slideshow, menu teaser image.
 - Business facts: hours, charge, smoking policy, phone, email, Google Map URL.
 
 When adding new admin fields, update types in `lib/types.ts`, add fallback values in `lib/fallback-data.ts` or `lib/editable-content.ts`, then normalize in `lib/microcms.ts`.
+
+For X, Instagram, or Facebook posts that should appear on the homepage without API maintenance, add them to the `social-notices` endpoint. The site renders those cards before trying static API JSON or third-party embeds.

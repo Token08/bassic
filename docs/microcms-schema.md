@@ -62,3 +62,22 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 - トップ画像はDrive素材から選び、横長で店内の雰囲気が伝わる写真を推奨します。
 - メニュー画像は正方形または横長を推奨します。未設定でも公開できますが、来店前の分かりやすさを優先するメニューには画像を設定します。
 - 営業時間やGoogle Map URLはCMSではなく `lib/site.ts` / 環境変数で管理します。表記ゆれを防ぐためです。
+
+## social-notices
+
+種類: リスト形式
+
+TOPページのSNS欄に表示する「お知らせカード」です。Xの自動タイムラインはAPI制限で不安定なため、納品運用ではここに投稿URLを貼って表示します。
+
+| fieldId | 管理画面の表示名 | 種類 | 必須 |
+| --- | --- | --- | --- |
+| title | 表示タイトル | テキストフィールド | true |
+| platform | SNS種別 | セレクト | true |
+| url | 投稿URL | テキストフィールド | true |
+| date | 表示日 | 日時 | false |
+| description | 短い説明 | テキストエリア | false |
+| isPublished | 公開する | 真偽値 | true |
+
+`platform` は `instagram` / `facebook` / `x` の3択です。
+
+X欄を更新したい場合は、`platform` を `x` にして、Xの投稿URL、表示タイトル、短い説明を登録してください。公開前の下書きは `isPublished` を false にします。

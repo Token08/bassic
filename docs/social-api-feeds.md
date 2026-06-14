@@ -37,10 +37,11 @@ FACEBOOK_PAGE_ID
 
 The current homepage uses this order:
 
-1. Facebook API JSON posts from `public/data/social-feed.json`, when present
-2. Facebook official Page Plugin iframe
-3. X API JSON posts from `public/data/social-feed.json`, when present
-4. Instagram official profile card
+1. microCMS `social-notices` cards, when present
+2. Facebook API JSON posts from `public/data/social-feed.json`, when present
+3. Facebook official Page Plugin iframe
+4. X API JSON posts from `public/data/social-feed.json`, when present
+5. Instagram and X official profile cards
 
 ## Notes
 
