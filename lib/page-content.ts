@@ -98,7 +98,7 @@ export const visitInfoItems: VisitInfoItem[] = [
   },
   {
     icon: "charge",
-    title: "チャージ",
+    title: "テーブル・チャージ",
     text: site.chargeLabel
   }
 ];
