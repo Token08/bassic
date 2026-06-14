@@ -12,7 +12,7 @@ export const site = {
   streetAddress: "3-4-19 WITH天神5F",
   phone: "092-713-1040",
   email: "mail@bassic.jp",
-  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は 22:30 から通常営業",
+  hoursLabel: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は 22:30 から通常営業\n※イベントにより異なる場合もございます",
   eventHoursNote:
     "イベント時は営業時間が変動します。\nイベント終了後は 22:30 から通常営業です。\n詳細はイベントスケジュールページをご確認ください。",
   chargeLabel: "チャージ 500円 / お一人様",
