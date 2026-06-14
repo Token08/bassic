@@ -894,6 +894,7 @@ h3 {
   font-size: clamp(2rem, 3vw, 3.05rem);
   line-height: 1.26;
   text-wrap: balance;
+  white-space: pre-line;
 }
 
 .intro .section-heading.narrow-copy {

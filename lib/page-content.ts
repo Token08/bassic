@@ -105,7 +105,7 @@ export const visitInfoItems: VisitInfoItem[] = [
 
 export const firstVisitSection = {
   eyebrow: "First Visit",
-  title: "高い天井と柔らかな灯り。豊富なお酒と心地よい空間が、それぞれの夜をゆっくりと深めていく。",
+  title: "高い天井と柔らかな灯り。\n豊富なお酒と音楽が心地よい空間。",
   features: [
     {
       icon: "music",
