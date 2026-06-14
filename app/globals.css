@@ -1492,7 +1492,7 @@ h3 {
   margin-bottom: 0;
   font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
   color: var(--ink);
-  font-size: clamp(2.6rem, 5.4vw, 5.4rem);
+  font-size: clamp(2.2rem, 4vw, 4.2rem);
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1;
@@ -1684,7 +1684,7 @@ h3 {
   width: 100%;
   border: 0;
   padding: 0;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1470 / 2062;
   background: #fffdf5;
   cursor: zoom-in;
 }
@@ -1710,8 +1710,8 @@ h3 {
 }
 
 .drink-menu-sheet img {
-  object-fit: cover;
-  object-position: center 46%;
+  object-fit: contain;
+  background: #fffdf5;
 }
 
 .drink-menu-sheet figcaption {
