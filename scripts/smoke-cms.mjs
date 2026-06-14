@@ -1,8 +1,31 @@
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
+
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
 const apiKey = process.env.MICROCMS_API_KEY;
 
 const requiredHomeFields = ["heroTitle", "heroLead", "firstVisitLead", "accessNote"];
+const requiredSiteSettingsFields = [
+  "address",
+  "phone",
+  "hoursLabel",
+  "smokingLabel",
+  "chargeLabel",
+  "googleMapsUrl",
+  "instagramUrl",
+  "facebookUrl",
+  "xUrl"
+];
 const endpointChecks = [
+  {
+    label: "hero-slides",
+    path: "/hero-slides?limit=1",
+    validateItem: (item) => {
+      requiredEnum(item, "page", ["home", "events", "party", "menu", "access"], "hero-slides");
+      requiredImage(item, "image", "hero-slides");
+    }
+  },
   {
     label: "events",
     path: "/events?limit=1",
@@ -18,6 +41,14 @@ const endpointChecks = [
     validateItem: (item) => {
       requiredString(item, "name", "menu");
       requiredEnum(item, "category", ["food", "drink"], "menu");
+    }
+  },
+  {
+    label: "drink-menu-sheets",
+    path: "/drink-menu-sheets?limit=1",
+    validateItem: (item) => {
+      requiredString(item, "title", "drink-menu-sheets");
+      requiredImage(item, "image", "drink-menu-sheets");
     }
   },
   {
@@ -58,6 +89,24 @@ try {
     requiredUrl(home, "instagramWidgetSrc", "home");
   }
   console.log("OK home");
+
+  const siteSettings = await fetchJson("/site-settings");
+  for (const field of requiredSiteSettingsFields) {
+    if (field.endsWith("Url")) {
+      requiredUrl(siteSettings, field, "site-settings");
+    } else {
+      requiredString(siteSettings, field, "site-settings");
+    }
+  }
+  console.log("OK site-settings");
+
+  const equipmentRental = await fetchJson("/equipment-rental");
+  requiredString(equipmentRental, "title", "equipment-rental");
+  requiredString(equipmentRental, "body", "equipment-rental");
+  if (equipmentRental.pdfUrl) {
+    requiredUrl(equipmentRental, "pdfUrl", "equipment-rental");
+  }
+  console.log("OK equipment-rental");
 
   for (const check of endpointChecks) {
     const list = await fetchJson(check.path);
@@ -126,5 +175,11 @@ function requiredUrl(item, field, endpoint) {
     }
   } catch {
     errors.push(`${endpoint}.${field}: valid URL is required.`);
+  }
+}
+
+function requiredImage(item, field, endpoint) {
+  if (!item?.[field]?.url) {
+    errors.push(`${endpoint}.${field}: image is required.`);
   }
 }

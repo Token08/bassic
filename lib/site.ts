@@ -54,7 +54,7 @@ export function absoluteUrl(path = "") {
   return `${site.siteUrl.replace(/\/$/, "")}${normalizedPath}`;
 }
 
-export function telHref(phone = site.phone) {
+export function telHref(phone: string = site.phone) {
   return `tel:${phone.replace(/-/g, "")}`;
 }
 

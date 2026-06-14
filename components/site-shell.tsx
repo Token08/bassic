@@ -8,6 +8,7 @@ import { assetPath } from "@/lib/assets";
 import { type LocaleCode } from "@/lib/i18n";
 import { currentLocale, localizedInternalHref } from "@/lib/path-utils";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
+import type { SiteSettings } from "@/lib/types";
 import { LanguageSwitcher } from "./language-switcher";
 
 function HeaderNavLinks({ locale }: { locale?: LocaleCode }) {
@@ -56,30 +57,34 @@ export function SiteHeader() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ settings }: { settings?: SiteSettings }) {
+  const footerSettings = settings || site;
+
   return (
     <footer className="footer">
       <Image className="footer-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill sizes="100vw" />
       <p>
-        {site.name} / {site.address}
+        {site.name} / {footerSettings.address}
       </p>
       <p>Copyright (C) 2009 - {new Date().getFullYear()} bar Bassic. All Rights Reserved.</p>
     </footer>
   );
 }
 
-export function MobileCta() {
+export function MobileCta({ settings }: { settings?: SiteSettings }) {
+  const ctaSettings = settings || site;
+
   return (
     <div className="mobile-cta" aria-label="固定アクション">
-      <a href={telHref()}>
+      <a href={telHref(ctaSettings.phone)}>
         <Phone size={18} />
         電話
       </a>
-      <a href={site.googleMapsUrl} target="_blank" rel="noreferrer">
+      <a href={ctaSettings.googleMapsUrl} target="_blank" rel="noreferrer">
         <MapPin size={18} />
         地図
       </a>
-      <a href={site.instagramUrl} target="_blank" rel="noreferrer">
+      <a href={ctaSettings.instagramUrl} target="_blank" rel="noreferrer">
         <Instagram size={18} />
         Instagram
       </a>
@@ -91,13 +96,13 @@ export function MobileCta() {
   );
 }
 
-export function PageShell({ children }: { children: React.ReactNode }) {
+export function PageShell({ children, settings }: { children: React.ReactNode; settings?: SiteSettings }) {
   return (
     <>
       <SiteHeader />
       {children}
-      <SiteFooter />
-      <MobileCta />
+      <SiteFooter settings={settings} />
+      <MobileCta settings={settings} />
     </>
   );
 }

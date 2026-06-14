@@ -1,6 +1,6 @@
 import { assetPath } from "./assets";
 import { site } from "./site";
-import type { CmsImage } from "./types";
+import type { CmsImage, HeroSlide } from "./types";
 
 export type EditableImage = {
   src: string;
@@ -26,6 +26,16 @@ export function resolveEditableImage(image: CmsImage | undefined, fallback: Edit
     src: image.url.startsWith("/assets/") ? assetPath(image.url) : image.url,
     alt: image.alt || fallback.alt
   };
+}
+
+export function resolveHeroSlides(slides: HeroSlide[] | undefined, fallback: readonly EditableImage[]): EditableImage[] {
+  if (!slides?.length) {
+    return [...fallback];
+  }
+
+  return slides.map((slide, index) =>
+    resolveEditableImage(slide.image, fallback[index % fallback.length] || fallback[0])
+  );
 }
 
 export const editableMedia = {

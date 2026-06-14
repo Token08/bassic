@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/content";
+import { EventList, PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
+import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
+import type { SiteSettings } from "@/lib/types";
 
 export const metadata: Metadata = {
   ...buildMetadata("events")
 };
 
-function EventsJsonLd({ events }: { events: Awaited<ReturnType<typeof getCmsContents>>["events"] }) {
+function EventsJsonLd({ events, settings }: { events: Awaited<ReturnType<typeof getCmsContents>>["events"]; settings: SiteSettings }) {
   const data = events.slice(0, 8).map((event) => ({
     "@context": "https://schema.org",
     "@type": "Event",
@@ -22,7 +24,7 @@ function EventsJsonLd({ events }: { events: Awaited<ReturnType<typeof getCmsCont
     location: {
       "@type": "Place",
       name: site.name,
-      address: site.address
+      address: settings.address
     },
     image: [event.image?.url ? (event.image.url.startsWith("/") ? absoluteUrl(event.image.url) : event.image.url) : absoluteUrl("/ogp.png")],
     description: [event.performers, event.price, event.reservation].filter(Boolean).join(" / "),
@@ -39,18 +41,26 @@ function EventsJsonLd({ events }: { events: Awaited<ReturnType<typeof getCmsCont
 
 export default async function EventsPage() {
   const contents = await getCmsContents();
+  const eventSlides = resolveHeroSlides(contents.heroSlides.events, editableMedia.eventHeroSlides);
 
   return (
-    <PageShell>
-      <EventsJsonLd events={contents.events} />
+    <PageShell settings={contents.siteSettings}>
+      <EventsJsonLd events={contents.events} settings={contents.siteSettings} />
       <main>
         <PageHero
           eyebrow={pageHeroes.events.eyebrow}
           title={pageHeroes.events.title}
           lead={pageHeroes.events.lead}
-          slides={pageHeroes.events.slides}
+          slides={eventSlides}
           className={pageHeroes.events.className}
         />
+        <section className="section">
+          <div className="section-heading narrow-copy">
+            <p className="eyebrow">Event List</p>
+            <h2>Event Schedule</h2>
+          </div>
+          <EventList events={contents.events} />
+        </section>
         <EventCalendarSection />
       </main>
     </PageShell>

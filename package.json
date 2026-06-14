@@ -11,7 +11,10 @@
     "sync:calendar": "node scripts/sync-google-calendar.mjs",
     "build": "next build",
     "start": "next start",
+    "setup:admin": "node scripts/setup-microcms-admin.mjs",
+    "deploy:cms": "node scripts/trigger-cms-rebuild.mjs",
     "smoke:cms": "node scripts/smoke-cms.mjs",
+    "check:admin": "node scripts/check-admin-readiness.mjs",
     "smoke:links": "node scripts/smoke-links.mjs",
     "smoke:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit"

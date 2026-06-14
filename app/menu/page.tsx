@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/content";
 import { MenuContent } from "@/components/menu-content";
 import { PageShell } from "@/components/site-shell";
+import { resolveEditableImage } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { pageHeroes } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
-import type { MenuItem } from "@/lib/types";
+import type { MenuItem, SiteSettings } from "@/lib/types";
 
 export const metadata: Metadata = buildMetadata("menu");
 
-function MenuJsonLd({ menu }: { menu: MenuItem[] }) {
+function MenuJsonLd({ menu, settings }: { menu: MenuItem[]; settings: SiteSettings }) {
   const data = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
@@ -20,8 +21,8 @@ function MenuJsonLd({ menu }: { menu: MenuItem[] }) {
     provider: {
       "@type": "BarOrPub",
       name: site.name,
-      address: site.address,
-      telephone: site.phone
+      address: settings.address,
+      telephone: settings.phone
     },
     itemListElement: menu.slice(0, 20).map((item) => {
       const price = item.price?.replace(/[^\d]/g, "");
@@ -43,20 +44,24 @@ function MenuJsonLd({ menu }: { menu: MenuItem[] }) {
 
 export default async function MenuPage() {
   const contents = await getCmsContents();
+  const menuHero = resolveEditableImage(contents.heroSlides.menu[0]?.image, {
+    src: pageHeroes.menu.image || "",
+    alt: pageHeroes.menu.imageAlt || ""
+  });
 
   return (
-    <PageShell>
-      <MenuJsonLd menu={contents.menu} />
+    <PageShell settings={contents.siteSettings}>
+      <MenuJsonLd menu={contents.menu} settings={contents.siteSettings} />
       <main>
         <PageHero
           eyebrow={pageHeroes.menu.eyebrow}
           title={pageHeroes.menu.title}
           lead={pageHeroes.menu.lead}
-          image={pageHeroes.menu.image}
-          imageAlt={pageHeroes.menu.imageAlt}
+          image={menuHero.src}
+          imageAlt={menuHero.alt}
           className={pageHeroes.menu.className}
         />
-        <MenuContent menu={contents.menu} />
+        <MenuContent menu={contents.menu} drinkSheets={contents.drinkMenuSheets} />
       </main>
     </PageShell>
   );
