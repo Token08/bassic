@@ -374,6 +374,17 @@ iframe {
     linear-gradient(0deg, rgba(10, 7, 6, 0.68), rgba(10, 7, 6, 0.08) 58%);
 }
 
+.access-hero .hero-image {
+  object-position: 54% center;
+  filter: saturate(1.08) contrast(1.08) brightness(1.08);
+}
+
+.access-hero .hero-overlay {
+  background:
+    linear-gradient(90deg, rgba(10, 7, 6, 0.72), rgba(48, 8, 10, 0.34) 42%, rgba(10, 7, 6, 0.06)),
+    linear-gradient(0deg, rgba(10, 7, 6, 0.52), rgba(10, 7, 6, 0.06) 60%);
+}
+
 @keyframes eventHeroFade {
   0%,
   28% {
