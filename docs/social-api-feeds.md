@@ -1,7 +1,7 @@
 # Social API feeds
 
 This repository keeps the API-fetching script as a future option, but the current homepage does not depend on Instagram or X API output.
-For public launch stability, Instagram uses a profile card, X uses the official timeline widget with a fallback card, and Facebook can use either static JSON or the official Page Plugin iframe.
+For public launch stability, Instagram uses a profile card, X uses static JSON when available with a profile-card fallback, and Facebook can use either static JSON or the official Page Plugin iframe.
 
 If real-time feeds are introduced later, fetch posts at build time or through a server/admin process so API tokens never reach the browser.
 
@@ -39,7 +39,7 @@ The current homepage uses this order:
 
 1. Facebook API JSON posts from `public/data/social-feed.json`, when present
 2. Facebook official Page Plugin iframe
-3. X official timeline widget, with a profile-card fallback
+3. X API JSON posts from `public/data/social-feed.json`, when present
 4. Instagram official profile card
 
 ## Notes

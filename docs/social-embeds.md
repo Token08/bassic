@@ -3,7 +3,7 @@
 The homepage currently prioritizes stable display over real-time feeds.
 Instagram renders an official profile card so the page never breaks because of embed restrictions or blocked third-party frames.
 Facebook keeps the official Page Plugin timeline because it has been the most stable embed for this site.
-X uses the official timeline widget and falls back to a profile link card if the widget script cannot load.
+X renders static API feed data when `public/data/social-feed.json` contains posts. Without API data, it falls back to a profile link card.
 
 ## Instagram
 
@@ -17,6 +17,6 @@ Facebook uses the official Page Plugin timeline iframe, or static JSON when `pub
 
 ## X
 
-X renders the official timeline widget for `@bar_Bassic` through `https://platform.twitter.com/widgets.js`.
-The component keeps a fallback card because X can still rate-limit or block embeds depending on the visitor environment.
-If real-time X posts are needed later, fetch them server-side with a managed token and render static JSON.
+The official X timeline widget was tested on GitHub Pages and can render `Rate limit exceeded`, even when the iframe itself loads.
+For launch stability, do not show that widget by default.
+Use `npm run fetch:social` with `X_BEARER_TOKEN` to write recent X posts into `public/data/social-feed.json`; the homepage will then render those posts as a static feed.

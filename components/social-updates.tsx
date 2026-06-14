@@ -1,5 +1,4 @@
 import { ExternalLink } from "lucide-react";
-import { XTimeline } from "./x-timeline";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
@@ -19,6 +18,7 @@ export function SocialUpdates({
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
   const facebookItems = getFeedItems("facebook");
+  const xItems = getFeedItems("x");
 
   return (
     <section className="section social-section">
@@ -58,7 +58,18 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          <XTimeline href={site.xUrl} account="@bar_Bassic" buttonLabel={xFallbackLabel} />
+          {xItems.length ? (
+            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={site.xUrl} />
+          ) : (
+            <SocialProfileCard
+              href={site.xUrl}
+              account="@bar_Bassic"
+              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
+              title="X"
+              lead="イベント告知や営業情報は公式Xでも更新しています。API連携後は直近投稿がここに表示されます。"
+              buttonLabel={xFallbackLabel}
+            />
+          )}
         </SocialEmbedCard>
       </div>
 
@@ -181,7 +192,7 @@ function SocialProfileCard({
   );
 }
 
-function getFeedItems(platform: "facebook"): SocialFeedItem[] {
+function getFeedItems(platform: "facebook" | "x"): SocialFeedItem[] {
   const feedData = socialFeed as SocialFeedData;
   const items = feedData.feeds?.[platform];
   return Array.isArray(items) ? items.filter((item) => item?.url && item?.text).slice(0, 5) : [];
