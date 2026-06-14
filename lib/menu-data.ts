@@ -65,6 +65,12 @@ export const defaultMenuItems: MenuItem[] = [
     image: { url: `${foodImageBase}/prosciutto-assortment.jpg`, alt: "生ハム盛り合わせ" }
   },
   {
+    name: "本日のパスタ",
+    price: "¥1,100~",
+    category: "food",
+    image: { url: `${foodImageBase}/daily-pasta.jpg`, alt: "本日のパスタ" }
+  },
+  {
     name: "ハートランド生",
     price: "¥700",
     category: "drink",
