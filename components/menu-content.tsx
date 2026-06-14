@@ -47,7 +47,7 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
   return (
     <section className="section menu-section">
       <DrinkMenuSheets />
-      <MenuBlock title="FOOD" items={foods} />
+      <MenuBlock title="FOOD MENU" items={foods} />
     </section>
   );
 }
