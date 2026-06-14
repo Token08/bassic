@@ -1095,6 +1095,61 @@ h3 {
   border: 0;
 }
 
+.x-timeline-frame {
+  position: relative;
+  display: grid;
+  align-items: stretch;
+  justify-items: stretch;
+  background:
+    linear-gradient(180deg, rgba(16, 12, 10, 0.04), rgba(111, 15, 21, 0.06)),
+    #fffaf0;
+  color: var(--ink);
+}
+
+.x-timeline-frame .twitter-timeline {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 24px;
+  color: var(--red);
+  font-weight: 900;
+  text-align: center;
+}
+
+.x-timeline-frame iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.x-timeline-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 20px;
+  padding: clamp(24px, 4vw, 42px);
+  background:
+    linear-gradient(180deg, rgba(16, 12, 10, 0.08), rgba(111, 15, 21, 0.14)),
+    #fffaf0;
+  text-align: center;
+}
+
+.x-timeline-fallback h3 {
+  margin: 6px 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1;
+}
+
+.x-timeline-fallback p {
+  max-width: 28em;
+  margin: 0 auto;
+  color: rgba(42, 31, 24, 0.82);
+  font-weight: 700;
+  line-height: 1.8;
+}
+
 .facebook-frame {
   display: grid;
   justify-items: center;
@@ -2584,6 +2639,25 @@ main > section.visit-info-strip .visit-info-grid article p {
   .social-embed-frame iframe {
     width: 100% !important;
     pointer-events: none;
+  }
+
+  .x-timeline-frame .twitter-timeline {
+    padding: 18px;
+    font-size: 0.86rem;
+  }
+
+  .x-timeline-fallback {
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .x-timeline-fallback h3 {
+    font-size: 1.35rem;
+  }
+
+  .x-timeline-fallback p {
+    font-size: 0.78rem;
+    line-height: 1.55;
   }
 
   .social-embed-frame > * {

@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { XTimeline } from "./x-timeline";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
 import { site } from "@/lib/site";
@@ -34,7 +35,7 @@ export function SocialUpdates({
             account="@bassic_official"
             imageSrc={assetPath("/assets/brand/index-logo.png")}
             title="Instagram"
-            lead="写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+            lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
             buttonLabel={instagramFallbackLabel}
           />
         </SocialEmbedCard>
@@ -57,14 +58,7 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[2]}>
-          <SocialProfileCard
-            href={site.xUrl}
-            account="@bar_Bassic"
-            imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
-            title="X"
-            lead="イベント告知や営業情報は公式Xでも確認できます。表示制限が出る場合も公式ページへ直接移動できます。"
-            buttonLabel={xFallbackLabel}
-          />
+          <XTimeline href={site.xUrl} account="@bar_Bassic" buttonLabel={xFallbackLabel} />
         </SocialEmbedCard>
       </div>
 

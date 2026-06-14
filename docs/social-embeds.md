@@ -1,8 +1,9 @@
 # SNS embeds
 
 The homepage currently prioritizes stable display over real-time feeds.
-Instagram and X render official profile cards so the page never breaks because of embed restrictions, rate limits, or blocked third-party frames.
+Instagram renders an official profile card so the page never breaks because of embed restrictions or blocked third-party frames.
 Facebook keeps the official Page Plugin timeline because it has been the most stable embed for this site.
+X uses the official timeline widget and falls back to a profile link card if the widget script cannot load.
 
 ## Instagram
 
@@ -16,6 +17,6 @@ Facebook uses the official Page Plugin timeline iframe, or static JSON when `pub
 
 ## X
 
-X renders a profile card that links to `@bar_Bassic`.
-The official X timeline widget is not used because it can render an empty, rate-limited, or blocked frame.
+X renders the official timeline widget for `@bar_Bassic` through `https://platform.twitter.com/widgets.js`.
+The component keeps a fallback card because X can still rate-limit or block embeds depending on the visitor environment.
 If real-time X posts are needed later, fetch them server-side with a managed token and render static JSON.
