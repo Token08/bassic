@@ -451,7 +451,7 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
           <h3>{equipmentRentalInfo.title}</h3>
           <strong>{equipmentRentalInfo.price}</strong>
           <p>{equipmentRentalInfo.body}</p>
-          <a className="button equipment-rental-link" href="/assets/pdf/equipment-rental-list.pdf" target="_blank" rel="noreferrer">
+          <a className="button equipment-rental-link" href={assetPath("/assets/pdf/equipment-rental-list.pdf")} target="_blank" rel="noreferrer">
             詳細はコチラ
           </a>
         </div>
