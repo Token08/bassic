@@ -1993,6 +1993,11 @@ h3 {
   box-shadow: var(--shadow);
 }
 
+.equipment-rental-link {
+  width: fit-content;
+  margin-top: 18px;
+}
+
 .equipment-rental-card svg {
   width: 34px;
   height: 34px;
