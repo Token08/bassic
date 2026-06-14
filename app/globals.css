@@ -1856,18 +1856,27 @@ h3 {
 
 .image-modal-content.drink-menu-modal-content {
   width: min(94vw, 620px);
-  height: min(82vh, 760px);
-  aspect-ratio: auto;
+  height: auto;
+  max-height: calc(100svh - 116px);
+  aspect-ratio: 1470 / 2062;
+  overflow: visible;
   background: #fffdf5;
 }
 
 .image-modal-content.drink-menu-modal-content img {
-  object-fit: cover;
-  object-position: center 46%;
+  object-fit: contain;
+  background: #fffdf5;
 }
 
 .drink-menu-modal-content figcaption {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  bottom: auto;
+  left: 0;
   padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(21, 18, 15, 0.86);
 }
 
 .image-modal-dots {
@@ -2885,8 +2894,8 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .image-modal-content.drink-menu-modal-content {
-    width: min(92vw, 430px);
-    height: min(74svh, 640px);
+    width: min(88vw, 430px);
+    max-height: calc(100svh - 126px);
   }
 
   .drink-menu-modal-content figcaption {
