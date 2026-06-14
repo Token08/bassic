@@ -3,7 +3,6 @@ import { MenuGallery } from "@/components/menu-gallery";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
 import { drinkMenuSheets } from "@/lib/menu-data";
-import { site } from "@/lib/site";
 import type { MenuItem } from "@/lib/types";
 
 function resolveMenuItem(item: MenuItem) {
@@ -16,7 +15,7 @@ function resolveMenuItem(item: MenuItem) {
   };
 }
 
-function MenuBlock({ eyebrow, title, items }: { eyebrow: string; title: string; items: ReturnType<typeof resolveMenuItem>[] }) {
+function MenuBlock({ title, items }: { title: string; items: ReturnType<typeof resolveMenuItem>[] }) {
   if (items.length === 0) {
     return null;
   }
@@ -24,7 +23,6 @@ function MenuBlock({ eyebrow, title, items }: { eyebrow: string; title: string; 
   return (
     <div className="menu-block">
       <div className="menu-block-heading">
-        <p className="eyebrow">{eyebrow}</p>
         <h2>{title}</h2>
       </div>
       <MenuGallery items={items} />
@@ -36,8 +34,7 @@ function DrinkMenuSheets() {
   return (
     <div className="menu-block drink-menu-block">
       <div className="menu-block-heading">
-        <p className="eyebrow">Drink</p>
-        <h2>ドリンク</h2>
+        <h2>DRINK</h2>
       </div>
       <DrinkMenuGallery sheets={drinkMenuSheets.map((sheet) => ({ ...sheet, src: assetPath(sheet.src) }))} />
     </div>
@@ -49,25 +46,8 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
 
   return (
     <section className="section menu-section">
-      <div className="section-heading narrow-copy">
-        <p className="eyebrow">Food & Drink</p>
-        <h2>
-          写真で選べる、
-          <br />
-          Bassic.のメニュー。
-        </h2>
-        <p className="section-lead">
-          ファズ・カレー、タコス＆ポテト、ドリンク各種など、来店前に見やすいよう写真と価格を中心に整理しました。
-          店内利用時はチャージを頂戴しています。
-        </p>
-        <div className="notice-row" aria-label="メニュー利用時の基本情報">
-          <span>{site.chargeLabel}</span>
-          <span>{site.hoursLabel}</span>
-        </div>
-      </div>
-
       <DrinkMenuSheets />
-      <MenuBlock eyebrow="Food" title="フード" items={foods} />
+      <MenuBlock title="FOOD" items={foods} />
     </section>
   );
 }

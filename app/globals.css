@@ -1484,17 +1484,18 @@ h3 {
 }
 
 .menu-block-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
   border-bottom: 1px solid rgba(111, 15, 21, 0.22);
-  padding-bottom: 18px;
+  padding-bottom: clamp(14px, 2vw, 22px);
 }
 
 .menu-block-heading h2 {
   margin-bottom: 0;
   font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
+  color: var(--ink);
+  font-size: clamp(3.2rem, 8vw, 7.4rem);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 0.92;
 }
 
 .menu-card-grid {
