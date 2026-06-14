@@ -10,7 +10,7 @@ if (!repo) {
 const result = spawnSync(
   "gh",
   ["api", `repos/${repo}/dispatches`, "--method", "POST", "-f", "event_type=microcms_publish"],
-  { encoding: "utf8", shell: true }
+  { encoding: "utf8" }
 );
 
 if (result.error || result.status !== 0) {
@@ -22,8 +22,7 @@ console.log(`Triggered microcms_publish repository_dispatch for ${repo}.`);
 
 function getRepoFullName() {
   const view = spawnSync("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], {
-    encoding: "utf8",
-    shell: true
+    encoding: "utf8"
   });
 
   if (view.error || view.status !== 0) {

@@ -55,7 +55,7 @@ function checkLocalEnv() {
 }
 
 function checkGithubSecrets() {
-  const gh = spawnSync("gh", ["secret", "list"], { encoding: "utf8", shell: true });
+  const gh = spawnSync("gh", ["secret", "list"], { encoding: "utf8" });
 
   if (gh.error || gh.status !== 0) {
     add("GitHub secrets readable", false, gh.stderr?.trim() || gh.error?.message || "gh secret list failed");

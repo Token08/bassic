@@ -30,8 +30,7 @@ async function ask(label) {
 function setGithubSecret(name, value) {
   const result = spawnSync("gh", ["secret", "set", name], {
     input: value,
-    encoding: "utf8",
-    shell: true
+    encoding: "utf8"
   });
 
   if (result.error || result.status !== 0) {
