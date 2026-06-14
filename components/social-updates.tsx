@@ -9,6 +9,7 @@ type SocialUpdatesProps = {
   title: React.ReactNode;
   lead: React.ReactNode;
   notices?: SocialNotice[];
+  instagramWidgetSrc?: string;
   instagramFallbackLabel?: string;
   facebookFallbackLabel?: string;
   xFallbackLabel?: string;
@@ -18,11 +19,13 @@ export function SocialUpdates({
   title,
   lead,
   notices = [],
+  instagramWidgetSrc,
   instagramFallbackLabel = "Instagramで最新情報を見る",
   facebookFallbackLabel = "Facebookで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
   const instagramNotices = getNoticeItems(notices, "instagram");
+  const safeInstagramWidgetSrc = getSafeEmbedSrc(instagramWidgetSrc);
   const xNotices = getNoticeItems(notices, "x");
   const facebookItems = getFeedItems("facebook");
   const xItems = getFeedItems("x");
@@ -37,7 +40,9 @@ export function SocialUpdates({
 
       <div className="social-embed-grid">
         <SocialEmbedCard {...editableSocialLinks[0]}>
-          {instagramNotices.length ? (
+          {safeInstagramWidgetSrc ? (
+            <InstagramWidgetFrame src={safeInstagramWidgetSrc} />
+          ) : instagramNotices.length ? (
             <SocialNoticeFeed platform="instagram" items={instagramNotices} fallbackLabel={instagramFallbackLabel} href={site.instagramUrl} />
           ) : (
             <SocialProfileCard
@@ -94,6 +99,20 @@ export function SocialUpdates({
         ))}
       </div>
     </section>
+  );
+}
+
+function InstagramWidgetFrame({ src }: { src: string }) {
+  return (
+    <div className="social-embed-frame instagram-widget-frame external-social-frame">
+      <iframe
+        title="public bar Bassic. Instagram timeline"
+        src={src}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowTransparency
+      />
+    </div>
   );
 }
 
@@ -247,6 +266,20 @@ function getNoticeItems(notices: SocialNotice[], platform: SocialPlatform): Soci
     .filter((notice) => notice.platform === platform && notice.isPublished && notice.url && notice.title)
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
     .slice(0, 5);
+}
+
+function getSafeEmbedSrc(value?: string) {
+  const src = value?.trim();
+  if (!src) {
+    return "";
+  }
+
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }
 
 function formatFeedDate(value?: string | null) {

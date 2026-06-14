@@ -15,6 +15,7 @@ GitHub、Actions、環境変数、APIキー、DNSは制作・保守側で管理�
 
 - TOP文言
 - TOP画像
+- Instagramタイムライン表示
 - イベント情報
 - メニュー名、価格、画像
 - 貸切、レンタル案内
@@ -51,6 +52,18 @@ GitHub、Actions、環境変数、APIキー、DNSは制作・保守側で管理�
 6. 保存後、TOPページのSNS欄を確認します。
 
 Xは自動タイムラインではなく、投稿URLを貼るカード運用にします。APIキーや定期更新作業が不要で、納品先でも扱いやすい方法です。
+
+## Instagramタイムラインを表示する
+
+Instagramの自動タイムラインは、LightWidgetなどの外部ウィジェットを使います。
+
+1. LightWidget側でInstagramアカウントを連携します。
+2. 表示デザインを選び、iframe URLを発行します。
+3. microCMSで `home` を開きます。
+4. `InstagramウィジェットURL` にiframeの `src` URLだけを貼ります。
+5. 保存後、TOPページのInstagram欄を確認します。
+
+投稿ごとにURLを貼る必要はありません。Instagramに投稿すれば、ウィジェット側で反映されます。
 
 ## 公開・非公開
 

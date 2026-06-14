@@ -1,7 +1,7 @@
 # Social API feeds
 
 This repository keeps the API-fetching script as a future option, but the current homepage does not depend on Instagram or X API output.
-For public launch stability, Instagram uses a profile card, X uses static JSON when available with a profile-card fallback, and Facebook can use either static JSON or the official Page Plugin iframe.
+For public launch stability, Instagram uses a CMS-configured external widget URL when available, X uses static JSON or CMS cards with a profile-card fallback, and Facebook can use either static JSON or the official Page Plugin iframe.
 
 If real-time feeds are introduced later, fetch posts at build time or through a server/admin process so API tokens never reach the browser.
 
@@ -37,11 +37,12 @@ FACEBOOK_PAGE_ID
 
 The current homepage uses this order:
 
-1. microCMS `social-notices` cards, when present
-2. Facebook API JSON posts from `public/data/social-feed.json`, when present
-3. Facebook official Page Plugin iframe
-4. X API JSON posts from `public/data/social-feed.json`, when present
-5. Instagram and X official profile cards
+1. Instagram widget URL from `home.instagramWidgetSrc`, when present
+2. microCMS `social-notices` cards, when present
+3. Facebook API JSON posts from `public/data/social-feed.json`, when present
+4. Facebook official Page Plugin iframe
+5. X API JSON posts from `public/data/social-feed.json`, when present
+6. Instagram and X official profile cards
 
 ## Notes
 

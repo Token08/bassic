@@ -5,14 +5,14 @@ Instagram renders an official profile card so the page never breaks because of e
 Facebook keeps the official Page Plugin timeline because it has been the most stable embed for this site.
 X renders static API feed data when `public/data/social-feed.json` contains posts. Without API data, it falls back to a profile link card.
 
-CMS-managed `social-notices` now have the highest display priority. If the admin registers a post URL, title, platform, and short description in microCMS, the homepage renders it as a stable card before trying API JSON or third-party embeds.
+CMS-managed display settings now have the highest priority. Instagram uses `home.instagramWidgetSrc` first, and X uses `social-notices` cards before trying API JSON or profile-card fallbacks.
 
 ## Instagram
 
-Instagram renders a profile card that links to `@bassic_official`.
-Do not add the native Instagram embed iframe directly; Instagram commonly blocks timeline iframe display on public static sites.
-If real-time Instagram posts are needed later, fetch them server-side or through a future admin/CMS backend and render sanitized static JSON.
-For the current delivery flow, register Instagram post URLs in `social-notices` instead of relying on Instagram timeline embeds.
+Instagram renders a CMS-configured iframe widget when `home.instagramWidgetSrc` is set.
+Use LightWidget or a similar external widget service, then paste only the iframe `src` URL into microCMS.
+Do not paste external script tags into the site.
+If the widget URL is empty or invalid, Instagram falls back to a stable profile/card display.
 
 ## Facebook
 

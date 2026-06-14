@@ -50,6 +50,7 @@ export type HomeContent = {
   heroLead: string;
   firstVisitLead: string;
   accessNote: string;
+  instagramWidgetSrc?: string;
   heroImage?: CmsImage;
 };
 

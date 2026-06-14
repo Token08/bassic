@@ -70,7 +70,7 @@ Recommended admin-managed fields:
 
 - Events: date, title, performers, open/start time, price, reservation text, image, published flag.
 - Menu: name, English name, category, price, description, image.
-- Home: hero title, hero lead, first-visit lead, access note, top images.
+- Home: hero title, hero lead, first-visit lead, access note, top images, Instagram widget URL.
 - Social notices: platform, title, post URL, date, short description, published flag.
 - Visuals: top slideshow, event slideshow, party slideshow, menu teaser image.
 - Business facts: hours, charge, smoking policy, phone, email, Google Map URL.

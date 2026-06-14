@@ -190,7 +190,13 @@ export function FeatureCardGrid({ features }: { features: readonly FeatureCardCo
   );
 }
 
-export function SocialUpdatesSection({ notices = [] }: { notices?: SocialNotice[] }) {
+export function SocialUpdatesSection({
+  notices = [],
+  instagramWidgetSrc
+}: {
+  notices?: SocialNotice[];
+  instagramWidgetSrc?: string;
+}) {
   return (
     <SocialUpdates
       title={
@@ -202,6 +208,7 @@ export function SocialUpdatesSection({ notices = [] }: { notices?: SocialNotice[
       }
       lead={socialUpdatesCopy.lead}
       notices={notices}
+      instagramWidgetSrc={instagramWidgetSrc}
     />
   );
 }

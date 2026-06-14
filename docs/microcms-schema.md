@@ -13,6 +13,7 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | firstVisitLead | 初めての方向け説明 | テキストエリア | true |
 | accessNote | アクセス補足 | テキストエリア | true |
 | heroImage | トップ画像 | 画像 | false |
+| instagramWidgetSrc | InstagramウィジェットURL | テキストフィールド | false |
 
 ## events
 
@@ -81,3 +82,11 @@ TOPページのSNS欄に表示する「お知らせカード」です。Xの自�
 `platform` は `instagram` / `facebook` / `x` の3択です。
 
 X欄を更新したい場合は、`platform` を `x` にして、Xの投稿URL、表示タイトル、短い説明を登録してください。公開前の下書きは `isPublished` を false にします。
+
+## Instagramタイムライン表示
+
+Instagramの直近投稿を自動表示したい場合は、LightWidgetなどの外部ウィジェットで発行されたiframe URLを `home.instagramWidgetSrc` に登録します。
+
+- URLは `https://` から始まるものだけ使用します。
+- 外部scriptタグは貼りません。iframe URLだけを入力してください。
+- 未入力の場合、Instagram欄は崩れないプロフィール/お知らせカード表示に戻ります。
