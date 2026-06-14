@@ -9,6 +9,7 @@
     "fetch:social": "node scripts/fetch-social-feeds.mjs",
     "build": "next build",
     "start": "next start",
+    "smoke:cms": "node scripts/smoke-cms.mjs",
     "smoke:links": "node scripts/smoke-links.mjs",
     "smoke:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit"
