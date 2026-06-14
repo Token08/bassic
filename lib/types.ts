@@ -7,6 +7,9 @@ export type CmsImage = {
 
 export type EventItem = {
   id: string;
+  sourceId?: string;
+  sourceType?: "facebook" | "facebook_ical" | "google_calendar";
+  sourceUrl?: string;
   title: string;
   date: string;
   openTime?: string;

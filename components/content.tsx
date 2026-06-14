@@ -47,7 +47,7 @@ const localSearchIcons = {
 } as const;
 
 function imageSrc(path: string) {
-  return path.startsWith("/assets/") ? assetPath(path) : path;
+  return path.startsWith("/") || /^https?:\/\//.test(path) ? assetPath(path) : path;
 }
 
 export function PageHero({
@@ -246,6 +246,11 @@ export function formatDate(value: string) {
 export function EventCard({ event }: { event: EventItem }) {
   return (
     <article className="event-card">
+      {event.image?.url ? (
+        <a className="event-card-image" href={event.sourceUrl || "/events"} target={event.sourceUrl ? "_blank" : undefined} rel="noreferrer">
+          <img src={imageSrc(event.image.url)} alt={event.image.alt || event.title} loading="lazy" />
+        </a>
+      ) : null}
       <div className="event-date">{formatDate(event.date)}</div>
       <div>
         <h3>{event.title}</h3>
@@ -271,6 +276,11 @@ export function EventCard({ event }: { event: EventItem }) {
         </dl>
         {event.performers ? <p>{event.performers}</p> : null}
         {event.reservation ? <p className="muted">{event.reservation}</p> : null}
+        {event.sourceUrl ? (
+          <a className="text-link event-source-link" href={event.sourceUrl} target="_blank" rel="noreferrer">
+            Facebookで詳細を見る <ExternalLink size={15} />
+          </a>
+        ) : null}
       </div>
     </article>
   );
@@ -317,6 +327,11 @@ export function FeaturedEventsSection({ events }: { events: EventItem[] }) {
       <div className="featured-event-grid">
         {featuredEvents.map((event) => (
           <article className="featured-event-card" key={event.id}>
+            {event.image?.url ? (
+              <a className="featured-event-image" href={event.sourceUrl || "/events"} target={event.sourceUrl ? "_blank" : undefined} rel="noreferrer">
+                <img src={imageSrc(event.image.url)} alt={event.image.alt || event.title} loading="lazy" />
+              </a>
+            ) : null}
             <div className="featured-event-date">{formatDate(event.date)}</div>
             <div className="featured-event-copy">
               <h3>{event.title}</h3>

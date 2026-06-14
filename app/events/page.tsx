@@ -24,8 +24,9 @@ function EventsJsonLd({ events }: { events: Awaited<ReturnType<typeof getCmsCont
       name: site.name,
       address: site.address
     },
-    image: [absoluteUrl("/ogp.png")],
+    image: [event.image?.url ? (event.image.url.startsWith("/") ? absoluteUrl(event.image.url) : event.image.url) : absoluteUrl("/ogp.png")],
     description: [event.performers, event.price, event.reservation].filter(Boolean).join(" / "),
+    url: event.sourceUrl || absoluteUrl("/events/"),
     organizer: {
       "@type": "Organization",
       name: site.name,
