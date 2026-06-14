@@ -24,6 +24,7 @@ type XTimelineProps = {
 export function XTimeline({ href, account, buttonLabel }: XTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showFallback, setShowFallback] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -33,6 +34,7 @@ export function XTimeline({ href, account, buttonLabel }: XTimelineProps) {
     }
 
     setShowFallback(false);
+    setIsLoaded(false);
 
     const loadTimeline = () => {
       window.twttr?.widgets?.load(container);
@@ -55,20 +57,54 @@ export function XTimeline({ href, account, buttonLabel }: XTimelineProps) {
       document.body.appendChild(script);
     }
 
+    const iframeIsVisible = () => {
+      const iframe = container.querySelector("iframe");
+
+      if (!iframe) {
+        return false;
+      }
+
+      const rect = iframe.getBoundingClientRect();
+      const style = window.getComputedStyle(iframe);
+
+      return rect.width > 40 && rect.height > 80 && style.visibility !== "hidden" && style.display !== "none";
+    };
+
+    const hideRenderedAnchor = () => {
+      const anchor = container.querySelector<HTMLElement>("a.twitter-timeline");
+      if (anchor) {
+        anchor.style.setProperty("display", "none", "important");
+      }
+    };
+
+    const observer = new MutationObserver(() => {
+      if (iframeIsVisible()) {
+        hideRenderedAnchor();
+        setIsLoaded(true);
+        setShowFallback(false);
+      }
+    });
+
+    observer.observe(container, { attributes: true, childList: true, subtree: true });
+
     const fallbackTimer = window.setTimeout(() => {
-      if (!container.querySelector("iframe")) {
+      if (iframeIsVisible()) {
+        hideRenderedAnchor();
+        setIsLoaded(true);
+      } else {
         setShowFallback(true);
       }
-    }, 8000);
+    }, 9000);
 
     return () => {
       window.clearTimeout(fallbackTimer);
+      observer.disconnect();
       existingScript?.removeEventListener("load", loadTimeline);
     };
   }, [href]);
 
   return (
-    <div className="social-embed-frame x-timeline-frame" ref={containerRef}>
+    <div className={`social-embed-frame x-timeline-frame${isLoaded ? " is-loaded" : ""}`} ref={containerRef}>
       <a
         className="twitter-timeline"
         data-height="620"

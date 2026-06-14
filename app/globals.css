@@ -1117,8 +1117,27 @@ h3 {
 }
 
 .x-timeline-frame iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  height: 100% !important;
   width: 100% !important;
   max-width: 100% !important;
+  min-height: 100% !important;
+}
+
+.x-timeline-frame .twitter-timeline-rendered {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  height: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.x-timeline-frame.is-loaded a.twitter-timeline {
+  display: none !important;
 }
 
 .x-timeline-fallback {
