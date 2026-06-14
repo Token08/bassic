@@ -23,7 +23,6 @@ export function SocialUpdates({
   xFallbackLabel = "Xで最新情報を見る"
 }: SocialUpdatesProps) {
   const instagramNotices = getNoticeItems(notices, "instagram");
-  const facebookNotices = getNoticeItems(notices, "facebook");
   const xNotices = getNoticeItems(notices, "x");
   const facebookItems = getFeedItems("facebook");
   const xItems = getFeedItems("x");
@@ -53,9 +52,7 @@ export function SocialUpdates({
         </SocialEmbedCard>
 
         <SocialEmbedCard {...editableSocialLinks[1]}>
-          {facebookNotices.length ? (
-            <SocialNoticeFeed platform="facebook" items={facebookNotices} fallbackLabel={facebookFallbackLabel} href={site.facebookUrl} />
-          ) : facebookItems.length ? (
+          {facebookItems.length ? (
             <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel={facebookFallbackLabel} href={site.facebookUrl} />
           ) : (
             <div className="social-embed-frame facebook-frame">
