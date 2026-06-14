@@ -1,6 +1,21 @@
+import { site } from "./site";
 import type { CmsContents } from "./types";
 
-export const fallbackContents: CmsContents = {
+export const fallbackContents = {
+  siteSettings: {
+    address: site.address,
+    phone: site.phone,
+    hoursLabel: site.hoursLabel,
+    eventHoursNote: site.eventHoursNote,
+    smokingLabel: site.smokingLabel,
+    chargeLabel: site.chargeLabel,
+    googleMapsUrl: site.googleMapsUrl,
+    directionsUrl: site.directionsUrl,
+    instagramUrl: site.instagramUrl,
+    facebookUrl: site.facebookUrl,
+    xUrl: site.xUrl,
+    onlineStoreUrl: site.onlineStoreUrl
+  },
   home: {
     heroTitle: "public bar Bassic.",
     heroLead:
@@ -143,4 +158,4 @@ export const fallbackContents: CmsContents = {
       isPublished: true
     }
   ]
-};
+} satisfies Partial<CmsContents>;

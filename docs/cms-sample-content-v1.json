@@ -1,0 +1,173 @@
+{
+  "site-settings": {
+    "address": "福岡市中央区天神3-4-19 WITH天神5F",
+    "phone": "092-713-1040",
+    "hoursLabel": "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は 22:30 から通常営業\n※イベントにより異なる場合もございます",
+    "eventHoursNote": "イベント時は営業時間が変動します。\nイベント終了後の 22:30 から通常営業です。\n詳細はイベントスケジュールページをご確認ください。",
+    "smokingLabel": "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容によりイベント中は禁煙になる場合がございます。",
+    "chargeLabel": "チャージ 500円 / お一人様",
+    "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F",
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F",
+    "instagramUrl": "https://www.instagram.com/bassic_official/",
+    "facebookUrl": "https://www.facebook.com/bar.Bassic/",
+    "xUrl": "https://x.com/bar_Bassic",
+    "onlineStoreUrl": "https://bassic.official.ec/"
+  },
+  "home": {
+    "heroTitle": "public bar Bassic.",
+    "heroLead": "福岡・天神、親不孝通りにあるミュージックバーです。ライブやイベント後も、通常のバータイムも、お気軽にご利用ください。",
+    "firstVisitLead": "お一人でも、ライブ後でも、会話を楽しみたい夜でも。初めてでも入りやすい、大人の隠れ家的な空間で、それぞれの夜をゆっくり過ごせます。",
+    "accessNote": "天神駅から徒歩約6分。WITH天神ビル5Fまでお越しください。イベント日は通常営業開始時間が変わる場合があります。",
+    "instagramWidgetSrc": ""
+  },
+  "hero-slides": [
+    {
+      "page": "home",
+      "title": "TOP 01",
+      "image": {
+        "url": "/assets/brand/top-slides/hero-01.jpg",
+        "alt": "public bar Bassic.の店内"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "page": "events",
+      "title": "Events 01",
+      "image": {
+        "url": "/assets/brand/event-slides/event-01.jpg",
+        "alt": "Bassic.のライブイベント風景"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "page": "party",
+      "title": "Party 01",
+      "image": {
+        "url": "/assets/brand/party-slides/party-01.jpg",
+        "alt": "Bassic.の貸切利用イメージ"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "page": "menu",
+      "title": "Menu Hero",
+      "image": {
+        "url": "/assets/menu-refresh/menu-hero.jpg",
+        "alt": "Bassic.の料理とドリンク"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "page": "access",
+      "title": "Access Hero",
+      "image": {
+        "url": "/assets/brand/access-hero.jpg",
+        "alt": "Bassic.のバーカウンター"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    }
+  ],
+  "events": [
+    {
+      "title": "Bassic. Music Night",
+      "date": "2026-07-12T00:00:00.000Z",
+      "openTime": "19:00",
+      "startTime": "20:00",
+      "performers": "出演者：決まり次第更新",
+      "price": "料金はイベントごとに告知",
+      "reservation": "mail@bassic.jp まで日付、人数、お名前、電話番号をお送りください。",
+      "isPublished": true
+    }
+  ],
+  "menu": [
+    {
+      "name": "ファズ・カレー",
+      "englishName": "Fuzz Curry",
+      "price": "¥1,200",
+      "category": "food",
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "name": "タコス＆ポテト",
+      "englishName": "Tacos & Potato",
+      "price": "¥900",
+      "category": "food",
+      "displayOrder": 2,
+      "isPublished": true
+    }
+  ],
+  "drink-menu-sheets": [
+    {
+      "title": "Drink Menu 1",
+      "image": {
+        "url": "/assets/menu-refresh/drinks/drink-01.webp",
+        "alt": "Drink Menu 1"
+      },
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "title": "Drink Menu 2",
+      "image": {
+        "url": "/assets/menu-refresh/drinks/drink-02.webp",
+        "alt": "Drink Menu 2"
+      },
+      "displayOrder": 2,
+      "isPublished": true
+    }
+  ],
+  "party-plans": [
+    {
+      "title": "Bassic. Party Plan",
+      "price": "¥4,000〜 / 1名",
+      "body": "10名様から利用可能。貸切は25名様以上より。時間フリードリンクと大皿料理のプランです。",
+      "displayOrder": 1,
+      "isPublished": true
+    },
+    {
+      "title": "Live After Party",
+      "price": "フード ¥1,500〜 / 1名",
+      "body": "ライブやイベント後の打ち上げに。キャッシュオンドリンクと人数に合わせた料理をご用意します。",
+      "displayOrder": 2,
+      "isPublished": true
+    }
+  ],
+  "equipment-rental": {
+    "title": "機材レンタルについて",
+    "price": "平日 1H ¥10,000〜 / 土日祝・祝前日 1H ¥12,000〜",
+    "body": "機材使用料込みで、ライブ、DJ、イベント、配信、二次会などのレンタル利用に対応しています。内容や人数により利用条件が変わる場合がありますので、詳細はお問い合わせください。",
+    "pdfUrl": "/assets/pdf/equipment-rental-list.pdf"
+  },
+  "social-notices": [
+    {
+      "platform": "instagram",
+      "title": "Instagramで店内写真・イベント情報を更新中",
+      "url": "https://www.instagram.com/bassic_official/",
+      "date": "2026-06-15T00:00:00.000Z",
+      "description": "直近の写真、イベント告知、店内の雰囲気は公式Instagramで確認できます。",
+      "isPublished": true
+    },
+    {
+      "platform": "facebook",
+      "title": "Facebookでイベント投稿を確認",
+      "url": "https://www.facebook.com/bar.Bassic/",
+      "date": "2026-06-15T00:00:00.000Z",
+      "description": "ライブ、DJ、イベント告知などをFacebookでも更新しています。",
+      "isPublished": true
+    },
+    {
+      "platform": "x",
+      "title": "Xでイベント告知・営業情報を確認",
+      "url": "https://x.com/bar_Bassic",
+      "date": "2026-06-15T00:00:00.000Z",
+      "description": "管理画面に投稿URLを貼ると、TOPのSNS欄にお知らせカードとして表示できます。",
+      "isPublished": true
+    }
+  ]
+}

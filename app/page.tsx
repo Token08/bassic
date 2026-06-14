@@ -8,14 +8,15 @@ import {
   VisitInfoCards
 } from "@/components/content";
 import { PageShell } from "@/components/site-shell";
-import { editableMedia, resolveEditableImage } from "@/lib/editable-content";
+import { editableMedia, resolveEditableImage, resolveHeroSlides } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
+import type { SiteSettings } from "@/lib/types";
 
 export const metadata: Metadata = buildMetadata("home");
 
-function JsonLd() {
+function JsonLd({ settings }: { settings: SiteSettings }) {
   const data = {
     "@context": "https://schema.org",
     "@type": "BarOrPub",
@@ -24,11 +25,11 @@ function JsonLd() {
     alternateName: site.japaneseName,
     description: site.description,
     url: site.siteUrl,
-    telephone: site.phone,
+    telephone: settings.phone,
     email: site.email,
     priceRange: site.priceRange,
     image: absoluteUrl("/ogp.png"),
-    hasMap: site.googleMapsUrl,
+    hasMap: settings.googleMapsUrl,
     hasMenu: absoluteUrl("/menu/"),
     keywords: site.keywords.join(", "),
     areaServed: [
@@ -47,17 +48,17 @@ function JsonLd() {
       {
         "@type": "PropertyValue",
         name: "通常営業時間",
-        value: site.hoursLabel
+        value: settings.hoursLabel
       },
       {
         "@type": "PropertyValue",
         name: "チャージ",
-        value: site.chargeLabel
+        value: settings.chargeLabel
       },
       {
         "@type": "PropertyValue",
         name: "喫煙",
-        value: site.smokingLabel
+        value: settings.smokingLabel
       }
     ],
     openingHoursSpecification: [
@@ -68,13 +69,13 @@ function JsonLd() {
         closes: "02:00"
       }
     ],
-    sameAs: [site.instagramUrl, site.xUrl, site.facebookUrl, site.onlineStoreUrl],
+    sameAs: [settings.instagramUrl, settings.xUrl, settings.facebookUrl, settings.onlineStoreUrl || site.onlineStoreUrl],
     address: {
       "@type": "PostalAddress",
       postalCode: site.postalCode,
       addressRegion: site.region,
       addressLocality: site.locality,
-      streetAddress: site.streetAddress,
+      streetAddress: settings.address,
       addressCountry: "JP"
     },
     founder: {
@@ -89,10 +90,11 @@ function JsonLd() {
 export default async function Home() {
   const contents = await getCmsContents();
   const homeHeroImage = resolveEditableImage(contents.home.heroImage, editableMedia.homeHeroImage);
+  const homeHeroSlides = resolveHeroSlides(contents.heroSlides.home, editableMedia.homeHeroSlides);
 
   return (
-    <PageShell>
-      <JsonLd />
+    <PageShell settings={contents.siteSettings}>
+      <JsonLd settings={contents.siteSettings} />
       <main id="top">
         <PageHero
           eyebrow={site.tagline}
@@ -100,16 +102,20 @@ export default async function Home() {
           lead={contents.home.heroLead}
           image={homeHeroImage.src}
           imageAlt={homeHeroImage.alt}
-          slides={editableMedia.homeHeroSlides}
+          slides={homeHeroSlides}
           className="home-hero"
         />
 
         <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
-        <VisitInfoCards />
+        <VisitInfoCards settings={contents.siteSettings} />
         <LocalSearchSection />
-        <SocialUpdatesSection notices={contents.socialNotices} instagramWidgetSrc={contents.home.instagramWidgetSrc} />
+        <SocialUpdatesSection
+          notices={contents.socialNotices}
+          instagramWidgetSrc={contents.home.instagramWidgetSrc}
+          settings={contents.siteSettings}
+        />
 
-        <AccessContent note={contents.home.accessNote} />
+        <AccessContent note={contents.home.accessNote} settings={contents.siteSettings} />
       </main>
     </PageShell>
   );

@@ -1,8 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
-import { editableSocialLinks, externalEmbeds } from "@/lib/editable-content";
-import { site } from "@/lib/site";
-import type { SocialNotice, SocialPlatform } from "@/lib/types";
+import { editableSocialLinks } from "@/lib/editable-content";
+import type { SiteSettings, SocialNotice, SocialPlatform } from "@/lib/types";
 import socialFeed from "@/public/data/social-feed.json";
 
 type SocialUpdatesProps = {
@@ -10,6 +9,7 @@ type SocialUpdatesProps = {
   lead: React.ReactNode;
   notices?: SocialNotice[];
   instagramWidgetSrc?: string;
+  settings?: SiteSettings;
   instagramFallbackLabel?: string;
   facebookFallbackLabel?: string;
   xFallbackLabel?: string;
@@ -20,6 +20,7 @@ export function SocialUpdates({
   lead,
   notices = [],
   instagramWidgetSrc,
+  settings,
   instagramFallbackLabel = "Instagramで最新情報を見る",
   facebookFallbackLabel = "Facebookで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
@@ -29,6 +30,16 @@ export function SocialUpdates({
   const xNotices = getNoticeItems(notices, "x");
   const facebookItems = getFeedItems("facebook");
   const xItems = getFeedItems("x");
+  const socialLinks = settings
+    ? [
+        { ...editableSocialLinks[0], href: settings.instagramUrl },
+        { ...editableSocialLinks[1], href: settings.facebookUrl },
+        { ...editableSocialLinks[2], href: settings.xUrl }
+      ]
+    : editableSocialLinks;
+  const instagramUrl = socialLinks[0].href;
+  const facebookUrl = socialLinks[1].href;
+  const xUrl = socialLinks[2].href;
 
   return (
     <section className="section social-section">
@@ -39,14 +50,14 @@ export function SocialUpdates({
       </div>
 
       <div className="social-embed-grid">
-        <SocialEmbedCard {...editableSocialLinks[0]}>
+        <SocialEmbedCard {...socialLinks[0]}>
           {safeInstagramWidgetSrc ? (
             <InstagramWidgetFrame src={safeInstagramWidgetSrc} />
           ) : instagramNotices.length ? (
-            <SocialNoticeFeed platform="instagram" items={instagramNotices} fallbackLabel={instagramFallbackLabel} href={site.instagramUrl} />
+            <SocialNoticeFeed platform="instagram" items={instagramNotices} fallbackLabel={instagramFallbackLabel} href={instagramUrl} />
           ) : (
             <SocialProfileCard
-              href={site.instagramUrl}
+              href={instagramUrl}
               account="@bassic_official"
               imageSrc={assetPath("/assets/brand/index-logo.png")}
               title="Instagram"
@@ -56,14 +67,14 @@ export function SocialUpdates({
           )}
         </SocialEmbedCard>
 
-        <SocialEmbedCard {...editableSocialLinks[1]}>
+        <SocialEmbedCard {...socialLinks[1]}>
           {facebookItems.length ? (
-            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel={facebookFallbackLabel} href={site.facebookUrl} />
+            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel={facebookFallbackLabel} href={facebookUrl} />
           ) : (
             <div className="social-embed-frame facebook-frame">
               <iframe
                 title="public bar Bassic. Facebook timeline"
-                src={externalEmbeds.facebookPluginUrl}
+                src={getFacebookPluginUrl(facebookUrl)}
                 width="500"
                 height="620"
                 loading="lazy"
@@ -73,14 +84,14 @@ export function SocialUpdates({
           )}
         </SocialEmbedCard>
 
-        <SocialEmbedCard {...editableSocialLinks[2]}>
+        <SocialEmbedCard {...socialLinks[2]}>
           {xNotices.length ? (
-            <SocialNoticeFeed platform="x" items={xNotices} fallbackLabel={xFallbackLabel} href={site.xUrl} />
+            <SocialNoticeFeed platform="x" items={xNotices} fallbackLabel={xFallbackLabel} href={xUrl} />
           ) : xItems.length ? (
-            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={site.xUrl} />
+            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={xUrl} />
           ) : (
             <SocialProfileCard
-              href={site.xUrl}
+              href={xUrl}
               account="@bar_Bassic"
               imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
               title="X"
@@ -92,7 +103,7 @@ export function SocialUpdates({
       </div>
 
       <div className="social-direct-links">
-        {editableSocialLinks.map((link) => (
+        {socialLinks.map((link) => (
           <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
             {link.label} <ExternalLink size={15} />
           </a>
@@ -280,6 +291,12 @@ function getSafeEmbedSrc(value?: string) {
   } catch {
     return "";
   }
+}
+
+function getFacebookPluginUrl(facebookUrl: string) {
+  return `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
+    facebookUrl
+  )}&tabs=timeline&width=500&height=620&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`;
 }
 
 function formatFeedDate(value?: string | null) {

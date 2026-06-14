@@ -26,7 +26,7 @@ import {
   type FeatureCardContent
 } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
-import type { EventItem, MenuItem, PartyPlan, SocialNotice } from "@/lib/types";
+import type { EquipmentRental, EventItem, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -126,13 +126,23 @@ export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: 
   );
 }
 
-export function VisitInfoCards() {
+export function VisitInfoCards({ settings }: { settings?: SiteSettings }) {
+  const items = settings
+    ? visitInfoItems.map((item) => {
+        if (item.icon === "clock") return { ...item, text: settings.hoursLabel };
+        if (item.icon === "calendar") return { ...item, text: settings.eventHoursNote || item.text };
+        if (item.icon === "smoking") return { ...item, text: settings.smokingLabel };
+        if (item.icon === "charge") return { ...item, text: settings.chargeLabel };
+        return item;
+      })
+    : visitInfoItems;
+
   return (
     <VisitInfoGrid
       ariaLabel="来店前の基本情報"
       title="初めての来店前に、知っておくと安心なこと。"
       lead="営業時間、チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
-      items={visitInfoItems}
+      items={items}
     />
   );
 }
@@ -192,10 +202,12 @@ export function FeatureCardGrid({ features }: { features: readonly FeatureCardCo
 
 export function SocialUpdatesSection({
   notices = [],
-  instagramWidgetSrc
+  instagramWidgetSrc,
+  settings
 }: {
   notices?: SocialNotice[];
   instagramWidgetSrc?: string;
+  settings?: SiteSettings;
 }) {
   return (
     <SocialUpdates
@@ -209,6 +221,7 @@ export function SocialUpdatesSection({
       lead={socialUpdatesCopy.lead}
       notices={notices}
       instagramWidgetSrc={instagramWidgetSrc}
+      settings={settings}
     />
   );
 }
@@ -437,7 +450,13 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
   );
 }
 
-export function PartyContent({ plans }: { plans: PartyPlan[] }) {
+export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; equipmentRental?: EquipmentRental }) {
+  const rental = equipmentRental || {
+    title: equipmentRentalInfo.title,
+    price: equipmentRentalInfo.price,
+    body: equipmentRentalInfo.body,
+    pdfUrl: "/assets/pdf/equipment-rental-list.pdf"
+  };
   const visiblePlans = plans.filter((plan) => !/rental|レンタル/i.test(plan.title));
 
   return (
@@ -463,10 +482,10 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
         <SlidersHorizontal />
         <div>
           <p className="eyebrow">{equipmentRentalInfo.eyebrow}</p>
-          <h3>{equipmentRentalInfo.title}</h3>
-          <strong>{equipmentRentalInfo.price}</strong>
-          <p>{equipmentRentalInfo.body}</p>
-          <a className="button equipment-rental-link" href={assetPath("/assets/pdf/equipment-rental-list.pdf")} target="_blank" rel="noreferrer">
+          <h3>{rental.title}</h3>
+          {rental.price ? <strong>{rental.price}</strong> : null}
+          <p>{rental.body}</p>
+          <a className="button equipment-rental-link" href={assetPath(rental.pdfUrl || "/assets/pdf/equipment-rental-list.pdf")} target="_blank" rel="noreferrer">
             詳細はコチラ
           </a>
         </div>
@@ -490,7 +509,12 @@ export function PartyContent({ plans }: { plans: PartyPlan[] }) {
   );
 }
 
-export function AccessContent({ note }: { note: string }) {
+export function AccessContent({ note, settings }: { note: string; settings?: SiteSettings }) {
+  const accessSettings = settings || site;
+  const mapSrc = accessSettings.googleMapsUrl.includes("output=embed")
+    ? accessSettings.googleMapsUrl
+    : `${accessSettings.googleMapsUrl}${accessSettings.googleMapsUrl.includes("?") ? "&" : "?"}output=embed`;
+
   return (
     <section className="section access-section">
       <div className="access-copy narrow-copy">
@@ -503,23 +527,23 @@ export function AccessContent({ note }: { note: string }) {
         <p>{note}</p>
         <dl className="access-list">
           <dt>住所</dt>
-          <dd>{site.address}</dd>
+          <dd>{accessSettings.address}</dd>
           <dt>電話</dt>
-          <dd>{site.phone}</dd>
+          <dd>{accessSettings.phone}</dd>
           <dt>メール</dt>
           <dd>{site.email}</dd>
           <dt>営業時間</dt>
           <dd>
-            {site.hoursLabel}
+            {accessSettings.hoursLabel}
             <br />
-            {site.eventHoursNote}
+            {accessSettings.eventHoursNote || site.eventHoursNote}
             <br />
             <Link className="inline-access-link" href="/events">
               イベントスケジュールページを見る
             </Link>
           </dd>
           <dt>喫煙</dt>
-          <dd>{site.smokingLabel}</dd>
+          <dd>{accessSettings.smokingLabel}</dd>
         </dl>
         <div className="route-tips" aria-label="初来店向けの行き方案内">
           <h3>Google Mapから来店する方へ</h3>
@@ -530,7 +554,7 @@ export function AccessContent({ note }: { note: string }) {
           </ul>
         </div>
         <div className="hero-actions">
-          <a className="button primary" href={site.directionsUrl} target="_blank" rel="noreferrer">
+          <a className="button primary" href={accessSettings.directionsUrl || accessSettings.googleMapsUrl} target="_blank" rel="noreferrer">
             <Navigation size={18} />
             現在地から向かう
           </a>
@@ -545,7 +569,7 @@ export function AccessContent({ note }: { note: string }) {
         className="map"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps?q=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F&output=embed"
+        src={mapSrc}
       />
     </section>
   );

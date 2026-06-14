@@ -3,7 +3,7 @@ import { MenuGallery } from "@/components/menu-gallery";
 import { assetPath } from "@/lib/assets";
 import { editableMedia } from "@/lib/editable-content";
 import { drinkMenuSheets } from "@/lib/menu-data";
-import type { MenuItem } from "@/lib/types";
+import type { DrinkMenuSheet, MenuItem } from "@/lib/types";
 
 function resolveMenuItem(item: MenuItem) {
   const image = item.image?.url ? assetPath(item.image.url) : editableMedia.fallbackMenuImages[item.category];
@@ -30,23 +30,33 @@ function MenuBlock({ title, items }: { title: string; items: ReturnType<typeof r
   );
 }
 
-function DrinkMenuSheets() {
+function resolveDrinkSheet(sheet: DrinkMenuSheet) {
+  const src = sheet.image?.url || sheet.src;
+
+  return {
+    title: sheet.title,
+    src: assetPath(src || "/assets/menu-refresh/drinks/drink-01.webp")
+  };
+}
+
+function DrinkMenuSheets({ sheets }: { sheets: DrinkMenuSheet[] }) {
   return (
     <div className="menu-block drink-menu-block">
       <div className="menu-block-heading">
         <h2>DRINK&amp;FOOD MENU</h2>
       </div>
-      <DrinkMenuGallery sheets={drinkMenuSheets.map((sheet) => ({ ...sheet, src: assetPath(sheet.src) }))} />
+      <DrinkMenuGallery sheets={sheets.map(resolveDrinkSheet)} />
     </div>
   );
 }
 
-export function MenuContent({ menu }: { menu: MenuItem[] }) {
+export function MenuContent({ menu, drinkSheets }: { menu: MenuItem[]; drinkSheets?: DrinkMenuSheet[] }) {
   const foods = menu.filter((item) => item.category === "food").map(resolveMenuItem);
+  const sheets = drinkSheets?.length ? drinkSheets : drinkMenuSheets.map((sheet) => ({ ...sheet, isPublished: true }));
 
   return (
     <section className="section menu-section">
-      <DrinkMenuSheets />
+      <DrinkMenuSheets sheets={sheets} />
       <MenuBlock title="FOOD MENU" items={foods} />
     </section>
   );
