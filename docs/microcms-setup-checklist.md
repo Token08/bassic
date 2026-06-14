@@ -2,6 +2,8 @@
 
 納品先にはGitHubを触らせず、microCMSの管理画面だけで更新できる状態を目指します。
 
+初期入力の参考値は `docs/cms-sample-content.json`、公開前の確認順は `docs/production-handoff-checklist.md` を参照してください。
+
 ## 1. 作成するAPI
 
 microCMSで以下のAPIを作成します。API IDはコードと一致させてください。
