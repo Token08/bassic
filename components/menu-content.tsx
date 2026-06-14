@@ -34,7 +34,7 @@ function DrinkMenuSheets() {
   return (
     <div className="menu-block drink-menu-block">
       <div className="menu-block-heading">
-        <h2>DRINK</h2>
+        <h2>DRINK&amp;FOOD MENU</h2>
       </div>
       <DrinkMenuGallery sheets={drinkMenuSheets.map((sheet) => ({ ...sheet, src: assetPath(sheet.src) }))} />
     </div>

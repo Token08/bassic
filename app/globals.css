@@ -1492,10 +1492,10 @@ h3 {
   margin-bottom: 0;
   font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", serif;
   color: var(--ink);
-  font-size: clamp(3.2rem, 8vw, 7.4rem);
+  font-size: clamp(2.6rem, 5.4vw, 5.4rem);
   font-weight: 700;
   letter-spacing: 0;
-  line-height: 0.92;
+  line-height: 1;
 }
 
 .menu-card-grid {
