@@ -58,7 +58,7 @@ export const editableMedia = {
   atmosphereImages: [
     brandImage("/assets/drive/bassic/drums.jpg", "Bassic.のドラムセットがあるライヴスペース"),
     brandImage("/assets/drive/index_back/live-room.jpg", "赤い照明のBassic.店内"),
-    brandImage("/assets/drive/index_back/warm-interior.jpg", "温かい照明のBassic.店内")
+    brandImage("/assets/drive/index_back/group-interior.jpg", "Bassic.の客席とバーカウンターが見える店内")
   ],
   fallbackMenuImages: {
     food: assetPath("/assets/drive/menu/fuzz-curry.jpg"),
