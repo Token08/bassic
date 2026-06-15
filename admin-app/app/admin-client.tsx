@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -434,6 +434,27 @@ function PreviewModal({
   );
 }
 
+function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinition; dirty: boolean; selectedId: string }) {
+  const isNewListItem = section.kind === "list" && selectedId === "new";
+
+  return (
+    <section className="editor-guide" aria-label="編集の進め方">
+      <div>
+        <strong>{section.kind === "list" ? (isNewListItem ? "新規作成中" : "選択中の項目を編集") : "このページを編集"}</strong>
+        <span>{dirty ? "入力中です。移動前に保存してください。" : "保存済みです。必要なところだけ直せます。"}</span>
+      </div>
+      <div>
+        <strong>下書き保存</strong>
+        <span>サイトには出さず、入力内容だけ残します。</span>
+      </div>
+      <div>
+        <strong>公開して反映</strong>
+        <span>確認画面のあと、サイト更新を開始します。</span>
+      </div>
+    </section>
+  );
+}
+
 function SectionEditor({
   sectionId,
   onBack,
@@ -454,14 +475,32 @@ function SectionEditor({
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState("");
+  const loadTokenRef = useRef(0);
+  const userInteractedRef = useRef(false);
+
+  function confirmDiscardChanges() {
+    if (!dirty) {
+      return true;
+    }
+
+    return window.confirm("保存していない変更があります。移動すると入力内容が消えます。続けますか？");
+  }
 
   async function load() {
+    const loadToken = loadTokenRef.current + 1;
+    loadTokenRef.current = loadToken;
+    userInteractedRef.current = false;
     setLoading(true);
     setNotice(null);
 
     try {
       const result = await requestJson<ListResponse | Draft>(`/api/content/${section.id}`);
       const data = result.data;
+
+      if (loadToken !== loadTokenRef.current || userInteractedRef.current) {
+        return;
+      }
 
       if (section.kind === "list") {
         const contents = Array.isArray((data as ListResponse)?.contents) ? ((data as ListResponse).contents as Array<Draft & { id?: string }>) : [];
@@ -477,7 +516,12 @@ function SectionEditor({
         setDraft(mergeDefaults(section, data as Draft));
       }
       setDirty(false);
+      setLastSavedAt("");
     } catch (loadError) {
+      if (loadToken !== loadTokenRef.current || userInteractedRef.current) {
+        return;
+      }
+
       setNotice({
         tone: "error",
         message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。時間を置いて再試行してください。"
@@ -506,6 +550,7 @@ function SectionEditor({
   }, [dirty]);
 
   function updateField(key: string, value: unknown) {
+    userInteractedRef.current = true;
     setDraft((current) => ({
       ...current,
       [key]: value
@@ -539,6 +584,20 @@ function SectionEditor({
     return Object.keys(nextErrors).length === 0;
   }
 
+  function openPreview() {
+    userInteractedRef.current = true;
+    const valid = validate(draft);
+
+    if (!valid) {
+      setShowPreview(false);
+      setNotice({ tone: "error", message: "必須項目を入力してから確認してください。" });
+      return;
+    }
+
+    setNotice(null);
+    setShowPreview(true);
+  }
+
   async function save(mode: "draft" | "publish") {
     const nextDraft = {
       ...draft,
@@ -563,6 +622,7 @@ function SectionEditor({
       const savedData = (result.data || nextDraft) as Draft & { id?: string };
       setDraft(mergeDefaults(section, savedData));
       setDirty(false);
+      setLastSavedAt(new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }));
 
       if (section.kind === "list") {
         const id = savedData.id || selectedId;
@@ -614,6 +674,11 @@ function SectionEditor({
   }
 
   function startNewItem() {
+    if (!confirmDiscardChanges()) {
+      return;
+    }
+
+    userInteractedRef.current = true;
     setSelectedId("new");
     setDraft(mergeDefaults(section));
     setErrors({});
@@ -624,13 +689,30 @@ function SectionEditor({
   return (
     <div className="editor">
       <div className="editor-topbar">
-        <button className="text-button" type="button" onClick={onBack}>
+        <button
+          className="text-button"
+          type="button"
+          onClick={() => {
+            if (confirmDiscardChanges()) {
+              onBack();
+            }
+          }}
+        >
           <ArrowLeft size={18} />
           戻る
         </button>
         <div className="topbar-actions">
           {dirty ? <span className="dirty-pill">未保存の変更あり</span> : <span className="saved-pill">保存済み</span>}
-          <button className="text-button" type="button" onClick={() => void load()}>
+          {lastSavedAt ? <span className="saved-time">最終保存 {lastSavedAt}</span> : null}
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => {
+              if (confirmDiscardChanges()) {
+                void load();
+              }
+            }}
+          >
             <RefreshCw size={18} />
             再読み込み
           </button>
@@ -657,6 +739,7 @@ function SectionEditor({
       </div>
 
       {notice ? <NoticeBox notice={notice} /> : null}
+      <EditorGuide section={section} dirty={dirty} selectedId={selectedId} />
 
       {loading ? (
         <div className="loading-panel">
@@ -678,11 +761,17 @@ function SectionEditor({
                     key={item.id || JSON.stringify(item)}
                     type="button"
                     onClick={() => {
+                      if (!confirmDiscardChanges()) {
+                        return;
+                      }
+
+                      userInteractedRef.current = true;
                       setSelectedId(item.id || "");
                       setDraft(mergeDefaults(section, item));
                       setErrors({});
                       setNotice(null);
                       setDirty(false);
+                      setLastSavedAt("");
                     }}
                   >
                     <span>{getItemTitle(section, item)}</span>
@@ -714,7 +803,7 @@ function SectionEditor({
               />
             ))}
             <div className="form-actions">
-              <button className="secondary-button" type="button" onClick={() => setShowPreview(true)}>
+              <button className="secondary-button" type="button" onClick={openPreview}>
                 <Eye size={18} />
                 プレビュー確認
               </button>
@@ -722,7 +811,7 @@ function SectionEditor({
                 {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
                 下書き保存
               </button>
-              <button className="primary-button" type="button" disabled={saving || deploying} onClick={() => setShowPreview(true)}>
+              <button className="primary-button" type="button" disabled={saving || deploying} onClick={openPreview}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 公開して反映
               </button>
