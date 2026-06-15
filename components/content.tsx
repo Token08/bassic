@@ -577,9 +577,8 @@ export function AccessContent({
   showMap?: boolean;
 }) {
   const accessSettings = settings || site;
-  const mapSrc = accessSettings.googleMapsUrl.includes("output=embed")
-    ? accessSettings.googleMapsUrl
-    : `${accessSettings.googleMapsUrl}${accessSettings.googleMapsUrl.includes("?") ? "&" : "?"}output=embed`;
+  const mapQuery = encodeURIComponent(`public bar Bassic. ${accessSettings.address}`);
+  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=16&hl=ja&output=embed`;
 
   return (
     <section className="section access-section">
