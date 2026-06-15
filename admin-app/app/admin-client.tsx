@@ -210,11 +210,20 @@ function SetupStatus({ health }: { health?: HealthState }) {
     return null;
   }
 
+  const groups = [
+    { key: "login", label: "ログイン" },
+    { key: "save", label: "保存" },
+    { key: "publish", label: "公開反映" }
+  ] as const;
+
   if (health.ok) {
     return (
       <div className="setup-status ready">
         <CheckCircle2 size={18} />
-        <span>本番設定はそろっています。</span>
+        <div>
+          <strong>本番設定はそろっています。</strong>
+          <span>ログイン、保存、公開反映の準備ができています。</span>
+        </div>
       </div>
     );
   }
@@ -225,13 +234,28 @@ function SetupStatus({ health }: { health?: HealthState }) {
       <div>
         <strong>設定が不足しています</strong>
         <span>保存や反映の前に、担当者がVercel環境変数を設定してください。</span>
-        <ul>
-          {health.missing.map((item) => (
-            <li key={item.key}>
-              {item.label} <code>{item.key}</code>
-            </li>
-          ))}
-        </ul>
+        <div className="setup-groups">
+          {groups.map((group) => {
+            const missingItems = health.missing.filter((item) => item.requiredFor === group.key);
+
+            return (
+              <section className={missingItems.length ? "needs-work" : "is-ready"} key={group.key}>
+                <strong>{group.label}</strong>
+                {missingItems.length ? (
+                  <ul>
+                    {missingItems.map((item) => (
+                      <li key={item.key}>
+                        {item.label} <code>{item.key}</code>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span>設定済み</span>
+                )}
+              </section>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
