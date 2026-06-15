@@ -625,6 +625,21 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
   );
 }
 
+function SaveChoiceGuide() {
+  return (
+    <div className="save-choice-guide" aria-label="保存方法の違い">
+      <div>
+        <strong>下書き保存</strong>
+        <span>サイトには出さず、入力内容だけ残します。あとで確認したい時に使います。</span>
+      </div>
+      <div>
+        <strong>公開して反映</strong>
+        <span>プレビュー確認のあと、公開サイトの更新を開始します。</span>
+      </div>
+    </div>
+  );
+}
+
 function SectionEditor({
   sectionId,
   onBack,
@@ -1034,6 +1049,7 @@ function SectionEditor({
                 onChange={(value) => updateField(field.key, value)}
               />
             ))}
+            <SaveChoiceGuide />
             <div className="form-actions">
               <button className="secondary-button" type="button" onClick={openPreview}>
                 <Eye size={18} />
