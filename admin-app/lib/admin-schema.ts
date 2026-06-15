@@ -23,6 +23,7 @@ export type FieldDefinition = {
   type: FieldType;
   required?: boolean;
   placeholder?: string;
+  hint?: string;
   options?: FieldOption[];
   rows?: number;
 };
@@ -41,6 +42,7 @@ export type SectionDefinition = {
   title: string;
   shortTitle: string;
   description: string;
+  helperText: string;
   kind: "object" | "list";
   createLabel?: string;
   icon: typeof Store;
@@ -55,6 +57,7 @@ export const sections: SectionDefinition[] = [
     title: "店舗情報",
     shortTitle: "店舗情報",
     description: "住所、電話、営業時間、SNSリンクを更新します。",
+    helperText: "お店の基本情報です。迷ったら名刺やGoogleマップと同じ表記にしてください。",
     kind: "object",
     icon: Settings,
     fields: [
@@ -78,6 +81,7 @@ export const sections: SectionDefinition[] = [
     title: "TOP文言",
     shortTitle: "TOP",
     description: "最初に表示される文章と画像を更新します。",
+    helperText: "初めてサイトを見る人に向けた文章です。短めで、店の雰囲気が伝わる言葉にします。",
     kind: "object",
     icon: Home,
     fields: [
@@ -86,7 +90,7 @@ export const sections: SectionDefinition[] = [
       { key: "firstVisitLead", label: "初回来店文言", type: "textarea", rows: 4, placeholder: "初めてご来店の方へ..." },
       { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "天神駅から徒歩..." },
       { key: "instagramWidgetSrc", label: "InstagramウィジェットURL", type: "url", placeholder: "https://cdn.lightwidget.com/widgets/..." },
-      { key: "heroImage", label: "TOP画像", type: "image" }
+      { key: "heroImage", label: "TOP画像", type: "image", hint: "未設定でも既存画像が表示されます。" }
     ],
     defaults: {}
   },
@@ -95,6 +99,7 @@ export const sections: SectionDefinition[] = [
     title: "メイン画像",
     shortTitle: "画像",
     description: "各ページのメイン画像やスライドを更新します。",
+    helperText: "ページの第一印象を決める画像です。暗すぎず、店内やイベントの雰囲気が分かる写真がおすすめです。",
     kind: "list",
     createLabel: "画像を追加",
     icon: ImageIcon,
@@ -115,7 +120,7 @@ export const sections: SectionDefinition[] = [
       },
       { key: "title", label: "画像名", type: "text", placeholder: "TOP 1枚目" },
       { key: "image", label: "画像", type: "image", required: true },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: "数字が小さいものから先に表示されます。" },
       { key: "isPublished", label: "公開する", type: "checkbox" }
     ],
     defaults: { page: "home", displayOrder: 1, isPublished: false }
@@ -125,6 +130,7 @@ export const sections: SectionDefinition[] = [
     title: "イベント",
     shortTitle: "イベント",
     description: "イベントの日時、料金、予約方法を更新します。",
+    helperText: "公開前に日付、開始時間、料金を必ず確認してください。下書き保存ならサイトには出ません。",
     kind: "list",
     createLabel: "イベントを追加",
     icon: CalendarDays,
@@ -148,6 +154,7 @@ export const sections: SectionDefinition[] = [
     title: "フードメニュー",
     shortTitle: "メニュー",
     description: "フード名、料金、写真、表示順を更新します。",
+    helperText: "売り切れや季節メニューは、公開するチェックを外すとサイトから隠せます。",
     kind: "list",
     createLabel: "メニューを追加",
     icon: Utensils,
@@ -168,6 +175,7 @@ export const sections: SectionDefinition[] = [
     title: "ドリンク表",
     shortTitle: "ドリンク表",
     description: "ドリンクメニュー画像を更新します。",
+    helperText: "メニュー表を写真で差し替える画面です。文字が読める明るい画像を使ってください。",
     kind: "list",
     createLabel: "ドリンク表を追加",
     icon: FileText,
@@ -185,6 +193,7 @@ export const sections: SectionDefinition[] = [
     title: "貸切プラン",
     shortTitle: "貸切",
     description: "貸切、二次会、レンタル料金を更新します。",
+    helperText: "料金や条件は問い合わせ前提でも大丈夫です。古い料金を出さないように注意します。",
     kind: "list",
     createLabel: "プランを追加",
     icon: Store,
@@ -203,6 +212,7 @@ export const sections: SectionDefinition[] = [
     title: "機材レンタル",
     shortTitle: "機材",
     description: "機材レンタルの説明とPDFリンクを更新します。",
+    helperText: "PDF自体を差し替えた場合は、PDFのURLも新しいものに変えてください。",
     kind: "object",
     icon: Music,
     fields: [
@@ -218,6 +228,7 @@ export const sections: SectionDefinition[] = [
     title: "SNS告知カード",
     shortTitle: "SNS告知",
     description: "Instagram、Facebook、Xへの誘導カードを更新します。",
+    helperText: "SNS投稿そのものを埋め込むのではなく、見に行ってほしい投稿へのリンクカードを作ります。",
     kind: "list",
     createLabel: "告知を追加",
     icon: Megaphone,

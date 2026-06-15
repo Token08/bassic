@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Eye,
+  Info,
   Loader2,
   LogOut,
   Plus,
@@ -52,6 +53,14 @@ function mergeDefaults(section: SectionDefinition, item?: Draft) {
   };
 }
 
+function getItemTitle(section: SectionDefinition, item: Draft) {
+  return getString(item[section.titleKey || "title"]) || getString(item.name) || "タイトル未入力";
+}
+
+function isPublished(item: Draft) {
+  return item.isPublished !== false;
+}
+
 async function requestJson<T>(url: string, init?: RequestInit) {
   const response = await fetch(url, {
     ...init,
@@ -63,10 +72,26 @@ async function requestJson<T>(url: string, init?: RequestInit) {
   const body = (await response.json().catch(() => ({ ok: false }))) as ApiResult<T>;
 
   if (!response.ok || !body.ok) {
-    throw new Error(body.message || "通信に失敗しました。");
+    throw new Error(body.message || "通信に失敗しました。時間を置いて再試行してください。");
   }
 
   return body;
+}
+
+function NoticeBox({ notice }: { notice: Notice }) {
+  const Icon = notice.tone === "error" ? AlertCircle : notice.tone === "info" ? Info : CheckCircle2;
+
+  return (
+    <div className={`notice ${notice.tone}`}>
+      <Icon size={20} />
+      <span>{notice.message}</span>
+      {notice.actionsUrl ? (
+        <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+          反映状況を見る
+        </a>
+      ) : null}
+    </div>
+  );
 }
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -97,6 +122,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <form className="login-panel" onSubmit={submit}>
         <p className="eyebrow">Bassic. 管理画面</p>
         <h1>更新用パスワード</h1>
+        <p className="login-copy">お店の情報を更新する専用画面です。</p>
         <label>
           パスワード
           <input
@@ -124,19 +150,31 @@ function Dashboard({ onSelect, lastDeploy }: { onSelect: (id: string) => void; l
         <div>
           <p className="eyebrow">Bassic. Admin</p>
           <h1>更新する場所を選ぶ</h1>
+          <p>大きなボタンから選んで、入力、確認、保存の順に進めます。</p>
         </div>
       </div>
-      {lastDeploy ? (
-        <div className={`notice ${lastDeploy.tone}`}>
-          <CheckCircle2 size={20} />
-          <span>{lastDeploy.message}</span>
-          {lastDeploy.actionsUrl ? (
-            <a href={lastDeploy.actionsUrl} target="_blank" rel="noreferrer">
-              反映状況を見る
-            </a>
-          ) : null}
+
+      <section className="guide-strip" aria-label="操作の流れ">
+        <div>
+          <strong>1. 選ぶ</strong>
+          <span>更新したい場所を押す</span>
         </div>
-      ) : null}
+        <div>
+          <strong>2. 入力</strong>
+          <span>必須だけ埋めればOK</span>
+        </div>
+        <div>
+          <strong>3. 確認</strong>
+          <span>プレビューで見直す</span>
+        </div>
+        <div>
+          <strong>4. 反映</strong>
+          <span>公開してサイトへ反映</span>
+        </div>
+      </section>
+
+      {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
+
       <div className="dashboard-grid">
         {sections.map((section) => {
           const Icon = section.icon;
@@ -215,6 +253,7 @@ function Field({
         </span>
       ) : null}
       {field.type === "image" ? <ImageField value={value} onChange={onChange} /> : null}
+      {field.hint ? <small className="field-hint">{field.hint}</small> : null}
       {error ? <small className="form-error">{error}</small> : null}
     </label>
   );
@@ -262,7 +301,9 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
             削除
           </button>
         </div>
-      ) : null}
+      ) : (
+        <div className="image-empty">画像はまだ選ばれていません。</div>
+      )}
       <div className="image-controls">
         <input type="url" value={url} onChange={(event) => onChange({ ...image, url: event.target.value })} placeholder="画像URL" />
         <input
@@ -294,7 +335,17 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   );
 }
 
-function PreviewModal({ draft, section, onClose }: { draft: Draft; section: SectionDefinition; onClose: () => void }) {
+function PreviewModal({
+  draft,
+  section,
+  onClose,
+  onPublish
+}: {
+  draft: Draft;
+  section: SectionDefinition;
+  onClose: () => void;
+  onPublish: () => void;
+}) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="preview-modal">
@@ -302,6 +353,7 @@ function PreviewModal({ draft, section, onClose }: { draft: Draft; section: Sect
           <div>
             <p className="eyebrow">Preview</p>
             <h2>{section.title}</h2>
+            <p>公開前に、入力内容をざっと確認してください。</p>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="閉じる">
             <X size={20} />
@@ -320,10 +372,15 @@ function PreviewModal({ draft, section, onClose }: { draft: Draft; section: Sect
             );
           })}
         </dl>
-        <button className="primary-button" type="button" onClick={onClose}>
-          <CheckCircle2 size={18} />
-          確認しました
-        </button>
+        <div className="modal-actions">
+          <button className="secondary-button" type="button" onClick={onClose}>
+            戻って直す
+          </button>
+          <button className="primary-button" type="button" onClick={onPublish}>
+            <CheckCircle2 size={18} />
+            この内容で公開
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -348,6 +405,7 @@ function SectionEditor({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -370,10 +428,11 @@ function SectionEditor({
       } else {
         setDraft(mergeDefaults(section, data as Draft));
       }
+      setDirty(false);
     } catch (loadError) {
       setNotice({
         tone: "error",
-        message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。"
+        message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。時間を置いて再試行してください。"
       });
     } finally {
       setLoading(false);
@@ -385,11 +444,25 @@ function SectionEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section.id]);
 
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirty) {
+        return;
+      }
+
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+
   function updateField(key: string, value: unknown) {
     setDraft((current) => ({
       ...current,
       [key]: value
     }));
+    setDirty(true);
     setErrors((current) => {
       const next = { ...current };
       delete next[key];
@@ -441,6 +514,7 @@ function SectionEditor({
       });
       const savedData = (result.data || nextDraft) as Draft & { id?: string };
       setDraft(mergeDefaults(section, savedData));
+      setDirty(false);
 
       if (section.kind === "list") {
         const id = savedData.id || selectedId;
@@ -452,7 +526,7 @@ function SectionEditor({
       }
 
       if (mode === "draft") {
-        setNotice({ tone: "success", message: "下書き保存しました。" });
+        setNotice({ tone: "success", message: "下書き保存しました。公開するまでサイトには出ません。" });
         return;
       }
 
@@ -474,7 +548,7 @@ function SectionEditor({
       } catch (deployError) {
         const deployNotice = {
           tone: "error" as const,
-          message: deployError instanceof Error ? deployError.message : "保存済み、反映だけ失敗しました。"
+          message: deployError instanceof Error ? deployError.message : "保存済み、反映だけ失敗しました。担当者に連絡してください。"
         };
         setNotice(deployNotice);
         onDeployNotice(deployNotice);
@@ -487,10 +561,17 @@ function SectionEditor({
     } finally {
       setSaving(false);
       setDeploying(false);
+      setShowPreview(false);
     }
   }
 
-  const titleKey = section.titleKey || "title";
+  function startNewItem() {
+    setSelectedId("new");
+    setDraft(mergeDefaults(section));
+    setErrors({});
+    setNotice(null);
+    setDirty(false);
+  }
 
   return (
     <div className="editor">
@@ -499,11 +580,15 @@ function SectionEditor({
           <ArrowLeft size={18} />
           戻る
         </button>
-        <button className="text-button" type="button" onClick={() => void load()}>
-          <RefreshCw size={18} />
-          再読み込み
-        </button>
+        <div className="topbar-actions">
+          {dirty ? <span className="dirty-pill">未保存の変更あり</span> : <span className="saved-pill">保存済み</span>}
+          <button className="text-button" type="button" onClick={() => void load()}>
+            <RefreshCw size={18} />
+            再読み込み
+          </button>
+        </div>
       </div>
+
       <div className="page-heading">
         <div>
           <p className="eyebrow">{section.shortTitle}</p>
@@ -511,33 +596,19 @@ function SectionEditor({
           <p>{section.description}</p>
         </div>
         {section.kind === "list" ? (
-          <button
-            className="secondary-button"
-            type="button"
-            onClick={() => {
-              setSelectedId("new");
-              setDraft(mergeDefaults(section));
-              setErrors({});
-              setNotice(null);
-            }}
-          >
+          <button className="secondary-button" type="button" onClick={startNewItem}>
             <Plus size={18} />
             {section.createLabel || "追加"}
           </button>
         ) : null}
       </div>
 
-      {notice ? (
-        <div className={`notice ${notice.tone}`}>
-          {notice.tone === "error" ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
-          <span>{notice.message}</span>
-          {notice.actionsUrl ? (
-            <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
-              反映状況を見る
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="helper-panel">
+        <Info size={18} />
+        <span>{section.helperText}</span>
+      </div>
+
+      {notice ? <NoticeBox notice={notice} /> : null}
 
       {loading ? (
         <div className="loading-panel">
@@ -548,32 +619,33 @@ function SectionEditor({
         <div className="editor-layout">
           {section.kind === "list" ? (
             <aside className="item-list">
-              <button
-                className={selectedId === "new" ? "selected" : ""}
-                type="button"
-                onClick={() => {
-                  setSelectedId("new");
-                  setDraft(mergeDefaults(section));
-                }}
-              >
+              <button className={selectedId === "new" ? "selected" : ""} type="button" onClick={startNewItem}>
                 <Plus size={18} />
                 新しく追加
               </button>
-              {items.map((item) => (
-                <button
-                  className={selectedId === item.id ? "selected" : ""}
-                  key={item.id || JSON.stringify(item)}
-                  type="button"
-                  onClick={() => {
-                    setSelectedId(item.id || "");
-                    setDraft(mergeDefaults(section, item));
-                    setErrors({});
-                  }}
-                >
-                  <span>{getString(item[titleKey]) || "タイトル未入力"}</span>
-                  {item.isPublished === false ? <small>下書き</small> : <small>公開</small>}
-                </button>
-              ))}
+              {items.length ? (
+                items.map((item) => (
+                  <button
+                    className={selectedId === item.id ? "selected" : ""}
+                    key={item.id || JSON.stringify(item)}
+                    type="button"
+                    onClick={() => {
+                      setSelectedId(item.id || "");
+                      setDraft(mergeDefaults(section, item));
+                      setErrors({});
+                      setNotice(null);
+                      setDirty(false);
+                    }}
+                  >
+                    <span>{getItemTitle(section, item)}</span>
+                    <small className={isPublished(item) ? "status-public" : "status-draft"}>
+                      {isPublished(item) ? "公開" : "下書き"}
+                    </small>
+                  </button>
+                ))
+              ) : (
+                <div className="empty-list">まだ登録がありません。上の「新しく追加」から作れます。</div>
+              )}
             </aside>
           ) : null}
 
@@ -602,7 +674,7 @@ function SectionEditor({
                 {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
                 下書き保存
               </button>
-              <button className="primary-button" type="button" disabled={saving || deploying} onClick={() => void save("publish")}>
+              <button className="primary-button" type="button" disabled={saving || deploying} onClick={() => setShowPreview(true)}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 公開して反映
               </button>
@@ -611,7 +683,9 @@ function SectionEditor({
         </div>
       )}
 
-      {showPreview ? <PreviewModal draft={draft} section={section} onClose={() => setShowPreview(false)} /> : null}
+      {showPreview ? (
+        <PreviewModal draft={draft} section={section} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
+      ) : null}
     </div>
   );
 }
@@ -621,13 +695,17 @@ export default function AdminClient() {
   const [authenticated, setAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
+  const [sessionError, setSessionError] = useState("");
 
   async function checkSession() {
     setChecking(true);
+    setSessionError("");
     try {
       const response = await fetch("/api/session", { cache: "no-store" });
       const result = (await response.json()) as { authenticated?: boolean };
       setAuthenticated(Boolean(result.authenticated));
+    } catch {
+      setSessionError("管理画面の設定を確認しています。再読み込みしても直らない場合は担当者に連絡してください。");
     } finally {
       setChecking(false);
     }
@@ -655,6 +733,22 @@ export default function AdminClient() {
     return (
       <main className="loading-shell">
         <Loader2 className="spin" size={32} />
+      </main>
+    );
+  }
+
+  if (sessionError) {
+    return (
+      <main className="login-shell">
+        <section className="login-panel">
+          <p className="eyebrow">Bassic. 管理画面</p>
+          <h1>読み込みできません</h1>
+          <p className="form-error">{sessionError}</p>
+          <button className="primary-button" type="button" onClick={() => void checkSession()}>
+            <RefreshCw size={18} />
+            再読み込み
+          </button>
+        </section>
       </main>
     );
   }
