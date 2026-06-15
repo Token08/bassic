@@ -1,6 +1,6 @@
 # Bassic. Admin Docs Index
 
-microCMS標準管理画面を使うための資料一覧です。
+管理画面化に関する資料一覧です。
 
 ## 最初に読む
 
@@ -15,6 +15,10 @@ microCMS標準管理画面を使うための資料一覧です。
 
 - `docs/microcms-admin-v1.md`
 
+## 専用管理画面
+
+- `docs/dedicated-admin-app-v1.md`
+
 ## 納品先へ渡す操作マニュアル
 
 - `docs/delivery-admin-manual-v1.md`
@@ -24,6 +28,7 @@ microCMS標準管理画面を使うための資料一覧です。
 ```bash
 npm run setup:admin
 npm run check:admin
+npm run check:admin-app
 npm run smoke:cms
 npm run deploy:cms
 ```
