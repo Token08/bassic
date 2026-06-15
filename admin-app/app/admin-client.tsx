@@ -74,6 +74,34 @@ function isPublished(item: Draft) {
   return item.isPublished !== false;
 }
 
+function fieldHasValue(field: FieldDefinition, value: unknown) {
+  if (field.type === "image") {
+    if (isImageObject(value)) {
+      return Boolean(value.url);
+    }
+
+    return Boolean(getString(value));
+  }
+
+  if (field.type === "checkbox") {
+    return typeof value === "boolean";
+  }
+
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
+function getPreviewText(field: FieldDefinition, value: unknown) {
+  if (field.type === "checkbox") {
+    return value ? "公開する" : "下書き";
+  }
+
+  if (field.type === "image") {
+    return isImageObject(value) ? value.url || "" : getString(value);
+  }
+
+  return String(value ?? "");
+}
+
 async function requestJson<T>(url: string, init?: RequestInit) {
   const response = await fetch(url, {
     ...init,
@@ -398,6 +426,24 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   );
 }
 
+function RequiredProgress({ section, draft }: { section: SectionDefinition; draft: Draft }) {
+  const requiredFields = section.fields.filter((field) => field.required);
+
+  if (!requiredFields.length) {
+    return null;
+  }
+
+  const completed = requiredFields.filter((field) => fieldHasValue(field, draft[field.key])).length;
+  const remaining = requiredFields.length - completed;
+
+  return (
+    <div className={`required-progress ${remaining === 0 ? "complete" : ""}`}>
+      <strong>必須 {completed}/{requiredFields.length} 入力済み</strong>
+      <span>{remaining === 0 ? "公開前チェックOKです。" : `あと${remaining}件入力すると確認できます。`}</span>
+    </div>
+  );
+}
+
 function PreviewModal({
   draft,
   section,
@@ -425,12 +471,23 @@ function PreviewModal({
         <dl className="preview-list">
           {section.fields.map((field) => {
             const value = draft[field.key];
-            const text = isImageObject(value) ? value.url : field.type === "checkbox" ? (value ? "公開する" : "下書き") : String(value ?? "");
+            const text = getPreviewText(field, value);
+            const imageUrl = field.type === "image" ? text : "";
 
             return (
               <div key={field.key}>
                 <dt>{field.label}</dt>
-                <dd>{text || "未入力"}</dd>
+                <dd>
+                  {imageUrl ? (
+                    <span className="preview-image-value">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt="" />
+                      <span>{imageUrl}</span>
+                    </span>
+                  ) : (
+                    text || "未入力"
+                  )}
+                </dd>
               </div>
             );
           })}
@@ -808,6 +865,7 @@ function SectionEditor({
               void save("draft");
             }}
           >
+            <RequiredProgress section={section} draft={draft} />
             {section.fields.map((field) => (
               <Field
                 field={field}
@@ -830,6 +888,7 @@ function SectionEditor({
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 公開して反映
               </button>
+              <small className="action-note">公開前にプレビュー確認が開きます。</small>
             </div>
           </form>
         </div>

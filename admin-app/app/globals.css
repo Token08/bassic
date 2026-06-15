@@ -434,6 +434,31 @@ a {
   font-weight: 800;
 }
 
+.required-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(195, 154, 69, 0.36);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(195, 154, 69, 0.1);
+  color: #7b5a10;
+  font-weight: 900;
+}
+
+.required-progress.complete {
+  border-color: rgba(31, 107, 79, 0.22);
+  background: rgba(31, 107, 79, 0.08);
+  color: var(--green);
+}
+
+.required-progress span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -602,6 +627,14 @@ a {
   padding-top: 18px;
 }
 
+.action-note {
+  flex-basis: 100%;
+  color: var(--muted);
+  text-align: right;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
 .primary-button,
 .secondary-button,
 .text-button {
@@ -763,6 +796,24 @@ a {
   white-space: pre-wrap;
 }
 
+.preview-image-value {
+  display: grid;
+  gap: 8px;
+}
+
+.preview-image-value img {
+  width: min(220px, 100%);
+  max-height: 140px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  object-fit: contain;
+  background: #efe6d8;
+}
+
+.preview-image-value span {
+  overflow-wrap: anywhere;
+}
+
 .spin {
   animation: spin 900ms linear infinite;
 }
@@ -818,6 +869,15 @@ a {
   .form-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .required-progress {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .action-note {
+    text-align: left;
   }
 
   .topbar-actions,
