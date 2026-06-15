@@ -18,6 +18,7 @@ checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
 checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
 checkClientFacingText();
+checkClientDocsText();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -154,4 +155,28 @@ function checkClientFacingText() {
   }
 
   add("client-facing admin text hides technical setup terms", leaks.length === 0, leaks.join(", "));
+}
+
+function checkClientDocsText() {
+  const forbidden = ["microCMS", "GitHub", "Vercel", "APIキー", "トークン", "環境変数", ".env", "canonical", "sitemap", "hreflang"];
+  const files = [
+    "docs/delivery-admin-manual.md",
+    "docs/client-handoff-checklist.md"
+  ];
+  const leaks = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of forbidden) {
+      if (text.includes(term)) {
+        leaks.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  add("client handoff docs hide technical setup terms", leaks.length === 0, leaks.join(", "));
 }
