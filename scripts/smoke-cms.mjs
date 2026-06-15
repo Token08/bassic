@@ -1,6 +1,7 @@
 import { loadLocalEnv } from "./load-local-env.mjs";
 
 loadLocalEnv();
+loadLocalEnv("admin-app/.env.local");
 
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
 const apiKey = process.env.MICROCMS_API_KEY;
@@ -69,11 +70,38 @@ const endpointChecks = [
       requiredUrl(item, "url", "social-notices");
       requiredBoolean(item, "isPublished", "social-notices");
     }
+  },
+  {
+    label: "page-copy",
+    path: "/page-copy?limit=1",
+    validateItem: (item) => {
+      requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-copy");
+      requiredBoolean(item, "isPublished", "page-copy");
+    }
+  },
+  {
+    label: "page-sections",
+    path: "/page-sections?limit=1",
+    validateItem: (item) => {
+      requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-sections");
+      requiredString(item, "sectionKey", "page-sections");
+      requiredBoolean(item, "isPublished", "page-sections");
+    }
+  },
+  {
+    label: "custom-sections",
+    path: "/custom-sections?limit=1",
+    validateItem: (item) => {
+      requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "custom-sections");
+      requiredString(item, "title", "custom-sections");
+      requiredString(item, "body", "custom-sections");
+      requiredBoolean(item, "isPublished", "custom-sections");
+    }
   }
 ];
 
-if (!serviceDomain || !apiKey) {
-  console.log("microCMS smoke check skipped: MICROCMS_SERVICE_DOMAIN and MICROCMS_API_KEY are not set.");
+if (!serviceDomain || !apiKey || serviceDomain === "example" || apiKey === "example") {
+  console.log("microCMS smoke check skipped: MICROCMS_SERVICE_DOMAIN and MICROCMS_API_KEY are not set or are local dummy values.");
   process.exit(0);
 }
 

@@ -15,6 +15,7 @@
     "build:admin-app": "cd admin-app && npm run build",
     "start": "next start",
     "setup:admin": "node scripts/setup-microcms-admin.mjs",
+    "seed:cms": "node scripts/seed-microcms.mjs",
     "deploy:cms": "node scripts/trigger-cms-rebuild.mjs",
     "smoke:cms": "node scripts/smoke-cms.mjs",
     "check:admin": "node scripts/check-admin-readiness.mjs",
