@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        message: "SNS状況を確認できませんでした。microCMS設定を確認してください。"
+        message: "SNS状況を確認できませんでした。時間をおいて再度お試しください。"
       },
       { status: 502 }
     );

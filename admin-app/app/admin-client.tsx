@@ -247,7 +247,7 @@ function SetupStatus({ health }: { health?: HealthState }) {
       <AlertCircle size={18} />
       <div>
         <strong>設定が不足しています</strong>
-        <span>保存や反映の前に、担当者がVercel環境変数を設定してください。</span>
+        <span>保存や反映の前に、担当者側の初期設定が必要です。</span>
         <div className="setup-groups">
           {groups.map((group) => {
             const missingItems = health.missing.filter((item) => item.requiredFor === group.key);

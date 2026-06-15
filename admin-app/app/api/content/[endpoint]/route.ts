@@ -16,7 +16,7 @@ function unauthorized() {
 
 function saveFailed() {
   return NextResponse.json(
-    { ok: false, message: "保存できませんでした。microCMSのAPI設定を確認してください。" },
+    { ok: false, message: "保存できませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。" },
     { status: 502 }
   );
 }
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ ok: true, data });
   } catch {
     return NextResponse.json(
-      { ok: false, message: "読み込みできませんでした。microCMSのAPI設定を確認してください。" },
+      { ok: false, message: "読み込みできませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。" },
       { status: 502 }
     );
   }

@@ -7,10 +7,10 @@ export type AdminEnvCheck = {
 
 const envDefinitions: Array<Omit<AdminEnvCheck, "present">> = [
   { key: "ADMIN_PASSWORD", label: "管理画面パスワード", requiredFor: "login" },
-  { key: "ADMIN_SESSION_SECRET", label: "ログイン保持用シークレット", requiredFor: "login" },
-  { key: "MICROCMS_SERVICE_DOMAIN", label: "microCMSサービスID", requiredFor: "save" },
-  { key: "MICROCMS_API_KEY", label: "microCMS APIキー", requiredFor: "save" },
-  { key: "GITHUB_DISPATCH_TOKEN", label: "GitHub反映用トークン", requiredFor: "publish" }
+  { key: "ADMIN_SESSION_SECRET", label: "ログイン保持設定", requiredFor: "login" },
+  { key: "MICROCMS_SERVICE_DOMAIN", label: "保存先サービス設定", requiredFor: "save" },
+  { key: "MICROCMS_API_KEY", label: "保存先接続設定", requiredFor: "save" },
+  { key: "GITHUB_DISPATCH_TOKEN", label: "公開反映設定", requiredFor: "publish" }
 ];
 
 export function getAdminEnvChecks(): AdminEnvCheck[] {
