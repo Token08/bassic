@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, EventList, PageHero } from "@/components/content";
+import { CustomSectionBlock, PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
@@ -60,21 +60,6 @@ export default async function EventsPage() {
               slides={eventSlides}
               className={pageHeroes.events.className}
             />
-          )
-        }
-      : null,
-    visibleSections.has("eventList")
-      ? {
-          key: "eventList",
-          order: sectionOrder("eventList", 2),
-          node: (
-            <section className="section">
-              <div className="section-heading narrow-copy">
-                <p className="eyebrow">{copy.listEyebrow || "Event List"}</p>
-                <h2>{copy.listTitle || "Event Schedule"}</h2>
-              </div>
-              <EventList events={contents.events} />
-            </section>
           )
         }
       : null,

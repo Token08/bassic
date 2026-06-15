@@ -236,8 +236,6 @@ const pageCopy = [
     heroTitle: "ライヴ・DJ・イベント。",
     heroLead:
       "イベント終了後はバータイムとしてご利用できます。\n各イベントについてはスケジュールページで最新情報を確認できます。\n※イベントを行いたい方はお気軽にスタッフへご相談下さい。",
-    listEyebrow: "Event List",
-    listTitle: "Event Schedule",
     calendarNote: "Google Calendarでも最新イベントを確認できます。",
     displayOrder: 1,
     isPublished: true
@@ -284,8 +282,8 @@ const pageSections = [
   ["home-social", "home", "social", 5],
   ["home-access", "home", "access", 6],
   ["events-hero", "events", "hero", 1],
-  ["events-list", "events", "eventList", 2],
-  ["events-calendar", "events", "calendar", 3],
+  ["events-list", "events", "eventList", 2, false],
+  ["events-calendar", "events", "calendar", 2],
   ["menu-hero", "menu", "hero", 1],
   ["menu-drink-sheets", "menu", "drinkSheets", 2],
   ["menu-food", "menu", "foodMenu", 3],
@@ -296,12 +294,12 @@ const pageSections = [
   ["access-hero", "access", "hero", 1],
   ["access-info", "access", "accessInfo", 2],
   ["access-map", "access", "googleMap", 3]
-].map(([id, page, sectionKey, displayOrder]) => ({
+].map(([id, page, sectionKey, displayOrder, isPublished = true]) => ({
   id,
   page,
   sectionKey,
   displayOrder,
-  isPublished: true
+  isPublished
 }));
 
 export const seedData = {

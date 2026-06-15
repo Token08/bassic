@@ -86,8 +86,6 @@ const fallbackPageCopy: CmsContents["pageCopy"] = {
     heroEyebrow: pageHeroes.events.eyebrow,
     heroTitle: pageHeroes.events.title,
     heroLead: pageHeroes.events.lead,
-    listEyebrow: "Event List",
-    listTitle: "Event Schedule",
     isPublished: true
   },
   menu: {
@@ -129,8 +127,8 @@ const fallbackPageSections: CmsContents["pageSections"] = {
   ],
   events: [
     { page: "events", sectionKey: "hero", displayOrder: 1, isPublished: true },
-    { page: "events", sectionKey: "eventList", displayOrder: 2, isPublished: true },
-    { page: "events", sectionKey: "calendar", displayOrder: 3, isPublished: true }
+    { page: "events", sectionKey: "eventList", displayOrder: 2, isPublished: false },
+    { page: "events", sectionKey: "calendar", displayOrder: 2, isPublished: true }
   ],
   menu: [
     { page: "menu", sectionKey: "hero", displayOrder: 1, isPublished: true },
