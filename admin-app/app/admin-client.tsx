@@ -74,13 +74,26 @@ function isPublished(item: Draft) {
   return item.isPublished !== false;
 }
 
+function isHttpUrl(value: string) {
+  if (!value) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function getImageUrl(value: unknown) {
+  return isImageObject(value) ? value.url || "" : getString(value);
+}
+
 function fieldHasValue(field: FieldDefinition, value: unknown) {
   if (field.type === "image") {
-    if (isImageObject(value)) {
-      return Boolean(value.url);
-    }
-
-    return Boolean(getString(value));
+    return Boolean(getImageUrl(value));
   }
 
   if (field.type === "checkbox") {
@@ -96,7 +109,7 @@ function getPreviewText(field: FieldDefinition, value: unknown) {
   }
 
   if (field.type === "image") {
-    return isImageObject(value) ? value.url || "" : getString(value);
+    return getImageUrl(value);
   }
 
   return String(value ?? "");
@@ -420,7 +433,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
           />
         </label>
       </div>
-      <p className="field-hint">横長画像は1600px以上、メニュー表は文字が読める明るい画像がおすすめです。</p>
+      <p className="field-hint">画像はアップロードするか、https:// から始まる画像URLを入れてください。横長画像は1600px以上がおすすめです。</p>
       {error ? <small className="form-error">{error}</small> : null}
     </div>
   );
@@ -473,6 +486,7 @@ function PreviewModal({
             const value = draft[field.key];
             const text = getPreviewText(field, value);
             const imageUrl = field.type === "image" ? text : "";
+            const linkUrl = field.type === "url" ? text : "";
 
             return (
               <div key={field.key}>
@@ -484,6 +498,10 @@ function PreviewModal({
                       <img src={imageUrl} alt="" />
                       <span>{imageUrl}</span>
                     </span>
+                  ) : linkUrl ? (
+                    <a className="preview-link" href={linkUrl} target="_blank" rel="noreferrer">
+                      {linkUrl}
+                    </a>
                   ) : (
                     text || "未入力"
                   )}
@@ -639,16 +657,20 @@ function SectionEditor({
     const nextErrors: Record<string, string> = {};
 
     for (const field of section.fields) {
-      if (!field.required) {
+      const value = nextDraft[field.key];
+      const emptyValue = !fieldHasValue(field, value);
+
+      if (field.required && emptyValue) {
+        nextErrors[field.key] = `${field.label}を入力してください。`;
         continue;
       }
 
-      const value = nextDraft[field.key];
-      const emptyImage = field.type === "image" && !isImageObject(value) && !value;
-      const emptyValue = value === undefined || value === null || value === "";
+      if (!emptyValue && field.type === "url" && !isHttpUrl(getString(value))) {
+        nextErrors[field.key] = `${field.label}は https:// から始まるURLを入力してください。`;
+      }
 
-      if (emptyImage || emptyValue) {
-        nextErrors[field.key] = `${field.label}を入力してください。`;
+      if (!emptyValue && field.type === "image" && !isHttpUrl(getImageUrl(value))) {
+        nextErrors[field.key] = `${field.label}のURLは https:// から始まるURLを入力してください。`;
       }
     }
 

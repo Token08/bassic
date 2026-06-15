@@ -796,6 +796,12 @@ a {
   white-space: pre-wrap;
 }
 
+.preview-link {
+  color: var(--blue);
+  font-weight: 900;
+  text-decoration: underline;
+}
+
 .preview-image-value {
   display: grid;
   gap: 8px;
