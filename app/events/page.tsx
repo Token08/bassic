@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EventList, PageHero } from "@/components/content";
+import { PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
@@ -54,13 +54,6 @@ export default async function EventsPage() {
           slides={eventSlides}
           className={pageHeroes.events.className}
         />
-        <section className="section">
-          <div className="section-heading narrow-copy">
-            <p className="eyebrow">Event List</p>
-            <h2>Event Schedule</h2>
-          </div>
-          <EventList events={contents.events} />
-        </section>
         <EventCalendarSection />
       </main>
     </PageShell>
