@@ -70,6 +70,8 @@ function LocalizedAccessPreview({ locale }: { locale: LocaleCode }) {
   const labels = localizedLabels[locale];
   const copy = localizedHomeSections[locale];
   const titles = localizedVisitInfoTitles[locale];
+  const mapQuery = encodeURIComponent("public bar Bassic. 福岡市中央区天神3-4-19 WITH天神5F");
+  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=16&hl=ja&output=embed`;
 
   return (
     <section className="section access-section">
@@ -113,7 +115,7 @@ function LocalizedAccessPreview({ locale }: { locale: LocaleCode }) {
         className="map"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps?q=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F&output=embed"
+        src={mapSrc}
       />
     </section>
   );
