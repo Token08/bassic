@@ -7,7 +7,7 @@
 | API ID | 形式 | 用途 |
 | --- | --- | --- |
 | `site-settings` | オブジェクト | 住所、電話、営業時間、喫煙、チャージ、SNS URL、Google Map URL |
-| `home` | オブジェクト | TOPページの主要文言、初回来店文言、InstagramウィジェットURL |
+| `home` | オブジェクト | TOPページの主要文言、初回来店文言、Instagram表示URL |
 | `hero-slides` | リスト | 各ページのメイン背景画像 |
 | `events` | リスト | イベント情報 |
 | `menu` | リスト | フードメニュー |
@@ -44,7 +44,7 @@
 | TOP説明文 | `heroLead` | テキストエリア | yes |
 | 初回来店説明文 | `firstVisitLead` | テキストエリア | yes |
 | アクセス補足 | `accessNote` | テキストエリア | yes |
-| InstagramウィジェットURL | `instagramWidgetSrc` | テキスト | no |
+| Instagram表示URL | `instagramWidgetSrc` | テキスト | no |
 | TOP画像 | `heroImage` | 画像 | no |
 
 `instagramWidgetSrc` はLightWidgetなど外部サービスで発行したiframe URLだけを入力します。Instagram IDだけでは直近投稿一覧を安定表示できません。

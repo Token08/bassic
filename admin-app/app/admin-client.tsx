@@ -324,7 +324,7 @@ function SnsStatusCard() {
     { label: "Instagram URL", ok: status.instagramUrlSet },
     { label: "Facebook URL", ok: status.facebookUrlSet },
     { label: "X URL", ok: status.xUrlSet },
-    { label: "Instagram表示ウィジェット", ok: status.instagramWidgetSet },
+    { label: "Instagram一覧表示", ok: status.instagramWidgetSet },
     { label: "外部取得データ", ok: status.staticFeedAvailable }
   ];
 

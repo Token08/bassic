@@ -118,7 +118,7 @@ export const sections: SectionDefinition[] = [
       { key: "heroLead", label: "TOP説明文", type: "textarea", required: true, rows: 4, placeholder: "福岡は親不孝通りにあるミュージックバーです。" },
       { key: "firstVisitLead", label: "初回来店向け説明文", type: "textarea", rows: 4, placeholder: "初めての方でも入りやすい雰囲気を伝える文章" },
       { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "天神駅から徒歩約4分。" },
-      { key: "instagramWidgetSrc", label: "InstagramウィジェットURL", type: "url", placeholder: "https://cdn.lightwidget.com/widgets/..." },
+      { key: "instagramWidgetSrc", label: "Instagram表示URL", type: "url", placeholder: "https://cdn.lightwidget.com/widgets/...", hint: "保守担当者が用意した表示用URLを入れます。未入力でもサイトは崩れません。" },
       { key: "heroImage", label: "TOP画像", type: "image", hint: "未設定の場合は、サイト内の既存画像が表示されます。" }
     ],
     defaults: {}

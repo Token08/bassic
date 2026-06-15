@@ -10,7 +10,7 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 | API ID | 種類 | 用途 |
 | --- | --- | --- |
-| `home` | オブジェクト形式 | TOP文言、First Visit文言、InstagramウィジェットURL |
+| `home` | オブジェクト形式 | TOP文言、First Visit文言、Instagram表示URL |
 | `events` | リスト形式 | イベントスケジュール |
 | `menu` | リスト形式 | フード/ドリンク名、料金、画像 |
 | `party-plans` | リスト形式 | 貸切、二次会、レンタルの案内 |
@@ -25,7 +25,7 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `firstVisitLead` | 初めての方向け説明 | テキストエリア | 必須 |
 | `accessNote` | アクセス補足 | テキストエリア | 必須 |
 | `heroImage` | TOP画像 | 画像 | 任意 |
-| `instagramWidgetSrc` | InstagramウィジェットURL | テキストフィールド | 任意 |
+| `instagramWidgetSrc` | Instagram表示URL | テキストフィールド | 任意 |
 
 `instagramWidgetSrc` は LightWidget などで発行された iframe の `src` URLだけを貼ります。未入力でもサイトは崩れません。
 

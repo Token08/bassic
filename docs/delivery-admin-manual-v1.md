@@ -87,7 +87,7 @@ Events、Menu、Party、Accessも同じ操作で変更できます。
 6. 「公開する」をONにする
 7. 保存する
 
-Instagramの一覧表示をしたい場合は、LightWidgetなど外部サービスで発行したiframe URLを「TOPページ」のInstagramウィジェットURLへ入力します。
+Instagramの一覧表示をしたい場合は、外部サービスで発行した表示用URLを「TOPページ」のInstagram表示URLへ入力します。
 
 ## 店舗基本情報を変更する
 

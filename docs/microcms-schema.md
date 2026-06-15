@@ -13,7 +13,7 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | firstVisitLead | 初めての方向け説明 | テキストエリア | true |
 | accessNote | アクセス補足 | テキストエリア | true |
 | heroImage | トップ画像 | 画像 | false |
-| instagramWidgetSrc | InstagramウィジェットURL | テキストフィールド | false |
+| instagramWidgetSrc | Instagram表示URL | テキストフィールド | false |
 
 ## events
 
