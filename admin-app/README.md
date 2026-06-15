@@ -8,6 +8,14 @@
 npm run dev:admin-app
 ```
 
+管理画面だけを直接起動する場合:
+
+```bash
+cd admin-app
+npm install
+npm run dev
+```
+
 ## Vercel環境変数
 
 ```text
@@ -33,3 +41,5 @@ GITHUB_DISPATCH_EVENT_TYPE=microcms_publish
 ## Vercel設定
 
 VercelのRoot Directoryを `admin-app` に設定してデプロイします。公開サイト側の `next.config.ts` は `output: "export"` のままなので、GitHub Pages運用には影響しません。
+
+`admin-app/vercel.json` にNext.js用の基本設定を入れています。

@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "dev:admin-app": "npm --prefix admin-app run dev",
+    "dev:admin-app": "cd admin-app && npm run dev",
     "fetch:social": "node scripts/fetch-social-feeds.mjs",
     "fetch:events": "node scripts/fetch-facebook-events.mjs",
     "sync:calendar": "node scripts/sync-google-calendar.mjs",
     "build": "next build",
-    "build:admin-app": "npm --prefix admin-app run build",
+    "build:admin-app": "cd admin-app && npm run build",
     "start": "next start",
     "setup:admin": "node scripts/setup-microcms-admin.mjs",
     "deploy:cms": "node scripts/trigger-cms-rebuild.mjs",
@@ -21,7 +21,7 @@
     "smoke:links": "node scripts/smoke-links.mjs",
     "smoke:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit",
-    "typecheck:admin-app": "npm --prefix admin-app run typecheck"
+    "typecheck:admin-app": "cd admin-app && npm run typecheck"
   },
   "keywords": [
     "bassic",

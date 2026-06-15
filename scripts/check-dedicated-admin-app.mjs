@@ -6,6 +6,8 @@ loadLocalEnv("admin-app/.env.local");
 const checks = [];
 
 checkFile("dedicated admin app package", "admin-app/package.json");
+checkFile("dedicated admin app package lock", "admin-app/package-lock.json");
+checkFile("Vercel config", "admin-app/vercel.json");
 checkFile("dedicated admin README", "admin-app/README.md");
 checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");

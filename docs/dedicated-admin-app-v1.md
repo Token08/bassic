@@ -11,6 +11,7 @@
 ## Vercel設定
 
 VercelのProject SettingsでRoot Directoryを `admin-app` にします。
+`admin-app/vercel.json` と `admin-app/package-lock.json` を同梱しているため、Vercelは管理画面だけをNext.jsアプリとしてビルドします。
 
 Environment Variables:
 
