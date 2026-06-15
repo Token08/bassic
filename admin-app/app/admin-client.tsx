@@ -566,8 +566,24 @@ function SectionEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState("");
+  const [itemSearch, setItemSearch] = useState("");
+  const [itemStatusFilter, setItemStatusFilter] = useState<"all" | "public" | "draft">("all");
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
+
+  const publishedCount = useMemo(() => items.filter((item) => isPublished(item)).length, [items]);
+  const draftCount = items.length - publishedCount;
+  const filteredItems = useMemo(() => {
+    const query = itemSearch.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const statusMatches =
+        itemStatusFilter === "all" || (itemStatusFilter === "public" ? isPublished(item) : !isPublished(item));
+      const textMatches = !query || getItemTitle(section, item).toLowerCase().includes(query);
+
+      return statusMatches && textMatches;
+    });
+  }, [itemSearch, itemStatusFilter, items, section]);
 
   function confirmDiscardChanges() {
     if (!dirty) {
@@ -583,6 +599,10 @@ function SectionEditor({
     userInteractedRef.current = false;
     setLoading(true);
     setNotice(null);
+    if (section.kind === "list") {
+      setSelectedId("new");
+      setDraft(mergeDefaults(section));
+    }
 
     try {
       const result = await requestJson<ListResponse | Draft>(`/api/content/${section.id}`);
@@ -595,6 +615,8 @@ function SectionEditor({
       if (section.kind === "list") {
         const contents = Array.isArray((data as ListResponse)?.contents) ? ((data as ListResponse).contents as Array<Draft & { id?: string }>) : [];
         setItems(contents);
+        setItemSearch("");
+        setItemStatusFilter("all");
         if (contents.length) {
           setSelectedId(contents[0].id || "");
           setDraft(mergeDefaults(section, contents[0]));
@@ -848,32 +870,63 @@ function SectionEditor({
                 <Plus size={18} />
                 新しく追加
               </button>
-              {items.length ? (
-                items.map((item) => (
-                  <button
-                    className={selectedId === item.id ? "selected" : ""}
-                    key={item.id || JSON.stringify(item)}
-                    type="button"
-                    onClick={() => {
-                      if (!confirmDiscardChanges()) {
-                        return;
-                      }
-
-                      userInteractedRef.current = true;
-                      setSelectedId(item.id || "");
-                      setDraft(mergeDefaults(section, item));
-                      setErrors({});
-                      setNotice(null);
-                      setDirty(false);
-                      setLastSavedAt("");
-                    }}
-                  >
-                    <span>{getItemTitle(section, item)}</span>
-                    <small className={isPublished(item) ? "status-public" : "status-draft"}>
-                      {isPublished(item) ? "公開" : "下書き"}
-                    </small>
+              <div className="item-list-tools" aria-label="一覧の絞り込み">
+                <div className="item-counts">
+                  <span>全部 {items.length}</span>
+                  <span>公開 {publishedCount}</span>
+                  <span>下書き {draftCount}</span>
+                </div>
+                <label>
+                  探す
+                  <input
+                    type="search"
+                    value={itemSearch}
+                    onChange={(event) => setItemSearch(event.target.value)}
+                    placeholder={`${section.shortTitle}を検索`}
+                  />
+                </label>
+                <div className="status-filter" role="group" aria-label="公開状態で絞り込み">
+                  <button className={itemStatusFilter === "all" ? "selected" : ""} type="button" onClick={() => setItemStatusFilter("all")}>
+                    全部
                   </button>
-                ))
+                  <button className={itemStatusFilter === "public" ? "selected" : ""} type="button" onClick={() => setItemStatusFilter("public")}>
+                    公開
+                  </button>
+                  <button className={itemStatusFilter === "draft" ? "selected" : ""} type="button" onClick={() => setItemStatusFilter("draft")}>
+                    下書き
+                  </button>
+                </div>
+              </div>
+              {items.length ? (
+                filteredItems.length ? (
+                  filteredItems.map((item) => (
+                    <button
+                      className={selectedId === item.id ? "selected" : ""}
+                      key={item.id || JSON.stringify(item)}
+                      type="button"
+                      onClick={() => {
+                        if (!confirmDiscardChanges()) {
+                          return;
+                        }
+
+                        userInteractedRef.current = true;
+                        setSelectedId(item.id || "");
+                        setDraft(mergeDefaults(section, item));
+                        setErrors({});
+                        setNotice(null);
+                        setDirty(false);
+                        setLastSavedAt("");
+                      }}
+                    >
+                      <span>{getItemTitle(section, item)}</span>
+                      <small className={isPublished(item) ? "status-public" : "status-draft"}>
+                        {isPublished(item) ? "公開" : "下書き"}
+                      </small>
+                    </button>
+                  ))
+                ) : (
+                  <div className="empty-list">条件に合う項目がありません。検索文字か公開状態を変えてください。</div>
+                )
               ) : (
                 <div className="empty-list">まだ登録がありません。上の「新しく追加」から作れます。</div>
               )}

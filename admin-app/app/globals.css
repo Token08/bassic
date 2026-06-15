@@ -404,6 +404,68 @@ a {
   box-shadow: inset 4px 0 0 var(--accent);
 }
 
+.item-list-tools {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(255, 253, 248, 0.72);
+}
+
+.item-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.item-counts span {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(36, 93, 131, 0.1);
+  color: var(--blue);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.item-list-tools label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.item-list-tools input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.status-filter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.status-filter button {
+  display: inline-flex;
+  min-height: 36px;
+  justify-content: center;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.status-filter button.selected {
+  border-color: var(--accent);
+  background: rgba(159, 23, 32, 0.08);
+  box-shadow: none;
+  color: var(--accent);
+}
+
 .item-list small {
   grid-column: 2;
 }
