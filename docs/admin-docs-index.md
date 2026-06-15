@@ -25,8 +25,10 @@
 
 ## 納品先へ渡す操作資料
 
+- `docs/delivery-admin-manual.md`
+  - 納品先へ渡す最新版の簡易操作マニュアルです。
 - `docs/delivery-admin-manual-v1.md`
-  - 店舗側が管理画面で更新するための簡易マニュアルです。
+  - 旧版の控えです。通常は `docs/delivery-admin-manual.md` を渡します。
 
 ## 確認コマンド
 
