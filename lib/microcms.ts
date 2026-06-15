@@ -94,7 +94,23 @@ function withFallbackList<T>(items: T[] | undefined, fallback: T[]) {
 }
 
 function visibleMenu(menu?: MenuItem[]) {
-  return sortByDisplayOrder(withFallbackList(menu, defaultMenuItems)).filter((item) => item.isPublished !== false);
+  const visibleItems = (menu || []).filter((item) => item.isPublished !== false);
+  const fallbackItems = defaultMenuItems.filter((item) => item.isPublished !== false);
+
+  if (!visibleItems.length) {
+    return sortByDisplayOrder(fallbackItems);
+  }
+
+  const visibleFoods = visibleItems.filter((item) => item.category === "food");
+  const fallbackFoods = fallbackItems.filter((item) => item.category === "food");
+
+  if (visibleFoods.length >= fallbackFoods.length) {
+    return sortByDisplayOrder(visibleItems);
+  }
+
+  // Keep the full food menu visible while CMS menu data is still being filled in.
+  const visibleNonFoods = visibleItems.filter((item) => item.category !== "food");
+  return sortByDisplayOrder([...visibleNonFoods, ...fallbackFoods]);
 }
 
 function visiblePartyPlans(plans?: PartyPlan[]) {
