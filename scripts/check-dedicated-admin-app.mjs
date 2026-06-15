@@ -16,6 +16,7 @@ checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
 checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
 checkFile("health API route", "admin-app/app/api/health/route.ts");
+checkNoMojibake();
 checkClientFacingText();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
@@ -64,6 +65,53 @@ function checkPackageScript(scriptName) {
 
 function checkLocalEnv(name, detail) {
   add(`env ${name}`, true, process.env[name] ? "set locally" : detail);
+}
+
+function checkNoMojibake() {
+  const patterns = [
+    "繝ｭ",
+    "繧ｰ",
+    "縺ｧ",
+    "縺励",
+    "譁ｰ",
+    "蜈ｬ",
+    "邂｡",
+    "髱｢",
+    "逕ｻ",
+    "菫晏",
+    "蜿肴",
+    "螟画"
+  ];
+  const files = [
+    "admin-app/app/admin-client.tsx",
+    "admin-app/app/layout.tsx",
+    "admin-app/lib/admin-schema.ts",
+    "admin-app/lib/env.ts",
+    "admin-app/README.md",
+    "docs/admin-docs-index.md",
+    "docs/client-handoff-checklist.md",
+    "docs/delivery-admin-manual.md",
+    "docs/delivery-admin-manual-v1.md",
+    "docs/dedicated-admin-app-v1.md",
+    "docs/microcms-admin-v1.md",
+    "docs/microcms-field-definitions-v1.md"
+  ];
+  const hits = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const pattern of patterns) {
+      if (text.includes(pattern)) {
+        hits.push(`${file}: ${pattern}`);
+      }
+    }
+  }
+
+  add("admin and handoff docs have no mojibake markers", hits.length === 0, hits.join(", "));
 }
 
 function checkClientFacingText() {
