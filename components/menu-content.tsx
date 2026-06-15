@@ -50,14 +50,30 @@ function DrinkMenuSheets({ sheets }: { sheets: DrinkMenuSheet[] }) {
   );
 }
 
-export function MenuContent({ menu, drinkSheets }: { menu: MenuItem[]; drinkSheets?: DrinkMenuSheet[] }) {
+export function MenuContent({
+  menu,
+  drinkSheets,
+  showDrinkSheets = true,
+  showFoodMenu = true,
+  drinkLead,
+  foodLead
+}: {
+  menu: MenuItem[];
+  drinkSheets?: DrinkMenuSheet[];
+  showDrinkSheets?: boolean;
+  showFoodMenu?: boolean;
+  drinkLead?: string;
+  foodLead?: string;
+}) {
   const foods = menu.filter((item) => item.category === "food").map(resolveMenuItem);
   const sheets = drinkSheets?.length ? drinkSheets : drinkMenuSheets.map((sheet) => ({ ...sheet, isPublished: true }));
 
   return (
     <section className="section menu-section">
-      <DrinkMenuSheets sheets={sheets} />
-      <MenuBlock title="FOOD MENU" items={foods} />
+      {drinkLead ? <p className="section-lead narrow-copy">{drinkLead}</p> : null}
+      {showDrinkSheets ? <DrinkMenuSheets sheets={sheets} /> : null}
+      {foodLead ? <p className="section-lead narrow-copy">{foodLead}</p> : null}
+      {showFoodMenu ? <MenuBlock title="FOOD MENU" items={foods} /> : null}
     </section>
   );
 }

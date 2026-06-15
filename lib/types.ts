@@ -71,6 +71,50 @@ export type HeroSlide = {
   isPublished?: boolean;
 };
 
+export type ManagedPage = "home" | "events" | "menu" | "party" | "access";
+
+export type PageCopy = {
+  id?: string;
+  page: ManagedPage;
+  heroEyebrow?: string;
+  heroTitle?: string;
+  heroLead?: string;
+  introLead?: string;
+  accessNote?: string;
+  socialTitleLine1?: string;
+  socialTitleLine2?: string;
+  socialLead?: string;
+  listEyebrow?: string;
+  listTitle?: string;
+  calendarNote?: string;
+  drinkLead?: string;
+  foodLead?: string;
+  partyLead?: string;
+  rentalLead?: string;
+  displayOrder?: number;
+  isPublished?: boolean;
+};
+
+export type PageSection = {
+  id?: string;
+  page: ManagedPage;
+  sectionKey: string;
+  displayOrder?: number;
+  isPublished?: boolean;
+};
+
+export type CustomSection = {
+  id?: string;
+  page: ManagedPage;
+  title: string;
+  body: string;
+  image?: CmsImage;
+  linkLabel?: string;
+  linkUrl?: string;
+  displayOrder?: number;
+  isPublished?: boolean;
+};
+
 export type EquipmentRental = {
   title: string;
   price?: string;
@@ -109,4 +153,7 @@ export type CmsContents = {
   partyPlans: PartyPlan[];
   equipmentRental: EquipmentRental;
   socialNotices: SocialNotice[];
+  pageCopy: Record<ManagedPage, PageCopy>;
+  pageSections: Record<ManagedPage, PageSection[]>;
+  customSections: Record<ManagedPage, CustomSection[]>;
 };

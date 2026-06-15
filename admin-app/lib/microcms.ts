@@ -58,6 +58,24 @@ export const endpointMap = {
     label: "SNS告知",
     type: "list",
     defaultOrders: "-date"
+  },
+  "page-copy": {
+    id: "page-copy",
+    label: "ページ文言",
+    type: "list",
+    defaultOrders: "page,displayOrder"
+  },
+  "page-sections": {
+    id: "page-sections",
+    label: "セクション表示",
+    type: "list",
+    defaultOrders: "page,displayOrder"
+  },
+  "custom-sections": {
+    id: "custom-sections",
+    label: "お知らせ追加",
+    type: "list",
+    defaultOrders: "page,displayOrder"
   }
 } satisfies Record<string, AdminEndpoint>;
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import {
   AccessContent,
+  CustomSectionBlock,
   FirstVisitBlock,
   LocalSearchSection,
   PageHero,
@@ -89,33 +91,79 @@ function JsonLd({ settings }: { settings: SiteSettings }) {
 
 export default async function Home() {
   const contents = await getCmsContents();
+  const copy = contents.pageCopy.home;
+  const pageSections = contents.pageSections.home;
+  const sectionOrder = (key: string, fallback: number) => pageSections.find((section) => section.sectionKey === key)?.displayOrder ?? fallback;
+  const visibleSections = new Set(pageSections.map((section) => section.sectionKey));
   const homeHeroImage = resolveEditableImage(contents.home.heroImage, editableMedia.homeHeroImage);
   const homeHeroSlides = resolveHeroSlides(contents.heroSlides.home, editableMedia.homeHeroSlides);
+  const managedSectionItems: Array<{ key: string; order: number; node: ReactNode } | null> = [
+    visibleSections.has("hero")
+      ? {
+          key: "hero",
+          order: sectionOrder("hero", 1),
+          node: (
+            <PageHero
+              eyebrow={site.tagline}
+              title={copy.heroTitle || contents.home.heroTitle}
+              lead={copy.heroLead || contents.home.heroLead}
+              image={homeHeroImage.src}
+              imageAlt={homeHeroImage.alt}
+              slides={homeHeroSlides}
+              className="home-hero"
+            />
+          )
+        }
+      : null,
+    visibleSections.has("firstVisit")
+      ? { key: "firstVisit", order: sectionOrder("firstVisit", 2), node: <FirstVisitBlock lead={copy.introLead || contents.home.firstVisitLead} tone="light" /> }
+      : null,
+    visibleSections.has("visitInfo")
+      ? { key: "visitInfo", order: sectionOrder("visitInfo", 3), node: <VisitInfoCards settings={contents.siteSettings} /> }
+      : null,
+    visibleSections.has("localSearch")
+      ? { key: "localSearch", order: sectionOrder("localSearch", 4), node: <LocalSearchSection /> }
+      : null,
+    visibleSections.has("social")
+      ? {
+          key: "social",
+          order: sectionOrder("social", 5),
+          node: (
+            <SocialUpdatesSection
+              notices={contents.socialNotices}
+              instagramWidgetSrc={contents.home.instagramWidgetSrc}
+              settings={contents.siteSettings}
+              titleLine1={copy.socialTitleLine1}
+              titleLine2={copy.socialTitleLine2}
+              lead={copy.socialLead}
+            />
+          )
+        }
+      : null,
+    visibleSections.has("access")
+      ? {
+          key: "access",
+          order: sectionOrder("access", 6),
+          node: <AccessContent note={copy.accessNote || contents.home.accessNote} settings={contents.siteSettings} />
+        }
+      : null,
+    ...contents.customSections.home.map((section) => ({
+      key: `custom-${section.id || section.title}`,
+      order: section.displayOrder ?? 9000,
+      node: <CustomSectionBlock section={section} />
+    }))
+  ];
+  const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
   return (
     <PageShell settings={contents.siteSettings}>
       <JsonLd settings={contents.siteSettings} />
       <main id="top">
-        <PageHero
-          eyebrow={site.tagline}
-          title={contents.home.heroTitle}
-          lead={contents.home.heroLead}
-          image={homeHeroImage.src}
-          imageAlt={homeHeroImage.alt}
-          slides={homeHeroSlides}
-          className="home-hero"
-        />
-
-        <FirstVisitBlock lead={contents.home.firstVisitLead} tone="light" />
-        <VisitInfoCards settings={contents.siteSettings} />
-        <LocalSearchSection />
-        <SocialUpdatesSection
-          notices={contents.socialNotices}
-          instagramWidgetSrc={contents.home.instagramWidgetSrc}
-          settings={contents.siteSettings}
-        />
-
-        <AccessContent note={contents.home.accessNote} settings={contents.siteSettings} />
+        {managedSections.sort((a, b) => a.order - b.order).map((section) => (
+          <div className="managed-section" key={section.key}>
+            {section.node}
+          </div>
+        ))}
       </main>
     </PageShell>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EventList, PageHero } from "@/components/content";
+import type { ReactNode } from "react";
+import { CustomSectionBlock, EventList, PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
@@ -41,27 +42,60 @@ function EventsJsonLd({ events, settings }: { events: Awaited<ReturnType<typeof 
 
 export default async function EventsPage() {
   const contents = await getCmsContents();
+  const copy = contents.pageCopy.events;
+  const pageSections = contents.pageSections.events;
+  const sectionOrder = (key: string, fallback: number) => pageSections.find((section) => section.sectionKey === key)?.displayOrder ?? fallback;
+  const visibleSections = new Set(pageSections.map((section) => section.sectionKey));
   const eventSlides = resolveHeroSlides(contents.heroSlides.events, editableMedia.eventHeroSlides);
+  const managedSectionItems: Array<{ key: string; order: number; node: ReactNode } | null> = [
+    visibleSections.has("hero")
+      ? {
+          key: "hero",
+          order: sectionOrder("hero", 1),
+          node: (
+            <PageHero
+              eyebrow={copy.heroEyebrow || pageHeroes.events.eyebrow}
+              title={copy.heroTitle || pageHeroes.events.title}
+              lead={copy.heroLead || pageHeroes.events.lead}
+              slides={eventSlides}
+              className={pageHeroes.events.className}
+            />
+          )
+        }
+      : null,
+    visibleSections.has("eventList")
+      ? {
+          key: "eventList",
+          order: sectionOrder("eventList", 2),
+          node: (
+            <section className="section">
+              <div className="section-heading narrow-copy">
+                <p className="eyebrow">{copy.listEyebrow || "Event List"}</p>
+                <h2>{copy.listTitle || "Event Schedule"}</h2>
+              </div>
+              <EventList events={contents.events} />
+            </section>
+          )
+        }
+      : null,
+    visibleSections.has("calendar") ? { key: "calendar", order: sectionOrder("calendar", 3), node: <EventCalendarSection note={copy.calendarNote} /> } : null,
+    ...contents.customSections.events.map((section) => ({
+      key: `custom-${section.id || section.title}`,
+      order: section.displayOrder ?? 9000,
+      node: <CustomSectionBlock section={section} />
+    }))
+  ];
+  const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
   return (
     <PageShell settings={contents.siteSettings}>
       <EventsJsonLd events={contents.events} settings={contents.siteSettings} />
       <main>
-        <PageHero
-          eyebrow={pageHeroes.events.eyebrow}
-          title={pageHeroes.events.title}
-          lead={pageHeroes.events.lead}
-          slides={eventSlides}
-          className={pageHeroes.events.className}
-        />
-        <section className="section">
-          <div className="section-heading narrow-copy">
-            <p className="eyebrow">Event List</p>
-            <h2>Event Schedule</h2>
+        {managedSections.sort((a, b) => a.order - b.order).map((section) => (
+          <div className="managed-section" key={section.key}>
+            {section.node}
           </div>
-          <EventList events={contents.events} />
-        </section>
-        <EventCalendarSection />
+        ))}
       </main>
     </PageShell>
   );

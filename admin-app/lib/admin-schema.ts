@@ -38,7 +38,10 @@ export type SectionDefinition = {
     | "drink-menu-sheets"
     | "party-plans"
     | "equipment-rental"
-    | "social-notices";
+    | "social-notices"
+    | "page-copy"
+    | "page-sections"
+    | "custom-sections";
   title: string;
   shortTitle: string;
   description: string;
@@ -50,6 +53,32 @@ export type SectionDefinition = {
   fields: FieldDefinition[];
   defaults: Record<string, unknown>;
 };
+
+const pageOptions: FieldOption[] = [
+  { value: "home", label: "TOP" },
+  { value: "events", label: "イベント" },
+  { value: "menu", label: "メニュー" },
+  { value: "party", label: "貸切" },
+  { value: "access", label: "アクセス" }
+];
+
+const sectionOptions: FieldOption[] = [
+  { value: "hero", label: "メイン画像・見出し" },
+  { value: "firstVisit", label: "初めての方向け" },
+  { value: "visitInfo", label: "基本情報" },
+  { value: "localSearch", label: "ローカル検索向け説明" },
+  { value: "social", label: "SNS表示" },
+  { value: "access", label: "TOP内アクセス" },
+  { value: "eventList", label: "イベント一覧" },
+  { value: "calendar", label: "Googleカレンダー" },
+  { value: "drinkSheets", label: "ドリンク表" },
+  { value: "foodMenu", label: "フードメニュー" },
+  { value: "plans", label: "貸切プラン" },
+  { value: "equipmentRental", label: "機材レンタル" },
+  { value: "useCases", label: "利用シーン" },
+  { value: "accessInfo", label: "アクセス情報" },
+  { value: "googleMap", label: "Google Map" }
+];
 
 export const sections: SectionDefinition[] = [
   {
@@ -252,6 +281,78 @@ export const sections: SectionDefinition[] = [
       { key: "isPublished", label: "公開する", type: "checkbox" }
     ],
     defaults: { platform: "instagram", isPublished: false }
+  },
+  {
+    id: "page-copy",
+    title: "ページ文言",
+    shortTitle: "文言",
+    description: "TOP、イベント、メニュー、貸切、アクセスの見出しや説明文をページ単位で編集します。",
+    helperText: "ページを選んで、そのページで使う文言だけ入力します。空欄の項目は今のサイト文言がそのまま使われます。",
+    kind: "list",
+    createLabel: "ページ文言を追加",
+    icon: FileText,
+    titleKey: "page",
+    fields: [
+      { key: "page", label: "ページ", type: "select", required: true, options: pageOptions },
+      { key: "heroEyebrow", label: "メイン上の小見出し", type: "text", placeholder: "Food & Drink" },
+      { key: "heroTitle", label: "メイン見出し", type: "textarea", rows: 2, placeholder: "ページの一番大きな見出し" },
+      { key: "heroLead", label: "メイン説明文", type: "textarea", rows: 4, placeholder: "初めて見る人に伝えたい説明文" },
+      { key: "introLead", label: "初めての方向け説明", type: "textarea", rows: 4, placeholder: "TOPの初回来店セクションで使います" },
+      { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "道案内や来店前の注意を短く" },
+      { key: "socialTitleLine1", label: "SNS見出し 1行目", type: "text", placeholder: "最新情報は" },
+      { key: "socialTitleLine2", label: "SNS見出し 2行目", type: "text", placeholder: "公式SNSから" },
+      { key: "socialLead", label: "SNS説明文", type: "textarea", rows: 3, placeholder: "SNS告知カードの上に出る説明文" },
+      { key: "listEyebrow", label: "一覧の小見出し", type: "text", placeholder: "Event List" },
+      { key: "listTitle", label: "一覧の見出し", type: "text", placeholder: "Event Schedule" },
+      { key: "calendarNote", label: "カレンダー補足", type: "textarea", rows: 2, placeholder: "イベント日程を見るときの注意" },
+      { key: "drinkLead", label: "ドリンク表説明", type: "textarea", rows: 2, placeholder: "ドリンク表の上に出す一言" },
+      { key: "foodLead", label: "フードメニュー説明", type: "textarea", rows: 2, placeholder: "フードメニューの上に出す一言" },
+      { key: "partyLead", label: "貸切説明", type: "textarea", rows: 3, placeholder: "貸切ページのプラン上に出す説明" },
+      { key: "rentalLead", label: "機材レンタル説明", type: "textarea", rows: 3, placeholder: "機材レンタルカードで使う説明" },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
+      { key: "isPublished", label: "使う", type: "checkbox" }
+    ],
+    defaults: { page: "home", displayOrder: 1, isPublished: true }
+  },
+  {
+    id: "page-sections",
+    title: "セクション表示",
+    shortTitle: "表示切替",
+    description: "既存セクションを表示するか、どの順番で出すかをページごとに管理します。",
+    helperText: "削除ではなく「公開しない」にするとサイトから隠れます。迷ったら公開するにしておけば今まで通り表示されます。",
+    kind: "list",
+    createLabel: "表示設定を追加",
+    icon: Settings,
+    titleKey: "sectionKey",
+    fields: [
+      { key: "page", label: "ページ", type: "select", required: true, options: pageOptions },
+      { key: "sectionKey", label: "セクション", type: "select", required: true, options: sectionOptions },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: "小さい数字ほど上に表示されます。" },
+      { key: "isPublished", label: "表示する", type: "checkbox" }
+    ],
+    defaults: { page: "home", sectionKey: "hero", displayOrder: 1, isPublished: true }
+  },
+  {
+    id: "custom-sections",
+    title: "お知らせ追加",
+    shortTitle: "追加枠",
+    description: "既存ページに、1種類だけ使える任意のお知らせセクションを追加します。",
+    helperText: "自由なページ作成ではなく、タイトル・本文・画像・リンクだけの安全な追加枠です。キャンペーンや臨時案内に使います。",
+    kind: "list",
+    createLabel: "お知らせ枠を追加",
+    icon: Megaphone,
+    titleKey: "title",
+    fields: [
+      { key: "page", label: "表示ページ", type: "select", required: true, options: pageOptions },
+      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "臨時休業のお知らせ" },
+      { key: "body", label: "本文", type: "textarea", required: true, rows: 5, placeholder: "お客様に伝えたい内容を短く入力します。" },
+      { key: "image", label: "画像", type: "image", hint: "必要なときだけ追加します。横長の写真がおすすめです。" },
+      { key: "linkLabel", label: "リンクボタン名", type: "text", placeholder: "詳しく見る" },
+      { key: "linkUrl", label: "リンクURL", type: "url", placeholder: "https://..." },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "10" },
+      { key: "isPublished", label: "公開する", type: "checkbox" }
+    ],
+    defaults: { page: "home", displayOrder: 10, isPublished: false }
   }
 ];
 

@@ -1045,6 +1045,40 @@ h3 {
   font-weight: 900;
 }
 
+.managed-section {
+  display: contents;
+}
+
+.custom-section {
+  background: var(--section-light-bg);
+  color: var(--ink);
+}
+
+.custom-section-inner {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(280px, 1.08fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: center;
+}
+
+.custom-section:not(.has-image) .custom-section-inner {
+  grid-template-columns: minmax(0, 760px);
+}
+
+.custom-section-image {
+  position: relative;
+  min-height: clamp(240px, 36vw, 440px);
+  margin: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #d8d1c5;
+  box-shadow: var(--shadow);
+}
+
+.custom-section-image img {
+  object-fit: cover;
+}
+
 .social-section {
   background: var(--section-dark-bg);
   color: var(--ivory);
@@ -2719,6 +2753,14 @@ main > section.visit-info-strip .visit-info-grid article p {
 
   .page-hero:not(.home-hero) h1 {
     font-size: clamp(1.5rem, 5vw, 3.2rem);
+  }
+
+  .custom-section-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-section-image {
+    min-height: 240px;
   }
 
   .home-hero .hero-slide-1 {

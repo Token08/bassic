@@ -2,7 +2,7 @@ import { CalendarDays, Clock, Mail, Sparkles } from "lucide-react";
 import { externalEmbeds } from "@/lib/editable-content";
 import { mailHref, site } from "@/lib/site";
 
-export function EventCalendarSection() {
+export function EventCalendarSection({ note }: { note?: string }) {
   return (
     <section className="section event-calendar-section">
       <div className="event-calendar-copy">
@@ -24,6 +24,7 @@ export function EventCalendarSection() {
             <span>予約や出演相談はメールで受付中</span>
           </div>
         </div>
+        {note ? <p className="section-lead">{note}</p> : null}
         <div className="hero-actions event-calendar-actions">
           <a className="button primary" href={externalEmbeds.googleCalendarPublicUrl} target="_blank" rel="noreferrer">
             <CalendarDays size={18} />

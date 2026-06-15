@@ -50,6 +50,17 @@ type HealthState = {
   missing: HealthCheck[];
 };
 
+type SnsStatus = {
+  instagramUrlSet: boolean;
+  facebookUrlSet: boolean;
+  xUrlSet: boolean;
+  instagramWidgetSet: boolean;
+  publishedCount: number;
+  draftCount: number;
+  latestUpdatedAt?: string;
+  staticFeedAvailable: boolean;
+};
+
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
 
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
@@ -264,6 +275,77 @@ function SetupStatus({ health }: { health?: HealthState }) {
   );
 }
 
+function SnsStatusCard() {
+  const [status, setStatus] = useState<SnsStatus | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    requestJson<SnsStatus>("/api/social-status")
+      .then((response) => {
+        if (mounted) {
+          setStatus(response.data || null);
+        }
+      })
+      .catch((statusError) => {
+        if (mounted) {
+          setError(statusError instanceof Error ? statusError.message : "SNS状況を確認できませんでした。");
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <section className="sns-status-card warning">
+        <div>
+          <strong>SNS状況</strong>
+          <span>{error}</span>
+        </div>
+      </section>
+    );
+  }
+
+  if (!status) {
+    return (
+      <section className="sns-status-card">
+        <Loader2 className="spin" size={18} />
+        <span>SNS状況を確認しています</span>
+      </section>
+    );
+  }
+
+  const latest = status.latestUpdatedAt ? formatDeployTime(status.latestUpdatedAt) : "未取得";
+  const checks = [
+    { label: "Instagram URL", ok: status.instagramUrlSet },
+    { label: "Facebook URL", ok: status.facebookUrlSet },
+    { label: "X URL", ok: status.xUrlSet },
+    { label: "Instagram表示ウィジェット", ok: status.instagramWidgetSet },
+    { label: "外部取得データ", ok: status.staticFeedAvailable }
+  ];
+
+  return (
+    <section className="sns-status-card">
+      <div className="sns-status-heading">
+        <strong>SNS状況</strong>
+        <span>公開 {status.publishedCount}件 / 下書き {status.draftCount}件 / 最終更新 {latest}</span>
+      </div>
+      <div className="sns-status-grid">
+        {checks.map((item) => (
+          <span className={item.ok ? "is-ready" : "needs-work"} key={item.label}>
+            {item.ok ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
+            {item.label}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: HealthState }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -352,6 +434,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       <SetupStatus health={health} />
       <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
+      <SnsStatusCard />
 
       <div className="dashboard-grid">
         {sections.map((section) => {

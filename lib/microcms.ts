@@ -2,16 +2,20 @@ import { createClient } from "microcms-js-sdk";
 import { editableMedia } from "./editable-content";
 import { fallbackContents } from "./fallback-data";
 import { drinkMenuSheets, defaultMenuItems } from "./menu-data";
-import { equipmentRentalInfo } from "./page-content";
+import { equipmentRentalInfo, pageHeroes, socialUpdatesCopy } from "./page-content";
 import { site } from "./site";
 import type {
   CmsContents,
+  CustomSection,
   DrinkMenuSheet,
   EquipmentRental,
   EventItem,
   HeroSlide,
   HomeContent,
+  ManagedPage,
   MenuItem,
+  PageCopy,
+  PageSection,
   PartyPlan,
   SiteSettings,
   SocialNotice
@@ -33,6 +37,7 @@ type MicroCmsList<T> = {
 };
 
 const heroPages: HeroSlide["page"][] = ["home", "events", "party", "menu", "access"];
+const managedPages: ManagedPage[] = ["home", "events", "menu", "party", "access"];
 
 const fallbackSiteSettings: SiteSettings = {
   address: site.address,
@@ -62,6 +67,87 @@ const fallbackHeroSlides: CmsContents["heroSlides"] = {
   party: editableMedia.partyHeroSlides.map((slide) => ({ page: "party", image: { url: slide.src, alt: slide.alt }, isPublished: true })),
   menu: [{ page: "menu", image: { url: editableMedia.pageHeroImages.menu.src, alt: editableMedia.pageHeroImages.menu.alt }, isPublished: true }],
   access: [{ page: "access", image: { url: editableMedia.pageHeroImages.access.src, alt: editableMedia.pageHeroImages.access.alt }, isPublished: true }]
+};
+
+const fallbackPageCopy: CmsContents["pageCopy"] = {
+  home: {
+    page: "home",
+    heroTitle: fallbackContents.home!.heroTitle,
+    heroLead: fallbackContents.home!.heroLead,
+    introLead: fallbackContents.home!.firstVisitLead,
+    accessNote: fallbackContents.home!.accessNote,
+    socialTitleLine1: socialUpdatesCopy.titleLines[0],
+    socialTitleLine2: socialUpdatesCopy.titleLines[1],
+    socialLead: socialUpdatesCopy.lead,
+    isPublished: true
+  },
+  events: {
+    page: "events",
+    heroEyebrow: pageHeroes.events.eyebrow,
+    heroTitle: pageHeroes.events.title,
+    heroLead: pageHeroes.events.lead,
+    listEyebrow: "Event List",
+    listTitle: "Event Schedule",
+    isPublished: true
+  },
+  menu: {
+    page: "menu",
+    heroEyebrow: pageHeroes.menu.eyebrow,
+    heroTitle: pageHeroes.menu.title,
+    heroLead: pageHeroes.menu.lead,
+    drinkLead: "",
+    foodLead: "",
+    isPublished: true
+  },
+  party: {
+    page: "party",
+    heroEyebrow: pageHeroes.party.eyebrow,
+    heroTitle: pageHeroes.party.title,
+    heroLead: pageHeroes.party.lead,
+    partyLead: "",
+    rentalLead: equipmentRentalInfo.body,
+    isPublished: true
+  },
+  access: {
+    page: "access",
+    heroEyebrow: pageHeroes.access.eyebrow,
+    heroTitle: pageHeroes.access.title,
+    heroLead: pageHeroes.access.lead,
+    accessNote: fallbackContents.home!.accessNote,
+    isPublished: true
+  }
+};
+
+const fallbackPageSections: CmsContents["pageSections"] = {
+  home: [
+    { page: "home", sectionKey: "hero", displayOrder: 1, isPublished: true },
+    { page: "home", sectionKey: "firstVisit", displayOrder: 2, isPublished: true },
+    { page: "home", sectionKey: "visitInfo", displayOrder: 3, isPublished: true },
+    { page: "home", sectionKey: "localSearch", displayOrder: 4, isPublished: true },
+    { page: "home", sectionKey: "social", displayOrder: 5, isPublished: true },
+    { page: "home", sectionKey: "access", displayOrder: 6, isPublished: true }
+  ],
+  events: [
+    { page: "events", sectionKey: "hero", displayOrder: 1, isPublished: true },
+    { page: "events", sectionKey: "eventList", displayOrder: 2, isPublished: true },
+    { page: "events", sectionKey: "calendar", displayOrder: 3, isPublished: true }
+  ],
+  menu: [
+    { page: "menu", sectionKey: "hero", displayOrder: 1, isPublished: true },
+    { page: "menu", sectionKey: "drinkSheets", displayOrder: 2, isPublished: true },
+    { page: "menu", sectionKey: "foodMenu", displayOrder: 3, isPublished: true }
+  ],
+  party: [
+    { page: "party", sectionKey: "hero", displayOrder: 1, isPublished: true },
+    { page: "party", sectionKey: "plans", displayOrder: 2, isPublished: true },
+    { page: "party", sectionKey: "equipmentRental", displayOrder: 3, isPublished: true },
+    { page: "party", sectionKey: "useCases", displayOrder: 4, isPublished: true }
+  ],
+  access: [
+    { page: "access", sectionKey: "hero", displayOrder: 1, isPublished: true },
+    { page: "access", sectionKey: "accessInfo", displayOrder: 2, isPublished: true },
+    { page: "access", sectionKey: "googleMap", displayOrder: 3, isPublished: true }
+  ]
 };
 
 function sortByDisplayOrder<T extends { displayOrder?: number }>(items: T[]) {
@@ -130,6 +216,41 @@ function heroSlidesByPage(slides?: HeroSlide[]): CmsContents["heroSlides"] {
   }, {} as CmsContents["heroSlides"]);
 }
 
+function pageCopyByPage(copies?: PageCopy[]): CmsContents["pageCopy"] {
+  return managedPages.reduce((acc, page) => {
+    const pageCopies = sortByDisplayOrder((copies || []).filter((copy) => copy.page === page && copy.isPublished !== false));
+    acc[page] = {
+      ...fallbackPageCopy[page],
+      ...(pageCopies.at(-1) || {})
+    };
+    return acc;
+  }, {} as CmsContents["pageCopy"]);
+}
+
+function pageSectionsByPage(sections?: PageSection[]): CmsContents["pageSections"] {
+  return managedPages.reduce((acc, page) => {
+    const overrides = (sections || []).filter((section) => section.page === page);
+    const merged = fallbackPageSections[page].map((fallbackSection) => ({
+      ...fallbackSection,
+      ...(overrides.find((section) => section.sectionKey === fallbackSection.sectionKey) || {})
+    }));
+    const customKeys = new Set(fallbackPageSections[page].map((section) => section.sectionKey));
+    const additionalSections = overrides.filter((section) => !customKeys.has(section.sectionKey));
+
+    acc[page] = sortByDisplayOrder([...merged, ...additionalSections]).filter((section) => section.isPublished !== false);
+    return acc;
+  }, {} as CmsContents["pageSections"]);
+}
+
+function customSectionsByPage(sections?: CustomSection[]): CmsContents["customSections"] {
+  return managedPages.reduce((acc, page) => {
+    acc[page] = sortByDisplayOrder(
+      (sections || []).filter((section) => section.page === page && section.isPublished !== false && (section.title || section.body))
+    );
+    return acc;
+  }, {} as CmsContents["customSections"]);
+}
+
 function normalizeContents(contents: Partial<CmsContents>): CmsContents {
   return {
     siteSettings: mergeSiteSettings(contents.siteSettings),
@@ -143,7 +264,10 @@ function normalizeContents(contents: Partial<CmsContents>): CmsContents {
       ...fallbackEquipmentRental,
       ...contents.equipmentRental
     },
-    socialNotices: visibleSocialNotices(contents.socialNotices)
+    socialNotices: visibleSocialNotices(contents.socialNotices),
+    pageCopy: pageCopyByPage(contents.pageCopy ? (Object.values(contents.pageCopy) as PageCopy[]) : undefined),
+    pageSections: pageSectionsByPage(contents.pageSections ? (Object.values(contents.pageSections).flat() as PageSection[]) : undefined),
+    customSections: customSectionsByPage(contents.customSections ? (Object.values(contents.customSections).flat() as CustomSection[]) : undefined)
   };
 }
 
@@ -171,7 +295,7 @@ export async function getCmsContents(): Promise<CmsContents> {
     }
   };
 
-  const [siteSettings, home, heroSlides, events, menu, drinkSheets, partyPlans, equipmentRental, socialNotices] =
+  const [siteSettings, home, heroSlides, events, menu, drinkSheets, partyPlans, equipmentRental, socialNotices, pageCopy, pageSections, customSections] =
     await Promise.all([
       getObject<SiteSettings>("site-settings", fallbackSiteSettings),
       getObject<HomeContent>("home", fallbackContents.home!),
@@ -201,6 +325,19 @@ export async function getCmsContents(): Promise<CmsContents> {
         orders: "-date",
         filters: "isPublished[equals]true",
         limit: 12
+      }),
+      getList<PageCopy>("page-copy", Object.values(fallbackPageCopy), {
+        orders: "page,displayOrder",
+        limit: 100
+      }),
+      getList<PageSection>("page-sections", Object.values(fallbackPageSections).flat(), {
+        orders: "page,displayOrder",
+        limit: 100
+      }),
+      getList<CustomSection>("custom-sections", [], {
+        orders: "page,displayOrder",
+        filters: "isPublished[equals]true",
+        limit: 100
       })
     ]);
 
@@ -213,6 +350,9 @@ export async function getCmsContents(): Promise<CmsContents> {
     drinkMenuSheets: drinkSheets,
     partyPlans,
     equipmentRental,
-    socialNotices
+    socialNotices,
+    pageCopy: pageCopyByPage(pageCopy),
+    pageSections: pageSectionsByPage(pageSections),
+    customSections: customSectionsByPage(customSections)
   });
 }

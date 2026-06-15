@@ -26,7 +26,7 @@ import {
   type FeatureCardContent
 } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
-import type { EquipmentRental, EventItem, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
+import type { CustomSection, EquipmentRental, EventItem, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -203,26 +203,59 @@ export function FeatureCardGrid({ features }: { features: readonly FeatureCardCo
 export function SocialUpdatesSection({
   notices = [],
   instagramWidgetSrc,
-  settings
+  settings,
+  titleLine1 = socialUpdatesCopy.titleLines[0],
+  titleLine2 = socialUpdatesCopy.titleLines[1],
+  lead = socialUpdatesCopy.lead
 }: {
   notices?: SocialNotice[];
   instagramWidgetSrc?: string;
   settings?: SiteSettings;
+  titleLine1?: string;
+  titleLine2?: string;
+  lead?: string;
 }) {
   return (
     <SocialUpdates
       title={
         <>
-          {socialUpdatesCopy.titleLines[0]}
+          {titleLine1}
           <br />
-          {socialUpdatesCopy.titleLines[1]}
+          {titleLine2}
         </>
       }
-      lead={socialUpdatesCopy.lead}
+      lead={lead}
       notices={notices}
       instagramWidgetSrc={instagramWidgetSrc}
       settings={settings}
     />
+  );
+}
+
+export function CustomSectionBlock({ section }: { section: CustomSection }) {
+  const hasImage = Boolean(section.image?.url);
+  const hasLink = Boolean(section.linkLabel && section.linkUrl);
+
+  return (
+    <section className={`section custom-section${hasImage ? " has-image" : ""}`}>
+      <div className="custom-section-inner">
+        {hasImage ? (
+          <figure className="custom-section-image">
+            <Image src={assetPath(section.image!.url)} alt={section.image?.alt || section.title} fill sizes="(max-width: 900px) 100vw, 42vw" />
+          </figure>
+        ) : null}
+        <div className="section-heading narrow-copy">
+          <p className="eyebrow">Information</p>
+          <h2>{section.title}</h2>
+          <p className="section-lead">{section.body}</p>
+          {hasLink ? (
+            <a className="text-link" href={section.linkUrl} target={section.linkUrl?.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+              {section.linkLabel} <ExternalLink size={16} />
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -450,7 +483,23 @@ export function MenuContent({ menu }: { menu: MenuItem[] }) {
   );
 }
 
-export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; equipmentRental?: EquipmentRental }) {
+export function PartyContent({
+  plans,
+  equipmentRental,
+  showPlans = true,
+  showEquipmentRental = true,
+  showUseCases = true,
+  partyLead,
+  rentalLead
+}: {
+  plans: PartyPlan[];
+  equipmentRental?: EquipmentRental;
+  showPlans?: boolean;
+  showEquipmentRental?: boolean;
+  showUseCases?: boolean;
+  partyLead?: string;
+  rentalLead?: string;
+}) {
   const rental = equipmentRental || {
     title: equipmentRentalInfo.title,
     price: equipmentRentalInfo.price,
@@ -469,6 +518,8 @@ export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; e
           ライヴ後の打ち上げにも。
         </h2>
       </div>
+      {partyLead ? <p className="section-lead narrow-copy">{partyLead}</p> : null}
+      {showPlans ? (
       <div className="plan-grid">
         {visiblePlans.map((plan) => (
           <article key={plan.title}>
@@ -478,18 +529,22 @@ export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; e
           </article>
         ))}
       </div>
+      ) : null}
+      {showEquipmentRental ? (
       <article className="equipment-rental-card">
         <SlidersHorizontal />
         <div>
           <p className="eyebrow">{equipmentRentalInfo.eyebrow}</p>
           <h3>{rental.title}</h3>
           {rental.price ? <strong>{rental.price}</strong> : null}
-          <p>{rental.body}</p>
+          <p>{rentalLead || rental.body}</p>
           <a className="button equipment-rental-link" href={assetPath(rental.pdfUrl || "/assets/pdf/equipment-rental-list.pdf")} target="_blank" rel="noreferrer">
             詳細はコチラ
           </a>
         </div>
       </article>
+      ) : null}
+      {showUseCases ? (
       <div className="use-case-panel" aria-label="貸切やパーティーの利用シーン">
         <div>
           <p className="eyebrow">Use Case</p>
@@ -505,11 +560,22 @@ export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; e
           ))}
         </ul>
       </div>
+      ) : null}
     </section>
   );
 }
 
-export function AccessContent({ note, settings }: { note: string; settings?: SiteSettings }) {
+export function AccessContent({
+  note,
+  settings,
+  showInfo = true,
+  showMap = true
+}: {
+  note: string;
+  settings?: SiteSettings;
+  showInfo?: boolean;
+  showMap?: boolean;
+}) {
   const accessSettings = settings || site;
   const mapSrc = accessSettings.googleMapsUrl.includes("output=embed")
     ? accessSettings.googleMapsUrl
@@ -517,6 +583,7 @@ export function AccessContent({ note, settings }: { note: string; settings?: Sit
 
   return (
     <section className="section access-section">
+      {showInfo ? (
       <div className="access-copy narrow-copy">
         <p className="eyebrow">Access</p>
         <h2>
@@ -564,6 +631,8 @@ export function AccessContent({ note, settings }: { note: string; settings?: Sit
           </a>
         </div>
       </div>
+      ) : null}
+      {showMap ? (
       <iframe
         title="public bar Bassic. Google Map"
         className="map"
@@ -571,6 +640,7 @@ export function AccessContent({ note, settings }: { note: string; settings?: Sit
         referrerPolicy="no-referrer-when-downgrade"
         src={mapSrc}
       />
+      ) : null}
     </section>
   );
 }
