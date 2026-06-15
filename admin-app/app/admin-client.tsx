@@ -93,11 +93,20 @@ async function requestJson<T>(url: string, init?: RequestInit) {
 
 function NoticeBox({ notice }: { notice: Notice }) {
   const Icon = notice.tone === "error" ? AlertCircle : notice.tone === "info" ? Info : CheckCircle2;
+  const helper =
+    notice.tone === "error"
+      ? "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
+      : notice.tone === "info"
+        ? "このまま画面を閉じずに、少し待ってください。"
+        : "必要なら続けてほかの場所も更新できます。";
 
   return (
     <div className={`notice ${notice.tone}`}>
       <Icon size={20} />
-      <span>{notice.message}</span>
+      <div>
+        <span>{notice.message}</span>
+        <small>{helper}</small>
+      </div>
       {notice.actionsUrl ? (
         <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
           反映状況を見る
@@ -353,13 +362,19 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
         <div className="image-empty">画像はまだ選ばれていません。</div>
       )}
       <div className="image-controls">
-        <input type="url" value={url} onChange={(event) => onChange({ ...image, url: event.target.value })} placeholder="画像URL" />
-        <input
-          type="text"
-          value={image.alt || ""}
-          onChange={(event) => onChange({ ...image, alt: event.target.value })}
-          placeholder="画像の説明"
-        />
+        <label>
+          画像URL
+          <input type="url" value={url} onChange={(event) => onChange({ ...image, url: event.target.value })} placeholder="https://..." />
+        </label>
+        <label>
+          画像の説明
+          <input
+            type="text"
+            value={image.alt || ""}
+            onChange={(event) => onChange({ ...image, alt: event.target.value })}
+            placeholder="例: ライブ会場のステージ"
+          />
+        </label>
         <label className="upload-button">
           {uploading ? <Loader2 className="spin" size={17} /> : <Upload size={17} />}
           画像を選ぶ

@@ -542,6 +542,19 @@ a {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
+  align-items: end;
+}
+
+.image-controls label:not(.upload-button) {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.image-controls input {
+  min-height: 46px;
 }
 
 .upload-button {
@@ -633,7 +646,7 @@ a {
 
 .notice {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 16px;
   border: 1px solid var(--line);
@@ -641,6 +654,23 @@ a {
   padding: 12px 14px;
   background: var(--panel);
   box-shadow: var(--shadow);
+  font-weight: 800;
+}
+
+.notice > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.notice div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.notice small {
+  color: var(--muted);
+  font-size: 0.83rem;
   font-weight: 800;
 }
 
@@ -663,6 +693,7 @@ a {
   margin-left: auto;
   color: var(--ink);
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .modal-backdrop {
