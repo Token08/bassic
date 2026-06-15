@@ -804,6 +804,10 @@ a {
   color: var(--ink);
 }
 
+.site-link-button {
+  flex: 0 0 auto;
+}
+
 .text-button,
 .icon-button {
   border: 0;
@@ -1044,7 +1048,8 @@ a {
   }
 
   .primary-button,
-  .secondary-button {
+  .secondary-button,
+  .site-link-button {
     width: 100%;
   }
 

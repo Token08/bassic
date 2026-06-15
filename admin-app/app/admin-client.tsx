@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Eye,
+  ExternalLink,
   Info,
   Loader2,
   LogOut,
@@ -48,6 +49,8 @@ type HealthState = {
   checks: HealthCheck[];
   missing: HealthCheck[];
 };
+
+const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
 
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
   return typeof value === "object" && value !== null && "url" in value;
@@ -321,6 +324,10 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
           <h1>更新する場所を選ぶ</h1>
           <p>大きなボタンから選んで、入力、確認、保存の順に進めます。</p>
         </div>
+        <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
+          <ExternalLink size={18} />
+          公開サイトを開く
+        </a>
       </div>
 
       <section className="guide-strip" aria-label="操作の流れ">

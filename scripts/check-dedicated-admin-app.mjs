@@ -26,6 +26,7 @@ checkLocalEnv("GITHUB_DISPATCH_TOKEN", "Vercel required; local optional");
 checkLocalEnv("GITHUB_OWNER", "defaults to Token08 when omitted");
 checkLocalEnv("GITHUB_REPO", "defaults to bassic when omitted");
 checkLocalEnv("GITHUB_DISPATCH_EVENT_TYPE", "defaults to microcms_publish when omitted");
+checkLocalEnv("NEXT_PUBLIC_PUBLIC_SITE_URL", "defaults to https://www.bassic.jp/ when omitted");
 
 const failed = checks.filter((check) => !check.ok);
 

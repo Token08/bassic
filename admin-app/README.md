@@ -34,6 +34,7 @@ GITHUB_DISPATCH_TOKEN=
 GITHUB_OWNER=Token08
 GITHUB_REPO=bassic
 GITHUB_DISPATCH_EVENT_TYPE=microcms_publish
+NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 ```
 
 `MICROCMS_API_KEY` はGET、POST、PATCH、Media Uploadを許可したキーを使います。ブラウザには出さず、Vercel API Routesだけが利用します。
