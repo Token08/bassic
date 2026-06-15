@@ -15,7 +15,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "パスワードが違います。" }, { status: 401 });
   }
 
-  await setSessionCookie(createSessionToken());
-
-  return NextResponse.json({ ok: true });
+  try {
+    await setSessionCookie(createSessionToken());
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: false, message: "ログイン設定が未完了です。担当者に連絡してください。" }, { status: 500 });
+  }
 }

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, data });
   } catch {
     return NextResponse.json(
-      { ok: false, message: "保存済み、反映だけ失敗しました。担当者に連絡してください。" },
+      { ok: false, message: "保存済み、反映だけ失敗しました。GitHub反映用トークンを確認してください。" },
       { status: 502 }
     );
   }

@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:admin-app": "cd admin-app && npm run dev",
+    "clean:admin-app": "node scripts/clean-admin-app.mjs",
     "fetch:social": "node scripts/fetch-social-feeds.mjs",
     "fetch:events": "node scripts/fetch-facebook-events.mjs",
     "sync:calendar": "node scripts/sync-google-calendar.mjs",

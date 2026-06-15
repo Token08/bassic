@@ -24,7 +24,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ ok: true, data });
   } catch {
     return NextResponse.json(
-      { ok: false, message: "保存できませんでした。時間を置いて再試行してください。" },
+      { ok: false, message: "保存できませんでした。microCMSのAPI設定を確認してください。" },
       { status: 502 }
     );
   }

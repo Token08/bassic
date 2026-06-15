@@ -13,6 +13,7 @@ checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
 checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
+checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");

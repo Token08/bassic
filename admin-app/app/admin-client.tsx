@@ -34,6 +34,19 @@ type Notice = {
   actionsUrl?: string;
 };
 
+type HealthCheck = {
+  key: string;
+  label: string;
+  present: boolean;
+  requiredFor: "login" | "save" | "publish";
+};
+
+type HealthState = {
+  ok: boolean;
+  checks: HealthCheck[];
+  missing: HealthCheck[];
+};
+
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
   return typeof value === "object" && value !== null && "url" in value;
 }
@@ -94,7 +107,39 @@ function NoticeBox({ notice }: { notice: Notice }) {
   );
 }
 
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
+function SetupStatus({ health }: { health?: HealthState }) {
+  if (!health) {
+    return null;
+  }
+
+  if (health.ok) {
+    return (
+      <div className="setup-status ready">
+        <CheckCircle2 size={18} />
+        <span>本番設定はそろっています。</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="setup-status warning">
+      <AlertCircle size={18} />
+      <div>
+        <strong>設定が不足しています</strong>
+        <span>保存や反映の前に、担当者がVercel環境変数を設定してください。</span>
+        <ul>
+          {health.missing.map((item) => (
+            <li key={item.key}>
+              {item.label} <code>{item.key}</code>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: HealthState }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -123,6 +168,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         <p className="eyebrow">Bassic. 管理画面</p>
         <h1>更新用パスワード</h1>
         <p className="login-copy">お店の情報を更新する専用画面です。</p>
+        <SetupStatus health={health} />
         <label>
           パスワード
           <input
@@ -131,6 +177,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="共有パスワード"
+            aria-label="共有パスワード"
           />
         </label>
         {error ? <p className="form-error">{error}</p> : null}
@@ -143,7 +190,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-function Dashboard({ onSelect, lastDeploy }: { onSelect: (id: string) => void; lastDeploy?: Notice }) {
+function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) => void; lastDeploy?: Notice; health?: HealthState }) {
   return (
     <div className="dashboard">
       <div className="page-heading">
@@ -173,6 +220,7 @@ function Dashboard({ onSelect, lastDeploy }: { onSelect: (id: string) => void; l
         </div>
       </section>
 
+      <SetupStatus health={health} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
 
       <div className="dashboard-grid">
@@ -696,14 +744,21 @@ export default function AdminClient() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
   const [sessionError, setSessionError] = useState("");
+  const [health, setHealth] = useState<HealthState | undefined>();
 
   async function checkSession() {
     setChecking(true);
     setSessionError("");
     try {
-      const response = await fetch("/api/session", { cache: "no-store" });
-      const result = (await response.json()) as { authenticated?: boolean };
+      const [sessionResponse, healthResponse] = await Promise.all([
+        fetch("/api/session", { cache: "no-store" }),
+        fetch("/api/health", { cache: "no-store" })
+      ]);
+      const result = (await sessionResponse.json()) as { authenticated?: boolean };
+      const healthResult = (await healthResponse.json()) as HealthState;
+
       setAuthenticated(Boolean(result.authenticated));
+      setHealth(healthResult);
     } catch {
       setSessionError("管理画面の設定を確認しています。再読み込みしても直らない場合は担当者に連絡してください。");
     } finally {
@@ -754,7 +809,7 @@ export default function AdminClient() {
   }
 
   if (!authenticated) {
-    return <LoginScreen onLogin={() => setAuthenticated(true)} />;
+    return <LoginScreen onLogin={() => setAuthenticated(true)} health={health} />;
   }
 
   return (
@@ -778,7 +833,7 @@ export default function AdminClient() {
           }}
         />
       ) : (
-        <Dashboard onSelect={setActiveSection} lastDeploy={lastDeploy} />
+        <Dashboard onSelect={setActiveSection} lastDeploy={lastDeploy} health={health} />
       )}
     </main>
   );

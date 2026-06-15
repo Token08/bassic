@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, data });
   } catch {
     return NextResponse.json(
-      { ok: false, message: "画像をアップロードできませんでした。時間を置いて再試行してください。" },
+      { ok: false, message: "画像をアップロードできませんでした。microCMSのAPIキー設定を確認してください。" },
       { status: 502 }
     );
   }

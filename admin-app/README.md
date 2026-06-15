@@ -16,6 +16,13 @@ npm install
 npm run dev
 ```
 
+画面が真っ白になったり、開発サーバーが古い状態を掴んだ場合:
+
+```bash
+npm run clean:admin-app
+npm run dev:admin-app
+```
+
 ## Vercel環境変数
 
 ```text

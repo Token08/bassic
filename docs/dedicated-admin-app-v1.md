@@ -52,6 +52,7 @@ flowchart LR
 ## 確認コマンド
 
 ```bash
+npm run clean:admin-app
 npm run check:admin-app
 npm run typecheck:admin-app
 npm run build:admin-app
