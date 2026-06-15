@@ -9,11 +9,14 @@ checkFile("dedicated admin app package", "admin-app/package.json");
 checkFile("dedicated admin app package lock", "admin-app/package-lock.json");
 checkFile("Vercel config", "admin-app/vercel.json");
 checkFile("dedicated admin README", "admin-app/README.md");
+checkFile("client handoff manual", "docs/delivery-admin-manual.md");
+checkFile("client handoff checklist", "docs/client-handoff-checklist.md");
 checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
 checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
 checkFile("health API route", "admin-app/app/api/health/route.ts");
+checkClientFacingText();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -61,4 +64,46 @@ function checkPackageScript(scriptName) {
 
 function checkLocalEnv(name, detail) {
   add(`env ${name}`, true, process.env[name] ? "set locally" : detail);
+}
+
+function checkClientFacingText() {
+  const forbidden = ["microCMS", "GitHub", "Vercel", "APIキー", "トークン", "環境変数"];
+  const files = [
+    "admin-app/app/admin-client.tsx",
+    "admin-app/app/api/content/[endpoint]/route.ts",
+    "admin-app/app/api/content/[endpoint]/[id]/route.ts",
+    "admin-app/app/api/deploy/route.ts",
+    "admin-app/app/api/media/route.ts",
+    "admin-app/app/api/login/route.ts",
+    "admin-app/app/api/session/route.ts",
+    "admin-app/app/api/social-status/route.ts"
+  ];
+  const leaks = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of forbidden) {
+      if (text.includes(term)) {
+        leaks.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  if (existsSync("admin-app/lib/env.ts")) {
+    const envText = readFileSync("admin-app/lib/env.ts", "utf8");
+    const labelMatches = [...envText.matchAll(/label:\s*"([^"]+)"/g)].map((match) => match[1]);
+    for (const label of labelMatches) {
+      for (const term of forbidden) {
+        if (label.includes(term)) {
+          leaks.push(`admin-app/lib/env.ts label: ${term}`);
+        }
+      }
+    }
+  }
+
+  add("client-facing admin text hides technical setup terms", leaks.length === 0, leaks.join(", "));
 }
