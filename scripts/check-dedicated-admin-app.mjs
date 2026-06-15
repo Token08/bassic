@@ -19,6 +19,7 @@ checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
+checkDocsIndexBoundaries();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -179,4 +180,22 @@ function checkClientDocsText() {
   }
 
   add("client handoff docs hide technical setup terms", leaks.length === 0, leaks.join(", "));
+}
+
+function checkDocsIndexBoundaries() {
+  const file = "docs/admin-docs-index.md";
+  if (!existsSync(file)) {
+    add("admin docs index separates client and maintainer docs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "## 納品先へ渡す資料",
+    "## 制作者・保守担当だけが見る資料",
+    "## 旧版・控え"
+  ];
+  const missing = required.filter((heading) => !text.includes(heading));
+
+  add("admin docs index separates client and maintainer docs", missing.length === 0, missing.join(", "));
 }

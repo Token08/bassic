@@ -2,33 +2,47 @@
 
 このフォルダは、Bassic.サイトを「納品先が管理画面から更新できる状態」にするための資料置き場です。
 
-## 最初に読む資料
+## まず見る資料
 
 - `docs/microcms-current-status.md`
   - 現在どこまでCMS対応できているかを確認する資料です。
 - `docs/client-handoff-checklist.md`
   - 納品先へ何を渡すか、何を渡さないかを確認するチェックリストです。
 
-## microCMSを作る時に使う資料
+## 納品先へ渡す資料
 
-- `docs/microcms-field-definitions-v1.md`
-  - microCMSで作成するAPI ID、項目名、入力形式の定義です。
-- `docs/cms-sample-content-v1.json`
-  - 初期データのサンプルです。
-- `docs/microcms-admin-v1.md`
-  - microCMS、GitHub Actions、Webhookの制作者向け設定資料です。
-
-## 管理画面アプリ
-
-- `docs/dedicated-admin-app-v1.md`
-  - `admin-app/` をVercelへ出す場合の構成と設定資料です。
-
-## 納品先へ渡す操作資料
+納品先に渡す資料は、基本的にこの2つだけにします。専門的な設定名や制作者向けの画面名は出さない方針です。
 
 - `docs/delivery-admin-manual.md`
   - 納品先へ渡す最新版の簡易操作マニュアルです。
+- `docs/client-handoff-checklist.md`
+  - 引き渡し前に、渡すものと渡さないものを確認するチェックリストです。
+
+## 制作者・保守担当だけが見る資料
+
+以下はサイト公開や管理画面接続のための資料です。納品先には通常渡しません。
+
+### 管理画面の項目設計
+
+- `docs/microcms-field-definitions-v1.md`
+  - 管理画面で作成する項目名、入力形式、必須項目の定義です。
+- `docs/cms-sample-content-v1.json`
+  - 初期データのサンプルです。
+
+### 保存先と公開反映の設定
+
+- `docs/microcms-admin-v1.md`
+  - 保存先、公開反映、再ビルドの制作者向け設定資料です。
+
+### 専用管理画面アプリ
+
+- `docs/dedicated-admin-app-v1.md`
+  - `admin-app/` を公開する場合の構成と設定資料です。
+
+## 旧版・控え
+
 - `docs/delivery-admin-manual-v1.md`
-  - 旧版の控えです。通常は `docs/delivery-admin-manual.md` を渡します。
+  - 旧版の控えです。納品時は `docs/delivery-admin-manual.md` を渡します。
 
 ## 確認コマンド
 
@@ -40,7 +54,7 @@ npm run smoke:seo
 npm run check:admin-app
 ```
 
-実際のmicroCMS接続情報を設定した後だけ実行するもの:
+実際の保存先接続情報を設定した後だけ実行するもの:
 
 ```bash
 npm run setup:admin
