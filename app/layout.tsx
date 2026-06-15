@@ -10,10 +10,12 @@ const notoSansJp = Noto_Sans_JP({
   display: "swap"
 });
 
+const defaultTitle = "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー";
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.siteUrl),
   title: {
-    default: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
+    default: defaultTitle,
     template: "%s | public bar Bassic."
   },
   description: site.description,
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
     type: "website",
     url: absoluteUrl("/"),
     siteName: site.name,
-    title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
+    title: defaultTitle,
     description: site.description,
     images: [
       {
@@ -40,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "public bar Bassic. | 福岡 天神 親不孝通りのミュージックバー",
+    title: defaultTitle,
     description: site.description,
     images: [absoluteUrl("/ogp.png")]
   },

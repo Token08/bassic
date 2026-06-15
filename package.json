@@ -9,7 +9,7 @@
     "fetch:social": "node scripts/fetch-social-feeds.mjs",
     "fetch:events": "node scripts/fetch-facebook-events.mjs",
     "sync:calendar": "node scripts/sync-google-calendar.mjs",
-    "build": "next build",
+    "build": "next build && node scripts/postbuild-html.mjs",
     "start": "next start",
     "setup:admin": "node scripts/setup-microcms-admin.mjs",
     "deploy:cms": "node scripts/trigger-cms-rebuild.mjs",

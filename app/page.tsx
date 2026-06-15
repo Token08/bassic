@@ -38,9 +38,9 @@ function JsonLd({ settings }: { settings: SiteSettings }) {
       { "@type": "Place", name: "親不孝通り" }
     ],
     amenityFeature: [
-      { "@type": "LocationFeatureSpecification", name: "喫煙可", value: true },
+      { "@type": "LocationFeatureSpecification", name: "店内喫煙可", value: true },
       { "@type": "LocationFeatureSpecification", name: "ライヴ・DJイベント", value: true },
-      { "@type": "LocationFeatureSpecification", name: "貸切相談", value: true }
+      { "@type": "LocationFeatureSpecification", name: "貸切相談可", value: true }
     ],
     smokingAllowed: true,
     publicAccess: true,
@@ -52,7 +52,7 @@ function JsonLd({ settings }: { settings: SiteSettings }) {
       },
       {
         "@type": "PropertyValue",
-        name: "チャージ",
+        name: "テーブル・チャージ",
         value: settings.chargeLabel
       },
       {
