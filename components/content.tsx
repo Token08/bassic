@@ -511,9 +511,8 @@ export function PartyContent({ plans, equipmentRental }: { plans: PartyPlan[]; e
 
 export function AccessContent({ note, settings }: { note: string; settings?: SiteSettings }) {
   const accessSettings = settings || site;
-  const mapSrc = accessSettings.googleMapsUrl.includes("output=embed")
-    ? accessSettings.googleMapsUrl
-    : `${accessSettings.googleMapsUrl}${accessSettings.googleMapsUrl.includes("?") ? "&" : "?"}output=embed`;
+  const mapQuery = encodeURIComponent(`public bar Bassic. ${accessSettings.address}`);
+  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=16&hl=ja&output=embed`;
 
   return (
     <section className="section access-section">
