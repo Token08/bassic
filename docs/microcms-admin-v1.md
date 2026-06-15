@@ -1,61 +1,68 @@
-# Bassic. microCMS Admin v1
+# Bassic. microCMS 管理設定 v1
 
-目的: 納品先がGitHubを触らず、microCMS管理画面から日本語サイトの主要情報を更新できるようにする。
+この資料は制作者向けです。納品先には、GitHub、APIキー、Webhook設定を直接触らせない方針にします。
 
-## 対応API
+## 目的
+
+Bassic.サイトを、店舗側がブラウザの管理画面から更新できるようにします。
+
+店舗側が触るもの:
+
+- 管理画面URL
+- ログイン情報
+- イベント、メニュー、画像、価格、SNSお知らせなどの入力画面
+
+店舗側に見せないもの:
+
+- GitHub
+- GitHub Actions
+- Vercel設定
+- microCMS APIキー
+- Webhook設定
+
+## 必要なmicroCMS API
+
+次のAPI IDをmicroCMSで作成します。IDは必ずこの表記にします。
 
 | API ID | 形式 | 用途 |
 | --- | --- | --- |
-| `site-settings` | オブジェクト | 住所、電話、営業時間、喫煙、チャージ、SNSリンク、Google Map URL |
-| `home` | オブジェクト | TOP文言、初回来店文言、アクセス補足、TOP画像、InstagramウィジェットURL |
-| `hero-slides` | リスト | TOP / Events / Party / Menu / Access のメイン画像・スライド画像 |
-| `events` | リスト | イベント名、日付、時間、料金、予約方法、画像、公開/非公開 |
-| `menu` | リスト | フード名、料金、画像、表示順、公開/非公開 |
-| `drink-menu-sheets` | リスト | ドリンクメニュー画像、表示順、公開/非公開 |
-| `party-plans` | リスト | 貸切・二次会・レンタル料金、説明、表示順、公開/非公開 |
-| `equipment-rental` | オブジェクト | 機材レンタル説明、PDFリンク |
-| `social-notices` | リスト | Instagram / Facebook / X のお知らせカード |
+| `site-settings` | オブジェクト | 店舗基本情報 |
+| `home` | オブジェクト | TOPページ |
+| `hero-slides` | リスト | 各ページの背景画像 |
+| `events` | リスト | イベント情報 |
+| `menu` | リスト | フードメニュー |
+| `drink-menu-sheets` | リスト | ドリンクメニュー表画像 |
+| `party-plans` | リスト | 貸切・レンタルプラン |
+| `equipment-rental` | オブジェクト | 機材レンタル情報 |
+| `social-notices` | リスト | SNSお知らせカード |
+| `page-copy` | リスト | ページ文言 |
+| `page-sections` | リスト | セクション表示制御 |
+| `custom-sections` | リスト | 追加セクション |
 
-初期入力のたたき台は `docs/cms-sample-content-v1.json` を参照する。画像フィールドはmicroCMS管理画面で画像をアップロードして差し替える。
+項目の詳細は `docs/microcms-field-definitions-v1.md` を参照します。
 
-## 必須フィールド
+## サイト側の動き
 
-### `site-settings`
+- `lib/microcms.ts` がmicroCMSからデータを取得します。
+- microCMSが未設定、または取得に失敗した場合は、ローカルのフォールバックデータで表示します。
+- そのため、CMS準備中でも公開サイトは壊れません。
 
-| fieldId | 種類 |
-| --- | --- |
-| `address` | テキスト |
-| `phone` | テキスト |
-| `hoursLabel` | テキストエリア |
-| `eventHoursNote` | テキストエリア |
-| `smokingLabel` | テキストエリア |
-| `chargeLabel` | テキスト |
-| `googleMapsUrl` | テキスト |
-| `directionsUrl` | テキスト |
-| `instagramUrl` | テキスト |
-| `facebookUrl` | テキスト |
-| `xUrl` | テキスト |
-| `onlineStoreUrl` | テキスト |
+## GitHub Pagesへの反映
 
-### `hero-slides`
+GitHub Pagesは静的サイトなので、microCMSで保存しただけでは公開HTMLは更新されません。
 
-| fieldId | 種類 | 備考 |
-| --- | --- | --- |
-| `page` | セレクト | `home`, `events`, `party`, `menu`, `access` |
-| `title` | テキスト | 管理用 |
-| `image` | 画像 | サイト表示画像 |
-| `displayOrder` | 数字 | 小さい順 |
-| `isPublished` | 真偽値 | 公開する場合true |
+運用方法:
 
-### リスト型共通
+1. 店舗側が管理画面で内容を保存する
+2. 管理画面がmicroCMSへ保存する
+3. 管理画面がGitHub Actionsへ再ビルドを依頼する
+4. GitHub Pagesに新しい内容が反映される
 
-`menu`, `drink-menu-sheets`, `party-plans` は `displayOrder` と `isPublished` を持たせる。未設定でも既存の静的データへフォールバックする。
+## Webhook / repository_dispatch
 
-## GitHub Actions反映Webhook
+管理画面、またはmicroCMS WebhookからGitHub Actionsを起動する場合は、以下を使います。
 
-GitHub Pagesは静的サイトなので、microCMS更新だけでは公開サイトは更新されない。microCMSのWebhookでGitHub Actionsを起動する。
-
-microCMS Webhookの送信先:
+送信先:
 
 ```text
 https://api.github.com/repos/token08/bassic/dispatches
@@ -83,32 +90,42 @@ Body:
 }
 ```
 
-GitHub tokenには対象リポジトリのActionsを起動できる権限が必要。トークンは納品先に渡さず、制作者側で管理する。
+トークンは納品先に渡さず、制作者または保守担当者が管理します。
 
 ## GitHub Secrets
 
-GitHub ActionsのRepository secretsに以下を設定する。
+GitHub Actionsでサイトをビルドするため、Repository secretsに以下を登録します。
 
 ```text
 MICROCMS_SERVICE_DOMAIN
 MICROCMS_API_KEY
 ```
 
-ローカルで対話式に設定する場合:
+実際の値が未設定の間は、`npm run check:admin` が失敗します。これは正常です。
 
-```bash
-npm run setup:admin
-```
+## 初期設定の流れ
 
-このコマンドはGitHub Secretsに2値を登録し、ローカル検証用の `.env.local` も更新する。
+1. microCMSでサービスを作成する
+2. この資料のAPI IDを作成する
+3. `docs/microcms-field-definitions-v1.md` に沿って項目を作る
+4. GitHub SecretsにmicroCMS情報を登録する
+5. 必要なら `npm run seed:cms -- --apply` で初期データを流し込む
+6. `npm run smoke:cms` で取得確認する
+7. 管理画面アプリをVercelへデプロイする
 
 ## 確認コマンド
 
 ```bash
-npm run check:admin
-npm run smoke:cms
 npm run typecheck
 npm run build
+npm run smoke:links
+npm run smoke:seo
+npm run check:admin-app
 ```
 
-`MICROCMS_SERVICE_DOMAIN` と `MICROCMS_API_KEY` が未設定の場合、サイトは既存の静的データでビルドされる。
+microCMS情報を設定した後:
+
+```bash
+npm run check:admin
+npm run smoke:cms
+```

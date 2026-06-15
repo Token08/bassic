@@ -1,34 +1,47 @@
-# Bassic. Admin Docs Index
+# Bassic. 管理画面・納品資料一覧
 
-管理画面化に関する資料一覧です。
+このフォルダは、Bassic.サイトを「納品先が管理画面から更新できる状態」にするための資料置き場です。
 
-## 最初に読む
+## 最初に読む資料
 
-- `docs/microcms-build-order-v1.md`
+- `docs/microcms-current-status.md`
+  - 現在どこまでCMS対応できているかを確認する資料です。
+- `docs/client-handoff-checklist.md`
+  - 納品先へ何を渡すか、何を渡さないかを確認するチェックリストです。
 
-## microCMSでAPIを作るときに見る
+## microCMSを作る時に使う資料
 
 - `docs/microcms-field-definitions-v1.md`
+  - microCMSで作成するAPI ID、項目名、入力形式の定義です。
 - `docs/cms-sample-content-v1.json`
-
-## Webhook / GitHub Actions設定
-
+  - 初期データのサンプルです。
 - `docs/microcms-admin-v1.md`
+  - microCMS、GitHub Actions、Webhookの制作者向け設定資料です。
 
-## 専用管理画面
+## 管理画面アプリ
 
 - `docs/dedicated-admin-app-v1.md`
+  - `admin-app/` をVercelへ出す場合の構成と設定資料です。
 
-## 納品先へ渡す操作マニュアル
+## 納品先へ渡す操作資料
 
 - `docs/delivery-admin-manual-v1.md`
+  - 店舗側が管理画面で更新するための簡易マニュアルです。
 
 ## 確認コマンド
 
 ```bash
+npm run typecheck
+npm run build
+npm run smoke:links
+npm run smoke:seo
+npm run check:admin-app
+```
+
+実際のmicroCMS接続情報を設定した後だけ実行するもの:
+
+```bash
 npm run setup:admin
 npm run check:admin
-npm run check:admin-app
 npm run smoke:cms
-npm run deploy:cms
 ```
