@@ -20,6 +20,7 @@ checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
 checkDocsIndexBoundaries();
+checkAdminSchemaDocsMatch();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -198,4 +199,20 @@ function checkDocsIndexBoundaries() {
   const missing = required.filter((heading) => !text.includes(heading));
 
   add("admin docs index separates client and maintainer docs", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSchemaDocsMatch() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const docsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(schemaFile) || !existsSync(docsFile)) {
+    add("admin schema sections are documented", false, `${schemaFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const sectionIds = [...schemaText.matchAll(/id:\s*"([^"]+)"/g)].map((match) => match[1]);
+  const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
+
+  add("admin schema sections are documented", missing.length === 0, missing.join(", "));
 }
