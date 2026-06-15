@@ -32,6 +32,8 @@ type Notice = {
   tone: "success" | "error" | "info";
   message: string;
   actionsUrl?: string;
+  requestedAt?: string;
+  sourceLabel?: string;
 };
 
 type HealthCheck = {
@@ -157,6 +159,52 @@ function NoticeBox({ notice }: { notice: Notice }) {
   );
 }
 
+function formatDeployTime(value?: string) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function DeployStatusCard({ notice }: { notice?: Notice }) {
+  if (!notice) {
+    return null;
+  }
+
+  const label = notice.tone === "success" ? "反映中" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
+  const timeLabel = formatDeployTime(notice.requestedAt);
+
+  return (
+    <section className={`deploy-status ${notice.tone}`} aria-label="最後の反映状況">
+      <div>
+        <strong>最後の公開操作</strong>
+        <span>{notice.sourceLabel || "管理画面から公開"}</span>
+      </div>
+      <div>
+        <strong>{label}</strong>
+        <span>{timeLabel ? `${timeLabel} に実行` : "時刻は未取得です"}</span>
+      </div>
+      {notice.actionsUrl ? (
+        <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+          反映状況を見る
+        </a>
+      ) : null}
+    </section>
+  );
+}
+
 function SetupStatus({ health }: { health?: HealthState }) {
   if (!health) {
     return null;
@@ -271,6 +319,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       </section>
 
       <SetupStatus health={health} />
+      <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
 
       <div className="dashboard-grid">
@@ -765,14 +814,18 @@ function SectionEditor({
         const deployNotice = {
           tone: "success" as const,
           message: "公開しました。サイト反映中です。",
-          actionsUrl: deployResult.data?.actionsUrl
+          actionsUrl: deployResult.data?.actionsUrl,
+          requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
+          sourceLabel: `${section.shortTitle}を公開`
         };
         setNotice(deployNotice);
         onDeployNotice(deployNotice);
       } catch (deployError) {
         const deployNotice = {
           tone: "error" as const,
-          message: deployError instanceof Error ? deployError.message : "保存済み、反映だけ失敗しました。担当者に連絡してください。"
+          message: deployError instanceof Error ? deployError.message : "保存済み、反映だけ失敗しました。担当者に連絡してください。",
+          requestedAt: new Date().toISOString(),
+          sourceLabel: `${section.shortTitle}を公開`
         };
         setNotice(deployNotice);
         onDeployNotice(deployNotice);
