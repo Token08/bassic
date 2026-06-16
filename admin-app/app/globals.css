@@ -739,6 +739,7 @@ a {
 
 .required-progress {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -760,6 +761,17 @@ a {
 .required-progress span {
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.required-progress small {
+  flex-basis: 100%;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.required-progress.complete small {
+  display: none;
 }
 
 .field {

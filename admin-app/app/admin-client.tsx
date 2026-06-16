@@ -700,11 +700,13 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
 
   const completed = requiredFields.filter((field) => fieldHasValue(field, draft[field.key])).length;
   const remaining = requiredFields.length - completed;
+  const missingLabels = requiredFields.filter((field) => !fieldHasValue(field, draft[field.key])).map((field) => field.label);
 
   return (
     <div className={`required-progress ${remaining === 0 ? "complete" : ""}`}>
       <strong>必須 {completed}/{requiredFields.length} 入力済み</strong>
       <span>{remaining === 0 ? "公開前チェックOKです。" : `あと${remaining}件入力すると確認できます。`}</span>
+      {missingLabels.length ? <small>未入力: {missingLabels.join("、")}</small> : null}
     </div>
   );
 }
