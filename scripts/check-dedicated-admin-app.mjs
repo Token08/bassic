@@ -11,6 +11,7 @@ checkFile("Vercel config", "admin-app/vercel.json");
 checkFile("dedicated admin README", "admin-app/README.md");
 checkFile("client handoff manual", "docs/delivery-admin-manual.md");
 checkFile("client handoff checklist", "docs/client-handoff-checklist.md");
+checkFile("client handoff sheet", "docs/client-handoff-sheet.md");
 checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
@@ -96,6 +97,7 @@ function checkNoMojibake() {
     "admin-app/README.md",
     "docs/admin-docs-index.md",
     "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md",
     "docs/delivery-admin-manual.md",
     "docs/delivery-admin-manual-v1.md",
     "docs/dedicated-admin-app-v1.md",
@@ -166,7 +168,8 @@ function checkClientDocsText() {
   const forbidden = ["microCMS", "GitHub", "Vercel", "APIキー", "トークン", "環境変数", ".env", "canonical", "sitemap", "hreflang"];
   const files = [
     "docs/delivery-admin-manual.md",
-    "docs/client-handoff-checklist.md"
+    "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md"
   ];
   const leaks = [];
 
