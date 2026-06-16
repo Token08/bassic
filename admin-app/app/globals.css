@@ -170,6 +170,52 @@ a {
   gap: 14px;
 }
 
+.dashboard-group {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.dashboard-group-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.dashboard-group-heading h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  line-height: 1.2;
+}
+
+.dashboard-group-heading p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.dashboard-group.compact {
+  margin-top: 28px;
+}
+
+.dashboard-group.compact .dashboard-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-group.compact .dashboard-tile {
+  min-height: 128px;
+  background: rgba(255, 253, 248, 0.62);
+}
+
+.dashboard-group.compact .dashboard-tile svg {
+  color: var(--muted);
+}
+
 .guide-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1123,6 +1169,15 @@ a {
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-group.compact .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-group-heading {
+    display: grid;
+    align-items: start;
   }
 
   .editor-guide {

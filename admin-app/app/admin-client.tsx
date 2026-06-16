@@ -62,6 +62,17 @@ type SnsStatus = {
 };
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
+const dailySectionIds = new Set([
+  "site-settings",
+  "home",
+  "hero-slides",
+  "events",
+  "menu",
+  "drink-menu-sheets",
+  "party-plans",
+  "equipment-rental",
+  "social-notices"
+]);
 
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
   return typeof value === "object" && value !== null && "url" in value;
@@ -402,6 +413,9 @@ function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: Health
 }
 
 function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) => void; lastDeploy?: Notice; health?: HealthState }) {
+  const dailySections = sections.filter((section) => dailySectionIds.has(section.id));
+  const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
+
   return (
     <div className="dashboard">
       <div className="page-heading">
@@ -458,8 +472,45 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
       <SnsStatusCard />
 
+      <DashboardSectionGroup
+        title="よく使う更新"
+        description="納品先が普段触る場所です。イベント、画像、メニュー、SNSお知らせなどを更新できます。"
+        sections={dailySections}
+        onSelect={onSelect}
+      />
+
+      <DashboardSectionGroup
+        title="保守向け設定"
+        description="ページ構成や表示順を変える項目です。迷った時は保守担当者に相談してください。"
+        sections={maintenanceSections}
+        onSelect={onSelect}
+        compact
+      />
+    </div>
+  );
+}
+
+function DashboardSectionGroup({
+  title,
+  description,
+  sections: groupSections,
+  onSelect,
+  compact = false
+}: {
+  title: string;
+  description: string;
+  sections: SectionDefinition[];
+  onSelect: (id: string) => void;
+  compact?: boolean;
+}) {
+  return (
+    <section className={`dashboard-group${compact ? " compact" : ""}`}>
+      <div className="dashboard-group-heading">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
       <div className="dashboard-grid">
-        {sections.map((section) => {
+        {groupSections.map((section) => {
           const Icon = section.icon;
 
           return (
@@ -471,7 +522,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
