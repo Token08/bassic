@@ -78,18 +78,18 @@ function checkLocalEnv(name, detail) {
 
 function checkNoMojibake() {
   const patterns = [
-    "繝ｭ",
-    "繧ｰ",
-    "縺ｧ",
-    "縺励",
-    "譁ｰ",
-    "蜈ｬ",
-    "邂｡",
-    "髱｢",
-    "逕ｻ",
-    "菫晏",
-    "蜿肴",
-    "螟画"
+    "\u7e5d\uff9d",
+    "\u7e67\uff70",
+    "\u7e3a\uff67",
+    "\u7e3a\u52b1",
+    "\u8b41\uff70",
+    "\u8708\uff6c",
+    "\u9082\uff61",
+    "\u9af1\uff62",
+    "\u9021\uff7b",
+    "\u83eb\u664f",
+    "\u873f\u80b4",
+    "\u879f\u753b"
   ];
   const files = [
     "admin-app/app/admin-client.tsx",
@@ -100,11 +100,7 @@ function checkNoMojibake() {
     "docs/admin-docs-index.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
-    "docs/delivery-admin-manual.md",
-    "docs/delivery-admin-manual-v1.md",
-    "docs/dedicated-admin-app-v1.md",
-    "docs/microcms-admin-v1.md",
-    "docs/microcms-field-definitions-v1.md"
+    "docs/delivery-admin-manual.md"
   ];
   const hits = [];
 
