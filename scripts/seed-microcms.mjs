@@ -12,6 +12,7 @@ const isDummyEnv = !serviceDomain || !apiKey || serviceDomain === "example" || a
 const objectEntries = Object.entries(seedData.objects);
 const listEntries = Object.entries(seedData.lists);
 const listItemCount = listEntries.reduce((total, [, items]) => total + items.length, 0);
+const seedErrors = validateSeedData();
 
 console.log("Bassic. microCMS seed");
 console.log(`- object endpoints: ${objectEntries.length}`);
@@ -25,6 +26,16 @@ for (const [endpoint, item] of objectEntries) {
 for (const [endpoint, items] of listEntries) {
   console.log(`  list ${endpoint}: ${items.length} items`);
 }
+
+if (seedErrors.length) {
+  console.error("\nSeed data check failed:");
+  for (const error of seedErrors) {
+    console.error(`- ${error}`);
+  }
+  process.exit(1);
+}
+
+console.log("\nSeed data check passed.");
 
 if (!shouldApply) {
   console.log("\nDry run only. To write to microCMS, run: npm run seed:cms -- --apply");
@@ -93,4 +104,76 @@ async function microCmsFetch(path, init) {
 function stripId(item) {
   const { id, ...content } = item;
   return content;
+}
+
+function validateSeedData() {
+  const errors = [];
+
+  for (const [endpoint, item] of objectEntries) {
+    if (!isPlainObject(item)) {
+      errors.push(`${endpoint}: object endpoint seed must be an object.`);
+      continue;
+    }
+
+    validateNestedUrls(endpoint, item, errors);
+  }
+
+  for (const [endpoint, items] of listEntries) {
+    if (!Array.isArray(items)) {
+      errors.push(`${endpoint}: list endpoint seed must be an array.`);
+      continue;
+    }
+
+    const seenIds = new Set();
+    for (const [index, item] of items.entries()) {
+      const label = `${endpoint}[${index}]`;
+      if (!isPlainObject(item)) {
+        errors.push(`${label}: list item must be an object.`);
+        continue;
+      }
+
+      if (typeof item.id !== "string" || !item.id.trim()) {
+        errors.push(`${label}: id is required.`);
+      } else if (seenIds.has(item.id)) {
+        errors.push(`${label}: duplicate id ${item.id}.`);
+      } else {
+        seenIds.add(item.id);
+      }
+
+      validateNestedUrls(label, item, errors);
+    }
+  }
+
+  return errors;
+}
+
+function validateNestedUrls(label, value, errors) {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => validateNestedUrls(`${label}[${index}]`, item, errors));
+    return;
+  }
+
+  if (!isPlainObject(value)) {
+    return;
+  }
+
+  for (const [key, nestedValue] of Object.entries(value)) {
+    const nestedLabel = `${label}.${key}`;
+    if (key === "url" || key.endsWith("Url")) {
+      if (typeof nestedValue !== "string" || !isSupportedUrl(nestedValue)) {
+        errors.push(`${nestedLabel}: URL must start with https:// or /.`);
+      }
+      continue;
+    }
+
+    validateNestedUrls(nestedLabel, nestedValue, errors);
+  }
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isSupportedUrl(value) {
+  return value.startsWith("https://") || value.startsWith("/");
 }
