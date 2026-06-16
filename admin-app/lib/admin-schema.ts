@@ -152,7 +152,7 @@ export const sections: SectionDefinition[] = [
         label: "Instagram表示URL",
         type: "url",
         placeholder: "https://cdn.lightwidget.com/widgets/...",
-        hint: "保守担当者が用意した表示用URLを入れます。分からない場合は空欄のままで大丈夫です。"
+        hint: "通常のInstagramプロフィールURLではありません。保守担当者が用意した表示用URLを入れます。分からない場合は空欄のままで大丈夫です。"
       },
       { key: "heroImage", label: "TOP画像", type: "image", hint: `未設定の場合は、サイト内の既存画像が表示されます。${imageFieldHint}` }
     ],
