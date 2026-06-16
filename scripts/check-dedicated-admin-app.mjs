@@ -23,6 +23,7 @@ checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
 checkCmsSmokeCoversAdminEndpoints();
+checkSeedDataCoversAdminEndpoints();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -255,4 +256,20 @@ function checkCmsSmokeCoversAdminEndpoints() {
   const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`));
 
   add("CMS smoke test covers admin endpoints", missing.length === 0, missing.join(", "));
+}
+
+function checkSeedDataCoversAdminEndpoints() {
+  const endpointFile = "admin-app/lib/microcms.ts";
+  const seedFile = "scripts/microcms-seed-data.mjs";
+  if (!existsSync(endpointFile) || !existsSync(seedFile)) {
+    add("microCMS seed data covers admin endpoints", false, `${endpointFile} or ${seedFile} missing`);
+    return;
+  }
+
+  const endpointText = readFileSync(endpointFile, "utf8");
+  const seedText = readFileSync(seedFile, "utf8");
+  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
+  const missing = [...new Set(endpointIds)].filter((id) => !seedText.includes(`"${id}"`) && !seedText.includes(`\n    ${id},`));
+
+  add("microCMS seed data covers admin endpoints", missing.length === 0, missing.join(", "));
 }
