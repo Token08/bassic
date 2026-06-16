@@ -46,6 +46,19 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 3. 公開して反映の場合だけGitHub `repository_dispatch` を実行する。
 4. GitHub Pagesのビルドが走り、公開サイトへ反映される。
 
+## 納品時に渡す資料
+
+納品先にはGitHub、Vercel、APIキー、環境変数を渡しません。通常運用では、サイトURL、管理画面URL、ログイン方法、操作資料だけを渡します。
+
+- `docs/delivery-admin-manual.md`
+  - 店舗側が普段見る操作マニュアルです。
+- `docs/client-handoff-checklist.md`
+  - 引き渡し前に渡すもの、渡さないものを確認するチェックリストです。
+- `docs/client-handoff-sheet.md`
+  - 公開サイトURL、管理画面URL、パスワード、連絡先を記入するメモです。
+
+制作者・保守担当向けの資料一覧は `docs/admin-docs-index.md` を確認してください。
+
 ## Vercel設定
 
 VercelのRoot Directoryを `admin-app` に設定してデプロイします。公開サイト側の `next.config.ts` は `output: "export"` のままなので、GitHub Pages運用には影響しません。

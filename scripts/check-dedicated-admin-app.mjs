@@ -21,6 +21,7 @@ checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
 checkClientHandoffDocsLinked();
+checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
@@ -209,6 +210,25 @@ function checkClientHandoffDocsLinked() {
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
+}
+
+function checkAdminReadmeLinksHandoffDocs() {
+  const file = "admin-app/README.md";
+  if (!existsSync(file)) {
+    add("admin README links handoff docs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "docs/delivery-admin-manual.md",
+    "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md",
+    "docs/admin-docs-index.md"
+  ];
+  const missing = required.filter((item) => !text.includes(item));
+
+  add("admin README links handoff docs", missing.length === 0, missing.join(", "));
 }
 
 function checkDocsIndexBoundaries() {
