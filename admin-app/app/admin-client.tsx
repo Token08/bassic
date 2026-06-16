@@ -591,7 +591,7 @@ function Field({
             checked={Boolean(value)}
             onChange={(event) => onChange(event.target.checked)}
           />
-          公開する
+          {Boolean(value) ? `${field.label} ON` : `${field.label} OFF`}
         </span>
       ) : null}
       {field.type === "image" ? <ImageField value={value} onChange={onChange} /> : null}
