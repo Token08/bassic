@@ -431,6 +431,24 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
       </section>
 
+      <section className="client-help-strip" aria-label="納品先向けの注意">
+        <div>
+          <Info size={18} />
+          <strong>反映には数分かかります</strong>
+          <span>公開後すぐに変わらない時は、少し待ってから再読み込みしてください。</span>
+        </div>
+        <div>
+          <Save size={18} />
+          <strong>下書きはサイトに出ません</strong>
+          <span>公開したい時は「公開して反映」を押し、公開サイトで確認します。</span>
+        </div>
+        <div>
+          <CheckCircle2 size={18} />
+          <strong>困った時は引き渡しメモへ</strong>
+          <span>連絡先、管理画面URL、ログイン方法は引き渡しメモにまとめます。</span>
+        </div>
+      </section>
+
       <SetupStatus health={health} />
       <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}

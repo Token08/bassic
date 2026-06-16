@@ -177,7 +177,15 @@ a {
   margin-bottom: 18px;
 }
 
+.client-help-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
 .guide-strip div,
+.client-help-strip div,
 .editor-guide div,
 .helper-panel,
 .empty-list,
@@ -193,6 +201,21 @@ a {
   gap: 3px;
   min-height: 76px;
   padding: 13px 14px;
+}
+
+.client-help-strip div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  align-items: start;
+  min-height: 96px;
+  padding: 13px 14px;
+  background: rgba(255, 253, 248, 0.82);
+}
+
+.client-help-strip svg {
+  grid-row: span 2;
+  color: var(--accent);
 }
 
 .editor-guide {
@@ -214,6 +237,11 @@ a {
   font-size: 0.94rem;
 }
 
+.client-help-strip strong {
+  color: var(--accent);
+  font-size: 0.94rem;
+}
+
 .editor-guide strong {
   color: var(--ink);
   font-size: 0.94rem;
@@ -223,6 +251,13 @@ a {
   color: var(--muted);
   font-size: 0.88rem;
   font-weight: 800;
+}
+
+.client-help-strip span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.7;
 }
 
 .editor-guide span {
@@ -1091,6 +1126,10 @@ a {
   }
 
   .editor-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .client-help-strip {
     grid-template-columns: 1fr;
   }
 
