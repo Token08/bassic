@@ -458,7 +458,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         <div>
           <Save size={18} />
           <strong>下書きはサイトに出ません</strong>
-          <span>公開したい時は「公開して反映」を押し、公開サイトで確認します。</span>
+          <span>公開したい時は「プレビューして公開」を押し、公開サイトで確認します。</span>
         </div>
         <div>
           <CheckCircle2 size={18} />
@@ -774,8 +774,8 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
         <span>サイトには出さず、入力内容だけ残します。</span>
       </div>
       <div>
-        <strong>公開して反映</strong>
-        <span>確認画面のあと、サイト更新を開始します。</span>
+        <strong>プレビューして公開</strong>
+        <span>内容確認のあと、サイト更新を開始します。</span>
       </div>
     </section>
   );
@@ -789,8 +789,8 @@ function SaveChoiceGuide() {
         <span>サイトには出さず、入力内容だけ残します。あとで確認したい時に使います。</span>
       </div>
       <div>
-        <strong>公開して反映</strong>
-        <span>プレビュー確認のあと、公開サイトの更新を開始します。</span>
+        <strong>プレビューして公開</strong>
+        <span>すぐ公開せず、確認画面を見てから公開できます。</span>
       </div>
     </div>
   );
@@ -1224,9 +1224,9 @@ function SectionEditor({
               </button>
               <button className="primary-button" type="button" disabled={saving || deploying} onClick={openPreview}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
-                公開して反映
+                プレビューして公開
               </button>
-              <small className="action-note">公開前にプレビュー確認が開きます。</small>
+              <small className="action-note">このボタンを押すと、まず確認画面が開きます。</small>
             </div>
           </form>
         </div>
