@@ -422,7 +422,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         <div>
           <p className="eyebrow">Bassic. Admin</p>
           <h1>更新する場所を選ぶ</h1>
-          <p>大きなボタンから選んで、入力、確認、保存の順に進めます。</p>
+          <p>大きなボタンから選んで、入力、確認、公開の順に進めます。</p>
         </div>
         <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
           <ExternalLink size={18} />
@@ -445,7 +445,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
         <div>
           <strong>4. 反映</strong>
-          <span>公開してサイトへ反映</span>
+          <span>プレビューして公開</span>
         </div>
       </section>
 
