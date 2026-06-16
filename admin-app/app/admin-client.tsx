@@ -146,7 +146,7 @@ async function requestJson<T>(url: string, init?: RequestInit) {
   const body = (await response.json().catch(() => ({ ok: false }))) as ApiResult<T>;
 
   if (!response.ok || !body.ok) {
-    throw new Error(body.message || "通信に失敗しました。時間を置いて再試行してください。");
+    throw new Error(body.message || "通信に失敗しました。時間をおいて再度お試しください。");
   }
 
   return body;
@@ -836,7 +836,7 @@ function SectionEditor({
 
       setNotice({
         tone: "error",
-        message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。時間を置いて再試行してください。"
+        message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。時間をおいて再度お試しください。"
       });
     } finally {
       setLoading(false);
@@ -984,7 +984,7 @@ function SectionEditor({
     } catch (saveError) {
       setNotice({
         tone: "error",
-        message: saveError instanceof Error ? saveError.message : "保存できませんでした。時間を置いて再試行してください。"
+        message: saveError instanceof Error ? saveError.message : "保存できませんでした。時間をおいて再度お試しください。"
       });
     } finally {
       setSaving(false);

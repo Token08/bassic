@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const expectedPassword = process.env.ADMIN_PASSWORD;
 
   if (!expectedPassword) {
-    return NextResponse.json({ ok: false, message: "管理画面のパスワード設定が未完了です。" }, { status: 500 });
+    return NextResponse.json({ ok: false, message: "管理画面のパスワード設定が未完了です。担当者に連絡してください。" }, { status: 500 });
   }
 
   if (!password || password !== expectedPassword) {
