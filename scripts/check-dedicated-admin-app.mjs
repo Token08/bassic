@@ -22,6 +22,7 @@ checkClientDocsText();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
+checkCmsSmokeCoversAdminEndpoints();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -238,4 +239,20 @@ function checkAdminSchemaEndpointsMatch() {
   ];
 
   add("admin schema sections match microCMS endpoints", problems.length === 0, problems.join(", "));
+}
+
+function checkCmsSmokeCoversAdminEndpoints() {
+  const endpointFile = "admin-app/lib/microcms.ts";
+  const smokeFile = "scripts/smoke-cms.mjs";
+  if (!existsSync(endpointFile) || !existsSync(smokeFile)) {
+    add("CMS smoke test covers admin endpoints", false, `${endpointFile} or ${smokeFile} missing`);
+    return;
+  }
+
+  const endpointText = readFileSync(endpointFile, "utf8");
+  const smokeText = readFileSync(smokeFile, "utf8");
+  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
+  const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`));
+
+  add("CMS smoke test covers admin endpoints", missing.length === 0, missing.join(", "));
 }
