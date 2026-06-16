@@ -848,6 +848,7 @@ function SectionEditor({
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
   const isMaintenanceSection = !dailySectionIds.has(section.id);
+  const isNewListItem = section.kind === "list" && selectedId === "new";
 
   const publishedCount = useMemo(() => items.filter((item) => isPublished(item)).length, [items]);
   const draftCount = items.length - publishedCount;
@@ -1100,7 +1101,13 @@ function SectionEditor({
           戻る
         </button>
         <div className="topbar-actions">
-          {dirty ? <span className="dirty-pill">未保存の変更あり</span> : <span className="saved-pill">保存済み</span>}
+          {dirty ? (
+            <span className="dirty-pill">未保存の変更あり</span>
+          ) : isNewListItem ? (
+            <span className="new-pill">新規作成中</span>
+          ) : (
+            <span className="saved-pill">保存済み</span>
+          )}
           {lastSavedAt ? <span className="saved-time">最終保存 {lastSavedAt}</span> : null}
           <button
             className="text-button"

@@ -546,6 +546,7 @@ a {
 }
 
 .dirty-pill,
+.new-pill,
 .saved-pill,
 .saved-time,
 .status-public,
@@ -564,6 +565,11 @@ a {
 .status-draft {
   background: rgba(195, 154, 69, 0.16);
   color: #7b5a10;
+}
+
+.new-pill {
+  background: rgba(36, 93, 131, 0.1);
+  color: var(--blue);
 }
 
 .saved-pill,
