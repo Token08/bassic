@@ -764,6 +764,14 @@ function PreviewModal({
             );
           })}
         </dl>
+        <div className="publish-checklist" aria-label="公開前の確認">
+          <strong>公開前に確認</strong>
+          <ul>
+            <li>内容、料金、日付に間違いがない</li>
+            <li>URLや画像は確認リンクで開けた</li>
+            <li>公開後にスマホでも表示を確認する</li>
+          </ul>
+        </div>
         <div className="modal-actions">
           <button className="secondary-button" type="button" onClick={onClose}>
             戻って直す
