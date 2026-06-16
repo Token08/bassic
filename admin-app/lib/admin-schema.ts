@@ -92,9 +92,9 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "address", label: "住所", type: "textarea", required: true, rows: 2, placeholder: "福岡市中央区天神3-4-19 WITH天神5F" },
       { key: "phone", label: "電話番号", type: "text", required: true, placeholder: "092-713-1040" },
-      { key: "hoursLabel", label: "通常営業時間", type: "textarea", required: true, rows: 2, placeholder: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE" },
+      { key: "hoursLabel", label: "通常営業時間", type: "textarea", required: true, rows: 3, placeholder: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE" },
       { key: "eventHoursNote", label: "イベント時の営業時間補足", type: "textarea", rows: 3, placeholder: "イベントがある日は22:30から通常営業。イベントにより異なる場合もございます。" },
-      { key: "smokingLabel", label: "喫煙について", type: "textarea", rows: 3, placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）" },
+      { key: "smokingLabel", label: "喫煙について", type: "textarea", rows: 4, placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）" },
       { key: "chargeLabel", label: "テーブル・チャージ", type: "text", placeholder: "テーブル・チャージ 500円 / お一人様" },
       { key: "googleMapsUrl", label: "Google Map URL", type: "url", required: true, placeholder: "https://maps.google.com/..." },
       { key: "directionsUrl", label: "現在地から向かうURL", type: "url", placeholder: "https://maps.google.com/..." },
@@ -118,7 +118,13 @@ export const sections: SectionDefinition[] = [
       { key: "heroLead", label: "TOP説明文", type: "textarea", required: true, rows: 4, placeholder: "福岡は親不孝通りにあるミュージックバーです。" },
       { key: "firstVisitLead", label: "初回来店向け説明文", type: "textarea", rows: 4, placeholder: "初めての方でも入りやすい雰囲気を伝える文章" },
       { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "天神駅から徒歩約4分。" },
-      { key: "instagramWidgetSrc", label: "Instagram表示URL", type: "url", placeholder: "https://cdn.lightwidget.com/widgets/...", hint: "保守担当者が用意した表示用URLを入れます。未入力でもサイトは崩れません。" },
+      {
+        key: "instagramWidgetSrc",
+        label: "Instagram表示URL",
+        type: "url",
+        placeholder: "https://cdn.lightwidget.com/widgets/...",
+        hint: "保守担当者が用意した表示用URLを入れます。未入力でもサイトは崩れません。"
+      },
       { key: "heroImage", label: "TOP画像", type: "image", hint: "未設定の場合は、サイト内の既存画像が表示されます。" }
     ],
     defaults: {}
@@ -210,7 +216,7 @@ export const sections: SectionDefinition[] = [
     title: "貸切・レンタルプラン",
     shortTitle: "貸切",
     description: "貸切、二次会、レンタル料金を更新します。",
-    helperText: "料金や条件は問い合わせ前提でも大丈夫です。古い料金を出さないように注意します。",
+    helperText: "料金や条件は問い合わせ前提でも大丈夫です。古い料金を出さないよう注意します。",
     kind: "list",
     createLabel: "プランを追加",
     icon: Store,
@@ -229,7 +235,7 @@ export const sections: SectionDefinition[] = [
     title: "機材レンタル",
     shortTitle: "機材",
     description: "機材レンタルの説明とPDFリンクを更新します。",
-    helperText: "PDF自体を差し替えた場合は、PDFのURLも新しいものに変えてください。",
+    helperText: "PDFを差し替えた場合は、PDFのURLも新しいものに変えてください。",
     kind: "object",
     icon: Music,
     fields: [
@@ -245,17 +251,23 @@ export const sections: SectionDefinition[] = [
     title: "SNSお知らせカード",
     shortTitle: "SNSお知らせ",
     description: "Instagram、Facebook、Xへの誘導カードを更新します。",
-    helperText: "SNS投稿そのものを取り込むのではなく、見に行ってほしい投稿へのリンクカードを作ります。",
+    helperText: "SNS投稿そのものを自動取得するのではなく、見に行ってほしい投稿へのリンクカードを作ります。",
     kind: "list",
     createLabel: "お知らせを追加",
     icon: Megaphone,
     titleKey: "title",
     fields: [
-      { key: "platform", label: "SNS", type: "select", required: true, options: [
-        { value: "instagram", label: "Instagram" },
-        { value: "facebook", label: "Facebook" },
-        { value: "x", label: "X" }
-      ] },
+      {
+        key: "platform",
+        label: "SNS",
+        type: "select",
+        required: true,
+        options: [
+          { value: "instagram", label: "Instagram" },
+          { value: "facebook", label: "Facebook" },
+          { value: "x", label: "X" }
+        ]
+      },
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "今週のライヴ情報" },
       { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "短い紹介文" },
       { key: "url", label: "リンクURL", type: "url", required: true, placeholder: "https://..." },
@@ -281,8 +293,8 @@ export const sections: SectionDefinition[] = [
       { key: "heroLead", label: "メイン説明文", type: "textarea", rows: 4, placeholder: "初めて見る人に伝えたい説明文" },
       { key: "introLead", label: "初めての方向け説明", type: "textarea", rows: 4, placeholder: "TOPの初回来店セクションで使います" },
       { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "道案内や来店前の注意を短く" },
-      { key: "socialTitleLine1", label: "SNS見出し1行目", type: "text", placeholder: "最新情報は" },
-      { key: "socialTitleLine2", label: "SNS見出し2行目", type: "text", placeholder: "公式SNSから" },
+      { key: "socialTitleLine1", label: "SNS見出し 1行目", type: "text", placeholder: "最新情報は" },
+      { key: "socialTitleLine2", label: "SNS見出し 2行目", type: "text", placeholder: "公式SNSから" },
       { key: "socialLead", label: "SNS説明文", type: "textarea", rows: 3, placeholder: "SNSお知らせカードの上に出る説明文" },
       { key: "listEyebrow", label: "一覧の小見出し", type: "text", placeholder: "Event List" },
       { key: "listTitle", label: "一覧の見出し", type: "text", placeholder: "Event Schedule" },
@@ -319,7 +331,7 @@ export const sections: SectionDefinition[] = [
     title: "お知らせ枠",
     shortTitle: "追加枠",
     description: "既存ページに、1種類だけ使える自由なお知らせセクションを追加します。",
-    helperText: "キャンペーンや臨時案内に使います。ページを増やす機能ではありません。",
+    helperText: "キャンペーンや一時案内に使います。ページを増やす機能ではありません。",
     kind: "list",
     createLabel: "お知らせ枠を追加",
     icon: Megaphone,
