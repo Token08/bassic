@@ -21,6 +21,7 @@ checkClientFacingText();
 checkClientDocsText();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
+checkAdminSchemaEndpointsMatch();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -215,4 +216,26 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSchemaEndpointsMatch() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const endpointFile = "admin-app/lib/microcms.ts";
+  if (!existsSync(schemaFile) || !existsSync(endpointFile)) {
+    add("admin schema sections match microCMS endpoints", false, `${schemaFile} or ${endpointFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const endpointText = readFileSync(endpointFile, "utf8");
+  const sectionIds = [...schemaText.matchAll(/id:\s*"([^"]+)"/g)].map((match) => match[1]);
+  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
+  const missingEndpoints = [...new Set(sectionIds)].filter((id) => !endpointIds.includes(id));
+  const missingSections = [...new Set(endpointIds)].filter((id) => !sectionIds.includes(id));
+  const problems = [
+    ...missingEndpoints.map((id) => `missing endpoint ${id}`),
+    ...missingSections.map((id) => `missing section ${id}`)
+  ];
+
+  add("admin schema sections match microCMS endpoints", problems.length === 0, problems.join(", "));
 }
