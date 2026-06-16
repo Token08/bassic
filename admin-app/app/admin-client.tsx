@@ -821,6 +821,7 @@ function SectionEditor({
   const [itemStatusFilter, setItemStatusFilter] = useState<"all" | "public" | "draft">("all");
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
+  const isMaintenanceSection = !dailySectionIds.has(section.id);
 
   const publishedCount = useMemo(() => items.filter((item) => isPublished(item)).length, [items]);
   const draftCount = items.length - publishedCount;
@@ -1108,6 +1109,12 @@ function SectionEditor({
         <Info size={18} />
         <span>{section.helperText}</span>
       </div>
+      {isMaintenanceSection ? (
+        <div className="maintenance-warning">
+          <AlertCircle size={18} />
+          <span>ここは保守向け設定です。ページ構成や表示順に影響するため、分からない場合は保存せずに戻ってください。</span>
+        </div>
+      ) : null}
 
       {notice ? <NoticeBox notice={notice} /> : null}
       <EditorGuide section={section} dirty={dirty} selectedId={selectedId} />
