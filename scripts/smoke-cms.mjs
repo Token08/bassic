@@ -196,18 +196,35 @@ function requiredEnum(item, field, values, endpoint) {
 }
 
 function requiredUrl(item, field, endpoint) {
-  try {
-    const url = new URL(item?.[field]);
-    if (url.protocol !== "https:") {
-      errors.push(`${endpoint}.${field}: URL must start with https://.`);
-    }
-  } catch {
-    errors.push(`${endpoint}.${field}: valid URL is required.`);
+  if (!isValidManagedUrl(item?.[field])) {
+    errors.push(`${endpoint}.${field}: URL must start with https:// or /.`);
   }
 }
 
 function requiredImage(item, field, endpoint) {
   if (!item?.[field]?.url) {
     errors.push(`${endpoint}.${field}: image is required.`);
+    return;
+  }
+
+  if (!isValidManagedUrl(item[field].url)) {
+    errors.push(`${endpoint}.${field}.url: URL must start with https:// or /.`);
+  }
+}
+
+function isValidManagedUrl(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
+  }
+
+  if (value.startsWith("/")) {
+    return !value.startsWith("//");
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
   }
 }
