@@ -96,12 +96,37 @@ export const sections: SectionDefinition[] = [
       { key: "eventHoursNote", label: "イベント時の営業時間補足", type: "textarea", rows: 3, placeholder: "イベントがある日は22:30から通常営業。イベントにより異なる場合もございます。" },
       { key: "smokingLabel", label: "喫煙について", type: "textarea", rows: 4, placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）" },
       { key: "chargeLabel", label: "テーブル・チャージ", type: "text", placeholder: "テーブル・チャージ 500円 / お一人様" },
-      { key: "googleMapsUrl", label: "Google Map URL", type: "url", required: true, placeholder: "https://maps.google.com/..." },
-      { key: "directionsUrl", label: "現在地から向かうURL", type: "url", placeholder: "https://maps.google.com/..." },
-      { key: "instagramUrl", label: "Instagram URL", type: "url", placeholder: "https://www.instagram.com/..." },
-      { key: "facebookUrl", label: "Facebook URL", type: "url", placeholder: "https://www.facebook.com/..." },
-      { key: "xUrl", label: "X URL", type: "url", placeholder: "https://x.com/..." },
-      { key: "onlineStoreUrl", label: "オンラインストアURL", type: "url", placeholder: "https://..." }
+      {
+        key: "googleMapsUrl",
+        label: "Google Map URL",
+        type: "url",
+        required: true,
+        placeholder: "https://maps.google.com/...",
+        hint: "保存前に「リンクを開いて確認」でBassic.の地図が開くか確認してください。"
+      },
+      {
+        key: "directionsUrl",
+        label: "現在地から向かうURL",
+        type: "url",
+        placeholder: "https://maps.google.com/...",
+        hint: "Google Mapの経路案内URLを入れます。未入力でも通常の地図リンクは使えます。"
+      },
+      {
+        key: "instagramUrl",
+        label: "Instagram URL",
+        type: "url",
+        placeholder: "https://www.instagram.com/...",
+        hint: "公式InstagramのプロフィールURLを入れます。"
+      },
+      {
+        key: "facebookUrl",
+        label: "Facebook URL",
+        type: "url",
+        placeholder: "https://www.facebook.com/...",
+        hint: "公式FacebookページのURLを入れます。"
+      },
+      { key: "xUrl", label: "X URL", type: "url", placeholder: "https://x.com/...", hint: "公式XアカウントのURLを入れます。" },
+      { key: "onlineStoreUrl", label: "オンラインストアURL", type: "url", placeholder: "https://...", hint: "物販ページがある場合だけ入力します。" }
     ],
     defaults: {}
   },
@@ -123,7 +148,7 @@ export const sections: SectionDefinition[] = [
         label: "Instagram表示URL",
         type: "url",
         placeholder: "https://cdn.lightwidget.com/widgets/...",
-        hint: "保守担当者が用意した表示用URLを入れます。未入力でもサイトは崩れません。"
+        hint: "保守担当者が用意した表示用URLを入れます。分からない場合は空欄のままで大丈夫です。"
       },
       { key: "heroImage", label: "TOP画像", type: "image", hint: "未設定の場合は、サイト内の既存画像が表示されます。" }
     ],
@@ -166,7 +191,7 @@ export const sections: SectionDefinition[] = [
       { key: "performers", label: "出演者", type: "textarea", rows: 3, placeholder: "出演者名を改行で入力" },
       { key: "price", label: "料金", type: "text", placeholder: "前売 3,000円 / 当日 3,500円" },
       { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "電話、DM、フォームなど" },
-      { key: "sourceUrl", label: "詳細URL", type: "url", placeholder: "https://..." },
+      { key: "sourceUrl", label: "詳細URL", type: "url", placeholder: "https://...", hint: "SNS投稿や予約ページがある場合だけ入力します。" },
       { key: "image", label: "イベント画像", type: "image" },
       { key: "isPublished", label: "公開する", type: "checkbox" }
     ],
@@ -242,7 +267,7 @@ export const sections: SectionDefinition[] = [
       { key: "title", label: "見出し", type: "text", required: true, placeholder: "機材レンタルについて" },
       { key: "price", label: "料金", type: "text", placeholder: "料金はPDFをご確認ください" },
       { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "レンタル可能な機材や注意点" },
-      { key: "pdfUrl", label: "PDFリンク", type: "url", placeholder: "/assets/pdf/list.pdf または https://..." }
+      { key: "pdfUrl", label: "PDFリンク", type: "url", placeholder: "/assets/pdf/list.pdf または https://...", hint: "入力後は「リンクを開いて確認」でPDFが開くか確認してください。" }
     ],
     defaults: {}
   },
@@ -270,7 +295,7 @@ export const sections: SectionDefinition[] = [
       },
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "今週のライヴ情報" },
       { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "短い紹介文" },
-      { key: "url", label: "リンクURL", type: "url", required: true, placeholder: "https://..." },
+      { key: "url", label: "リンクURL", type: "url", required: true, placeholder: "https://...", hint: "入力後は「リンクを開いて確認」で正しい投稿やページが開くか確認してください。" },
       { key: "date", label: "日付", type: "date" },
       { key: "isPublished", label: "公開する", type: "checkbox" }
     ],
