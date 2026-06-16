@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        message: "SNS状況を確認できませんでした。時間をおいて再度お試しください。"
+        message: "SNS状況を確認できませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。"
       },
       { status: 502 }
     );
