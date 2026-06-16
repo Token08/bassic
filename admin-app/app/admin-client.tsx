@@ -449,7 +449,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
       </section>
 
-      <section className="client-help-strip" aria-label="納品先向けの注意">
+      <section className="client-help-strip" aria-label="お店側向けの注意">
         <div>
           <Info size={18} />
           <strong>反映には数分かかります</strong>
@@ -474,7 +474,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
 
       <DashboardSectionGroup
         title="よく使う更新"
-        description="納品先が普段触る場所です。イベント、画像、メニュー、SNSお知らせなどを更新できます。"
+        description="お店側が普段触る場所です。イベント、画像、メニュー、SNSお知らせなどを更新できます。"
         sections={dailySections}
         onSelect={onSelect}
       />
