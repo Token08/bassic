@@ -20,6 +20,7 @@ checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
+checkClientHandoffDocsLinked();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
@@ -187,6 +188,27 @@ function checkClientDocsText() {
   }
 
   add("client handoff docs hide technical setup terms", leaks.length === 0, leaks.join(", "));
+}
+
+function checkClientHandoffDocsLinked() {
+  const checklistFile = "docs/client-handoff-checklist.md";
+  const sheetFile = "docs/client-handoff-sheet.md";
+  if (!existsSync(checklistFile) || !existsSync(sheetFile)) {
+    add("client handoff checklist references handoff sheet", false, `${checklistFile} or ${sheetFile} missing`);
+    return;
+  }
+
+  const checklistText = readFileSync(checklistFile, "utf8");
+  const sheetText = readFileSync(sheetFile, "utf8");
+  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先"];
+  const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
+  const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
+  const problems = [
+    ...(checklistMentionsSheet ? [] : ["checklist missing 引き渡しメモ"]),
+    ...missingSheetTerms.map((term) => `sheet missing ${term}`)
+  ];
+
+  add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
 }
 
 function checkDocsIndexBoundaries() {
