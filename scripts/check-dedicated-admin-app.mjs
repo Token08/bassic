@@ -200,9 +200,12 @@ function checkClientHandoffDocsLinked() {
   const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
+  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認"];
+  const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const problems = [
     ...(checklistMentionsSheet ? [] : ["checklist missing 引き渡しメモ"]),
-    ...missingSheetTerms.map((term) => `sheet missing ${term}`)
+    ...missingSheetTerms.map((term) => `sheet missing ${term}`),
+    ...missingChecklistTerms.map((term) => `checklist missing ${term}`)
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));

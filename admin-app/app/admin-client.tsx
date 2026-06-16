@@ -606,6 +606,8 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   const [error, setError] = useState("");
   const image = isImageObject(value) ? value : { url: getString(value) };
   const url = image.url || "";
+  const trimmedUrl = url.trim();
+  const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedUrl(trimmedUrl);
 
   async function upload(file: File) {
     setUploading(true);
@@ -650,6 +652,12 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
         <label>
           画像URL
           <input type="url" value={url} onChange={(event) => onChange({ ...image, url: event.target.value })} placeholder="https://..." />
+          {canPreviewImageUrl ? (
+            <a className="field-link-check" href={trimmedUrl} target="_blank" rel="noreferrer">
+              <ExternalLink size={15} />
+              画像を開いて確認
+            </a>
+          ) : null}
         </label>
         <label>
           画像の説明
