@@ -541,6 +541,8 @@ function Field({
     id: field.key,
     name: field.key
   };
+  const urlValue = field.type === "url" ? getString(value).trim() : "";
+  const canPreviewUrl = Boolean(urlValue) && isValidManagedUrl(urlValue);
 
   return (
     <label className={`field field-${field.type}`} htmlFor={field.key}>
@@ -565,6 +567,12 @@ function Field({
           onChange={(event) => onChange(field.type === "number" ? Number(event.target.value || 0) : event.target.value)}
           placeholder={field.placeholder}
         />
+      ) : null}
+      {canPreviewUrl ? (
+        <a className="field-link-check" href={urlValue} target="_blank" rel="noreferrer">
+          <ExternalLink size={15} />
+          リンクを開いて確認
+        </a>
       ) : null}
       {field.type === "select" ? (
         <select {...common} value={getString(value)} onChange={(event) => onChange(event.target.value)}>
@@ -939,11 +947,11 @@ function SectionEditor({
         continue;
       }
 
-      if (!emptyValue && field.type === "url" && !isValidManagedUrl(getString(value))) {
+      if (!emptyValue && field.type === "url" && !isValidManagedUrl(getString(value).trim())) {
         nextErrors[field.key] = `${field.label}は https:// または / から始まるURLを入力してください。`;
       }
 
-      if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value))) {
+      if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value).trim())) {
         nextErrors[field.key] = `${field.label}のURLは https:// または / から始まるURLを入力してください。`;
       }
     }

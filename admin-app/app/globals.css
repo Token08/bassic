@@ -916,6 +916,18 @@ a {
   font-weight: 700;
 }
 
+.field-link-check {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue);
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .form-error {
   color: var(--accent);
 }
