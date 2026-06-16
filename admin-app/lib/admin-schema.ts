@@ -236,7 +236,7 @@ export const sections: SectionDefinition[] = [
       { key: "title", label: "見出し", type: "text", required: true, placeholder: "機材レンタルについて" },
       { key: "price", label: "料金", type: "text", placeholder: "料金はPDFをご確認ください" },
       { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "レンタル可能な機材や注意点" },
-      { key: "pdfUrl", label: "PDFリンク", type: "url", placeholder: "https://..." }
+      { key: "pdfUrl", label: "PDFリンク", type: "url", placeholder: "/assets/pdf/list.pdf または https://..." }
     ],
     defaults: {}
   },

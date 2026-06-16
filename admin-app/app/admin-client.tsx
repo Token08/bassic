@@ -90,14 +90,18 @@ function isPublished(item: Draft) {
   return item.isPublished !== false;
 }
 
-function isHttpUrl(value: string) {
+function isValidManagedUrl(value: string) {
   if (!value) {
     return true;
   }
 
+  if (value.startsWith("/")) {
+    return !value.startsWith("//");
+  }
+
   try {
     const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:";
+    return url.protocol === "https:";
   } catch {
     return false;
   }
@@ -614,7 +618,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
           />
         </label>
       </div>
-      <p className="field-hint">画像はアップロードするか、https:// から始まる画像URLを入れてください。横長画像は1600px以上がおすすめです。</p>
+      <p className="field-hint">画像はアップロードするか、https:// または /assets/ から始まるURLを入れてください。横長画像は1600px以上がおすすめです。</p>
       {error ? <small className="form-error">{error}</small> : null}
     </div>
   );
@@ -883,12 +887,12 @@ function SectionEditor({
         continue;
       }
 
-      if (!emptyValue && field.type === "url" && !isHttpUrl(getString(value))) {
-        nextErrors[field.key] = `${field.label}は https:// から始まるURLを入力してください。`;
+      if (!emptyValue && field.type === "url" && !isValidManagedUrl(getString(value))) {
+        nextErrors[field.key] = `${field.label}は https:// または / から始まるURLを入力してください。`;
       }
 
-      if (!emptyValue && field.type === "image" && !isHttpUrl(getImageUrl(value))) {
-        nextErrors[field.key] = `${field.label}のURLは https:// から始まるURLを入力してください。`;
+      if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value))) {
+        nextErrors[field.key] = `${field.label}のURLは https:// または / から始まるURLを入力してください。`;
       }
     }
 
