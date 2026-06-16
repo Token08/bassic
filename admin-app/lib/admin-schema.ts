@@ -80,6 +80,10 @@ const sectionOptions: FieldOption[] = [
   { value: "googleMap", label: "Google Map" }
 ];
 
+const imageFieldHint = "画像を入れた後は「画像を開いて確認」で正しい写真が開くか確認してください。横長の写真がおすすめです。";
+const displayOrderHint = "数字が小さいものから先に表示されます。迷ったら1、2、3の順に入れてください。";
+const publishFieldHint = "ONにするとサイトに表示されます。まだ見せたくない時はOFFのまま保存してください。";
+
 export const sections: SectionDefinition[] = [
   {
     id: "site-settings",
@@ -150,7 +154,7 @@ export const sections: SectionDefinition[] = [
         placeholder: "https://cdn.lightwidget.com/widgets/...",
         hint: "保守担当者が用意した表示用URLを入れます。分からない場合は空欄のままで大丈夫です。"
       },
-      { key: "heroImage", label: "TOP画像", type: "image", hint: "未設定の場合は、サイト内の既存画像が表示されます。" }
+      { key: "heroImage", label: "TOP画像", type: "image", hint: `未設定の場合は、サイト内の既存画像が表示されます。${imageFieldHint}` }
     ],
     defaults: {}
   },
@@ -167,9 +171,9 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "page", label: "使うページ", type: "select", required: true, options: pageOptions },
       { key: "title", label: "画像名", type: "text", placeholder: "TOP 1枚目" },
-      { key: "image", label: "画像", type: "image", required: true },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: "数字が小さいものから先に表示されます。" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "image", label: "画像", type: "image", required: true, hint: imageFieldHint },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { page: "home", displayOrder: 1, isPublished: false }
   },
@@ -192,8 +196,8 @@ export const sections: SectionDefinition[] = [
       { key: "price", label: "料金", type: "text", placeholder: "前売 3,000円 / 当日 3,500円" },
       { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "電話、DM、フォームなど" },
       { key: "sourceUrl", label: "詳細URL", type: "url", placeholder: "https://...", hint: "SNS投稿や予約ページがある場合だけ入力します。" },
-      { key: "image", label: "イベント画像", type: "image" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "image", label: "イベント画像", type: "image", hint: "チラシや告知画像がある場合だけ入れます。入れた後は「画像を開いて確認」で確認してください。" },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { isPublished: false }
   },
@@ -212,9 +216,9 @@ export const sections: SectionDefinition[] = [
       { key: "englishName", label: "英語名", type: "text", placeholder: "Fuzz Curry" },
       { key: "price", label: "料金", type: "text", placeholder: "1,200円" },
       { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "必要な場合だけ短く入力" },
-      { key: "image", label: "画像", type: "image" },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "image", label: "画像", type: "image", hint: imageFieldHint },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { category: "food", isPublished: false, displayOrder: 1 }
   },
@@ -230,9 +234,9 @@ export const sections: SectionDefinition[] = [
     titleKey: "title",
     fields: [
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "Drink Menu 1" },
-      { key: "image", label: "画像", type: "image", required: true },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "image", label: "画像", type: "image", required: true, hint: "文字が切れていないメニュー表画像を入れてください。入れた後は「画像を開いて確認」で確認してください。" },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { isPublished: false, displayOrder: 1 }
   },
@@ -250,8 +254,8 @@ export const sections: SectionDefinition[] = [
       { key: "title", label: "プラン名", type: "text", required: true, placeholder: "Bassic. Party Plan" },
       { key: "price", label: "料金", type: "text", required: true, placeholder: "4,000円〜 / 1名" },
       { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "内容、人数、注意点など" },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { isPublished: false, displayOrder: 1 }
   },
@@ -297,7 +301,7 @@ export const sections: SectionDefinition[] = [
       { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "短い紹介文" },
       { key: "url", label: "リンクURL", type: "url", required: true, placeholder: "https://...", hint: "入力後は「リンクを開いて確認」で正しい投稿やページが開くか確認してください。" },
       { key: "date", label: "日付", type: "date" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { platform: "instagram", isPublished: false }
   },
@@ -328,8 +332,8 @@ export const sections: SectionDefinition[] = [
       { key: "foodLead", label: "フードメニュー説明", type: "textarea", rows: 2, placeholder: "フードメニューの上に出す一言" },
       { key: "partyLead", label: "貸切説明", type: "textarea", rows: 3, placeholder: "貸切ページのプラン上に出す説明" },
       { key: "rentalLead", label: "機材レンタル説明", type: "textarea", rows: 3, placeholder: "機材レンタルカードで使う説明" },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1" },
-      { key: "isPublished", label: "使う", type: "checkbox" }
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
+      { key: "isPublished", label: "使う", type: "checkbox", hint: "ONにすると、この文言がサイトで使われます。下書きにしたい時はOFFにしてください。" }
     ],
     defaults: { page: "home", displayOrder: 1, isPublished: true }
   },
@@ -365,11 +369,11 @@ export const sections: SectionDefinition[] = [
       { key: "page", label: "表示ページ", type: "select", required: true, options: pageOptions },
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "臨時休業のお知らせ" },
       { key: "body", label: "本文", type: "textarea", required: true, rows: 5, placeholder: "お客様に伝えたい内容を短く入力します。" },
-      { key: "image", label: "画像", type: "image", hint: "必要な時だけ追加します。横長の写真がおすすめです。" },
+      { key: "image", label: "画像", type: "image", hint: `必要な時だけ追加します。${imageFieldHint}` },
       { key: "linkLabel", label: "リンクボタン名", type: "text", placeholder: "詳しく見る" },
       { key: "linkUrl", label: "リンクURL", type: "url", placeholder: "https://..." },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "10" },
-      { key: "isPublished", label: "公開する", type: "checkbox" }
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "10", hint: displayOrderHint },
+      { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
     defaults: { page: "home", displayOrder: 10, isPublished: false }
   }
