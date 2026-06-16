@@ -55,7 +55,7 @@ export const endpointMap = {
   },
   "social-notices": {
     id: "social-notices",
-    label: "SNS告知",
+    label: "SNSお知らせ",
     type: "list",
     defaultOrders: "-date"
   },
@@ -73,7 +73,7 @@ export const endpointMap = {
   },
   "custom-sections": {
     id: "custom-sections",
-    label: "お知らせ追加",
+    label: "お知らせ枠",
     type: "list",
     defaultOrders: "page,displayOrder"
   }

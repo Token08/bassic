@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createContent, getContent, updateObjectContent } from "@/lib/microcms";
 import { isAuthenticatedRequest } from "@/lib/auth";
+import { createContent, getContent, updateObjectContent } from "@/lib/microcms";
 
 export const runtime = "nodejs";
 
@@ -12,6 +12,13 @@ type RouteContext = {
 
 function unauthorized() {
   return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
+}
+
+function loadFailed() {
+  return NextResponse.json(
+    { ok: false, message: "読み込みできませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。" },
+    { status: 502 }
+  );
 }
 
 function saveFailed() {
@@ -32,10 +39,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ ok: true, data });
   } catch {
-    return NextResponse.json(
-      { ok: false, message: "読み込みできませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。" },
-      { status: 502 }
-    );
+    return loadFailed();
   }
 }
 
