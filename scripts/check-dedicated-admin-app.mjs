@@ -382,7 +382,7 @@ function checkFacebookEventImportPanel() {
     "FacebookイベントURL・詳細URL",
     "Google Calendarへ載せたい場合",
     "イベント名",
-    "日時が自動取得できませんでした",
+    "日付またはSTARTが自動取得できませんでした",
     "START",
     "Facebookイベントを公開する前に日付を入力してください。",
     "Facebookイベントを公開する前にSTARTを入力してください。"
@@ -405,6 +405,7 @@ function checkFacebookEventHandoffDocs() {
   const syncDocText = existsSync("docs/facebook-event-sync.md") ? readFileSync("docs/facebook-event-sync.md", "utf8") : "";
   const requiredManualTerms = [
     "読み取り結果のチェックリスト",
+    "タイトル、画像、日付、STARTが入ったか確認",
     "個別イベントページのURL",
     "日付とSTARTの両方が入っていないと保存時に確認メッセージ"
   ];

@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, data: preview });
   } catch {
     return NextResponse.json(
-      { ok: false, message: "Facebookから読み取れませんでした。タイトル、日時、画像は手入力できます。" },
+      { ok: false, message: "Facebookから読み取れませんでした。タイトル、日付、START、画像は手入力できます。" },
       { status: 502 }
     );
   }

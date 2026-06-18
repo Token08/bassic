@@ -5,8 +5,8 @@ Facebookイベントは、完全自動取得ではなく「管理画面にFacebo
 ## 基本方針
 
 - 納品先は、管理画面にFacebookの個別イベントURLを貼ります。
-- 管理画面の `Facebookから読み取る` ボタンで、取れる範囲のタイトル、画像、日時を読み取ります。
-- 日時が取れない場合は、管理画面で日付とSTARTを手入力します。
+- 管理画面の `Facebookから読み取る` ボタンで、取れる範囲のタイトル、画像、日付、STARTを読み取ります。
+- 日付またはSTARTが取れない場合は、管理画面で日付とSTARTを手入力します。
 - 保存しただけではGoogle Calendar本体は更新されません。
 - Google Calendarへ反映する時だけ、保守担当者が `npm run sync:calendar:check` と `npm run sync:calendar` を実行します。
 
@@ -16,7 +16,7 @@ Facebookイベントは、完全自動取得ではなく「管理画面にFacebo
 2. `FacebookイベントURL・詳細URL` に、Facebookの個別イベントページURLを貼る。
 3. `Facebookから読み取る` を押す。
 4. タイトル、画像、日付、START、ENDを確認する。
-5. Facebookから日時が取れない場合は、日付とSTARTを手入力する。
+5. Facebookから日付またはSTARTが取れない場合は、日付とSTARTを手入力する。
 6. `公開する` をオンにして保存する。
 7. Google Calendarへも載せたい場合は、保守担当者へ「イベント名」と「Google Calendarにも反映してください」と依頼する。
 
@@ -35,7 +35,7 @@ NG: https://www.facebook.com/bar.Bassic/events
 npm run sync:calendar:check
 ```
 
-このコマンドは、Google Calendarへ入る予定のタイトル、日時、Facebook URL、画像URLを表示します。警告が残っている場合は失敗します。管理画面のイベント内容を直してから、もう一度実行してください。
+このコマンドは、Google Calendarへ入る予定のタイトル、日付、START、Facebook URL、画像URLを表示します。警告が残っている場合は失敗します。管理画面のイベント内容を直してから、もう一度実行してください。
 
 納品先から依頼を受けた時は、依頼されたイベント名が確認結果の `summary` と一致しているか、日付、START、Facebook URL、画像URLが管理画面の内容と合っているかを見ます。
 

@@ -901,11 +901,11 @@ function FacebookEventImportPanel({
     ? [
         { label: "タイトル", ok: Boolean(preview.title), text: preview.title || "手入力してください" },
         {
-          label: "日時",
+          label: "日付・START",
           ok: Boolean(preview.date && preview.startTime),
           text: preview.date
             ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
-            : "日時は入力欄で確認してください"
+            : "日付とSTARTは入力欄で確認してください"
         },
         { label: "画像", ok: Boolean(preview.imageUrl), text: preview.imageUrl ? "取得済み" : "画像が必要な場合は手入力してください" },
         { label: "FacebookイベントURL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
@@ -957,8 +957,8 @@ function FacebookEventImportPanel({
       setPreview(data);
       setMessage(
         data.date && data.startTime
-          ? "読み取りました。タイトル、日時、画像を確認してください。"
-          : "タイトルと画像を読み取りました。日時は手入力で確認してください。"
+          ? "読み取りました。タイトル、日付、START、画像を確認してください。"
+          : "タイトルと画像を読み取りました。日付とSTARTは手入力で確認してください。"
       );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
@@ -972,7 +972,7 @@ function FacebookEventImportPanel({
       <div className="facebook-import-heading">
         <div>
           <strong>Facebookイベントを取り込む</strong>
-          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日時を読み取ります。</span>
+          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日付、STARTを読み取ります。</span>
           <span>公開前に「日付」と「START」が入っているか必ず確認してください。</span>
           <span>Google Calendarへ載せたい場合は、イベント公開後に「イベント名」と一緒に保守担当者へ反映依頼してください。</span>
         </div>
@@ -1000,12 +1000,12 @@ function FacebookEventImportPanel({
             <span>
               {preview.date
                 ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
-                : "日時は入力欄で確認してください"}
+                : "日付とSTARTは入力欄で確認してください"}
             </span>
             {previewNeedsDateInput ? (
               <div className="facebook-import-date-warning" role="status">
                 <AlertCircle size={16} />
-                <span>日時が自動取得できませんでした。公開前に「日付」と「START」を手入力してください。</span>
+                <span>日付またはSTARTが自動取得できませんでした。公開前に「日付」と「START」を手入力してください。</span>
               </div>
             ) : null}
             <ul className="facebook-import-checklist" aria-label="読み取り結果の確認">

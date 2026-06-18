@@ -95,7 +95,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 
 イベントをGoogle Calendarへ反映する場合、`events` の `sourceUrl` はFacebookの個別イベントページURLを入れます。イベント一覧ページのURLでは同期対象として扱えません。
 
-FacebookイベントURLから取り込んだイベントを公開する場合は、`date` と `startTime` が入っているか管理画面側で確認します。日時が取れない場合は手入力します。
+FacebookイベントURLから取り込んだイベントを公開する場合は、`date` と `startTime` が入っているか管理画面側で確認します。日付またはSTARTが取れない場合は手入力します。
 
 `image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
 
