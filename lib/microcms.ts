@@ -215,8 +215,35 @@ function visibleDrinkMenuSheets(sheets?: DrinkMenuSheet[]) {
 
 function visibleSocialNotices(notices?: SocialNotice[]) {
   return (notices?.length ? notices : (fallbackContents.socialNotices as SocialNotice[]))
-    .filter((notice) => notice.isPublished && notice.title && notice.url)
+    .filter((notice) => notice.isPublished && notice.title && isSocialNoticeUrlForPlatform(notice))
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+}
+
+function isSocialNoticeUrlForPlatform(notice: SocialNotice) {
+  if (!notice.url) {
+    return false;
+  }
+
+  try {
+    const url = new URL(notice.url);
+    const host = url.hostname.replace(/^www\./, "");
+
+    if (notice.platform === "instagram") {
+      return host === "instagram.com";
+    }
+
+    if (notice.platform === "facebook") {
+      return host === "facebook.com" || host === "m.facebook.com" || host === "mbasic.facebook.com" || host === "fb.me";
+    }
+
+    if (notice.platform === "x") {
+      return host === "x.com" || host === "twitter.com";
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function heroSlidesByPage(slides?: HeroSlide[]): CmsContents["heroSlides"] {

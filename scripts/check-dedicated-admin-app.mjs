@@ -30,6 +30,7 @@ checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
 checkSocialNoticeUrlValidation();
+checkPublicSocialNoticeUrlFiltering();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -426,6 +427,29 @@ function checkSocialNoticeUrlValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("admin validates social notice URLs by platform", missing.length === 0, missing.join(", "));
+}
+
+function checkPublicSocialNoticeUrlFiltering() {
+  const file = "lib/microcms.ts";
+  if (!existsSync(file)) {
+    add("public site filters social notice URLs by platform", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "isSocialNoticeUrlForPlatform",
+    "notice.platform === \"instagram\"",
+    "notice.platform === \"facebook\"",
+    "notice.platform === \"x\"",
+    "instagram.com",
+    "facebook.com",
+    "x.com",
+    "twitter.com"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("public site filters social notice URLs by platform", missing.length === 0, missing.join(", "));
 }
 
 function checkPreviewChecklistIsSectionSpecific() {
