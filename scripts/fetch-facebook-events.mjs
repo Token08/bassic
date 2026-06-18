@@ -283,6 +283,16 @@ function parseDateFromText(text) {
     };
   }
 
+  const jpWithoutYear = normalized.match(/(?:^|[^\d])(\d{1,2})月(\d{1,2})日?.*?(午前|午後)?\s*(\d{1,2})(?::|：|時)?(\d{2})?/);
+  if (jpWithoutYear) {
+    const year = inferEventYear(jpWithoutYear[1], jpWithoutYear[2]);
+    const hour = normalizeJapaneseHour(jpWithoutYear[4], jpWithoutYear[3]);
+    return {
+      date: `${year}-${pad(jpWithoutYear[1])}-${pad(jpWithoutYear[2])}`,
+      time: `${pad(hour)}:${pad(jpWithoutYear[5] || "00")}`
+    };
+  }
+
   const iso = normalized.match(/(\d{4})-(\d{2})-(\d{2})(?:.*?(\d{2}):(\d{2}))?/);
   if (iso) {
     return {
@@ -292,6 +302,39 @@ function parseDateFromText(text) {
   }
 
   return { date: "", time: undefined };
+}
+
+function inferEventYear(monthValue, dayValue) {
+  const now = new Date();
+  let year = now.getFullYear();
+  const month = Number.parseInt(monthValue, 10);
+  const day = Number.parseInt(dayValue, 10);
+  const candidate = new Date(year, month - 1, day);
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  if (candidate < sixMonthsAgo) {
+    year += 1;
+  }
+
+  return String(year);
+}
+
+function normalizeJapaneseHour(value, period) {
+  const hour = Number.parseInt(value, 10);
+  if (Number.isNaN(hour)) {
+    return "00";
+  }
+
+  if (period === "午後" && hour < 12) {
+    return String(hour + 12);
+  }
+
+  if (period === "午前" && hour === 12) {
+    return "00";
+  }
+
+  return String(hour);
 }
 
 function cleanEvent(event) {

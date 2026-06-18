@@ -35,6 +35,7 @@ checkAdminErrorsExplainWhatToTellSupport();
 checkPublishWaitCopyIsSpecific();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
+checkFacebookEventFetchParsingFallbacks();
 checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
@@ -527,6 +528,26 @@ function checkFacebookEventPreviewParsingFallbacks() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("Facebook event preview handles common markup fallbacks", missing.length === 0, missing.join(", "));
+}
+
+function checkFacebookEventFetchParsingFallbacks() {
+  const file = "scripts/fetch-facebook-events.mjs";
+  if (!existsSync(file)) {
+    add("Facebook event fetch handles yearless Japanese dates", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "jpWithoutYear",
+    "inferEventYear",
+    "normalizeJapaneseHour",
+    "午後",
+    "午前"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("Facebook event fetch handles yearless Japanese dates", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventImportPanel() {
