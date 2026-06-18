@@ -38,6 +38,7 @@ checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
+checkSampleContentUsesCurrentCopy();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -514,4 +515,36 @@ function checkSeedDataKeepsEventsCalendarFocused() {
   const seedsEventList = text.includes('"eventList"') || text.includes("'eventList'");
 
   add("seed data keeps events page calendar-focused", !seedsEventList, "eventList should stay out of initial seed data");
+}
+
+function checkSampleContentUsesCurrentCopy() {
+  const file = "docs/cms-sample-content-v1.json";
+  if (!existsSync(file)) {
+    add("CMS sample content uses current copy", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (error) {
+    add("CMS sample content uses current copy", false, `${file} is not valid JSON: ${error.message}`);
+    return;
+  }
+
+  const required = [
+    ["site-settings.chargeLabel", data["site-settings"]?.chargeLabel, "テーブル・チャージ"],
+    ["home.heroLead", data.home?.heroLead, "ライヴ"],
+    ["home.firstVisitLead", data.home?.firstVisitLead, "ライヴ"],
+    ["home.accessNote", data.home?.accessNote, "徒歩約4分"]
+  ];
+  const staleTerms = ["ライブ", "\"chargeLabel\": \"チャージ 500円", "徒歩約6分"];
+  const missing = required
+    .filter(([, value, term]) => typeof value !== "string" || !value.includes(term))
+    .map(([field, , term]) => `${field}: ${term}`);
+  const stale = staleTerms.filter((term) => text.includes(term));
+  const problems = [...missing, ...stale.map((term) => `stale ${term}`)];
+
+  add("CMS sample content uses current copy", problems.length === 0, problems.join(", "));
 }
