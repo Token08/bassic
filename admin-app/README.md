@@ -1,6 +1,6 @@
 # Bassic. 専用管理画面
 
-`admin-app/` は納品先向けの簡単な管理UIです。公開サイト本体はGitHub Pagesの静的サイトのまま維持し、この管理UIだけVercelでサーバー付きNext.jsとして動かします。
+`admin-app/` は納品先向けの簡単な管理UIです。公開サイト本体はGitHub Pagesの静的サイトとして維持し、この管理UIだけVercelでサーバー付きNext.jsとして動かします。
 
 ## ローカル起動
 
@@ -41,10 +41,21 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 
 ## 反映の流れ
 
-1. 管理画面で下書き保存、または公開して反映を押す。
+1. 管理画面で下書きを保存、または公開して反映を押す。
 2. Vercel API RoutesがmicroCMSへ保存する。
-3. 公開して反映の場合だけGitHub `repository_dispatch` を実行する。
+3. 公開して反映の場合だけ、GitHub `repository_dispatch` を実行する。
 4. GitHub Pagesのビルドが走り、公開サイトへ反映される。
+
+## FacebookイベントからGoogle Calendarへ反映する時
+
+Facebookイベントは、管理画面へ個別イベントURLを貼る運用にしています。
+
+1. 管理画面のイベントで `FacebookイベントURL・詳細URL` に個別イベントURLを貼る。
+2. `Facebookから読み取る` を押し、タイトル、画像、日付、STARTを確認する。
+3. 公開後、保守担当者が `npm run sync:calendar:check` で同期内容を確認する。
+4. 問題なければ `npm run sync:calendar` でGoogle Calendarへ反映する。
+
+詳しい保守手順は `docs/facebook-event-sync.md` を確認してください。納品先にはこの同期コマンドを触らせず、必要な時だけ「Google Calendarへ反映してください」と連絡してもらう運用にします。
 
 ## 納品時に渡す資料
 

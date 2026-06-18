@@ -1,55 +1,75 @@
-# Facebook Event Sync
+# Facebookイベント連携
 
-`npm run fetch:events` writes `public/data/facebook-events.json`.
+Facebookイベントは、完全自動取得ではなく「管理画面にFacebookイベントURLを貼る」方式を主運用にします。Meta APIの権限審査に依存しないため、納品先がITに詳しくなくても運用しやすく、取得に失敗しても手入力で公開できます。
 
-`npm run sync:calendar` reads Facebook events registered in the admin CMS first, then reads `public/data/facebook-events.json`, deduplicates by Facebook event URL/source id, and writes the events into the embedded Google Calendar. Synced Facebook events are not rendered in the Pickup cards.
+## 基本方針
 
-For client operation, the preferred workflow is semi-automatic: paste a Facebook event URL into the admin event form, press the Facebook import button, confirm title/date/image, then publish.
+- 納品先は、管理画面にFacebookの個別イベントURLを貼ります。
+- 管理画面の `Facebookから読み取る` ボタンで、取れる範囲のタイトル、画像、日時を読み取ります。
+- 日時が取れない場合は、管理画面で日付とSTARTを手入力します。
+- 保存しただけではGoogle Calendar本体は更新されません。
+- Google Calendarへ反映する時だけ、保守担当者が `npm run sync:calendar:check` と `npm run sync:calendar` を実行します。
 
-If the operator pastes a single Facebook event URL and saves without pressing the import button, the admin app still marks it as a Facebook event for calendar sync. The title, date, and image still need to be confirmed before publishing.
+## 管理画面での入力手順
 
-Before writing to Google Calendar, run `npm run sync:calendar:check` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. This command fails when warnings remain, so it is safer for production checks. If the output says `Dry run completed without warnings.`, run `npm run sync:calendar`.
+1. 専用管理画面を開き、`イベント` を選ぶ。
+2. `FacebookイベントURL・詳細URL` に、Facebookの個別イベントページURLを貼る。
+3. `Facebookから読み取る` を押す。
+4. タイトル、画像、日付、START、ENDを確認する。
+5. Facebookから日時が取れない場合は、日付とSTARTを手入力する。
+6. `公開する` をオンにして保存する。
+7. Google Calendarへも載せたい場合は、保守担当者へ反映を依頼する。
 
-If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
+Facebookのイベント一覧ページではなく、必ず個別イベントページのURLを使います。
 
-The real sync also stops when warnings remain, so incomplete event data cannot be missed. Only a maintainer should bypass this by setting `GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS=true`, and only after confirming the warning is acceptable.
+```text
+OK: https://www.facebook.com/events/1234567890/
+NG: https://www.facebook.com/bar.Bassic/events
+```
 
-`npm run sync:calendar:dry` is still available for loose inspection. For release checks, prefer `npm run sync:calendar:check`.
+## Google Calendar同期手順
 
-Published events without a title or date are not synced. The dry run reports them as skipped items, and the real sync stops until the admin data is fixed.
+本番のGoogle Calendarへ書き込む前に、必ず確認用コマンドを実行します。
 
-## Admin Import Workflow
+```bash
+npm run sync:calendar:check
+```
 
-1. Open the dedicated admin screen and choose `イベント`.
-2. Paste a single Facebook event URL into `FacebookイベントURL・詳細URL`.
-3. Press `Facebookから読み取る`.
-4. Confirm the imported title, date, start time, end time, and image.
-5. If Facebook does not expose the event date/time in metadata, enter the date and time manually.
-6. Turn `公開する` on and publish after preview.
-7. Run `npm run sync:calendar:check` before the real calendar sync.
+このコマンドは、Google Calendarへ入る予定のタイトル、日時、Facebook URL、画像URLを表示します。警告が残っている場合は失敗します。管理画面のイベント内容を直してから、もう一度実行してください。
 
-The importer reads `og:title`, `og:image`, `og:description`, and JSON-LD event metadata when Facebook exposes it. Facebook may hide date/time depending on login state or markup changes, so manual confirmation stays part of the workflow.
+確認結果に問題がなければ、本番同期を実行します。
 
-## Source Priority
+```bash
+npm run sync:calendar
+```
 
-1. Meta Graph API with `FACEBOOK_PAGE_ACCESS_TOKEN` and `FACEBOOK_PAGE_ID`.
-2. Facebook iCal with `FACEBOOK_EVENTS_ICAL_URL`.
-3. Google Calendar iCal with `GOOGLE_CALENDAR_ICAL_URL` or `GOOGLE_CALENDAR_ID`.
-4. Optional browser sync with `FACEBOOK_BROWSER_SYNC=true` and `FACEBOOK_BROWSER_COOKIES_JSON`.
+本番同期も警告が残っている場合は停止します。どうしても警告を許容する場合だけ、保守担当者が内容を確認したうえで `GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS=true` を使います。
 
-GitHub Actions installs Playwright only when `FACEBOOK_BROWSER_SYNC` is enabled.
+## Google Calendarへ入る内容
 
-## Failure Behavior
+- `summary`: イベントタイトル
+- `start/end`: 日付、START、END
+- `description`: FacebookイベントURL、画像URL、予約方法、補足
+- `source.url`: FacebookイベントURL
 
-The script prefers manually confirmed admin events. If live fetching fails, it keeps the previous successful JSON data so the site does not lose the schedule.
+画像はGoogle Calendarの説明欄にURLとして入ります。Google Calendarの月表示で、画像カードとして大きく表示されることは保証しません。
 
-`sync:calendar` deletes previously synced events by default. Set `GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC=true` only when the target Google Calendar should be emptied before inserting the synced events.
+サイト内画像URLが `/images/...` のような相対パスの場合、同期時に公開URLへ変換します。本番同期前は `NEXT_PUBLIC_SITE_URL` または `NEXT_PUBLIC_PUBLIC_SITE_URL` を本番URLに合わせてください。
 
-Images are written as image URLs in the Google Calendar event description. Google Calendar month view does not reliably display event images as visual cards.
+## 既存の自動取得ルート
 
-If an event image starts with `/`, the sync script converts it to the public site URL before writing it to Google Calendar. Set `NEXT_PUBLIC_SITE_URL` or `NEXT_PUBLIC_PUBLIC_SITE_URL` to the final domain before production sync.
+保守担当者向けに、既存の自動取得ルートは残しています。ただし主運用にはしません。
 
-## Environment Variables
+1. Meta Graph API: `FACEBOOK_PAGE_ACCESS_TOKEN` と `FACEBOOK_PAGE_ID`
+2. Facebook iCal: `FACEBOOK_EVENTS_ICAL_URL`
+3. Google Calendar iCal: `GOOGLE_CALENDAR_ICAL_URL` または `GOOGLE_CALENDAR_ID`
+4. ブラウザ取得: `FACEBOOK_BROWSER_SYNC=true` と `FACEBOOK_BROWSER_COOKIES_JSON`
+
+`npm run fetch:events` は `public/data/facebook-events.json` を作ります。`npm run sync:calendar` は管理画面に登録されたFacebookイベントを優先し、その後に `public/data/facebook-events.json` を読みます。同じFacebookイベントURLやsource idは重複しないようにまとめます。
+
+ライブ取得に失敗した場合は、前回成功したJSONを残して、サイトの予定が空にならないようにします。
+
+## 環境変数
 
 - `FACEBOOK_PAGE_ACCESS_TOKEN`
 - `FACEBOOK_PAGE_ID`
