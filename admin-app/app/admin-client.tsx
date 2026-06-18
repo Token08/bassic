@@ -128,6 +128,10 @@ function isValidManagedUrl(value: string) {
   }
 }
 
+function isFacebookEventUrl(value: string) {
+  return /^https?:\/\/(?:(?:(?:www|m|mbasic)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(value);
+}
+
 function getImageUrl(value: unknown) {
   return isImageObject(value) ? value.url || "" : getString(value);
 }
@@ -847,7 +851,21 @@ function FacebookEventImportPanel({
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
-  const isFacebookEvent = /^https?:\/\/(?:(?:(?:www|m|mbasic)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(sourceUrl);
+  const isFacebookEvent = isFacebookEventUrl(sourceUrl);
+  const previewChecks = preview
+    ? [
+        { label: "タイトル", ok: Boolean(preview.title), text: preview.title || "手入力してください" },
+        {
+          label: "日時",
+          ok: Boolean(preview.date && preview.startTime),
+          text: preview.date
+            ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
+            : "日時は入力欄で確認してください"
+        },
+        { label: "画像", ok: Boolean(preview.imageUrl), text: preview.imageUrl ? "取得済み" : "画像が必要な場合は手入力してください" },
+        { label: "Facebook URL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
+      ]
+    : [];
 
   async function importEvent() {
     setLoading(true);
@@ -931,6 +949,17 @@ function FacebookEventImportPanel({
                 ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
                 : "日時は入力欄で確認してください"}
             </span>
+            <ul className="facebook-import-checklist" aria-label="読み取り結果の確認">
+              {previewChecks.map((check) => (
+                <li key={check.label} className={check.ok ? "ok" : "needs-check"}>
+                  {check.ok ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
+                  <span>
+                    <strong>{check.label}</strong>
+                    {check.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       ) : null}
@@ -1103,6 +1132,12 @@ function SectionEditor({
       if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value).trim())) {
         nextErrors[field.key] = `${field.label}のURLは https:// または / から始まるURLを入力してください。`;
       }
+    }
+
+    const sourceType = getString(nextDraft.sourceType);
+    const sourceUrl = getString(nextDraft.sourceUrl).trim();
+    if (section.id === "events" && sourceType === "facebook" && sourceUrl && !isFacebookEventUrl(sourceUrl)) {
+      nextErrors.sourceUrl = "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入力してください。";
     }
 
     setErrors(nextErrors);

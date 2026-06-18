@@ -851,6 +851,57 @@ a {
   overflow-wrap: anywhere;
 }
 
+.facebook-import-checklist {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facebook-import-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: rgba(255, 252, 244, 0.74);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.facebook-import-checklist li svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.facebook-import-checklist li.ok svg {
+  color: var(--green);
+}
+
+.facebook-import-checklist li.needs-check {
+  border-color: rgba(159, 23, 32, 0.22);
+  background: rgba(159, 23, 32, 0.06);
+}
+
+.facebook-import-checklist li.needs-check svg {
+  color: var(--accent);
+}
+
+.facebook-import-checklist li span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facebook-import-checklist li strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
 .field {
   display: grid;
   gap: 8px;
