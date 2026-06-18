@@ -27,6 +27,7 @@ checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
+checkPreviewChecklistIsSectionSpecific();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
@@ -300,7 +301,7 @@ function checkClientHandoffDocsLinked() {
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
-  const missingManualTerms = ["画像を外す"].filter((term) => !manualText.includes(term));
+  const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります"].filter((term) => !manualText.includes(term));
   const problems = [
     ...(checklistMentionsSheet ? [] : ["checklist missing 引き渡しメモ"]),
     ...missingSheetTerms.map((term) => `sheet missing ${term}`),
@@ -347,6 +348,31 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
   const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
 
   add("admin image field uses friendly remove copy", problems.length === 0, problems.join(", "));
+}
+
+function checkPreviewChecklistIsSectionSpecific() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin preview checklist is section specific", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function getPublishChecklistItems",
+    "section.id === \"site-settings\"",
+    "Google MapとSNSの確認リンクを開いた",
+    "section.id === \"events\"",
+    "イベント名、日付、STARTに間違いがない",
+    "section.id === \"menu\"",
+    "フード名、料金、写真に間違いがない",
+    "section.id === \"drink-menu-sheets\"",
+    "画像を開いて文字が読めるか確認した",
+    "getPublishChecklistItems(section).map"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin preview checklist is section specific", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventPreviewMessages() {

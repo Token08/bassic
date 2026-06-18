@@ -774,6 +774,34 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
   );
 }
 
+function getPublishChecklistItems(section: SectionDefinition) {
+  if (section.id === "site-settings") {
+    return ["住所、電話、営業時間が最新になっている", "Google MapとSNSの確認リンクを開いた", "喫煙、テーブル・チャージの表記に間違いがない"];
+  }
+
+  if (section.id === "events") {
+    return ["イベント名、日付、STARTに間違いがない", "料金、予約方法、出演者を確認した", "FacebookイベントURLや画像は確認リンクで開けた"];
+  }
+
+  if (section.id === "menu") {
+    return ["フード名、料金、写真に間違いがない", "売り切れや季節メニューは下書きにした", "公開後にスマホのメニューページで確認する"];
+  }
+
+  if (section.id === "drink-menu-sheets") {
+    return ["ドリンク表の画像が切れていない", "画像を開いて文字が読めるか確認した", "公開後にスマホで拡大表示も確認する"];
+  }
+
+  if (section.id === "party-plans" || section.id === "equipment-rental") {
+    return ["料金、人数、条件が古くない", "PDFや問い合わせリンクを開いて確認した", "公開後にスマホのPartyページで確認する"];
+  }
+
+  if (section.id === "social-notices") {
+    return ["タイトル、説明、SNS種別に間違いがない", "リンクを開いて正しい投稿やページを確認した", "公開後にTOPページのSNS欄を確認する"];
+  }
+
+  return ["内容、料金、日付に間違いがない", "URLや画像は確認リンクで開けた", "公開後にスマホでも表示を確認する"];
+}
+
 function PreviewModal({
   draft,
   section,
@@ -830,9 +858,9 @@ function PreviewModal({
         <div className="publish-checklist" aria-label="公開前の確認">
           <strong>公開前に確認</strong>
           <ul>
-            <li>内容、料金、日付に間違いがない</li>
-            <li>URLや画像は確認リンクで開けた</li>
-            <li>公開後にスマホでも表示を確認する</li>
+            {getPublishChecklistItems(section).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
         </div>
         <div className="modal-actions">
