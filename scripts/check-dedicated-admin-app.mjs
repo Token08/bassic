@@ -252,9 +252,9 @@ function checkClientDocsText() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "イベント名"] },
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "イベント名", "日付", "Google Calendar本体は更新されません"] },
     { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART", "イベント名", "連絡文テンプレート"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名", "Google Calendarにも載せたい時の連絡文", "反映されない時の連絡文"] }
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名", "日付:", "START:", "Google Calendarにも載せたい時の連絡文", "反映されない時の連絡文"] }
   ];
   const missing = [];
 
@@ -516,6 +516,7 @@ function checkFacebookEventImportPanel() {
     "sourceId: data.sourceId",
     "Google Calendarへ載せたい場合",
     "イベント名",
+    "日付",
     "日付またはSTARTが自動取得できませんでした",
     "START",
     "Facebookイベントを公開する前に日付を入力してください。",
