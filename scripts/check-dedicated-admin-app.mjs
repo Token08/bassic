@@ -332,11 +332,18 @@ function checkClientHandoffDocsLinked() {
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
   const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります"].filter((term) => !manualText.includes(term));
+  const socialUrlTerms = ["instagram.com", "facebook.com", "x.com", "twitter.com"];
+  const missingSocialUrlTerms = [
+    ...socialUrlTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile} missing ${term}`),
+    ...socialUrlTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile} missing ${term}`),
+    ...socialUrlTerms.filter((term) => !sheetText.includes(term)).map((term) => `${sheetFile} missing ${term}`)
+  ];
   const problems = [
     ...(checklistMentionsSheet ? [] : ["checklist missing 引き渡しメモ"]),
     ...missingSheetTerms.map((term) => `sheet missing ${term}`),
     ...missingChecklistTerms.map((term) => `checklist missing ${term}`),
-    ...missingManualTerms.map((term) => `${manualFile} missing ${term}`)
+    ...missingManualTerms.map((term) => `${manualFile} missing ${term}`),
+    ...missingSocialUrlTerms
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));

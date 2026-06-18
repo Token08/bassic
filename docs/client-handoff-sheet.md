@@ -32,6 +32,7 @@
 - SNSお知らせを変えた時は、スマホでTOPページのSNS欄を見る
 - 電話、地図、SNS、予約のボタンを押して確認する
 - URLや画像URLを変えた時は、管理画面の確認リンクを押す
+- SNSお知らせは、選んだSNSと同じURLを使う。Instagramは `instagram.com`、Facebookは `facebook.com`、Xは `x.com` または `twitter.com`
 - 「公開する」がONになっているか確認する
 - サイトに出したい更新は「プレビューして公開」まで押す
 - Facebookイベントから追加した時は、日付、START、画像が正しいか見る

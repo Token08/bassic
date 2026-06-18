@@ -151,6 +151,9 @@ URLを入れた後は、入力欄の下に出る「画像を開いて確認」�
 7. 保存する
 8. TOPページのSNS欄を確認する
 
+リンクURLは、選んだSNSと同じサービスのURLを入れてください。
+Instagramは `instagram.com`、Facebookは `facebook.com`、Xは `x.com` または `twitter.com` のURLを使います。
+
 Instagramの一覧表示を使う場合は、保守担当者が表示用URLを用意し、「TOP」のInstagram表示URLに入れます。
 通常のInstagramプロフィールURLではないため、分からない場合は空欄のままで大丈夫です。
 
