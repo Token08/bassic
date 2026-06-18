@@ -83,7 +83,7 @@ npm run smoke:seo
 4. タイトル、画像、日時を確認する
 5. 日時が取れない場合は手入力する
 6. 公開してから `npm run sync:calendar:check` で同期内容を確認する
-7. dry runの `description` 内にある `画像:` が本番URL、またはFacebookなどの外部URLになっていることを確認する
+7. 確認結果の `description` 内にある `画像:` が本番URL、またはFacebookなどの外部URLになっていることを確認する
 8. 問題なければ `npm run sync:calendar` を実行する
 
 画像はGoogle Calendarの説明欄にURLとして入ります。月表示で大きく画像カードとして表示されることは保証しません。

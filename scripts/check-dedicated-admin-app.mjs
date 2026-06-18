@@ -19,6 +19,7 @@ checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
 checkFile("Facebook event preview API route", "admin-app/app/api/facebook-event-preview/route.ts");
 checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
+checkNoQuestionMarkMojibake();
 checkClientFacingText();
 checkClientDocsText();
 checkClientDocsMentionFacebookEventFlow();
@@ -116,7 +117,11 @@ function checkNoMojibake() {
     "docs/admin-docs-index.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
-    "docs/delivery-admin-manual.md"
+    "docs/delivery-admin-manual.md",
+    "docs/facebook-event-sync.md",
+    "docs/production-handoff-checklist.md",
+    "scripts/sync-google-calendar.mjs",
+    "admin-app/app/api/facebook-event-preview/route.ts"
   ];
   const hits = [];
 
@@ -134,6 +139,32 @@ function checkNoMojibake() {
   }
 
   add("admin and handoff docs have no mojibake markers", hits.length === 0, hits.join(", "));
+}
+
+function checkNoQuestionMarkMojibake() {
+  const files = [
+    "admin-app/app/admin-client.tsx",
+    "admin-app/app/api/facebook-event-preview/route.ts",
+    "admin-app/README.md",
+    "docs/facebook-event-sync.md",
+    "docs/production-handoff-checklist.md",
+    "scripts/sync-google-calendar.mjs"
+  ];
+  const hits = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    const matches = [...text.matchAll(/\?{3,}/g)];
+    if (matches.length) {
+      hits.push(`${file}: ${matches.length} suspicious question-mark run(s)`);
+    }
+  }
+
+  add("admin and calendar docs have no question-mark mojibake", hits.length === 0, hits.join(", "));
 }
 
 function checkClientFacingText() {
