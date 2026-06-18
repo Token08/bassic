@@ -63,3 +63,10 @@ npm run setup:admin
 npm run check:admin
 npm run smoke:cms
 ```
+
+## 外部ストア調整資料
+
+- `docs/base-store-design-kit.md`
+  - BASEオンラインストアをBassic.本体サイトの色味へ寄せるためのCSSと反映手順です。
+- `docs/base-store-current-theme-css.css`
+  - BASE管理画面へ貼り付けるCSSを単体で抜き出したものです。
