@@ -629,6 +629,7 @@ function checkEventFieldDocsExplainCalendarSync() {
   const docsText = readFileSync(docsFile, "utf8");
   const required = [
     [schemaFile, schemaText, "Google Calendarへ反映する時も、このURLが説明欄に入ります。"],
+    [docsFile, docsText, "`日付` と `START`"],
     [docsFile, docsText, "`sourceUrl` はGoogle Calendarへ反映する時の詳細リンクにも使います。"],
     [docsFile, docsText, "`image` はGoogle Calendarの説明欄に画像URLとして入ります。"]
   ];
@@ -649,6 +650,7 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
     "`sourceUrl` | FacebookイベントURL・詳細URL",
     "`sourceType` | 取り込み元",
     "sourceType` は管理画面側で `facebook` を自動入力",
+    "`date` と `startTime`",
     "## 7. FacebookイベントとGoogle Calendar連携の注意",
     "## 8. 接続確認"
   ];
