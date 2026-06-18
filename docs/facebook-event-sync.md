@@ -12,6 +12,8 @@ If the dry run prints a warning, check the event in the admin screen before sync
 
 For stricter release checks, set `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS=true` before the dry run. In that mode, any warning stops the command so incomplete event data cannot be missed.
 
+Published events without a title or date are not synced. The dry run reports them as skipped items, and the real sync stops until the admin data is fixed.
+
 ## Admin Import Workflow
 
 1. Open the dedicated admin screen and choose `イベント`.
@@ -40,6 +42,8 @@ The script prefers manually confirmed admin events. If live fetching fails, it k
 `sync:calendar` deletes previously synced events by default. Set `GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC=true` only when the target Google Calendar should be emptied before inserting the synced events.
 
 Images are written as image URLs in the Google Calendar event description. Google Calendar month view does not reliably display event images as visual cards.
+
+If an event image starts with `/`, the sync script converts it to the public site URL before writing it to Google Calendar. Set `NEXT_PUBLIC_SITE_URL` to the final domain before production sync.
 
 ## Environment Variables
 

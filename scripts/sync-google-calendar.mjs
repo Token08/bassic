@@ -13,17 +13,40 @@ const syncTag = process.env.GOOGLE_CALENDAR_SYNC_TAG || "bassic-facebook-sync";
 const timezone = process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Tokyo";
 const dryRun = process.env.GOOGLE_CALENDAR_SYNC_DRY_RUN === "true";
 const failOnWarnings = process.env.GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS === "true";
+const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp");
+let skippedSyncEvents = [];
+let inputFileWarning = "";
 
 async function main() {
   const events = await readEvents();
+  if (inputFileWarning && dryRun) {
+    console.log(`Warning: ${inputFileWarning}`);
+  }
   if (!events.length) {
+    if (inputFileWarning && !dryRun) {
+      throw new Error(inputFileWarning);
+    }
+    if (skippedSyncEvents.length) {
+      for (const skipped of skippedSyncEvents) {
+        console.log(`Warning: skipped published event "${getEventLabel(skipped)}" because title or date is missing.`);
+      }
+      const message = `Found ${skippedSyncEvents.length} published event(s) without title or date. Fix the admin event data before syncing.`;
+      if (dryRun && !failOnWarnings) {
+        console.log(`\nDry run completed with ${skippedSyncEvents.length} warning(s). ${message}`);
+        return;
+      }
+      throw new Error(message);
+    }
     console.log(`No events found in ${inputPath}. Google Calendar was not changed.`);
     return;
   }
 
   if (dryRun) {
-    let warningCount = 0;
+    let warningCount = skippedSyncEvents.length + (inputFileWarning ? 1 : 0);
     console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
+    for (const skipped of skippedSyncEvents) {
+      console.log(`Warning: skipped published event "${getEventLabel(skipped)}" because title or date is missing.`);
+    }
     events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
       console.log(`\n[${index + 1}/${events.length}] ${googleEvent.summary}`);
@@ -59,6 +82,12 @@ async function main() {
   const auth = getAuthClient();
   const calendar = google.calendar({ version: "v3", auth });
 
+  if (skippedSyncEvents.length) {
+    throw new Error(
+      `Found ${skippedSyncEvents.length} published event(s) without title or date. Run npm run sync:calendar:dry and fix the admin event data before syncing.`
+    );
+  }
+
   if (clearBeforeSync) {
     await clearCalendar(calendar);
   } else {
@@ -78,14 +107,17 @@ async function main() {
 async function readEvents() {
   const managedEvents = await readManagedFacebookEvents();
   const fileEvents = await readInputFileEvents();
-  return dedupeEvents([...managedEvents, ...fileEvents]).filter((event) => event.isPublished && event.title && event.date);
+  const events = dedupeEvents([...managedEvents, ...fileEvents]);
+  skippedSyncEvents = events.filter((event) => event.isPublished && (!event.title || !event.date));
+  return events.filter((event) => event.isPublished && event.title && event.date);
 }
 
 async function readInputFileEvents() {
   try {
-    const data = JSON.parse(await readFile(inputPath, "utf8"));
+    const data = JSON.parse((await readFile(inputPath, "utf8")).replace(/^\uFEFF/, ""));
     return (data.events || []).map(normalizeEvent).filter(Boolean);
-  } catch {
+  } catch (error) {
+    inputFileWarning = `Could not read calendar sync input ${inputPath}: ${error instanceof Error ? error.message : String(error)}`;
     return [];
   }
 }
@@ -227,6 +259,10 @@ function collectEventWarnings(event) {
     warnings.push("画像URLは https:// で始まる外部URL、または / で始まるサイト内URLを指定してください。");
   }
 
+  if (event.image?.url?.startsWith("/") && !siteUrl) {
+    warnings.push("サイト内画像URLをGoogle Calendar用のURLに変換できません。NEXT_PUBLIC_SITE_URLを確認してください。");
+  }
+
   return warnings;
 }
 
@@ -332,11 +368,12 @@ function toGoogleCalendarEvent(event) {
 }
 
 function buildDescription(event) {
+  const imageUrl = resolveCalendarUrl(event.image?.url);
   return [
     event.performers,
     event.reservation,
     event.sourceUrl ? `Facebook: ${event.sourceUrl}` : "",
-    event.image?.url ? `Image: ${event.image.url}` : ""
+    imageUrl ? `Image: ${imageUrl}` : ""
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -347,12 +384,43 @@ function extractTime(value) {
     return "";
   }
 
-  const match = String(value).match(/(\d{1,2})[:時](\d{2})?/);
+  const match = String(value).match(/(\d{1,2})\s*(?::|：)\s*(\d{2})|(\d{1,2})\s*時\s*(\d{1,2})?\s*分?/);
   if (!match) {
     return "";
   }
 
-  return `${match[1].padStart(2, "0")}:${(match[2] || "00").padStart(2, "0")}`;
+  const hour = match[1] || match[3];
+  const minute = match[2] || match[4] || "00";
+  return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+}
+
+function normalizeSiteUrl(value) {
+  return String(value || "").trim().replace(/\/+$/, "");
+}
+
+function resolveCalendarUrl(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const imageUrl = value.trim();
+  if (!imageUrl) {
+    return "";
+  }
+
+  if (imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  if (imageUrl.startsWith("/")) {
+    return siteUrl ? `${siteUrl}${imageUrl}` : imageUrl;
+  }
+
+  return imageUrl;
+}
+
+function getEventLabel(event) {
+  return event.title || event.sourceUrl || event.id || event.sourceId || "Untitled event";
 }
 
 function getEndDateTime(date, startTime, endTime) {
