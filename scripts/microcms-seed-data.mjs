@@ -285,7 +285,6 @@ const pageSections = [
   ["home-social", "home", "social", 5],
   ["home-access", "home", "access", 6],
   ["events-hero", "events", "hero", 1],
-  ["events-list", "events", "eventList", 2, false],
   ["events-calendar", "events", "calendar", 2],
   ["menu-hero", "menu", "hero", 1],
   ["menu-drink-sheets", "menu", "drinkSheets", 2],

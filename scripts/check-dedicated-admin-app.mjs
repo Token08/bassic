@@ -33,6 +33,7 @@ checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
 checkCmsSmokeCoversAdminEndpoints();
 checkSeedDataCoversAdminEndpoints();
+checkSeedDataKeepsEventsCalendarFocused();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -419,4 +420,17 @@ function checkSeedDataCoversAdminEndpoints() {
   const missing = [...new Set(endpointIds)].filter((id) => !seedText.includes(`"${id}"`) && !seedText.includes(`\n    ${id},`));
 
   add("microCMS seed data covers admin endpoints", missing.length === 0, missing.join(", "));
+}
+
+function checkSeedDataKeepsEventsCalendarFocused() {
+  const file = "scripts/microcms-seed-data.mjs";
+  if (!existsSync(file)) {
+    add("seed data keeps events page calendar-focused", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const seedsEventList = text.includes('"eventList"') || text.includes("'eventList'");
+
+  add("seed data keeps events page calendar-focused", !seedsEventList, "eventList should stay out of initial seed data");
 }

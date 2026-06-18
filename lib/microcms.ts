@@ -127,7 +127,6 @@ const fallbackPageSections: CmsContents["pageSections"] = {
   ],
   events: [
     { page: "events", sectionKey: "hero", displayOrder: 1, isPublished: true },
-    { page: "events", sectionKey: "eventList", displayOrder: 2, isPublished: false },
     { page: "events", sectionKey: "calendar", displayOrder: 2, isPublished: true }
   ],
   menu: [
