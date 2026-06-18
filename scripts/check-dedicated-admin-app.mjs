@@ -242,9 +242,9 @@ function checkClientDocsText() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START"] },
-    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄"] }
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "イベント名"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART", "イベント名"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名"] }
   ];
   const missing = [];
 
@@ -481,7 +481,7 @@ function checkProductionCalendarSyncDocsMatchOutput() {
   }
 
   const text = readFileSync(file, "utf8");
-  const requiredTerms = ["個別ページURL", "`description`", "`画像:`", "sync:calendar:check"];
+  const requiredTerms = ["個別ページURL", "`description`", "`画像:`", "sync:calendar:check", "依頼されたイベント名", "`summary`"];
   const staleTerms = ["`Image:`", "dry run"];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   const stale = staleTerms.filter((term) => text.includes(term));
