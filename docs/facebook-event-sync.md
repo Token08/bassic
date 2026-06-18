@@ -6,6 +6,8 @@
 
 For client operation, the preferred workflow is semi-automatic: paste a Facebook event URL into the admin event form, press the Facebook import button, confirm title/date/image, then publish.
 
+Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. If the output looks correct, run `npm run sync:calendar`.
+
 ## Source Priority
 
 1. Meta Graph API with `FACEBOOK_PAGE_ACCESS_TOKEN` and `FACEBOOK_PAGE_ID`.
@@ -32,6 +34,7 @@ Images are written as image URLs in the Google Calendar event description. Googl
 - `GOOGLE_CALENDAR_ICAL_URL`
 - `GOOGLE_CALENDAR_ID`
 - `GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC`
+- `GOOGLE_CALENDAR_SYNC_DRY_RUN`
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`

@@ -72,7 +72,8 @@ npm run smoke:seo
 3. 「Facebookから読み取る」を押す
 4. タイトル、画像、日時を確認する
 5. 日時が取れない場合は手入力する
-6. 公開してから `npm run sync:calendar` を実行する
+6. 公開してから `npm run sync:calendar:dry` で同期内容を確認する
+7. 問題なければ `npm run sync:calendar` を実行する
 
 画像はGoogle Calendarの説明欄にURLとして入ります。月表示で大きく画像カードとして表示されることは保証しません。
 

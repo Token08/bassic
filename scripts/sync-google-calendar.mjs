@@ -11,11 +11,33 @@ const calendarId =
 const clearBeforeSync = process.env.GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC === "true";
 const syncTag = process.env.GOOGLE_CALENDAR_SYNC_TAG || "bassic-facebook-sync";
 const timezone = process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Tokyo";
+const dryRun = process.env.GOOGLE_CALENDAR_SYNC_DRY_RUN === "true";
 
 async function main() {
   const events = await readEvents();
   if (!events.length) {
     console.log(`No events found in ${inputPath}. Google Calendar was not changed.`);
+    return;
+  }
+
+  if (dryRun) {
+    console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
+    for (const event of events) {
+      const googleEvent = toGoogleCalendarEvent(event);
+      console.log(
+        JSON.stringify(
+          {
+            summary: googleEvent.summary,
+            start: googleEvent.start,
+            end: googleEvent.end,
+            source: googleEvent.source,
+            description: googleEvent.description
+          },
+          null,
+          2
+        )
+      );
+    }
     return;
   }
 
