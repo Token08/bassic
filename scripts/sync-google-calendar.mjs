@@ -21,7 +21,7 @@ let inputFileWarning = "";
 async function main() {
   const events = await readEvents();
   if (inputFileWarning && dryRun) {
-    console.log(`Warning: ${inputFileWarning}`);
+    console.log(`警告: ${inputFileWarning}`);
   }
   if (!events.length) {
     if (inputFileWarning && !dryRun) {
@@ -33,27 +33,27 @@ async function main() {
       }
       const message = `公開中イベント ${skippedSyncEvents.length} 件に、イベント名または日付の未入力があります。管理画面で直してから同期してください。`;
       if (dryRun && !failOnWarnings) {
-        console.log(`\nDry run completed with ${skippedSyncEvents.length} warning(s). ${message}`);
+        console.log(`\n確認のみ完了: 警告 ${skippedSyncEvents.length} 件。${message}`);
         return;
       }
       throw new Error(message);
     }
-    console.log(`No events found in ${inputPath}. Google Calendar was not changed.`);
+    console.log(`同期対象イベントがありません。Google Calendarは変更していません。入力元: ${inputPath}`);
     return;
   }
 
   if (dryRun) {
     let warningCount = skippedSyncEvents.length + (inputFileWarning ? 1 : 0);
-    console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
+    console.log(`確認のみ: ${events.length} 件のイベントを Google Calendar ${calendarId} へ同期予定です。`);
     for (const skipped of skippedSyncEvents) {
-      console.log(`Warning: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
+      console.log(`警告: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
     }
     events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
       console.log(`\n[${index + 1}/${events.length}] ${googleEvent.summary}`);
       for (const warning of collectEventWarnings(event)) {
         warningCount += 1;
-        console.log(`Warning: ${warning}`);
+        console.log(`警告: ${warning}`);
       }
       console.log(
         JSON.stringify(
@@ -70,12 +70,12 @@ async function main() {
       );
     });
     if (warningCount) {
-      console.log(`\nDry run completed with ${warningCount} warning(s). Check the admin event data before syncing.`);
+      console.log(`\n確認のみ完了: 警告 ${warningCount} 件。同期前に管理画面のイベント内容を直してください。`);
     } else {
-      console.log("\nDry run completed without warnings.");
+      console.log("\n確認のみ完了: 警告はありません。");
     }
     if (warningCount && failOnWarnings) {
-      throw new Error(`Dry run found ${warningCount} warning(s). Fix the event data before syncing.`);
+      throw new Error(`警告 ${warningCount} 件があります。Google Calendarへ反映する前にイベント内容を直してください。`);
     }
     return;
   }
@@ -93,7 +93,7 @@ async function main() {
   if (syncWarnings.length && !allowSyncWarnings) {
     throw new Error(
       [
-        `Found ${syncWarnings.length} warning(s). Run npm run sync:calendar:check and fix the admin event data before syncing.`,
+        `警告 ${syncWarnings.length} 件があります。npm run sync:calendar:check で内容を確認し、管理画面で直してから同期してください。`,
         ...syncWarnings.map((warning) => `- ${warning}`)
       ].join("\n")
     );
@@ -112,7 +112,7 @@ async function main() {
     });
   }
 
-  console.log(`Synced ${events.length} event(s) to Google Calendar ${calendarId}`);
+  console.log(`${events.length} 件のイベントを Google Calendar ${calendarId} へ同期しました。`);
 }
 
 async function readEvents() {
@@ -128,7 +128,7 @@ async function readInputFileEvents() {
     const data = JSON.parse((await readFile(inputPath, "utf8")).replace(/^\uFEFF/, ""));
     return (data.events || []).map(normalizeEvent).filter(Boolean);
   } catch (error) {
-    inputFileWarning = `Could not read calendar sync input ${inputPath}: ${error instanceof Error ? error.message : String(error)}`;
+    inputFileWarning = `カレンダー同期用入力ファイルを読み取れませんでした。${inputPath}: ${error instanceof Error ? error.message : String(error)}`;
     return [];
   }
 }
@@ -335,7 +335,7 @@ function getCredentials() {
 }
 
 async function clearCalendar(calendar) {
-  console.log(`Clearing all events from Google Calendar ${calendarId}`);
+  console.log(`Google Calendar ${calendarId} の全イベントを削除してから同期します。`);
   await deleteEvents(calendar, {});
 }
 

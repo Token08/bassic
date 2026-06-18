@@ -105,6 +105,7 @@ const events = [
     startTime: "20:00",
     endTime: "22:00",
     sourceUrl: "https://www.facebook.com/events/1234567890123456/",
+    sourceId: "1234567890123456",
     sourceType: "facebook",
     performers: "出演者は決まり次第更新",
     price: "予約・料金はイベントごとに告知",

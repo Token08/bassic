@@ -10,6 +10,7 @@ type Preview = {
   date: string;
   startTime: string;
   endTime: string;
+  sourceId: string;
   sourceUrl: string;
 };
 
@@ -225,6 +226,7 @@ export async function POST(request: NextRequest) {
   const payload = (await request.json().catch(() => ({}))) as { url?: string };
   const url = String(payload.url || "").trim();
   const normalizedUrl = normalizeFacebookEventUrl(url);
+  const sourceId = getFacebookEventIdFromPath(new URL(normalizedUrl || "https://www.facebook.com/").pathname);
 
   if (!normalizedUrl) {
     return NextResponse.json(
@@ -263,6 +265,7 @@ export async function POST(request: NextRequest) {
       date: jsonLd.date || parsed.date || datetime.date,
       startTime: jsonLd.startTime || parsed.startTime || datetime.time,
       endTime: jsonLd.endTime,
+      sourceId,
       sourceUrl: normalizedUrl
     };
 

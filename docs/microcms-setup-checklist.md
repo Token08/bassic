@@ -50,12 +50,13 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `price` | 料金 | テキストフィールド | 任意 |
 | `reservation` | 予約方法 | テキストエリア | 任意 |
 | `sourceUrl` | FacebookイベントURL・詳細URL | テキストフィールド | 任意 |
+| `sourceId` | FacebookイベントID | テキストフィールド | 任意 |
 | `sourceType` | 取り込み元 | テキストフィールド | 任意 |
 | `image` | イベント画像 | 画像 | 任意 |
 | `isPublished` | 公開する | 真偽値 | 必須 |
 
 下書き中は `isPublished` をオフにします。
-Facebookイベントから取り込む場合、`sourceUrl` は個別イベントページURLを入れ、`sourceType` は管理画面側で `facebook` を自動入力します。
+Facebookイベントから取り込む場合、`sourceUrl` は個別イベントページURLを入れ、`sourceId` と `sourceType` は管理画面側で自動入力します。`sourceId` はGoogle Calendar同期時の重複防止に使います。
 
 ## 4. menu
 

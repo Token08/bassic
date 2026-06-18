@@ -380,6 +380,7 @@ function checkFacebookEventImportPanel() {
     "Facebookから読み取る",
     "読み取り結果の確認",
     "FacebookイベントURL・詳細URL",
+    "sourceId: data.sourceId",
     "Google Calendarへ載せたい場合",
     "イベント名",
     "日付またはSTARTが自動取得できませんでした",
@@ -458,6 +459,8 @@ function checkCalendarSyncPrefersManagedFacebookEvents() {
   const required = [
     [syncFile, syncText, "dedupeEvents([...managedEvents, ...fileEvents])"],
     [syncFile, syncText, "facebook-${facebookEventId}"],
+    [syncFile, syncText, "sourceId: event.sourceId"],
+    [docsFile, docsText, "sourceId"],
     [docsFile, docsText, "管理画面で確認・修正した内容を優先"],
     [docsFile, docsText, "管理画面の内容を正"]
   ];
@@ -480,8 +483,9 @@ function checkCalendarSyncBlocksWarnings() {
     [syncFile, syncText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [syncFile, syncText, "collectSyncWarnings(events)"],
     [syncFile, syncText, "!allowSyncWarnings"],
-    [syncFile, syncText, "Run npm run sync:calendar:check"],
+    [syncFile, syncText, "npm run sync:calendar:check で内容を確認"],
     [syncFile, syncText, "イベント名または日付が未入力"],
+    [syncFile, syncText, "確認のみ完了: 警告"],
     [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [docsFile, docsText, "sync:calendar:check"]
   ];
@@ -669,7 +673,9 @@ function checkEventFieldDocsExplainCalendarSync() {
   const docsText = readFileSync(docsFile, "utf8");
   const required = [
     [schemaFile, schemaText, "Google Calendarへ反映する時も、このURLが説明欄に入ります。"],
+    [schemaFile, schemaText, "FacebookイベントID"],
     [docsFile, docsText, "`日付` と `START`"],
+    [docsFile, docsText, "`sourceId` はFacebookイベントURLから取り込めたイベントIDです。"],
     [docsFile, docsText, "`sourceUrl` はGoogle Calendarへ反映する時の詳細リンクにも使います。"],
     [docsFile, docsText, "`image` はGoogle Calendarの説明欄に画像URLとして入ります。"]
   ];
@@ -688,8 +694,9 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
   const text = readFileSync(file, "utf8");
   const required = [
     "`sourceUrl` | FacebookイベントURL・詳細URL",
+    "`sourceId` | FacebookイベントID",
     "`sourceType` | 取り込み元",
-    "sourceType` は管理画面側で `facebook` を自動入力",
+    "`sourceId` と `sourceType` は管理画面側で自動入力",
     "`date` と `startTime`",
     "## 7. FacebookイベントとGoogle Calendar連携の注意",
     "## 8. 接続確認"
@@ -709,8 +716,9 @@ function checkLegacyMicrocmsSchemaIncludesFacebookEventFields() {
   const text = readFileSync(file, "utf8");
   const required = [
     "| sourceUrl | FacebookイベントURL・詳細URL",
+    "| sourceId | FacebookイベントID",
     "| sourceType | 取り込み元",
-    "`sourceType` に `facebook`",
+    "`sourceId` にFacebookイベントID",
     "Google Calendarへ反映する時"
   ];
   const missing = required.filter((term) => !text.includes(term));

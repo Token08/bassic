@@ -82,10 +82,12 @@
 | 料金 | `price` | テキスト | no |
 | 予約方法 | `reservation` | テキストエリア | no |
 | FacebookイベントURL・詳細URL | `sourceUrl` | テキスト | no |
+| FacebookイベントID | `sourceId` | hidden / 管理画面で自動入力 | no |
 | 取り込み元 | `sourceType` | hidden / 管理画面で自動入力 | no |
 | 画像 | `image` | 画像 | no |
 | 公開する | `isPublished` | 真偽値 | yes |
 
+`sourceId` はFacebookイベントURLから取り込めたイベントIDです。Google Calendar同期時の重複防止に使うため、通常は店舗側で直接編集しません。
 `sourceType` は管理画面側で自動入力する保守用の値です。通常は店舗側で直接編集しません。Facebookイベントを取り込んだ場合は `facebook` が入ります。
 `日付` と `START` は通常イベントでは任意入力を許容しますが、FacebookイベントURLから取り込んだイベントを公開する場合は管理画面側で入力確認します。
 `sourceUrl` はGoogle Calendarへ反映する時の詳細リンクにも使います。FacebookイベントをGoogle Calendarにも載せたい場合は、イベント一覧ページではなく個別イベントページのURLを入れてください。

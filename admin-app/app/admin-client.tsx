@@ -68,6 +68,7 @@ type FacebookEventPreview = {
   date: string;
   startTime: string;
   endTime: string;
+  sourceId: string;
   sourceUrl: string;
 };
 
@@ -929,6 +930,7 @@ function FacebookEventImportPanel({
       }
 
       const nextValues: Draft = {
+        sourceId: data.sourceId,
         sourceType: "facebook",
         sourceUrl: data.sourceUrl || sourceUrl
       };

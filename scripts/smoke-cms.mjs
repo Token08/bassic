@@ -40,6 +40,9 @@ const endpointChecks = [
       if (item.sourceUrl) {
         requiredUrl(item, "sourceUrl", "events");
       }
+      if (item.sourceId) {
+        requiredString(item, "sourceId", "events");
+      }
       if (item.sourceType) {
         requiredEnum(item, "sourceType", ["facebook", "facebook_ical", "google_calendar"], "events");
       }

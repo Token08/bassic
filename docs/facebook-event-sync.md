@@ -53,6 +53,7 @@ npm run sync:calendar
 - `start/end`: 日付、START、END
 - `description`: FacebookイベントURL、画像URL、予約方法、補足
 - `source.url`: FacebookイベントURL
+- `extendedProperties.private.sourceId`: FacebookイベントID。重複同期を防ぐために使います。
 
 画像はGoogle Calendarの説明欄にURLとして入ります。Google Calendarの月表示で、画像カードとして大きく表示されることは保証しません。
 
@@ -67,7 +68,7 @@ npm run sync:calendar
 3. Google Calendar iCal: `GOOGLE_CALENDAR_ICAL_URL` または `GOOGLE_CALENDAR_ID`
 4. ブラウザ取得: `FACEBOOK_BROWSER_SYNC=true` と `FACEBOOK_BROWSER_COOKIES_JSON`
 
-`npm run fetch:events` は `public/data/facebook-events.json` を作ります。`npm run sync:calendar` は管理画面に登録されたFacebookイベントを優先し、その後に `public/data/facebook-events.json` を読みます。同じFacebookイベントURLやsource idは重複しないようにまとめます。
+`npm run fetch:events` は `public/data/facebook-events.json` を作ります。`npm run sync:calendar` は管理画面に登録されたFacebookイベントを優先し、その後に `public/data/facebook-events.json` を読みます。同じFacebookイベントURLや `sourceId` は重複しないようにまとめます。
 
 管理画面と自動取得ファイルの両方に同じFacebookイベントURLがある場合は、管理画面で確認・修正した内容を優先します。納品後の運用では、管理画面の内容を正と考えてください。
 
