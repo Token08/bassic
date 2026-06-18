@@ -46,6 +46,8 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 3. 公開して反映の場合だけ、GitHub `repository_dispatch` を実行する。
 4. GitHub Pagesのビルドが走り、公開サイトへ反映される。
 
+公開サイトへの反映には通常1〜3分ほどかかります。店舗側には、公開後すぐに連打せず、少し待ってから公開サイトを確認してもらう運用にします。
+
 ## FacebookイベントからGoogle Calendarへ反映する時
 
 Facebookイベントは、管理画面へ個別イベントURLを貼る運用にしています。

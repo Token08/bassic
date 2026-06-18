@@ -379,7 +379,10 @@ function checkPreviewChecklistIsSectionSpecific() {
 function checkPublishWaitCopyIsSpecific() {
   const files = [
     "admin-app/app/admin-client.tsx",
+    "admin-app/README.md",
     "docs/delivery-admin-manual.md",
+    "docs/dedicated-admin-app-v1.md",
+    "docs/delivery-admin-manual-v1.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md"
   ];

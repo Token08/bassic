@@ -511,8 +511,8 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       <section className="client-help-strip" aria-label="お店側向けの注意">
         <div>
           <Info size={18} />
-          <strong>反映には数分かかります</strong>
-          <span>公開後すぐに変わらない時は、少し待ってから再読み込みしてください。</span>
+          <strong>反映には1〜3分かかります</strong>
+          <span>公開後すぐに変わらない時は、少し待ってから公開サイトを再読み込みしてください。</span>
         </div>
         <div>
           <Save size={18} />
