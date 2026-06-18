@@ -431,6 +431,13 @@ a {
   font-weight: 800;
 }
 
+.deploy-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .deploy-status a {
   color: var(--accent);
   font-weight: 900;
@@ -1234,8 +1241,15 @@ a {
   color: var(--blue);
 }
 
-.notice a {
+.notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
   margin-left: auto;
+}
+
+.notice a {
   color: var(--ink);
   text-decoration: underline;
   white-space: nowrap;

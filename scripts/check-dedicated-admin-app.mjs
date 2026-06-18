@@ -36,6 +36,7 @@ checkProductionUrlEnvDocs();
 checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
+checkAdminPublishFlowShowsPublicSiteLink();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
@@ -527,6 +528,20 @@ function checkAdminReadmeCalendarRequestVerification() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin README calendar request verification", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminPublishFlowShowsPublicSiteLink() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin publish flow shows public site link", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = ["publicSiteUrl", "反映状況を見る", "公開サイトを開く", "deploy-status-actions", "notice-actions"];
+  const missing = required.filter((item) => !text.includes(item));
+
+  add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
 }
 
 function checkDocsIndexBoundaries() {

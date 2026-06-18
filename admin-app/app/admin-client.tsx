@@ -227,11 +227,16 @@ function NoticeBox({ notice }: { notice: Notice }) {
         <span>{notice.message}</span>
         <small>{helper}</small>
       </div>
-      {notice.actionsUrl ? (
-        <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
-          反映状況を見る
+      <div className="notice-actions">
+        {notice.actionsUrl ? (
+          <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+            反映状況を見る
+          </a>
+        ) : null}
+        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
+          公開サイトを開く
         </a>
-      ) : null}
+      </div>
     </div>
   );
 }
@@ -273,11 +278,16 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
         <strong>{label}</strong>
         <span>{timeLabel ? `${timeLabel} に実行` : "時刻は未取得です"}</span>
       </div>
-      {notice.actionsUrl ? (
-        <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
-          反映状況を見る
+      <div className="deploy-status-actions">
+        {notice.actionsUrl ? (
+          <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+            反映状況を見る
+          </a>
+        ) : null}
+        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
+          公開サイトを開く
         </a>
-      ) : null}
+      </div>
     </section>
   );
 }
