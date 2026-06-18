@@ -41,12 +41,13 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 
 ## 反映の流れ
 
-1. 管理画面で下書きを保存、または公開して反映を押す。
+1. 管理画面で下書きを保存、またはプレビューして公開を押す。
 2. Vercel API RoutesがmicroCMSへ保存する。
-3. 公開して反映の場合だけ、GitHub `repository_dispatch` を実行する。
+3. プレビューして公開の場合だけ、GitHub `repository_dispatch` を実行する。
 4. GitHub Pagesのビルドが走り、公開サイトへ反映される。
 
 公開サイトへの反映には通常1〜3分ほどかかります。店舗側には、公開後すぐに連打せず、少し待ってから公開サイトを確認してもらう運用にします。
+店舗側にはボタン名として「下書き保存」と「プレビューして公開」だけを案内します。GitHubや再ビルドなどの裏側の言葉は、通常は保守担当者だけが扱います。
 
 ## FacebookイベントからGoogle Calendarへ反映する時
 

@@ -22,6 +22,7 @@ checkNoMojibake();
 checkNoQuestionMarkMojibake();
 checkClientFacingText();
 checkClientDocsText();
+checkAdminDocsUseCurrentPublishButtonCopy();
 checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
@@ -248,6 +249,28 @@ function checkClientDocsText() {
   }
 
   add("client handoff docs hide technical setup terms", leaks.length === 0, leaks.join(", "));
+}
+
+function checkAdminDocsUseCurrentPublishButtonCopy() {
+  const files = ["admin-app/README.md", "docs/dedicated-admin-app-v1.md"];
+  const problems = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      problems.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    if (!text.includes("プレビューして公開")) {
+      problems.push(`${file}: プレビューして公開`);
+    }
+    if (text.includes("公開して反映")) {
+      problems.push(`${file}: stale 公開して反映`);
+    }
+  }
+
+  add("admin docs use current publish button copy", problems.length === 0, problems.join(", "));
 }
 
 function checkClientDocsMentionFacebookEventFlow() {
