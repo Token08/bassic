@@ -29,9 +29,9 @@ async function main() {
     }
     if (skippedSyncEvents.length) {
       for (const skipped of skippedSyncEvents) {
-        console.log(`Warning: skipped published event "${getEventLabel(skipped)}" because title or date is missing.`);
+        console.log(`Warning: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
       }
-      const message = `Found ${skippedSyncEvents.length} published event(s) without title or date. Fix the admin event data before syncing.`;
+      const message = `公開中イベント ${skippedSyncEvents.length} 件に、イベント名または日付の未入力があります。管理画面で直してから同期してください。`;
       if (dryRun && !failOnWarnings) {
         console.log(`\nDry run completed with ${skippedSyncEvents.length} warning(s). ${message}`);
         return;
@@ -46,7 +46,7 @@ async function main() {
     let warningCount = skippedSyncEvents.length + (inputFileWarning ? 1 : 0);
     console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
     for (const skipped of skippedSyncEvents) {
-      console.log(`Warning: skipped published event "${getEventLabel(skipped)}" because title or date is missing.`);
+      console.log(`Warning: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
     }
     events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
@@ -85,7 +85,7 @@ async function main() {
 
   if (skippedSyncEvents.length) {
     throw new Error(
-      `Found ${skippedSyncEvents.length} published event(s) without title or date. Run npm run sync:calendar:check and fix the admin event data before syncing.`
+      `公開中イベント ${skippedSyncEvents.length} 件に、イベント名または日付の未入力があります。npm run sync:calendar:check で内容を確認し、管理画面で直してから同期してください。`
     );
   }
 

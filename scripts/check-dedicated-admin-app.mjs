@@ -481,6 +481,7 @@ function checkCalendarSyncBlocksWarnings() {
     [syncFile, syncText, "collectSyncWarnings(events)"],
     [syncFile, syncText, "!allowSyncWarnings"],
     [syncFile, syncText, "Run npm run sync:calendar:check"],
+    [syncFile, syncText, "イベント名または日付が未入力"],
     [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [docsFile, docsText, "sync:calendar:check"]
   ];

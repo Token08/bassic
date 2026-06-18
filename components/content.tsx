@@ -352,64 +352,6 @@ export function EventList({ events, includePoster = true }: { events: EventItem[
   );
 }
 
-export function FeaturedEventsSection({ events }: { events: EventItem[] }) {
-  const featuredEvents = events.slice(0, 3);
-
-  if (!featuredEvents.length) return null;
-
-  return (
-    <section className="section featured-events-section">
-      <div className="section-heading narrow-copy">
-        <p className="eyebrow">Pickup</p>
-        <h2>
-          直近のイベントを、
-          <br />
-          先にチェック。
-        </h2>
-        <p className="section-lead">
-          ライヴ、DJ、バータイムの予定から直近のものを表示しています。全体の予定は下のGoogle Calendarで確認できます。
-        </p>
-      </div>
-      <div className="featured-event-grid">
-        {featuredEvents.map((event) => (
-          <article className="featured-event-card" key={event.id}>
-            {event.image?.url ? (
-              <a className="featured-event-image" href={event.sourceUrl || "/events"} target={event.sourceUrl ? "_blank" : undefined} rel="noreferrer">
-                <img src={imageSrc(event.image.url)} alt={event.image.alt || event.title} loading="lazy" />
-              </a>
-            ) : null}
-            <div className="featured-event-date">{formatDate(event.date)}</div>
-            <div className="featured-event-copy">
-              <h3>{event.title}</h3>
-              <dl className="event-meta">
-                {event.openTime ? (
-                  <>
-                    <dt>OPEN</dt>
-                    <dd>{event.openTime}</dd>
-                  </>
-                ) : null}
-                {event.startTime ? (
-                  <>
-                    <dt>START</dt>
-                    <dd>{event.startTime}</dd>
-                  </>
-                ) : null}
-                {event.price ? (
-                  <>
-                    <dt>PRICE</dt>
-                    <dd>{event.price}</dd>
-                  </>
-                ) : null}
-              </dl>
-              {event.performers ? <p>{event.performers}</p> : null}
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export function EventsTeaser({ events }: { events: EventItem[] }) {
   return (
     <section className="section split">
