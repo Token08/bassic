@@ -353,14 +353,14 @@ function toGoogleCalendarEvent(event) {
     },
     source: event.sourceUrl
       ? {
-          title: "Facebook event",
+          title: event.sourceType === "facebook" ? "Facebookイベント" : "イベント詳細",
           url: event.sourceUrl
         }
       : undefined,
     extendedProperties: {
       private: {
         syncTag,
-        sourceId: event.sourceId || event.id,
+        sourceId: event.sourceId || event.id || getEventDedupeKey(event),
         sourceType: event.sourceType || "facebook"
       }
     }
@@ -369,11 +369,12 @@ function toGoogleCalendarEvent(event) {
 
 function buildDescription(event) {
   const imageUrl = resolveCalendarUrl(event.image?.url);
+  const reservation = event.sourceUrl && event.reservation?.includes(event.sourceUrl) ? "" : event.reservation;
   return [
     event.performers,
-    event.reservation,
-    event.sourceUrl ? `Facebook: ${event.sourceUrl}` : "",
-    imageUrl ? `Image: ${imageUrl}` : ""
+    reservation,
+    event.sourceUrl ? `Facebookイベント: ${event.sourceUrl}` : "",
+    imageUrl ? `画像: ${imageUrl}` : ""
   ]
     .filter(Boolean)
     .join("\n\n");
