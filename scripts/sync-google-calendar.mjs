@@ -39,8 +39,137 @@ async function main() {
 }
 
 async function readEvents() {
-  const data = JSON.parse(await readFile(inputPath, "utf8"));
-  return (data.events || []).filter((event) => event.isPublished && event.title && event.date);
+  const managedEvents = await readManagedFacebookEvents();
+  const fileEvents = await readInputFileEvents();
+  return dedupeEvents([...managedEvents, ...fileEvents]).filter((event) => event.isPublished && event.title && event.date);
+}
+
+async function readInputFileEvents() {
+  try {
+    const data = JSON.parse(await readFile(inputPath, "utf8"));
+    return (data.events || []).map(normalizeEvent).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function readManagedFacebookEvents() {
+  const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
+  const apiKey = process.env.MICROCMS_API_KEY;
+
+  if (!serviceDomain || !apiKey) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date`, {
+      headers: {
+        "X-MICROCMS-API-KEY": apiKey
+      },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+    return (data.contents || [])
+      .map(normalizeEvent)
+      .filter((event) => event && event.isPublished && isFacebookEvent(event));
+  } catch {
+    return [];
+  }
+}
+
+function normalizeEvent(event) {
+  if (!event) {
+    return null;
+  }
+
+  return {
+    ...event,
+    date: normalizeDate(event.date),
+    sourceType: event.sourceType || (isFacebookUrl(event.sourceUrl) ? "facebook" : event.sourceType),
+    sourceUrl: typeof event.sourceUrl === "string" ? event.sourceUrl.trim() : event.sourceUrl
+  };
+}
+
+function normalizeDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+function isFacebookEvent(event) {
+  return event.sourceType === "facebook" || isFacebookUrl(event.sourceUrl);
+}
+
+function isFacebookUrl(value) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return (host === "facebook.com" || host === "m.facebook.com" || host === "fb.me") && /\/events\/\d+/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function dedupeEvents(events) {
+  const byKey = new Map();
+
+  for (const event of events.filter(Boolean)) {
+    const key = getEventDedupeKey(event);
+    if (!byKey.has(key)) {
+      byKey.set(key, event);
+    }
+  }
+
+  return [...byKey.values()].sort((a, b) => `${a.date}${a.startTime || a.openTime || ""}`.localeCompare(`${b.date}${b.startTime || b.openTime || ""}`));
+}
+
+function getEventDedupeKey(event) {
+  const sourceUrl = typeof event.sourceUrl === "string" ? event.sourceUrl.trim().replace(/\/$/, "") : "";
+  const facebookEventId = getFacebookEventId(sourceUrl);
+  return facebookEventId ? `facebook-${facebookEventId}` : sourceUrl || event.sourceId || event.id || `${event.date}-${event.title}`;
+}
+
+function getFacebookEventId(value) {
+  if (!value) {
+    return "";
+  }
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host !== "facebook.com" && host !== "m.facebook.com" && host !== "fb.me") {
+      return "";
+    }
+
+    return url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+  } catch {
+    return "";
+  }
 }
 
 function getAuthClient() {

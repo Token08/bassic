@@ -61,6 +61,14 @@ type SnsStatus = {
   staticFeedAvailable: boolean;
 };
 
+type FacebookEventPreview = {
+  title: string;
+  imageUrl: string;
+  description: string;
+  date: string;
+  startTime: string;
+};
+
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
 const dailySectionIds = new Set([
   "site-settings",
@@ -544,6 +552,10 @@ function Field({
   const urlValue = field.type === "url" ? getString(value).trim() : "";
   const canPreviewUrl = Boolean(urlValue) && isValidManagedUrl(urlValue);
 
+  if (field.type === "hidden") {
+    return null;
+  }
+
   return (
     <label className={`field field-${field.type}`} htmlFor={field.key}>
       <span>
@@ -736,7 +748,7 @@ function PreviewModal({
           </button>
         </div>
         <dl className="preview-list">
-          {section.fields.map((field) => {
+          {section.fields.filter((field) => field.type !== "hidden").map((field) => {
             const value = draft[field.key];
             const text = getPreviewText(field, value);
             const imageUrl = field.type === "image" ? text : "";
@@ -819,6 +831,96 @@ function SaveChoiceGuide() {
         <span>すぐ公開せず、確認画面を見てから公開できます。</span>
       </div>
     </div>
+  );
+}
+
+function FacebookEventImportPanel({
+  draft,
+  onApply
+}: {
+  draft: Draft;
+  onApply: (values: Draft) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
+  const sourceUrl = getString(draft.sourceUrl).trim();
+  const isFacebookEvent = /https:\/\/(?:(?:(?:www|m)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(sourceUrl);
+
+  async function importEvent() {
+    setLoading(true);
+    setMessage("");
+    setPreview(null);
+
+    try {
+      const result = await requestJson<FacebookEventPreview>("/api/facebook-event-preview", {
+        method: "POST",
+        body: JSON.stringify({ url: sourceUrl })
+      });
+      const data = result.data;
+
+      if (!data) {
+        throw new Error("読み取れませんでした。");
+      }
+
+      const nextValues: Draft = {
+        sourceType: "facebook",
+        sourceUrl
+      };
+
+      if (data.title) {
+        nextValues.title = data.title;
+      }
+
+      if (data.date) {
+        nextValues.date = data.date;
+      }
+
+      if (data.startTime) {
+        nextValues.startTime = data.startTime;
+      }
+
+      if (data.imageUrl) {
+        nextValues.image = { url: data.imageUrl, alt: data.title || "Facebookイベント画像" };
+      }
+
+      onApply(nextValues);
+      setPreview(data);
+      setMessage(data.date ? "読み取りました。日時と画像を確認してください。" : "読み取りました。日時は入力欄で確認してください。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="facebook-import-panel" aria-label="Facebookイベント取り込み">
+      <div className="facebook-import-heading">
+        <div>
+          <strong>Facebookイベントを取り込む</strong>
+          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトルと画像を読み取ります。</span>
+        </div>
+        <button className="secondary-button" type="button" disabled={!isFacebookEvent || loading} onClick={() => void importEvent()}>
+          {loading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}
+          Facebookから読み取る
+        </button>
+      </div>
+      {!isFacebookEvent ? <small>先に「FacebookイベントURL・詳細URL」へ FacebookイベントURL を入力してください。</small> : null}
+      {message ? <small className={preview ? "import-success" : "import-warning"}>{message}</small> : null}
+      {preview ? (
+        <div className="facebook-import-preview">
+          {preview.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview.imageUrl} alt={preview.title || "Facebookイベント画像"} />
+          ) : null}
+          <div>
+            <strong>{preview.title || "タイトル未取得"}</strong>
+            <span>{preview.date ? preview.date + (preview.startTime ? " " + preview.startTime : "") : "日時は入力欄で確認してください"}</span>
+          </div>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -950,6 +1052,20 @@ function SectionEditor({
     setErrors((current) => {
       const next = { ...current };
       delete next[key];
+      return next;
+    });
+  }
+
+  function applyImportedFacebookEvent(values: Draft) {
+    userInteractedRef.current = true;
+    setDraft((current) => ({
+      ...current,
+      ...values
+    }));
+    setDirty(true);
+    setErrors((current) => {
+      const next = { ...current };
+      Object.keys(values).forEach((key) => delete next[key]);
       return next;
     });
   }
@@ -1236,6 +1352,7 @@ function SectionEditor({
             }}
           >
             <RequiredProgress section={section} draft={draft} />
+            {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
             {section.fields.map((field) => (
               <Field
                 field={field}

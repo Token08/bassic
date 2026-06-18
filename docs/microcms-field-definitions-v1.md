@@ -80,8 +80,12 @@
 | 出演者 | `performers` | テキストエリア | no |
 | 料金 | `price` | テキスト | no |
 | 予約方法 | `reservation` | テキストエリア | no |
+| FacebookイベントURL・詳細URL | `sourceUrl` | テキスト | no |
+| 取り込み元 | `sourceType` | テキスト | no |
 | 画像 | `image` | 画像 | no |
 | 公開する | `isPublished` | 真偽値 | yes |
+
+`sourceType` は管理画面側で自動入力する保守用の値です。通常は店舗側で直接編集しません。Facebookイベントを取り込んだ場合は `facebook` が入ります。
 
 ## `menu`
 

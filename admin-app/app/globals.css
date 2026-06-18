@@ -780,6 +780,77 @@ a {
   display: none;
 }
 
+.facebook-import-panel {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(36, 93, 131, 0.22);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(36, 93, 131, 0.06);
+}
+
+.facebook-import-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.facebook-import-heading div {
+  display: grid;
+  gap: 4px;
+}
+
+.facebook-import-heading strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.facebook-import-heading span,
+.facebook-import-panel small,
+.facebook-import-preview span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.facebook-import-panel .import-success {
+  color: var(--green);
+}
+
+.facebook-import-panel .import-warning {
+  color: var(--accent);
+}
+
+.facebook-import-preview {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--panel);
+}
+
+.facebook-import-preview img {
+  width: 116px;
+  height: 74px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.facebook-import-preview div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.facebook-import-preview strong {
+  overflow-wrap: anywhere;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -1297,6 +1368,14 @@ a {
     flex-direction: column;
   }
 
+  .facebook-import-heading {
+    display: grid;
+  }
+
+  .facebook-import-heading .secondary-button {
+    width: 100%;
+  }
+
   .save-choice-guide {
     grid-template-columns: 1fr;
   }
@@ -1358,5 +1437,15 @@ a {
   .preview-list div {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .facebook-import-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .facebook-import-preview img {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
   }
 }
