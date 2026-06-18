@@ -26,6 +26,7 @@ checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkFacebookEventPreviewMessages();
+checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
@@ -313,6 +314,27 @@ function checkFacebookEventPreviewMessages() {
     hasCopyableExample && !hasEllipsisExample,
     hasEllipsisExample ? "replace events/... with a copyable event URL example" : ""
   );
+}
+
+function checkFacebookEventPreviewParsingFallbacks() {
+  const file = "admin-app/app/api/facebook-event-preview/route.ts";
+  if (!existsSync(file)) {
+    add("Facebook event preview handles common markup fallbacks", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "&#x([0-9a-f]+);",
+    "&#(\\d+);",
+    "twitter:image:src",
+    "normalizeJapaneseHour",
+    "午後",
+    "午前"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("Facebook event preview handles common markup fallbacks", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventImportPanel() {

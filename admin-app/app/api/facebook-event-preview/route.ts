@@ -70,6 +70,8 @@ function decodeHtml(value: string) {
     .replace(/&#039;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, decimal: string) => String.fromCodePoint(Number.parseInt(decimal, 10)))
     .trim();
 }
 
@@ -162,11 +164,12 @@ function parseJsonLdEvent(html: string) {
 
 function parseDateFromText(text: string) {
   const normalized = text.replace(/\s+/g, " ");
-  const jp = normalized.match(/(\d{4})[\/年.-](\d{1,2})[\/月.-](\d{1,2})日?.*?(\d{1,2})(?::|：|時)?(\d{2})?/);
+  const jp = normalized.match(/(\d{4})[\/年.-](\d{1,2})[\/月.-](\d{1,2})日?.*?(午前|午後)?\s*(\d{1,2})(?::|：|時)?(\d{2})?/);
   if (jp) {
+    const hour = normalizeJapaneseHour(jp[5], jp[4]);
     return {
       date: `${jp[1]}-${pad(jp[2])}-${pad(jp[3])}`,
-      startTime: `${pad(jp[4])}:${pad(jp[5] || "00")}`
+      startTime: `${pad(hour)}:${pad(jp[6] || "00")}`
     };
   }
 
@@ -179,6 +182,23 @@ function parseDateFromText(text: string) {
   }
 
   return { date: "", startTime: "" };
+}
+
+function normalizeJapaneseHour(value: string, period?: string) {
+  const hour = Number.parseInt(value, 10);
+  if (Number.isNaN(hour)) {
+    return value;
+  }
+
+  if (period === "午後" && hour < 12) {
+    return String(hour + 12);
+  }
+
+  if (period === "午前" && hour === 12) {
+    return "0";
+  }
+
+  return String(hour);
 }
 
 function readDatetimeAttributes(html: string) {
@@ -228,7 +248,11 @@ export async function POST(request: NextRequest) {
 
     const jsonLd = parseJsonLdEvent(html);
     const title = cleanTitle(jsonLd.title || readMeta(html, "og:title") || readMeta(html, "twitter:title"));
-    const imageUrl = jsonLd.imageUrl || readMeta(html, "og:image") || readMeta(html, "twitter:image");
+    const imageUrl =
+      jsonLd.imageUrl ||
+      readMeta(html, "og:image") ||
+      readMeta(html, "twitter:image") ||
+      readMeta(html, "twitter:image:src");
     const description = jsonLd.description || readMeta(html, "og:description") || readMeta(html, "description");
     const parsed = parseDateFromText(`${title} ${description}`);
     const datetime = readDatetimeAttributes(html);
