@@ -897,7 +897,7 @@ function FacebookEventImportPanel({
             : "日時は入力欄で確認してください"
         },
         { label: "画像", ok: Boolean(preview.imageUrl), text: preview.imageUrl ? "取得済み" : "画像が必要な場合は手入力してください" },
-        { label: "Facebook URL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
+        { label: "FacebookイベントURL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
       ]
     : [];
 
@@ -968,7 +968,13 @@ function FacebookEventImportPanel({
           Facebookから読み取る
         </button>
       </div>
-      {!isFacebookEvent ? <small>先に「FacebookイベントURL・詳細URL」へ FacebookイベントURL を入力してください。</small> : null}
+      {!isFacebookEvent ? (
+        <small>
+          {sourceUrl
+            ? "Facebookのイベント一覧ではなく、個別イベントページのURLを入力してください。例: https://www.facebook.com/events/1234567890/"
+            : "先に「FacebookイベントURL・詳細URL」へ FacebookイベントURL を入力してください。"}
+        </small>
+      ) : null}
       {message ? <small className={preview ? "import-success" : "import-warning"}>{message}</small> : null}
       {preview ? (
         <div className="facebook-import-preview">
