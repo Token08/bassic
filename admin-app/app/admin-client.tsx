@@ -132,6 +132,16 @@ function isFacebookEventUrl(value: string) {
   return /^https?:\/\/(?:(?:(?:www|m|mbasic)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(value);
 }
 
+function isFacebookUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return host === "facebook.com" || host === "m.facebook.com" || host === "mbasic.facebook.com" || host === "fb.me";
+  } catch {
+    return false;
+  }
+}
+
 function getImageUrl(value: unknown) {
   return isImageObject(value) ? value.url || "" : getString(value);
 }
@@ -1136,7 +1146,7 @@ function SectionEditor({
 
     const sourceType = getString(nextDraft.sourceType);
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
-    if (section.id === "events" && sourceType === "facebook" && sourceUrl && !isFacebookEventUrl(sourceUrl)) {
+    if (section.id === "events" && sourceUrl && (sourceType === "facebook" || isFacebookUrl(sourceUrl)) && !isFacebookEventUrl(sourceUrl)) {
       nextErrors.sourceUrl = "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入力してください。";
     }
 
@@ -1159,12 +1169,20 @@ function SectionEditor({
   }
 
   async function save(mode: "draft" | "publish") {
-    const nextDraft = {
+    const nextDraft: Draft = {
       ...draft,
       ...(section.fields.some((field) => field.key === "isPublished") ? { isPublished: mode === "publish" } : {})
     };
+    const sourceUrl = getString(nextDraft.sourceUrl).trim();
+    const preparedDraft =
+      section.id === "events" && isFacebookEventUrl(sourceUrl)
+        ? {
+            ...nextDraft,
+            sourceType: "facebook"
+          }
+        : nextDraft;
 
-    if (!validate(nextDraft)) {
+    if (!validate(preparedDraft)) {
       setNotice({ tone: "error", message: "必須項目を入力してください。" });
       return;
     }
@@ -1177,9 +1195,9 @@ function SectionEditor({
       const url = isExistingListItem ? `/api/content/${section.id}/${selectedId}` : `/api/content/${section.id}`;
       const result = await requestJson<Draft>(url, {
         method: isExistingListItem ? "PATCH" : "POST",
-        body: JSON.stringify(nextDraft)
+        body: JSON.stringify(preparedDraft)
       });
-      const savedData = (result.data || nextDraft) as Draft & { id?: string };
+      const savedData = (result.data || preparedDraft) as Draft & { id?: string };
       setDraft(mergeDefaults(section, savedData));
       setDirty(false);
       setLastSavedAt(new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }));
