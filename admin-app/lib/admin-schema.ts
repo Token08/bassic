@@ -195,7 +195,7 @@ export const sections: SectionDefinition[] = [
       { key: "performers", label: "出演者", type: "textarea", rows: 3, placeholder: "出演者名を改行で入力" },
       { key: "price", label: "料金", type: "text", placeholder: "前売 3,000円 / 当日 3,500円" },
       { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "電話、DM、フォームなど" },
-      { key: "sourceUrl", label: "FacebookイベントURL・詳細URL", type: "url", placeholder: "https://www.facebook.com/events/...", hint: "Facebookイベントや詳しい案内ページがある場合だけ入力します。入力後はリンクを開いて確認してください。" },
+      { key: "sourceUrl", label: "FacebookイベントURL・詳細URL", type: "url", placeholder: "https://www.facebook.com/events/1234567890/", hint: "Facebookのイベント一覧ページではなく、個別イベントページのURLを入れます。入力後はリンクを開いて確認してください。" },
       { key: "sourceType", label: "取り込み元", type: "hidden" },
       { key: "image", label: "イベント画像", type: "image", hint: "チラシや告知画像がある場合だけ入れます。入れた後は「画像を開いて確認」で確認してください。" },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }

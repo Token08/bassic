@@ -25,6 +25,9 @@ async function main() {
     events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
       console.log(`\n[${index + 1}/${events.length}] ${googleEvent.summary}`);
+      for (const warning of collectEventWarnings(event)) {
+        console.log(`Warning: ${warning}`);
+      }
       console.log(
         JSON.stringify(
           {
@@ -114,7 +117,7 @@ function normalizeEvent(event) {
     ...event,
     date: normalizeDate(event.date),
     sourceType: event.sourceType || (isFacebookUrl(event.sourceUrl) ? "facebook" : event.sourceType),
-    sourceUrl: typeof event.sourceUrl === "string" ? event.sourceUrl.trim() : event.sourceUrl
+    sourceUrl: typeof event.sourceUrl === "string" ? normalizeFacebookUrl(event.sourceUrl) || event.sourceUrl.trim() : event.sourceUrl
   };
 }
 
@@ -145,17 +148,12 @@ function isFacebookEvent(event) {
 }
 
 function isFacebookUrl(value) {
-  if (!value) {
-    return false;
-  }
+  return Boolean(getFacebookEventId(value));
+}
 
-  try {
-    const url = new URL(value);
-    const host = url.hostname.replace(/^www\./, "");
-    return (host === "facebook.com" || host === "m.facebook.com" || host === "fb.me") && /\/events\/\d+/.test(url.pathname);
-  } catch {
-    return false;
-  }
+function normalizeFacebookUrl(value) {
+  const id = getFacebookEventId(value);
+  return id ? `https://www.facebook.com/events/${id}/` : "";
 }
 
 function dedupeEvents(events) {
@@ -185,7 +183,7 @@ function getFacebookEventId(value) {
   try {
     const url = new URL(value);
     const host = url.hostname.replace(/^www\./, "");
-    if (host !== "facebook.com" && host !== "m.facebook.com" && host !== "fb.me") {
+    if (host !== "facebook.com" && host !== "m.facebook.com" && host !== "mbasic.facebook.com" && host !== "fb.me") {
       return "";
     }
 
@@ -193,6 +191,24 @@ function getFacebookEventId(value) {
   } catch {
     return "";
   }
+}
+
+function collectEventWarnings(event) {
+  const warnings = [];
+
+  if (event.sourceType === "facebook" && !getFacebookEventId(event.sourceUrl)) {
+    warnings.push("FacebookイベントURLが個別イベントURLではない可能性があります。例: https://www.facebook.com/events/1234567890/");
+  }
+
+  if (!event.startTime && !event.openTime) {
+    warnings.push("開始時間が未入力です。Google Calendarには20:00開始として登録されます。");
+  }
+
+  if (event.sourceType === "facebook" && !event.image?.url) {
+    warnings.push("画像URLが未入力です。Google Calendarの説明欄に画像リンクは入りません。");
+  }
+
+  return warnings;
 }
 
 function getAuthClient() {
