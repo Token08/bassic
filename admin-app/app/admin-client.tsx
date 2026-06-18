@@ -703,9 +703,9 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
         <div className="image-preview">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={url} alt={image.alt || ""} />
-          <button type="button" onClick={() => onChange(undefined)}>
+          <button type="button" aria-label="この画像を外す" onClick={() => onChange(undefined)}>
             <X size={16} />
-            削除
+            画像を外す
           </button>
         </div>
       ) : (

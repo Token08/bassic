@@ -26,6 +26,7 @@ checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
+checkImageFieldUsesFriendlyRemoveCopy();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
@@ -297,10 +298,14 @@ function checkClientHandoffDocsLinked() {
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
   const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認"];
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
+  const manualFile = "docs/delivery-admin-manual.md";
+  const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
+  const missingManualTerms = ["画像を外す"].filter((term) => !manualText.includes(term));
   const problems = [
     ...(checklistMentionsSheet ? [] : ["checklist missing 引き渡しメモ"]),
     ...missingSheetTerms.map((term) => `sheet missing ${term}`),
-    ...missingChecklistTerms.map((term) => `checklist missing ${term}`)
+    ...missingChecklistTerms.map((term) => `checklist missing ${term}`),
+    ...missingManualTerms.map((term) => `${manualFile} missing ${term}`)
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
@@ -326,6 +331,22 @@ function checkClientSupportRequestDetails() {
   }
 
   add("client docs explain what to send when support is needed", missing.length === 0, missing.join(", "));
+}
+
+function checkImageFieldUsesFriendlyRemoveCopy() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin image field uses friendly remove copy", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = ["aria-label=\"この画像を外す\"", "画像を外す"];
+  const stale = [">削除<"].filter((term) => text.includes(term));
+  const missing = required.filter((term) => !text.includes(term));
+  const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
+
+  add("admin image field uses friendly remove copy", problems.length === 0, problems.join(", "));
 }
 
 function checkFacebookEventPreviewMessages() {
