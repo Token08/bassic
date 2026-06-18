@@ -303,8 +303,12 @@ function checkFacebookEventHandoffDocs() {
 
   const manualText = readFileSync(manualFile, "utf8");
   const checklistText = readFileSync(checklistFile, "utf8");
-  const requiredManualTerms = ["読み取り結果のチェックリスト", "個別イベントページのURL"];
-  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認"];
+  const requiredManualTerms = [
+    "読み取り結果のチェックリスト",
+    "個別イベントページのURL",
+    "STARTが入っていないと保存時に確認メッセージ"
+  ];
+  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認", "sync:calendar:check"];
   const missing = [
     ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
     ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`)
@@ -352,6 +356,7 @@ function checkCalendarSyncBlocksWarnings() {
     [syncFile, syncText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [syncFile, syncText, "collectSyncWarnings(events)"],
     [syncFile, syncText, "!allowSyncWarnings"],
+    [syncFile, syncText, "Run npm run sync:calendar:check"],
     [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [docsFile, docsText, "sync:calendar:check"]
   ];

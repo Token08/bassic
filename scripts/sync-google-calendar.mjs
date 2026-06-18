@@ -85,7 +85,7 @@ async function main() {
 
   if (skippedSyncEvents.length) {
     throw new Error(
-      `Found ${skippedSyncEvents.length} published event(s) without title or date. Run npm run sync:calendar:dry and fix the admin event data before syncing.`
+      `Found ${skippedSyncEvents.length} published event(s) without title or date. Run npm run sync:calendar:check and fix the admin event data before syncing.`
     );
   }
 
@@ -93,7 +93,7 @@ async function main() {
   if (syncWarnings.length && !allowSyncWarnings) {
     throw new Error(
       [
-        `Found ${syncWarnings.length} warning(s). Run npm run sync:calendar:dry and fix the admin event data before syncing.`,
+        `Found ${syncWarnings.length} warning(s). Run npm run sync:calendar:check and fix the admin event data before syncing.`,
         ...syncWarnings.map((warning) => `- ${warning}`)
       ].join("\n")
     );
