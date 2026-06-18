@@ -23,6 +23,7 @@ checkClientFacingText();
 checkClientDocsText();
 checkClientHandoffDocsLinked();
 checkFacebookEventHandoffDocs();
+checkProductionUrlEnvDocs();
 checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
@@ -233,6 +234,19 @@ function checkFacebookEventHandoffDocs() {
   ];
 
   add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
+}
+
+function checkProductionUrlEnvDocs() {
+  const file = "docs/production-handoff-checklist.md";
+  if (!existsSync(file)) {
+    add("production checklist explains public URL envs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_PUBLIC_SITE_URL", "公開サイトの本番URLと揃えてください"];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+  add("production checklist explains public URL envs", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminReadmeLinksHandoffDocs() {

@@ -260,7 +260,7 @@ function collectEventWarnings(event) {
   }
 
   if (event.image?.url?.startsWith("/") && !siteUrl) {
-    warnings.push("サイト内画像URLをGoogle Calendar用のURLに変換できません。NEXT_PUBLIC_SITE_URLを確認してください。");
+    warnings.push("サイト内画像URLをGoogle Calendar用のURLに変換できません。NEXT_PUBLIC_SITE_URL または NEXT_PUBLIC_PUBLIC_SITE_URL を確認してください。");
   }
 
   return warnings;

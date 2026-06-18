@@ -32,6 +32,8 @@
 
 ## 3. サイト側で設定する環境変数
 
+公開サイト本体:
+
 ```env
 MICROCMS_SERVICE_DOMAIN=
 MICROCMS_API_KEY=
@@ -40,6 +42,14 @@ NEXT_PUBLIC_GOOGLE_MAPS_URL=
 ```
 
 `NEXT_PUBLIC_SITE_URL` はURL確定前なら仮URLでも動きます。本番切り替え時に `https://www.bassic.jp` にします。
+
+管理画面:
+
+```env
+NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
+```
+
+`NEXT_PUBLIC_PUBLIC_SITE_URL` は管理画面の「公開サイトを開く」導線とSNS状態確認で使います。公開サイトの本番URLと揃えてください。
 
 ## 4. 公開前チェック
 
@@ -73,7 +83,8 @@ npm run smoke:seo
 4. タイトル、画像、日時を確認する
 5. 日時が取れない場合は手入力する
 6. 公開してから `npm run sync:calendar:dry` で同期内容を確認する
-7. 問題なければ `npm run sync:calendar` を実行する
+7. dry runの `Image:` が本番URL、またはFacebookなどの外部URLになっていることを確認する
+8. 問題なければ `npm run sync:calendar` を実行する
 
 画像はGoogle Calendarの説明欄にURLとして入ります。月表示で大きく画像カードとして表示されることは保証しません。
 

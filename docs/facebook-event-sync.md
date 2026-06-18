@@ -45,7 +45,7 @@ The script prefers manually confirmed admin events. If live fetching fails, it k
 
 Images are written as image URLs in the Google Calendar event description. Google Calendar month view does not reliably display event images as visual cards.
 
-If an event image starts with `/`, the sync script converts it to the public site URL before writing it to Google Calendar. Set `NEXT_PUBLIC_SITE_URL` to the final domain before production sync.
+If an event image starts with `/`, the sync script converts it to the public site URL before writing it to Google Calendar. Set `NEXT_PUBLIC_SITE_URL` or `NEXT_PUBLIC_PUBLIC_SITE_URL` to the final domain before production sync.
 
 ## Environment Variables
 
