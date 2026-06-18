@@ -29,6 +29,7 @@ checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
+checkSocialNoticeUrlValidation();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -396,6 +397,28 @@ function checkImageRemoveRequiresConfirmation() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin image remove requires confirmation", missing.length === 0, missing.join(", "));
+}
+
+function checkSocialNoticeUrlValidation() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin validates social notice URLs by platform", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "getSocialUrlError",
+    "isInstagramUrl",
+    "isXUrl",
+    "section.id === \"social-notices\"",
+    "instagram.com",
+    "facebook.com",
+    "x.com"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("admin validates social notice URLs by platform", missing.length === 0, missing.join(", "));
 }
 
 function checkPreviewChecklistIsSectionSpecific() {

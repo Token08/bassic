@@ -143,6 +143,46 @@ function isFacebookUrl(value: string) {
   }
 }
 
+function isInstagramUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return host === "instagram.com";
+  } catch {
+    return false;
+  }
+}
+
+function isXUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return host === "x.com" || host === "twitter.com";
+  } catch {
+    return false;
+  }
+}
+
+function getSocialUrlError(platform: string, url: string) {
+  if (!url) {
+    return "";
+  }
+
+  if (platform === "instagram" && !isInstagramUrl(url)) {
+    return "Instagramのお知らせは instagram.com のURLを入力してください。";
+  }
+
+  if (platform === "facebook" && !isFacebookUrl(url)) {
+    return "Facebookのお知らせは facebook.com のURLを入力してください。";
+  }
+
+  if (platform === "x" && !isXUrl(url)) {
+    return "Xのお知らせは x.com または twitter.com のURLを入力してください。";
+  }
+
+  return "";
+}
+
 function getFacebookEventId(value: string) {
   try {
     const url = new URL(value);
@@ -1258,6 +1298,15 @@ function SectionEditor({
 
       if (!getString(nextDraft.startTime).trim()) {
         nextErrors.startTime = "Facebookイベントを公開する前にSTARTを入力してください。";
+      }
+    }
+
+    if (section.id === "social-notices") {
+      const platform = getString(nextDraft.platform);
+      const socialUrl = getString(nextDraft.url).trim();
+      const socialUrlError = getSocialUrlError(platform, socialUrl);
+      if (socialUrlError) {
+        nextErrors.url = socialUrlError;
       }
     }
 
