@@ -22,6 +22,7 @@ checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
 checkClientHandoffDocsLinked();
+checkFacebookEventHandoffDocs();
 checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
@@ -212,6 +213,26 @@ function checkClientHandoffDocsLinked() {
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
+}
+
+function checkFacebookEventHandoffDocs() {
+  const manualFile = "docs/delivery-admin-manual.md";
+  const checklistFile = "docs/production-handoff-checklist.md";
+  if (!existsSync(manualFile) || !existsSync(checklistFile)) {
+    add("Facebook event handoff docs explain import checks", false, `${manualFile} or ${checklistFile} missing`);
+    return;
+  }
+
+  const manualText = readFileSync(manualFile, "utf8");
+  const checklistText = readFileSync(checklistFile, "utf8");
+  const requiredManualTerms = ["読み取り結果のチェックリスト", "個別イベントページのURL"];
+  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認"];
+  const missing = [
+    ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
+    ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`)
+  ];
+
+  add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminReadmeLinksHandoffDocs() {
