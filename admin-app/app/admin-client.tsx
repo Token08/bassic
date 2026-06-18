@@ -129,7 +129,7 @@ function isValidManagedUrl(value: string) {
 }
 
 function isFacebookEventUrl(value: string) {
-  return /^https?:\/\/(?:(?:(?:www|m|mbasic)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(value);
+  return Boolean(getFacebookEventId(value));
 }
 
 function isFacebookUrl(value: string) {
@@ -139,6 +139,30 @@ function isFacebookUrl(value: string) {
     return host === "facebook.com" || host === "m.facebook.com" || host === "mbasic.facebook.com" || host === "fb.me";
   } catch {
     return false;
+  }
+}
+
+function getFacebookEventId(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host !== "facebook.com" && host !== "m.facebook.com" && host !== "mbasic.facebook.com" && host !== "fb.me") {
+      return "";
+    }
+
+    const eventsPath = url.pathname.match(/\/events\/(.+)/)?.[1] || "";
+    if (!eventsPath) {
+      return "";
+    }
+
+    return [...eventsPath
+      .split("/")
+      .map((part) => part.trim())
+      .filter(Boolean)]
+      .reverse()
+      .find((part) => /^\d{6,}$/.test(part)) || "";
+  } catch {
+    return "";
   }
 }
 

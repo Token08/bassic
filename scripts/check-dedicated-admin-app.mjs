@@ -307,18 +307,24 @@ function checkFacebookEventHandoffDocs() {
 
 function checkFacebookEventUrlParserHandlesNestedPaths() {
   const previewFile = "admin-app/app/api/facebook-event-preview/route.ts";
+  const adminFile = "admin-app/app/admin-client.tsx";
   const syncFile = "scripts/sync-google-calendar.mjs";
-  if (!existsSync(previewFile) || !existsSync(syncFile)) {
-    add("Facebook event URL parser handles nested event paths", false, `${previewFile} or ${syncFile} missing`);
+  const smokeFile = "scripts/smoke-cms.mjs";
+  if (!existsSync(previewFile) || !existsSync(adminFile) || !existsSync(syncFile) || !existsSync(smokeFile)) {
+    add("Facebook event URL parser handles nested event paths", false, `${previewFile}, ${adminFile}, ${syncFile}, or ${smokeFile} missing`);
     return;
   }
 
   const previewText = readFileSync(previewFile, "utf8");
+  const adminText = readFileSync(adminFile, "utf8");
   const syncText = readFileSync(syncFile, "utf8");
+  const smokeText = readFileSync(smokeFile, "utf8");
   const parserTerms = ["split(\"/\")", "reverse()", "/^\\d{6,}$/"];
   const missing = [
     ...parserTerms.filter((term) => !previewText.includes(term)).map((term) => `${previewFile}: ${term}`),
-    ...parserTerms.filter((term) => !syncText.includes(term)).map((term) => `${syncFile}: ${term}`)
+    ...parserTerms.filter((term) => !adminText.includes(term)).map((term) => `${adminFile}: ${term}`),
+    ...parserTerms.filter((term) => !syncText.includes(term)).map((term) => `${syncFile}: ${term}`),
+    ...parserTerms.filter((term) => !smokeText.includes(term)).map((term) => `${smokeFile}: ${term}`)
   ];
 
   add("Facebook event URL parser handles nested event paths", missing.length === 0, missing.join(", "));

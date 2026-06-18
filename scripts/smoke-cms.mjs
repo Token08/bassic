@@ -287,7 +287,17 @@ function getFacebookEventId(value) {
       return "";
     }
 
-    return url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+    const eventsPath = url.pathname.match(/\/events\/(.+)/)?.[1] || "";
+    if (!eventsPath) {
+      return "";
+    }
+
+    return [...eventsPath
+      .split("/")
+      .map((part) => part.trim())
+      .filter(Boolean)]
+      .reverse()
+      .find((part) => /^\d{6,}$/.test(part)) || "";
   } catch {
     return "";
   }
