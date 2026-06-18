@@ -31,6 +31,7 @@ checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
+checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
@@ -388,6 +389,19 @@ function checkAdminSchemaEndpointsMatch() {
   ];
 
   add("admin schema sections match microCMS endpoints", problems.length === 0, problems.join(", "));
+}
+
+function checkAdminSchemaKeepsEventsCalendarFocused() {
+  const file = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(file)) {
+    add("admin section selector keeps events calendar-focused", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const offersEventList = text.includes('value: "eventList"') || text.includes("value: 'eventList'");
+
+  add("admin section selector keeps events calendar-focused", !offersEventList, "eventList should not be offered in section selector");
 }
 
 function checkCmsSmokeCoversAdminEndpoints() {

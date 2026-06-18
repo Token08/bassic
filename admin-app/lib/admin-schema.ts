@@ -69,7 +69,6 @@ const sectionOptions: FieldOption[] = [
   { value: "localSearch", label: "検索向け紹介" },
   { value: "social", label: "SNS欄" },
   { value: "access", label: "TOP内アクセス" },
-  { value: "eventList", label: "イベント一覧" },
   { value: "calendar", label: "Googleカレンダー" },
   { value: "drinkSheets", label: "ドリンク表" },
   { value: "foodMenu", label: "フードメニュー" },
