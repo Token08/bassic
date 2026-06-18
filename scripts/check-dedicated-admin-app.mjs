@@ -27,8 +27,10 @@ checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
+checkImageRemoveRequiresConfirmation();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
+checkAdminErrorsExplainWhatToTellSupport();
 checkPublishWaitCopyIsSpecific();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
@@ -352,6 +354,25 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
   add("admin image field uses friendly remove copy", problems.length === 0, problems.join(", "));
 }
 
+function checkImageRemoveRequiresConfirmation() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin image remove requires confirmation", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function removeImage()",
+    "この画像を外しますか？",
+    "下書き保存または公開するまではサイトには反映されません",
+    "onClick={removeImage}"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin image remove requires confirmation", missing.length === 0, missing.join(", "));
+}
+
 function checkPreviewChecklistIsSectionSpecific() {
   const file = "admin-app/app/admin-client.tsx";
   if (!existsSync(file)) {
@@ -394,6 +415,23 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin save flow explains publish behavior", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminErrorsExplainWhatToTellSupport() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin errors explain what to tell support", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "担当者へ「反映だけ失敗」と伝えてください",
+    "担当者へこの画面の内容を伝えてください"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin errors explain what to tell support", missing.length === 0, missing.join(", "));
 }
 
 function checkPublishWaitCopyIsSpecific() {

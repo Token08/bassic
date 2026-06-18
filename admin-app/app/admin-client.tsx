@@ -672,6 +672,14 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   const trimmedUrl = url.trim();
   const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedUrl(trimmedUrl);
 
+  function removeImage() {
+    if (!window.confirm("この画像を外しますか？下書き保存または公開するまではサイトには反映されません。")) {
+      return;
+    }
+
+    onChange(undefined);
+  }
+
   async function upload(file: File) {
     setUploading(true);
     setError("");
@@ -703,7 +711,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
         <div className="image-preview">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={url} alt={image.alt || ""} />
-          <button type="button" aria-label="この画像を外す" onClick={() => onChange(undefined)}>
+          <button type="button" aria-label="この画像を外す" onClick={removeImage}>
             <X size={16} />
             画像を外す
           </button>
@@ -1325,7 +1333,10 @@ function SectionEditor({
       } catch (deployError) {
         const deployNotice = {
           tone: "error" as const,
-          message: deployError instanceof Error ? deployError.message : "保存済み、反映だけ失敗しました。担当者に連絡してください。",
+          message:
+            deployError instanceof Error
+              ? `${deployError.message} 保存は済んでいます。担当者へ「反映だけ失敗」と伝えてください。`
+              : "保存は済んでいますが、公開サイトへの反映だけ失敗しました。担当者へ「反映だけ失敗」と伝えてください。",
           requestedAt: new Date().toISOString(),
           sourceLabel: `${section.shortTitle}を公開`
         };
@@ -1335,7 +1346,10 @@ function SectionEditor({
     } catch (saveError) {
       setNotice({
         tone: "error",
-        message: saveError instanceof Error ? saveError.message : "保存できませんでした。時間をおいて再度お試しください。"
+        message:
+          saveError instanceof Error
+            ? `${saveError.message} もう一度試しても直らない場合は、担当者へこの画面の内容を伝えてください。`
+            : "保存できませんでした。時間をおいて再度お試しください。直らない場合は担当者へこの画面の内容を伝えてください。"
       });
     } finally {
       setSaving(false);
