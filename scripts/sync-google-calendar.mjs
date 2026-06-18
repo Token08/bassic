@@ -29,7 +29,7 @@ async function main() {
     }
     if (skippedSyncEvents.length) {
       for (const skipped of skippedSyncEvents) {
-        console.log(`Warning: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
+        console.log(`警告: 公開中のイベント「${getEventLabel(skipped)}」は、イベント名または日付が未入力のため同期対象から外しました。`);
       }
       const message = `公開中イベント ${skippedSyncEvents.length} 件に、イベント名または日付の未入力があります。管理画面で直してから同期してください。`;
       if (dryRun && !failOnWarnings) {
@@ -226,7 +226,7 @@ function dedupeEvents(events) {
 function getEventDedupeKey(event) {
   const sourceUrl = typeof event.sourceUrl === "string" ? event.sourceUrl.trim().replace(/\/$/, "") : "";
   const facebookEventId = getFacebookEventId(sourceUrl);
-  return facebookEventId ? `facebook-${facebookEventId}` : sourceUrl || event.sourceId || event.id || `${event.date}-${event.title}`;
+  return facebookEventId ? `facebook-${facebookEventId}` : event.sourceId ? `source-${event.sourceId}` : sourceUrl || event.id || `${event.date}-${event.title}`;
 }
 
 function getFacebookEventId(value) {
@@ -330,7 +330,7 @@ function getCredentials() {
   }
 
   throw new Error(
-    "Google Calendar write credentials are missing. Set GOOGLE_SERVICE_ACCOUNT_JSON, or GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY."
+    "Google Calendarへ書き込むための認証情報がありません。GOOGLE_SERVICE_ACCOUNT_JSON、または GOOGLE_SERVICE_ACCOUNT_EMAIL と GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY を設定してください。"
   );
 }
 
@@ -454,7 +454,7 @@ function resolveCalendarUrl(value) {
 }
 
 function getEventLabel(event) {
-  return event.title || event.sourceUrl || event.id || event.sourceId || "Untitled event";
+  return event.title || event.sourceUrl || event.id || event.sourceId || "タイトル未入力のイベント";
 }
 
 function getEndDateTime(date, startTime, endTime) {
