@@ -6,7 +6,7 @@
 
 For client operation, the preferred workflow is semi-automatic: paste a Facebook event URL into the admin event form, press the Facebook import button, confirm title/date/image, then publish.
 
-Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. If the output looks correct, run `npm run sync:calendar`.
+Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. The dry run prints a warning summary at the end, so confirm it says `Dry run completed without warnings.` before the real sync. If the output looks correct, run `npm run sync:calendar`.
 
 If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
 

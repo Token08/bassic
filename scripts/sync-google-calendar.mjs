@@ -45,6 +45,11 @@ async function main() {
         )
       );
     });
+    if (warningCount) {
+      console.log(`\nDry run completed with ${warningCount} warning(s). Check the admin event data before syncing.`);
+    } else {
+      console.log("\nDry run completed without warnings.");
+    }
     if (warningCount && failOnWarnings) {
       throw new Error(`Dry run found ${warningCount} warning(s). Fix the event data before syncing.`);
     }
@@ -218,7 +223,20 @@ function collectEventWarnings(event) {
     warnings.push("画像URLが未入力です。Google Calendarの説明欄に画像リンクは入りません。");
   }
 
+  if (event.image?.url && !isUsableCalendarImageUrl(event.image.url)) {
+    warnings.push("画像URLは https:// で始まる外部URL、または / で始まるサイト内URLを指定してください。");
+  }
+
   return warnings;
+}
+
+function isUsableCalendarImageUrl(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const imageUrl = value.trim();
+  return imageUrl.startsWith("https://") || imageUrl.startsWith("/");
 }
 
 function getAuthClient() {
