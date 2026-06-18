@@ -27,6 +27,18 @@ OK: https://www.facebook.com/events/1234567890/
 NG: https://www.facebook.com/bar.Bassic/events
 ```
 
+## 読み取りに失敗した時
+
+Facebook側の表示制限やログイン状態によって、タイトル、画像、日付、STARTを自動で読めないことがあります。その場合も登録自体は止めません。
+
+1. `FacebookイベントURL・詳細URL` はそのまま残す。
+2. イベント名、日付、STARTを手入力する。
+3. 画像が取れない場合は、管理画面で画像をアップロードするか、画像URLを手入力する。
+4. `公開する` をオンにする前に、日付とSTARTが空欄ではないことを確認する。
+5. Google Calendarへも載せたい場合は、通常通り「イベント名」と「Google Calendarにも反映してください」という依頼を受けてから同期する。
+
+読み取り結果が不完全でも、管理画面で確認・修正した内容を正として扱います。
+
 ## Google Calendar同期手順
 
 本番のGoogle Calendarへ書き込む前に、必ず確認用コマンドを実行します。

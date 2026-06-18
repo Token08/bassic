@@ -411,10 +411,17 @@ function checkFacebookEventHandoffDocs() {
     "日付とSTARTの両方が入っていないと保存時に確認メッセージ"
   ];
   const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "sync:calendar:check"];
+  const requiredSyncDocTerms = [
+    "## 読み取りに失敗した時",
+    "イベント名、日付、STARTを手入力する",
+    "画像が取れない場合",
+    "管理画面で確認・修正した内容を正として扱います"
+  ];
   const staleTerms = ["ライヴ取得"];
   const missing = [
     ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
     ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`),
+    ...requiredSyncDocTerms.filter((term) => !syncDocText.includes(term)).map((term) => `docs/facebook-event-sync.md: ${term}`),
     ...staleTerms.filter((term) => syncDocText.includes(term)).map((term) => `docs/facebook-event-sync.md stale: ${term}`)
   ];
 
