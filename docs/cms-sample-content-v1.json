@@ -78,6 +78,8 @@
       "date": "2026-07-12T00:00:00.000Z",
       "openTime": "19:00",
       "startTime": "20:00",
+      "sourceUrl": "https://www.facebook.com/events/1234567890123456/",
+      "sourceType": "facebook",
       "performers": "出演者：決まり次第更新",
       "price": "料金はイベントごとに告知",
       "reservation": "mail@bassic.jp まで日付、人数、お名前、電話番号をお送りください。",

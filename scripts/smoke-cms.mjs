@@ -34,6 +34,12 @@ const endpointChecks = [
       requiredString(item, "title", "events");
       requiredString(item, "date", "events");
       requiredBoolean(item, "isPublished", "events");
+      if (item.sourceUrl) {
+        requiredUrl(item, "sourceUrl", "events");
+      }
+      if (item.sourceType) {
+        requiredEnum(item, "sourceType", ["facebook", "facebook_ical", "google_calendar"], "events");
+      }
     }
   },
   {

@@ -16,6 +16,7 @@ checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
 checkFile("deploy API route", "admin-app/app/api/deploy/route.ts");
+checkFile("Facebook event preview API route", "admin-app/app/api/facebook-event-preview/route.ts");
 checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
 checkClientFacingText();
@@ -127,6 +128,7 @@ function checkClientFacingText() {
     "admin-app/app/api/content/[endpoint]/route.ts",
     "admin-app/app/api/content/[endpoint]/[id]/route.ts",
     "admin-app/app/api/deploy/route.ts",
+    "admin-app/app/api/facebook-event-preview/route.ts",
     "admin-app/app/api/media/route.ts",
     "admin-app/app/api/login/route.ts",
     "admin-app/app/api/session/route.ts",

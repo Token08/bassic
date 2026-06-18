@@ -103,6 +103,8 @@ const events = [
     date: "2026-07-12",
     openTime: "19:00",
     startTime: "20:00",
+    sourceUrl: "https://www.facebook.com/events/1234567890123456/",
+    sourceType: "facebook",
     performers: "出演者は決まり次第更新",
     price: "予約・料金はイベントごとに告知",
     reservation: "mail@bassic.jp まで日付、枚数、氏名、電話番号をお送りください。",
