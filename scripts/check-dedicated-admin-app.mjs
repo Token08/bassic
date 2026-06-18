@@ -360,6 +360,7 @@ function checkFacebookEventImportPanel() {
     "イベント名",
     "日時が自動取得できませんでした",
     "START",
+    "Facebookイベントを公開する前に日付を入力してください。",
     "Facebookイベントを公開する前にSTARTを入力してください。"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
@@ -381,7 +382,7 @@ function checkFacebookEventHandoffDocs() {
   const requiredManualTerms = [
     "読み取り結果のチェックリスト",
     "個別イベントページのURL",
-    "STARTが入っていないと保存時に確認メッセージ"
+    "日付またはSTARTが入っていないと保存時に確認メッセージ"
   ];
   const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認", "sync:calendar:check"];
   const staleTerms = ["ライヴ取得"];

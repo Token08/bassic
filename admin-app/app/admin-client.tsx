@@ -963,6 +963,7 @@ function FacebookEventImportPanel({
         <div>
           <strong>Facebookイベントを取り込む</strong>
           <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日時を読み取ります。</span>
+          <span>公開前に「日付」と「START」が入っているか必ず確認してください。</span>
           <span>Google Calendarへ載せたい場合は、イベント公開後に「イベント名」と一緒に保守担当者へ反映依頼してください。</span>
         </div>
         <button className="secondary-button" type="button" disabled={!isFacebookEvent || loading} onClick={() => void importEvent()}>
@@ -1188,13 +1189,14 @@ function SectionEditor({
       nextErrors.sourceUrl = "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入力してください。";
     }
 
-    if (
-      section.id === "events" &&
-      nextDraft.isPublished &&
-      (sourceType === "facebook" || isFacebookEventUrl(sourceUrl)) &&
-      !getString(nextDraft.startTime).trim()
-    ) {
-      nextErrors.startTime = "Facebookイベントを公開する前にSTARTを入力してください。";
+    if (section.id === "events" && nextDraft.isPublished && (sourceType === "facebook" || isFacebookEventUrl(sourceUrl))) {
+      if (!getString(nextDraft.date).trim()) {
+        nextErrors.date = "Facebookイベントを公開する前に日付を入力してください。";
+      }
+
+      if (!getString(nextDraft.startTime).trim()) {
+        nextErrors.startTime = "Facebookイベントを公開する前にSTARTを入力してください。";
+      }
     }
 
     setErrors(nextErrors);
