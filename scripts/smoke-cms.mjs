@@ -43,6 +43,10 @@ const endpointChecks = [
       if (item.sourceType) {
         requiredEnum(item, "sourceType", ["facebook", "facebook_ical", "google_calendar"], "events");
       }
+      if (item.sourceType === "facebook") {
+        requiredFacebookEventUrl(item, "sourceUrl", "events");
+      }
+      optionalImage(item, "image", "events");
     }
   },
   {
@@ -210,6 +214,13 @@ function requiredUrl(item, field, endpoint) {
   }
 }
 
+function requiredFacebookEventUrl(item, field, endpoint) {
+  const value = item?.[field];
+  if (typeof value !== "string" || !getFacebookEventId(value)) {
+    errors.push(`${endpoint}.${field}: Facebook events must use a single event URL like https://www.facebook.com/events/1234567890/.`);
+  }
+}
+
 function optionalTime(item, field, endpoint) {
   const value = item?.[field];
   if (value === undefined || value === null || value === "") {
@@ -232,6 +243,21 @@ function requiredImage(item, field, endpoint) {
   }
 }
 
+function optionalImage(item, field, endpoint) {
+  if (!item?.[field]) {
+    return;
+  }
+
+  if (!item[field]?.url) {
+    errors.push(`${endpoint}.${field}: image URL is missing.`);
+    return;
+  }
+
+  if (!isValidManagedUrl(item[field].url)) {
+    errors.push(`${endpoint}.${field}.url: URL must start with https:// or /.`);
+  }
+}
+
 function isValidManagedUrl(value) {
   if (typeof value !== "string" || !value.trim()) {
     return false;
@@ -246,5 +272,23 @@ function isValidManagedUrl(value) {
     return url.protocol === "https:";
   } catch {
     return false;
+  }
+}
+
+function getFacebookEventId(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return "";
+  }
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    if (host !== "facebook.com" && host !== "m.facebook.com" && host !== "mbasic.facebook.com" && host !== "fb.me") {
+      return "";
+    }
+
+    return url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+  } catch {
+    return "";
   }
 }

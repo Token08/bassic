@@ -10,6 +10,8 @@ Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview th
 
 If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
 
+For stricter release checks, set `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS=true` before the dry run. In that mode, any warning stops the command so incomplete event data cannot be missed.
+
 ## Admin Import Workflow
 
 1. Open the dedicated admin screen and choose `イベント`.
@@ -49,6 +51,7 @@ Images are written as image URLs in the Google Calendar event description. Googl
 - `GOOGLE_CALENDAR_ID`
 - `GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC`
 - `GOOGLE_CALENDAR_SYNC_DRY_RUN`
+- `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS`
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`

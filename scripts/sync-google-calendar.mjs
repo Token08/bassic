@@ -12,6 +12,7 @@ const clearBeforeSync = process.env.GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC === "true"
 const syncTag = process.env.GOOGLE_CALENDAR_SYNC_TAG || "bassic-facebook-sync";
 const timezone = process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Tokyo";
 const dryRun = process.env.GOOGLE_CALENDAR_SYNC_DRY_RUN === "true";
+const failOnWarnings = process.env.GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS === "true";
 
 async function main() {
   const events = await readEvents();
@@ -21,11 +22,13 @@ async function main() {
   }
 
   if (dryRun) {
+    let warningCount = 0;
     console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
     events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
       console.log(`\n[${index + 1}/${events.length}] ${googleEvent.summary}`);
       for (const warning of collectEventWarnings(event)) {
+        warningCount += 1;
         console.log(`Warning: ${warning}`);
       }
       console.log(
@@ -42,6 +45,9 @@ async function main() {
         )
       );
     });
+    if (warningCount && failOnWarnings) {
+      throw new Error(`Dry run found ${warningCount} warning(s). Fix the event data before syncing.`);
+    }
     return;
   }
 
