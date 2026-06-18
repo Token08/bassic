@@ -23,6 +23,7 @@ checkClientFacingText();
 checkClientDocsText();
 checkClientDocsMentionFacebookEventFlow();
 checkClientHandoffDocsLinked();
+checkFacebookEventPreviewMessages();
 checkFacebookEventHandoffDocs();
 checkProductionUrlEnvDocs();
 checkAdminReadmeLinksHandoffDocs();
@@ -239,6 +240,24 @@ function checkClientHandoffDocsLinked() {
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
+}
+
+function checkFacebookEventPreviewMessages() {
+  const file = "admin-app/app/api/facebook-event-preview/route.ts";
+  if (!existsSync(file)) {
+    add("Facebook event preview messages use copyable URL examples", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const hasCopyableExample = text.includes("https://www.facebook.com/events/1234567890/");
+  const hasEllipsisExample = text.includes("https://www.facebook.com/events/...");
+
+  add(
+    "Facebook event preview messages use copyable URL examples",
+    hasCopyableExample && !hasEllipsisExample,
+    hasEllipsisExample ? "replace events/... with a copyable event URL example" : ""
+  );
 }
 
 function checkFacebookEventHandoffDocs() {

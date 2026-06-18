@@ -148,7 +148,7 @@ function parseJsonLdEvent(html: string) {
 
 function parseDateFromText(text: string) {
   const normalized = text.replace(/\s+/g, " ");
-  const jp = normalized.match(/(\d{4})[\/年.-](\d{1,2})[\/月.-](\d{1,2})日?.*?(\d{1,2})[:時](\d{2})?/);
+  const jp = normalized.match(/(\d{4})[\/年.-](\d{1,2})[\/月.-](\d{1,2})日?.*?(\d{1,2})(?::|：|時)?(\d{2})?/);
   if (jp) {
     return {
       date: `${jp[1]}-${pad(jp[2])}-${pad(jp[3])}`,
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
 
   if (!normalizedUrl) {
     return NextResponse.json(
-      { ok: false, message: "FacebookイベントURLを入力してください。例: https://www.facebook.com/events/..." },
+      { ok: false, message: "FacebookイベントURLを入力してください。例: https://www.facebook.com/events/1234567890/" },
       { status: 400 }
     );
   }
