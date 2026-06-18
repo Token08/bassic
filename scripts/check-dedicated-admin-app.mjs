@@ -39,6 +39,7 @@ checkDocsIndexBoundaries();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkEventFieldDocsExplainCalendarSync();
+checkMicrocmsSetupChecklistIncludesFacebookEventFields();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
@@ -599,6 +600,26 @@ function checkEventFieldDocsExplainCalendarSync() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("event field docs explain calendar sync meaning", missing.length === 0, missing.join(", "));
+}
+
+function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
+  const file = "docs/microcms-setup-checklist.md";
+  if (!existsSync(file)) {
+    add("microCMS setup checklist includes Facebook event fields", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "`sourceUrl` | FacebookイベントURL・詳細URL",
+    "`sourceType` | 取り込み元",
+    "sourceType` は管理画面側で `facebook` を自動入力",
+    "## 7. FacebookイベントとGoogle Calendar連携の注意",
+    "## 8. 接続確認"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("microCMS setup checklist includes Facebook event fields", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSchemaEndpointsMatch() {

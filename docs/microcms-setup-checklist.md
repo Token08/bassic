@@ -49,10 +49,13 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `performers` | 出演者 | テキストエリア | 任意 |
 | `price` | 料金 | テキストフィールド | 任意 |
 | `reservation` | 予約方法 | テキストエリア | 任意 |
+| `sourceUrl` | FacebookイベントURL・詳細URL | テキストフィールド | 任意 |
+| `sourceType` | 取り込み元 | テキストフィールド | 任意 |
 | `image` | イベント画像 | 画像 | 任意 |
 | `isPublished` | 公開する | 真偽値 | 必須 |
 
 下書き中は `isPublished` をオフにします。
+Facebookイベントから取り込む場合、`sourceUrl` は個別イベントページURLを入れ、`sourceType` は管理画面側で `facebook` を自動入力します。
 
 ## 4. menu
 
@@ -88,13 +91,13 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 `platform` は `instagram` / `facebook` / `x` の3択です。Xは自動タイムライン取得ではなく、投稿URLカードとして安定表示します。
 
-## FacebookイベントとGoogle Calendar連携の注意
+## 7. FacebookイベントとGoogle Calendar連携の注意
 
 イベントをGoogle Calendarへ反映する場合、`events` の `sourceUrl` はFacebookの個別イベントページURLを入れます。イベント一覧ページのURLでは同期対象として扱えません。
 
 `image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
 
-## 7. 接続確認
+## 8. 接続確認
 
 ローカルまたはGitHub Actionsの環境変数に以下を設定します。
 
