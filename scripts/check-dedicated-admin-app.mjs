@@ -28,6 +28,7 @@ checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkPreviewChecklistIsSectionSpecific();
+checkPublishWaitCopyIsSpecific();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
@@ -373,6 +374,30 @@ function checkPreviewChecklistIsSectionSpecific() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin preview checklist is section specific", missing.length === 0, missing.join(", "));
+}
+
+function checkPublishWaitCopyIsSpecific() {
+  const files = [
+    "admin-app/app/admin-client.tsx",
+    "docs/delivery-admin-manual.md",
+    "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md"
+  ];
+  const missing = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      missing.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    if (!text.includes("1〜3分")) {
+      missing.push(`${file}: 1〜3分`);
+    }
+  }
+
+  add("publish wait copy is specific for clients", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventPreviewMessages() {

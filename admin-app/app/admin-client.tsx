@@ -219,7 +219,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
       ? "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
       : notice.tone === "info"
         ? "このまま画面を閉じずに、少し待ってください。"
-        : "必要なら続けてほかの場所も更新できます。";
+        : "反映には1〜3分ほどかかることがあります。少し待ってから公開サイトを確認してください。";
 
   return (
     <div className={`notice ${notice.tone}`}>
@@ -277,7 +277,7 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
       </div>
       <div>
         <strong>{label}</strong>
-        <span>{timeLabel ? `${timeLabel} に実行` : "時刻は未取得です"}</span>
+        <span>{timeLabel ? `${timeLabel} に実行。1〜3分後に公開サイトで確認してください。` : "時刻は未取得です。公開サイトで表示を確認してください。"}</span>
       </div>
       <div className="deploy-status-actions">
         {notice.actionsUrl ? (
@@ -1306,7 +1306,7 @@ function SectionEditor({
       }
 
       setDeploying(true);
-      setNotice({ tone: "info", message: "保存しました。サイトへ反映しています。" });
+      setNotice({ tone: "info", message: "保存しました。サイトへ反映しています。1〜3分ほどお待ちください。" });
 
       try {
         const deployResult = await requestJson<{ actionsUrl: string; requestedAt: string }>("/api/deploy", {
@@ -1315,7 +1315,7 @@ function SectionEditor({
         });
         const deployNotice = {
           tone: "success" as const,
-          message: "公開しました。サイト反映中です。",
+          message: "公開しました。1〜3分ほど待ってから公開サイトを確認してください。",
           actionsUrl: deployResult.data?.actionsUrl,
           requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
           sourceLabel: `${section.shortTitle}を公開`
