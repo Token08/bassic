@@ -248,7 +248,7 @@ function checkClientDocsMentionFacebookEventFlow() {
   const files = [
     { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "イベント名"] },
     { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART", "イベント名"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名"] }
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名", "Google Calendarにも載せたい時の連絡文"] }
   ];
   const missing = [];
 
@@ -560,7 +560,17 @@ function checkAdminReadmeCalendarRequestVerification() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = ["sync:calendar:check", "イベント名", "日付", "START", "Facebook URL", "画像URL", "依頼内容"];
+  const required = [
+    "sync:calendar:check",
+    "イベント名",
+    "日付",
+    "START",
+    "Facebook URL",
+    "画像URL",
+    "依頼内容",
+    "読み取れない項目がある場合",
+    "管理画面で手入力する"
+  ];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin README calendar request verification", missing.length === 0, missing.join(", "));
