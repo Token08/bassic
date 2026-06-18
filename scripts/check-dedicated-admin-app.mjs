@@ -298,7 +298,7 @@ function checkClientHandoffDocsLinked() {
 
   const checklistText = readFileSync(checklistFile, "utf8");
   const sheetText = readFileSync(sheetFile, "utf8");
-  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先"];
+  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "スマホでAccessページ", "スマホでTOPページのSNS欄"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
   const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認"];
@@ -385,12 +385,15 @@ function checkPreviewChecklistIsSectionSpecific() {
     "function getPublishChecklistItems",
     "section.id === \"site-settings\"",
     "Google MapとSNSの確認リンクを開いた",
+    "公開後にスマホでTOPとAccessを確認する",
     "section.id === \"events\"",
     "イベント名、日付、STARTに間違いがない",
+    "公開後にスマホのEvent Scheduleを確認する",
     "section.id === \"menu\"",
     "フード名、料金、写真に間違いがない",
     "section.id === \"drink-menu-sheets\"",
     "画像を開いて文字が読めるか確認した",
+    "公開後にスマホのTOPページでSNS欄を確認する",
     "getPublishChecklistItems(section).map"
   ];
   const missing = required.filter((term) => !text.includes(term));
