@@ -31,7 +31,7 @@ checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
 checkCalendarSyncBlocksWarnings();
 checkProductionUrlEnvDocs();
-checkProductionCalendarSyncDocsMatchDryRun();
+checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
@@ -423,21 +423,21 @@ function checkProductionUrlEnvDocs() {
   add("production checklist explains public URL envs", missing.length === 0, missing.join(", "));
 }
 
-function checkProductionCalendarSyncDocsMatchDryRun() {
+function checkProductionCalendarSyncDocsMatchOutput() {
   const file = "docs/production-handoff-checklist.md";
   if (!existsSync(file)) {
-    add("production checklist matches calendar dry run output", false, `${file} missing`);
+    add("production checklist matches calendar sync output", false, `${file} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
   const requiredTerms = ["個別ページURL", "`description`", "`画像:`", "sync:calendar:check"];
-  const staleTerms = ["`Image:`"];
+  const staleTerms = ["`Image:`", "dry run"];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   const stale = staleTerms.filter((term) => text.includes(term));
   const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
 
-  add("production checklist matches calendar dry run output", problems.length === 0, problems.join(", "));
+  add("production checklist matches calendar sync output", problems.length === 0, problems.join(", "));
 }
 
 function checkAdminReadmeLinksHandoffDocs() {

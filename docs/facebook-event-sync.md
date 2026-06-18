@@ -67,7 +67,7 @@ npm run sync:calendar
 
 `npm run fetch:events` は `public/data/facebook-events.json` を作ります。`npm run sync:calendar` は管理画面に登録されたFacebookイベントを優先し、その後に `public/data/facebook-events.json` を読みます。同じFacebookイベントURLやsource idは重複しないようにまとめます。
 
-ライブ取得に失敗した場合は、前回成功したJSONを残して、サイトの予定が空にならないようにします。
+ライヴ取得に失敗した場合は、前回成功したJSONを残して、サイトの予定が空にならないようにします。
 
 ## 環境変数
 
