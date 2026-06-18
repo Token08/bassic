@@ -24,6 +24,7 @@ checkClientDocsText();
 checkClientDocsMentionFacebookEventFlow();
 checkClientHandoffDocsLinked();
 checkFacebookEventPreviewMessages();
+checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkProductionUrlEnvDocs();
 checkAdminReadmeLinksHandoffDocs();
@@ -196,22 +197,23 @@ function checkClientDocsText() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    "docs/delivery-admin-manual.md",
-    "docs/client-handoff-checklist.md",
-    "docs/client-handoff-sheet.md"
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL"] }
   ];
-  const requiredTerm = "FacebookイベントURL";
   const missing = [];
 
   for (const file of files) {
-    if (!existsSync(file)) {
-      missing.push(`${file}: missing`);
+    if (!existsSync(file.path)) {
+      missing.push(`${file.path}: missing`);
       continue;
     }
 
-    const text = readFileSync(file, "utf8");
-    if (!text.includes(requiredTerm)) {
-      missing.push(`${file}: ${requiredTerm}`);
+    const text = readFileSync(file.path, "utf8");
+    for (const term of file.terms) {
+      if (!text.includes(term)) {
+        missing.push(`${file.path}: ${term}`);
+      }
     }
   }
 
@@ -258,6 +260,25 @@ function checkFacebookEventPreviewMessages() {
     hasCopyableExample && !hasEllipsisExample,
     hasEllipsisExample ? "replace events/... with a copyable event URL example" : ""
   );
+}
+
+function checkFacebookEventImportPanel() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin event editor includes Facebook import panel", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "Facebookイベントを取り込む",
+    "Facebookから読み取る",
+    "読み取り結果の確認",
+    "FacebookイベントURL・詳細URL"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("admin event editor includes Facebook import panel", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventHandoffDocs() {
