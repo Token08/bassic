@@ -962,6 +962,7 @@ function FacebookEventImportPanel({
         <div>
           <strong>Facebookイベントを取り込む</strong>
           <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日時を読み取ります。</span>
+          <span>Google Calendarへ載せたい場合は、イベント公開後に保守担当者へ反映依頼してください。</span>
         </div>
         <button className="secondary-button" type="button" disabled={!isFacebookEvent || loading} onClick={() => void importEvent()}>
           {loading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}

@@ -279,7 +279,8 @@ function checkFacebookEventImportPanel() {
     "Facebookイベントを取り込む",
     "Facebookから読み取る",
     "読み取り結果の確認",
-    "FacebookイベントURL・詳細URL"
+    "FacebookイベントURL・詳細URL",
+    "Google Calendarへ載せたい場合"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
