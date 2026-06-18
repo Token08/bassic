@@ -22,8 +22,9 @@ async function main() {
 
   if (dryRun) {
     console.log(`Dry run: ${events.length} event(s) would be synced to Google Calendar ${calendarId}`);
-    for (const event of events) {
+    events.forEach((event, index) => {
       const googleEvent = toGoogleCalendarEvent(event);
+      console.log(`\n[${index + 1}/${events.length}] ${googleEvent.summary}`);
       console.log(
         JSON.stringify(
           {
@@ -37,7 +38,7 @@ async function main() {
           2
         )
       );
-    }
+    });
     return;
   }
 

@@ -67,6 +67,7 @@ type FacebookEventPreview = {
   description: string;
   date: string;
   startTime: string;
+  sourceUrl: string;
 };
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
@@ -845,7 +846,7 @@ function FacebookEventImportPanel({
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
-  const isFacebookEvent = /https:\/\/(?:(?:(?:www|m)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(sourceUrl);
+  const isFacebookEvent = /^https?:\/\/(?:(?:(?:www|m|mbasic)\.)?facebook\.com|fb\.me)\/events\/\d+/i.test(sourceUrl);
 
   async function importEvent() {
     setLoading(true);
@@ -865,7 +866,7 @@ function FacebookEventImportPanel({
 
       const nextValues: Draft = {
         sourceType: "facebook",
-        sourceUrl
+        sourceUrl: data.sourceUrl || sourceUrl
       };
 
       if (data.title) {

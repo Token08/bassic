@@ -9,19 +9,25 @@ type Preview = {
   description: string;
   date: string;
   startTime: string;
+  sourceUrl: string;
 };
 
 function unauthorized() {
   return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
 }
 
-function isFacebookEventUrl(value: string) {
+function normalizeFacebookEventUrl(value: string) {
   try {
     const url = new URL(value);
     const host = url.hostname.replace(/^www\./, "");
-    return (host === "facebook.com" || host === "m.facebook.com" || host === "fb.me") && /\/events\/\d+/.test(url.pathname);
+    const id = url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+    if (!id || (host !== "facebook.com" && host !== "m.facebook.com" && host !== "mbasic.facebook.com" && host !== "fb.me")) {
+      return "";
+    }
+
+    return `https://www.facebook.com/events/${id}/`;
   } catch {
-    return false;
+    return "";
   }
 }
 
@@ -92,8 +98,9 @@ export async function POST(request: NextRequest) {
 
   const payload = (await request.json().catch(() => ({}))) as { url?: string };
   const url = String(payload.url || "").trim();
+  const normalizedUrl = normalizeFacebookEventUrl(url);
 
-  if (!isFacebookEventUrl(url)) {
+  if (!normalizedUrl) {
     return NextResponse.json(
       { ok: false, message: "FacebookイベントURLを入力してください。例: https://www.facebook.com/events/..." },
       { status: 400 }
@@ -101,7 +108,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(normalizedUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; BassicAdmin/1.0)"
       },
@@ -122,7 +129,8 @@ export async function POST(request: NextRequest) {
       imageUrl,
       description,
       date: parsed.date,
-      startTime: parsed.startTime
+      startTime: parsed.startTime,
+      sourceUrl: normalizedUrl
     };
 
     return NextResponse.json({ ok: true, data: preview });

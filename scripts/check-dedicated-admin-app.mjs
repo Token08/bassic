@@ -32,6 +32,7 @@ checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
 checkPackageScript("check:admin-app");
+checkPackageScript("sync:calendar:dry");
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
