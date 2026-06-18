@@ -45,6 +45,7 @@ checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
 checkPackageScript("check:admin-app");
 checkPackageScript("sync:calendar:dry");
+checkPackageScript("sync:calendar:check");
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
@@ -351,7 +352,8 @@ function checkCalendarSyncBlocksWarnings() {
     [syncFile, syncText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
     [syncFile, syncText, "collectSyncWarnings(events)"],
     [syncFile, syncText, "!allowSyncWarnings"],
-    [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"]
+    [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
+    [docsFile, docsText, "sync:calendar:check"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
@@ -379,7 +381,7 @@ function checkProductionCalendarSyncDocsMatchDryRun() {
   }
 
   const text = readFileSync(file, "utf8");
-  const requiredTerms = ["個別ページURL", "`description`", "`画像:`"];
+  const requiredTerms = ["個別ページURL", "`description`", "`画像:`", "sync:calendar:check"];
   const staleTerms = ["`Image:`"];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   const stale = staleTerms.filter((term) => text.includes(term));

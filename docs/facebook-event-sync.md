@@ -8,13 +8,13 @@ For client operation, the preferred workflow is semi-automatic: paste a Facebook
 
 If the operator pastes a single Facebook event URL and saves without pressing the import button, the admin app still marks it as a Facebook event for calendar sync. The title, date, and image still need to be confirmed before publishing.
 
-Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. The dry run prints a warning summary at the end, so confirm it says `Dry run completed without warnings.` before the real sync. If the output looks correct, run `npm run sync:calendar`.
+Before writing to Google Calendar, run `npm run sync:calendar:check` to preview the event title, start/end time, Facebook URL, and image URL that would be synced. This command fails when warnings remain, so it is safer for production checks. If the output says `Dry run completed without warnings.`, run `npm run sync:calendar`.
 
 If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
 
 The real sync also stops when warnings remain, so incomplete event data cannot be missed. Only a maintainer should bypass this by setting `GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS=true`, and only after confirming the warning is acceptable.
 
-For stricter release checks in dry run, set `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS=true`. In that mode, any warning stops the command before the real sync step.
+`npm run sync:calendar:dry` is still available for loose inspection. For release checks, prefer `npm run sync:calendar:check`.
 
 Published events without a title or date are not synced. The dry run reports them as skipped items, and the real sync stops until the admin data is fixed.
 
@@ -26,7 +26,7 @@ Published events without a title or date are not synced. The dry run reports the
 4. Confirm the imported title, date, start time, end time, and image.
 5. If Facebook does not expose the event date/time in metadata, enter the date and time manually.
 6. Turn `公開する` on and publish after preview.
-7. Run `npm run sync:calendar:dry` before the real calendar sync.
+7. Run `npm run sync:calendar:check` before the real calendar sync.
 
 The importer reads `og:title`, `og:image`, `og:description`, and JSON-LD event metadata when Facebook exposes it. Facebook may hide date/time depending on login state or markup changes, so manual confirmation stays part of the workflow.
 

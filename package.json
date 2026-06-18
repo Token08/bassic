@@ -12,6 +12,7 @@
     "fetch:events": "node scripts/fetch-facebook-events.mjs",
     "sync:calendar": "node scripts/sync-google-calendar.mjs",
     "sync:calendar:dry": "node scripts/sync-google-calendar-dry-run.mjs",
+    "sync:calendar:check": "node scripts/sync-google-calendar-check.mjs",
     "build": "next build && node scripts/postbuild-html.mjs",
     "build:admin-app": "npm --prefix admin-app run build",
     "start": "next start",

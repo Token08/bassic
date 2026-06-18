@@ -82,12 +82,12 @@ npm run smoke:seo
 3. 「Facebookから読み取る」を押す
 4. タイトル、画像、日時を確認する
 5. 日時が取れない場合は手入力する
-6. 公開してから `npm run sync:calendar:dry` で同期内容を確認する
+6. 公開してから `npm run sync:calendar:check` で同期内容を確認する
 7. dry runの `description` 内にある `画像:` が本番URL、またはFacebookなどの外部URLになっていることを確認する
 8. 問題なければ `npm run sync:calendar` を実行する
 
 画像はGoogle Calendarの説明欄にURLとして入ります。月表示で大きく画像カードとして表示されることは保証しません。
-警告が残っている場合、本番同期は止まります。警告が出た時は管理画面のイベント内容を直してから、もう一度dry runを実行してください。
+警告が残っている場合、`sync:calendar:check` と本番同期は止まります。警告が出た時は管理画面のイベント内容を直してから、もう一度 `sync:calendar:check` を実行してください。
 
 ## 7. 納品先に渡すもの
 
