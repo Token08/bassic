@@ -25,6 +25,7 @@ checkClientDocsText();
 checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
+checkClientSupportRequestDetails();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
@@ -303,6 +304,28 @@ function checkClientHandoffDocsLinked() {
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
+}
+
+function checkClientSupportRequestDetails() {
+  const files = ["docs/delivery-admin-manual.md", "docs/client-handoff-sheet.md"];
+  const requiredTerms = ["どのページ", "何を変更", "画面に出たメッセージ", "スクリーンショット"];
+  const missing = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      missing.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of requiredTerms) {
+      if (!text.includes(term)) {
+        missing.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  add("client docs explain what to send when support is needed", missing.length === 0, missing.join(", "));
 }
 
 function checkFacebookEventPreviewMessages() {
