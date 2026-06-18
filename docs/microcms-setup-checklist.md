@@ -37,6 +37,7 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `date` | 開催日 | 日時 | 必須 |
 | `openTime` | OPEN | テキストフィールド | 任意 |
 | `startTime` | START | テキストフィールド | 任意 |
+| `endTime` | END | テキストフィールド | 任意 |
 | `performers` | 出演者 | テキストエリア | 任意 |
 | `price` | 料金 | テキストフィールド | 任意 |
 | `reservation` | 予約方法 | テキストエリア | 任意 |

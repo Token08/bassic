@@ -29,6 +29,7 @@ export type EventItem = {
   date: string;
   openTime?: string;
   startTime?: string;
+  endTime?: string;
   performers?: string;
   price?: string;
   reservation?: string;

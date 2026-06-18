@@ -204,6 +204,10 @@ function collectEventWarnings(event) {
     warnings.push("開始時間が未入力です。Google Calendarには20:00開始として登録されます。");
   }
 
+  if (event.endTime && !extractTime(event.endTime)) {
+    warnings.push("終了時間から時刻を読み取れません。例: 22:00");
+  }
+
   if (event.sourceType === "facebook" && !event.image?.url) {
     warnings.push("画像URLが未入力です。Google Calendarの説明欄に画像リンクは入りません。");
   }
@@ -270,9 +274,10 @@ async function deleteEvents(calendar, extraParams) {
 }
 
 function toGoogleCalendarEvent(event) {
-  const startTime = event.startTime || event.openTime || "20:00";
+  const startTime = extractTime(event.startTime) || extractTime(event.openTime) || "20:00";
+  const endTime = extractTime(event.endTime);
   const startDateTime = `${event.date}T${startTime}:00`;
-  const endDateTime = addHours(startDateTime, 2);
+  const endDateTime = endTime ? getEndDateTime(event.date, startTime, endTime) : addHours(startDateTime, 2);
 
   return {
     summary: event.title,
@@ -311,6 +316,41 @@ function buildDescription(event) {
   ]
     .filter(Boolean)
     .join("\n\n");
+}
+
+function extractTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const match = String(value).match(/(\d{1,2})[:時](\d{2})?/);
+  if (!match) {
+    return "";
+  }
+
+  return `${match[1].padStart(2, "0")}:${(match[2] || "00").padStart(2, "0")}`;
+}
+
+function getEndDateTime(date, startTime, endTime) {
+  const start = new Date(`${date}T${startTime}:00+09:00`);
+  const end = new Date(`${date}T${endTime}:00+09:00`);
+
+  if (end <= start) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  })
+    .format(end)
+    .replace(" ", "T");
 }
 
 function addHours(localDateTime, hours) {

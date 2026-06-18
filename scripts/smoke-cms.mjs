@@ -34,6 +34,9 @@ const endpointChecks = [
       requiredString(item, "title", "events");
       requiredString(item, "date", "events");
       requiredBoolean(item, "isPublished", "events");
+      optionalTime(item, "openTime", "events");
+      optionalTime(item, "startTime", "events");
+      optionalTime(item, "endTime", "events");
       if (item.sourceUrl) {
         requiredUrl(item, "sourceUrl", "events");
       }
@@ -204,6 +207,17 @@ function requiredEnum(item, field, values, endpoint) {
 function requiredUrl(item, field, endpoint) {
   if (!isValidManagedUrl(item?.[field])) {
     errors.push(`${endpoint}.${field}: URL must start with https:// or /.`);
+  }
+}
+
+function optionalTime(item, field, endpoint) {
+  const value = item?.[field];
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+
+  if (typeof value !== "string" || !/(\d{1,2})[:時](\d{2})?/.test(value)) {
+    errors.push(`${endpoint}.${field}: time should include HH:mm, for example 19:00.`);
   }
 }
 

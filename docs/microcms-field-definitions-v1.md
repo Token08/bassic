@@ -77,6 +77,7 @@
 | 日付 | `date` | 日時 | yes |
 | OPEN | `openTime` | テキスト | no |
 | START | `startTime` | テキスト | no |
+| END | `endTime` | テキスト | no |
 | 出演者 | `performers` | テキストエリア | no |
 | 料金 | `price` | テキスト | no |
 | 予約方法 | `reservation` | テキストエリア | no |

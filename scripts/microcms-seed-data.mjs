@@ -103,6 +103,7 @@ const events = [
     date: "2026-07-12",
     openTime: "19:00",
     startTime: "20:00",
+    endTime: "22:00",
     sourceUrl: "https://www.facebook.com/events/1234567890123456/",
     sourceType: "facebook",
     performers: "出演者は決まり次第更新",
