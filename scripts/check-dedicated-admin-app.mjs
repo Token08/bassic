@@ -415,11 +415,20 @@ function checkDocsIndexBoundaries() {
   const required = [
     "## 納品先へ渡す資料",
     "## 制作者・保守担当だけが見る資料",
-    "## 旧版・控え"
+    "## 旧版・控え",
+    "docs/microcms-field-definitions-v1.md",
+    "docs/cms-sample-content-v1.json",
+    "docs/microcms-setup-checklist.md",
+    "docs/facebook-event-sync.md",
+    "docs/delivery-admin-manual.md",
+    "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md"
   ];
   const missing = required.filter((heading) => !text.includes(heading));
+  const stale = ["docs/cms-sample-content.json"].filter((term) => text.includes(term));
+  const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
 
-  add("admin docs index separates client and maintainer docs", missing.length === 0, missing.join(", "));
+  add("admin docs index separates client and maintainer docs", problems.length === 0, problems.join(", "));
 }
 
 function checkMicrocmsSetupChecklistUsesCurrentDocs() {

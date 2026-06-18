@@ -30,11 +30,15 @@
   - 管理画面で作成する項目名、入力形式、必須項目の定義です。
 - `docs/cms-sample-content-v1.json`
   - 初期データのサンプルです。
+- `docs/microcms-setup-checklist.md`
+  - microCMSで作成するAPI、項目、初期入力の順番を確認する資料です。
 
 ### 保存先と公開反映の設定
 
 - `docs/microcms-admin-v1.md`
   - 保存先、公開反映、再ビルドの制作者向け設定資料です。
+- `docs/facebook-event-sync.md`
+  - FacebookイベントURLからイベントを作り、Google Calendarへ反映する保守担当向け手順です。
 
 ### 専用管理画面アプリ
 
