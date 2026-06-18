@@ -30,6 +30,7 @@ checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
+checkCalendarSyncPrefersManagedFacebookEvents();
 checkCalendarSyncBlocksWarnings();
 checkProductionUrlEnvDocs();
 checkProductionCalendarSyncDocsMatchOutput();
@@ -370,15 +371,18 @@ function checkFacebookEventHandoffDocs() {
 
   const manualText = readFileSync(manualFile, "utf8");
   const checklistText = readFileSync(checklistFile, "utf8");
+  const syncDocText = existsSync("docs/facebook-event-sync.md") ? readFileSync("docs/facebook-event-sync.md", "utf8") : "";
   const requiredManualTerms = [
     "読み取り結果のチェックリスト",
     "個別イベントページのURL",
     "STARTが入っていないと保存時に確認メッセージ"
   ];
   const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認", "sync:calendar:check"];
+  const staleTerms = ["ライヴ取得"];
   const missing = [
     ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
-    ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`)
+    ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`),
+    ...staleTerms.filter((term) => syncDocText.includes(term)).map((term) => `docs/facebook-event-sync.md stale: ${term}`)
   ];
 
   add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
@@ -407,6 +411,27 @@ function checkFacebookEventUrlParserHandlesNestedPaths() {
   ];
 
   add("Facebook event URL parser handles nested event paths", missing.length === 0, missing.join(", "));
+}
+
+function checkCalendarSyncPrefersManagedFacebookEvents() {
+  const syncFile = "scripts/sync-google-calendar.mjs";
+  const docsFile = "docs/facebook-event-sync.md";
+  if (!existsSync(syncFile) || !existsSync(docsFile)) {
+    add("calendar sync prefers managed Facebook event data", false, `${syncFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const syncText = readFileSync(syncFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const required = [
+    [syncFile, syncText, "dedupeEvents([...managedEvents, ...fileEvents])"],
+    [syncFile, syncText, "facebook-${facebookEventId}"],
+    [docsFile, docsText, "管理画面で確認・修正した内容を優先"],
+    [docsFile, docsText, "管理画面の内容を正"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("calendar sync prefers managed Facebook event data", missing.length === 0, missing.join(", "));
 }
 
 function checkCalendarSyncBlocksWarnings() {
