@@ -886,6 +886,7 @@ function FacebookEventImportPanel({
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
+  const previewNeedsDateInput = Boolean(preview && !(preview.date && preview.startTime));
   const previewChecks = preview
     ? [
         { label: "タイトル", ok: Boolean(preview.title), text: preview.title || "手入力してください" },
@@ -947,7 +948,7 @@ function FacebookEventImportPanel({
       setMessage(
         data.date && data.startTime
           ? "読み取りました。タイトル、日時、画像を確認してください。"
-          : "タイトルと画像を読み取りました。日時は入力欄で確認してください。"
+          : "タイトルと画像を読み取りました。日時は手入力で確認してください。"
       );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
@@ -976,7 +977,7 @@ function FacebookEventImportPanel({
             : "先に「FacebookイベントURL・詳細URL」へ FacebookイベントURL を入力してください。"}
         </small>
       ) : null}
-      {message ? <small className={preview ? "import-success" : "import-warning"}>{message}</small> : null}
+      {message ? <small className={preview && !previewNeedsDateInput ? "import-success" : "import-warning"}>{message}</small> : null}
       {preview ? (
         <div className="facebook-import-preview">
           {preview.imageUrl ? (
@@ -990,6 +991,12 @@ function FacebookEventImportPanel({
                 ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
                 : "日時は入力欄で確認してください"}
             </span>
+            {previewNeedsDateInput ? (
+              <div className="facebook-import-date-warning" role="status">
+                <AlertCircle size={16} />
+                <span>日時が自動取得できませんでした。公開前に「日付」と「START」を手入力してください。</span>
+              </div>
+            ) : null}
             <ul className="facebook-import-checklist" aria-label="読み取り結果の確認">
               {previewChecks.map((check) => (
                 <li key={check.label} className={check.ok ? "ok" : "needs-check"}>
@@ -1179,6 +1186,15 @@ function SectionEditor({
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
     if (section.id === "events" && sourceUrl && (sourceType === "facebook" || isFacebookUrl(sourceUrl)) && !isFacebookEventUrl(sourceUrl)) {
       nextErrors.sourceUrl = "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入力してください。";
+    }
+
+    if (
+      section.id === "events" &&
+      nextDraft.isPublished &&
+      (sourceType === "facebook" || isFacebookEventUrl(sourceUrl)) &&
+      !getString(nextDraft.startTime).trim()
+    ) {
+      nextErrors.startTime = "Facebookイベントを公開する前にSTARTを入力してください。";
     }
 
     setErrors(nextErrors);

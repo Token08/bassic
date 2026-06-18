@@ -282,7 +282,10 @@ function checkFacebookEventImportPanel() {
     "Facebookから読み取る",
     "読み取り結果の確認",
     "FacebookイベントURL・詳細URL",
-    "Google Calendarへ載せたい場合"
+    "Google Calendarへ載せたい場合",
+    "日時が自動取得できませんでした",
+    "START",
+    "Facebookイベントを公開する前にSTARTを入力してください。"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
