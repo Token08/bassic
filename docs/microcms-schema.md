@@ -29,8 +29,12 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | performers | 出演者 | テキストエリア | false |
 | price | 料金 | テキストフィールド | false |
 | reservation | 予約方法 | テキストエリア | false |
+| sourceUrl | FacebookイベントURL・詳細URL | テキストフィールド | false |
+| sourceType | 取り込み元 | テキストフィールド | false |
 | image | イベント画像 | 画像 | false |
 | isPublished | 公開する | 真偽値 | true |
+
+Facebookイベントから取り込んだイベントは `sourceUrl` に個別イベントページURL、`sourceType` に `facebook` が入ります。Google Calendarへ反映する時は、`sourceUrl` と `image` を説明欄リンクとして使います。
 
 ## menu
 

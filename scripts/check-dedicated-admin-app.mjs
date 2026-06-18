@@ -40,6 +40,7 @@ checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
+checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
@@ -620,6 +621,25 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("microCMS setup checklist includes Facebook event fields", missing.length === 0, missing.join(", "));
+}
+
+function checkLegacyMicrocmsSchemaIncludesFacebookEventFields() {
+  const file = "docs/microcms-schema.md";
+  if (!existsSync(file)) {
+    add("legacy microCMS schema includes Facebook event fields", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "| sourceUrl | FacebookイベントURL・詳細URL",
+    "| sourceType | 取り込み元",
+    "`sourceType` に `facebook`",
+    "Google Calendarへ反映する時"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("legacy microCMS schema includes Facebook event fields", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSchemaEndpointsMatch() {
