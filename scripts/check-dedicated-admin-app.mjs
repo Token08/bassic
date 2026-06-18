@@ -432,11 +432,17 @@ function checkDocsIndexBoundaries() {
     "docs/facebook-event-sync.md",
     "docs/delivery-admin-manual.md",
     "docs/client-handoff-checklist.md",
-    "docs/client-handoff-sheet.md"
+    "docs/client-handoff-sheet.md",
+    "sync:calendar:check"
   ];
   const missing = required.filter((heading) => !text.includes(heading));
   const stale = ["docs/cms-sample-content.json"].filter((term) => text.includes(term));
-  const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
+  const removedFiles = ["docs/cms-sample-content.json"].filter((path) => existsSync(path));
+  const problems = [
+    ...missing.map((term) => `missing ${term}`),
+    ...stale.map((term) => `stale ${term}`),
+    ...removedFiles.map((path) => `remove stale ${path}`)
+  ];
 
   add("admin docs index separates client and maintainer docs", problems.length === 0, problems.join(", "));
 }

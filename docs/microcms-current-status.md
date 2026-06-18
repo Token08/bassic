@@ -43,6 +43,7 @@ Use `docs/microcms-field-definitions-v1.md` for the field list and `docs/cms-sam
 npm run typecheck
 npm run typecheck:admin-app
 npm run check:admin-app
+npm run sync:calendar:check
 npm run seed:cms
 npm run smoke:cms
 npm run build

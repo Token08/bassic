@@ -58,6 +58,7 @@ npm run build
 npm run smoke:links
 npm run smoke:seo
 npm run check:admin-app
+npm run sync:calendar:check
 ```
 
 実際の保存先接続情報を設定した後だけ実行するもの:
