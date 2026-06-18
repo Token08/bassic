@@ -22,6 +22,7 @@ checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
 checkClientDocsMentionFacebookEventFlow();
+checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkFacebookEventPreviewMessages();
 checkFacebookEventImportPanel();
@@ -205,9 +206,9 @@ function checkClientDocsText() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映"] },
-    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい"] }
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄"] }
   ];
   const missing = [];
 
@@ -226,6 +227,19 @@ function checkClientDocsMentionFacebookEventFlow() {
   }
 
   add("client docs mention Facebook event URL flow", missing.length === 0, missing.join(", "));
+}
+
+function checkPageCopyPlaceholdersAvoidRemovedEventList() {
+  const file = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(file)) {
+    add("page copy placeholders avoid removed event list", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const stale = ["placeholder: \"Event List\"", "placeholder: \"Event Schedule\""].filter((term) => text.includes(term));
+
+  add("page copy placeholders avoid removed event list", stale.length === 0, stale.join(", "));
 }
 
 function checkClientHandoffDocsLinked() {
