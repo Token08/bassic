@@ -32,6 +32,7 @@ export const fallbackContents = {
       date: "2026-07-12",
       openTime: "19:00",
       startTime: "20:00",
+      endTime: "22:00",
       performers: "出演者は決まり次第更新",
       price: "予約・料金はイベントごとに告知",
       reservation: "mail@bassic.jp まで日付、枚数、氏名、電話番号をお送りください。",

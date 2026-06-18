@@ -57,6 +57,10 @@ for (const page of pages) {
   if (!html.includes("og:image") || !html.includes("twitter:card")) {
     failures.push(`Missing OGP/Twitter metadata on ${page.path}`);
   }
+
+  if (page.path === "/events/" && (!html.includes('"@type":"Event"') || !html.includes('"endDate"'))) {
+    failures.push("Missing Event structured data with endDate on /events/");
+  }
 }
 
 const sitemap = readOutFile("sitemap.xml");

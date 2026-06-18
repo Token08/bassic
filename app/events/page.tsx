@@ -14,28 +14,81 @@ export const metadata: Metadata = {
   ...buildMetadata("events")
 };
 
+function extractTime(value?: string) {
+  const match = value?.match(/(\d{1,2})[:時](\d{2})?/);
+  return match ? `${match[1].padStart(2, "0")}:${(match[2] || "00").padStart(2, "0")}` : "";
+}
+
+function addHours(date: string, time: string, hours: number) {
+  const next = new Date(`${date}T${time}:00+09:00`);
+  next.setHours(next.getHours() + hours);
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  })
+    .format(next)
+    .replace(" ", "T");
+}
+
+function resolveEndDate(date: string, startTime: string, endTime?: string) {
+  const parsedEndTime = extractTime(endTime);
+  if (!parsedEndTime) {
+    return `${addHours(date, startTime, 2)}+09:00`;
+  }
+
+  const start = new Date(`${date}T${startTime}:00+09:00`);
+  const end = new Date(`${date}T${parsedEndTime}:00+09:00`);
+  if (end <= start) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  return `${new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  })
+    .format(end)
+    .replace(" ", "T")}+09:00`;
+}
+
 function EventsJsonLd({ events, settings }: { events: Awaited<ReturnType<typeof getCmsContents>>["events"]; settings: SiteSettings }) {
-  const data = events.slice(0, 8).map((event) => ({
-    "@context": "https://schema.org",
-    "@type": "Event",
-    name: event.title,
-    startDate: `${event.date}T${event.startTime || event.openTime || "20:00"}:00+09:00`,
-    eventStatus: "https://schema.org/EventScheduled",
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    location: {
-      "@type": "Place",
-      name: site.name,
-      address: settings.address
-    },
-    image: [event.image?.url ? (event.image.url.startsWith("/") ? absoluteUrl(event.image.url) : event.image.url) : absoluteUrl("/ogp.png")],
-    description: [event.performers, event.price, event.reservation].filter(Boolean).join(" / "),
-    url: event.sourceUrl || absoluteUrl("/events/"),
-    organizer: {
-      "@type": "Organization",
-      name: site.name,
-      url: site.siteUrl
-    }
-  }));
+  const data = events.slice(0, 8).map((event) => {
+    const startTime = extractTime(event.startTime) || extractTime(event.openTime) || "20:00";
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: event.title,
+      startDate: `${event.date}T${startTime}:00+09:00`,
+      endDate: resolveEndDate(event.date, startTime, event.endTime),
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: {
+        "@type": "Place",
+        name: site.name,
+        address: settings.address
+      },
+      image: [event.image?.url ? (event.image.url.startsWith("/") ? absoluteUrl(event.image.url) : event.image.url) : absoluteUrl("/ogp.png")],
+      description: [event.performers, event.price, event.reservation].filter(Boolean).join(" / "),
+      url: event.sourceUrl || absoluteUrl("/events/"),
+      organizer: {
+        "@type": "Organization",
+        name: site.name,
+        url: site.siteUrl
+      }
+    };
+  });
 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
