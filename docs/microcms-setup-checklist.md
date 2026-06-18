@@ -2,7 +2,8 @@
 
 納品先にはGitHubを触らせず、microCMSの管理画面だけで更新できる状態を目指します。
 
-初期入力の参考値は `docs/cms-sample-content.json`、公開前の確認順は `docs/production-handoff-checklist.md` を参照してください。
+初期入力の参考値は `docs/cms-sample-content-v1.json`、公開前の確認順は `docs/production-handoff-checklist.md` を参照してください。
+各APIの細かい項目名、必須項目、入力形式は `docs/microcms-field-definitions-v1.md` を正とします。
 
 ## 1. 作成するAPI
 
@@ -10,11 +11,18 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 | API ID | 種類 | 用途 |
 | --- | --- | --- |
+| `site-settings` | オブジェクト形式 | 住所、電話、営業時間、喫煙、テーブル・チャージ、SNS URL |
 | `home` | オブジェクト形式 | TOP文言、First Visit文言、Instagram表示URL |
+| `hero-slides` | リスト形式 | 各ページのメイン背景画像 |
 | `events` | リスト形式 | イベントスケジュール |
 | `menu` | リスト形式 | フード/ドリンク名、料金、画像 |
+| `drink-menu-sheets` | リスト形式 | ドリンクメニュー表画像 |
 | `party-plans` | リスト形式 | 貸切、二次会、レンタルの案内 |
+| `equipment-rental` | オブジェクト形式 | 機材レンタル説明、料金、PDFリンク |
 | `social-notices` | リスト形式 | SNS欄に出す投稿URLカード |
+| `page-copy` | リスト形式 | 各ページの見出し、説明文 |
+| `page-sections` | リスト形式 | 既存セクションの表示/非表示、表示順 |
+| `custom-sections` | リスト形式 | 追加のお知らせセクション |
 
 ## 2. home
 

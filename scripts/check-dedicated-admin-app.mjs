@@ -32,6 +32,7 @@ checkProductionUrlEnvDocs();
 checkProductionCalendarSyncDocsMatchDryRun();
 checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
+checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
@@ -419,6 +420,31 @@ function checkDocsIndexBoundaries() {
   const missing = required.filter((heading) => !text.includes(heading));
 
   add("admin docs index separates client and maintainer docs", missing.length === 0, missing.join(", "));
+}
+
+function checkMicrocmsSetupChecklistUsesCurrentDocs() {
+  const file = "docs/microcms-setup-checklist.md";
+  if (!existsSync(file)) {
+    add("microCMS setup checklist uses current docs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "docs/cms-sample-content-v1.json",
+    "docs/microcms-field-definitions-v1.md",
+    "`site-settings`",
+    "`drink-menu-sheets`",
+    "`equipment-rental`",
+    "`page-copy`",
+    "`page-sections`",
+    "`custom-sections`"
+  ];
+  const stale = ["docs/cms-sample-content.json"].filter((term) => text.includes(term));
+  const missing = required.filter((term) => !text.includes(term));
+  const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
+
+  add("microCMS setup checklist uses current docs", problems.length === 0, problems.join(", "));
 }
 
 function checkAdminSchemaDocsMatch() {
