@@ -35,7 +35,9 @@ checkCalendarSyncBlocksWarnings();
 checkProductionUrlEnvDocs();
 checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
+checkAdminReadmeCalendarRequestVerification();
 checkDocsIndexBoundaries();
+checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkEventFieldDocsExplainCalendarSync();
@@ -512,6 +514,20 @@ function checkAdminReadmeLinksHandoffDocs() {
   add("admin README links handoff docs", missing.length === 0, missing.join(", "));
 }
 
+function checkAdminReadmeCalendarRequestVerification() {
+  const file = "admin-app/README.md";
+  if (!existsSync(file)) {
+    add("admin README calendar request verification", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = ["sync:calendar:check", "イベント名", "日時", "Facebook URL", "画像URL", "依頼内容"];
+  const missing = required.filter((item) => !text.includes(item));
+
+  add("admin README calendar request verification", missing.length === 0, missing.join(", "));
+}
+
 function checkDocsIndexBoundaries() {
   const file = "docs/admin-docs-index.md";
   if (!existsSync(file)) {
@@ -543,6 +559,20 @@ function checkDocsIndexBoundaries() {
   ];
 
   add("admin docs index separates client and maintainer docs", problems.length === 0, problems.join(", "));
+}
+
+function checkLegacyDeliveryManualMarkedAsOld() {
+  const file = "docs/delivery-admin-manual-v1.md";
+  if (!existsSync(file)) {
+    add("legacy delivery manual marked as old", true);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = ["旧版の控え", "納品先へ渡す資料は `docs/delivery-admin-manual.md`"];
+  const missing = required.filter((item) => !text.includes(item));
+
+  add("legacy delivery manual marked as old", missing.length === 0, missing.join(", "));
 }
 
 function checkMicrocmsSetupChecklistUsesCurrentDocs() {
