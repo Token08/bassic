@@ -12,7 +12,9 @@ Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview th
 
 If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
 
-For stricter release checks, set `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS=true` before the dry run. In that mode, any warning stops the command so incomplete event data cannot be missed.
+The real sync also stops when warnings remain, so incomplete event data cannot be missed. Only a maintainer should bypass this by setting `GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS=true`, and only after confirming the warning is acceptable.
+
+For stricter release checks in dry run, set `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS=true`. In that mode, any warning stops the command before the real sync step.
 
 Published events without a title or date are not synced. The dry run reports them as skipped items, and the real sync stops until the admin data is fixed.
 
@@ -58,6 +60,7 @@ If an event image starts with `/`, the sync script converts it to the public sit
 - `GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC`
 - `GOOGLE_CALENDAR_SYNC_DRY_RUN`
 - `GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS`
+- `GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS`
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`

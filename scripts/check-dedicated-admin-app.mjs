@@ -26,6 +26,8 @@ checkClientHandoffDocsLinked();
 checkFacebookEventPreviewMessages();
 checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
+checkFacebookEventUrlParserHandlesNestedPaths();
+checkCalendarSyncBlocksWarnings();
 checkProductionUrlEnvDocs();
 checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
@@ -301,6 +303,46 @@ function checkFacebookEventHandoffDocs() {
   ];
 
   add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
+}
+
+function checkFacebookEventUrlParserHandlesNestedPaths() {
+  const previewFile = "admin-app/app/api/facebook-event-preview/route.ts";
+  const syncFile = "scripts/sync-google-calendar.mjs";
+  if (!existsSync(previewFile) || !existsSync(syncFile)) {
+    add("Facebook event URL parser handles nested event paths", false, `${previewFile} or ${syncFile} missing`);
+    return;
+  }
+
+  const previewText = readFileSync(previewFile, "utf8");
+  const syncText = readFileSync(syncFile, "utf8");
+  const parserTerms = ["split(\"/\")", "reverse()", "/^\\d{6,}$/"];
+  const missing = [
+    ...parserTerms.filter((term) => !previewText.includes(term)).map((term) => `${previewFile}: ${term}`),
+    ...parserTerms.filter((term) => !syncText.includes(term)).map((term) => `${syncFile}: ${term}`)
+  ];
+
+  add("Facebook event URL parser handles nested event paths", missing.length === 0, missing.join(", "));
+}
+
+function checkCalendarSyncBlocksWarnings() {
+  const syncFile = "scripts/sync-google-calendar.mjs";
+  const docsFile = "docs/facebook-event-sync.md";
+  if (!existsSync(syncFile) || !existsSync(docsFile)) {
+    add("calendar sync blocks unresolved warnings", false, `${syncFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const syncText = readFileSync(syncFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const required = [
+    [syncFile, syncText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"],
+    [syncFile, syncText, "collectSyncWarnings(events)"],
+    [syncFile, syncText, "!allowSyncWarnings"],
+    [docsFile, docsText, "GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("calendar sync blocks unresolved warnings", missing.length === 0, missing.join(", "));
 }
 
 function checkProductionUrlEnvDocs() {

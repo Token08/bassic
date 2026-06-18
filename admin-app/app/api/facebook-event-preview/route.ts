@@ -21,7 +21,7 @@ function normalizeFacebookEventUrl(value: string) {
   try {
     const url = new URL(value);
     const host = url.hostname.replace(/^www\./, "");
-    const id = url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+    const id = getFacebookEventIdFromPath(url.pathname);
     if (!id || (host !== "facebook.com" && host !== "m.facebook.com" && host !== "mbasic.facebook.com" && host !== "fb.me")) {
       return "";
     }
@@ -30,6 +30,20 @@ function normalizeFacebookEventUrl(value: string) {
   } catch {
     return "";
   }
+}
+
+function getFacebookEventIdFromPath(pathname: string) {
+  const eventsPath = pathname.match(/\/events\/(.+)/)?.[1] || "";
+  if (!eventsPath) {
+    return "";
+  }
+
+  return [...eventsPath
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean)]
+    .reverse()
+    .find((part) => /^\d{6,}$/.test(part)) || "";
 }
 
 function readMeta(html: string, property: string) {
@@ -167,6 +181,14 @@ function parseDateFromText(text: string) {
   return { date: "", startTime: "" };
 }
 
+function readDatetimeAttributes(html: string) {
+  const candidates = [...html.matchAll(/datetime=["']([^"']+)["']/gi)]
+    .map((match) => parseDateTimeValue(match[1]))
+    .filter((value) => value.date);
+
+  return candidates[0] || { date: "", time: "" };
+}
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -209,12 +231,13 @@ export async function POST(request: NextRequest) {
     const imageUrl = jsonLd.imageUrl || readMeta(html, "og:image") || readMeta(html, "twitter:image");
     const description = jsonLd.description || readMeta(html, "og:description") || readMeta(html, "description");
     const parsed = parseDateFromText(`${title} ${description}`);
+    const datetime = readDatetimeAttributes(html);
     const preview: Preview = {
       title,
       imageUrl,
       description,
-      date: jsonLd.date || parsed.date,
-      startTime: jsonLd.startTime || parsed.startTime,
+      date: jsonLd.date || parsed.date || datetime.date,
+      startTime: jsonLd.startTime || parsed.startTime || datetime.time,
       endTime: jsonLd.endTime,
       sourceUrl: normalizedUrl
     };

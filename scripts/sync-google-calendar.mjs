@@ -13,6 +13,7 @@ const syncTag = process.env.GOOGLE_CALENDAR_SYNC_TAG || "bassic-facebook-sync";
 const timezone = process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Tokyo";
 const dryRun = process.env.GOOGLE_CALENDAR_SYNC_DRY_RUN === "true";
 const failOnWarnings = process.env.GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS === "true";
+const allowSyncWarnings = process.env.GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS === "true";
 const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp");
 let skippedSyncEvents = [];
 let inputFileWarning = "";
@@ -85,6 +86,16 @@ async function main() {
   if (skippedSyncEvents.length) {
     throw new Error(
       `Found ${skippedSyncEvents.length} published event(s) without title or date. Run npm run sync:calendar:dry and fix the admin event data before syncing.`
+    );
+  }
+
+  const syncWarnings = collectSyncWarnings(events);
+  if (syncWarnings.length && !allowSyncWarnings) {
+    throw new Error(
+      [
+        `Found ${syncWarnings.length} warning(s). Run npm run sync:calendar:dry and fix the admin event data before syncing.`,
+        ...syncWarnings.map((warning) => `- ${warning}`)
+      ].join("\n")
     );
   }
 
@@ -230,10 +241,32 @@ function getFacebookEventId(value) {
       return "";
     }
 
-    return url.pathname.match(/\/events\/(\d+)/)?.[1] || "";
+    const eventsPath = url.pathname.match(/\/events\/(.+)/)?.[1] || "";
+    if (!eventsPath) {
+      return "";
+    }
+
+    return [...eventsPath
+      .split("/")
+      .map((part) => part.trim())
+      .filter(Boolean)]
+      .reverse()
+      .find((part) => /^\d{6,}$/.test(part)) || "";
   } catch {
     return "";
   }
+}
+
+function collectSyncWarnings(events) {
+  const warnings = [];
+
+  for (const event of events) {
+    for (const warning of collectEventWarnings(event)) {
+      warnings.push(`${getEventLabel(event)}: ${warning}`);
+    }
+  }
+
+  return warnings;
 }
 
 function collectEventWarnings(event) {
