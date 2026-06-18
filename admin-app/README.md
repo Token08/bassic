@@ -53,7 +53,7 @@ Facebookイベントは、管理画面へ個別イベントURLを貼る運用に
 1. 管理画面のイベントで `FacebookイベントURL・詳細URL` に個別イベントURLを貼る。
 2. `Facebookから読み取る` を押し、タイトル、画像、日付、STARTを確認する。
 3. 公開後、保守担当者が `npm run sync:calendar:check` で同期内容を確認する。
-4. 確認結果のイベント名、日時、Facebook URL、画像URLが依頼内容と合っていれば `npm run sync:calendar` でGoogle Calendarへ反映する。
+4. 確認結果のイベント名、日付、START、Facebook URL、画像URLが依頼内容と合っていれば `npm run sync:calendar` でGoogle Calendarへ反映する。
 
 詳しい保守手順は `docs/facebook-event-sync.md` を確認してください。納品先にはこの同期コマンドを触らせず、必要な時だけ「イベント名」と「Google Calendarにも反映してください」を連絡してもらう運用にします。
 

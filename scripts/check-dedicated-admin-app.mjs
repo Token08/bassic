@@ -307,7 +307,7 @@ function checkClientHandoffDocsLinked() {
 }
 
 function checkClientSupportRequestDetails() {
-  const files = ["docs/delivery-admin-manual.md", "docs/client-handoff-sheet.md"];
+  const files = ["docs/delivery-admin-manual.md", "docs/client-handoff-sheet.md", "docs/client-handoff-checklist.md"];
   const requiredTerms = ["どのページ", "何を変更", "画面に出たメッセージ", "スクリーンショット"];
   const missing = [];
 
@@ -406,9 +406,9 @@ function checkFacebookEventHandoffDocs() {
   const requiredManualTerms = [
     "読み取り結果のチェックリスト",
     "個別イベントページのURL",
-    "日付またはSTARTが入っていないと保存時に確認メッセージ"
+    "日付とSTARTの両方が入っていないと保存時に確認メッセージ"
   ];
-  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日時を確認", "sync:calendar:check"];
+  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "sync:calendar:check"];
   const staleTerms = ["ライヴ取得"];
   const missing = [
     ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
@@ -547,7 +547,7 @@ function checkAdminReadmeCalendarRequestVerification() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = ["sync:calendar:check", "イベント名", "日時", "Facebook URL", "画像URL", "依頼内容"];
+  const required = ["sync:calendar:check", "イベント名", "日付", "START", "Facebook URL", "画像URL", "依頼内容"];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin README calendar request verification", missing.length === 0, missing.join(", "));
