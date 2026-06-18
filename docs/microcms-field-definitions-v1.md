@@ -82,7 +82,7 @@
 | 料金 | `price` | テキスト | no |
 | 予約方法 | `reservation` | テキストエリア | no |
 | FacebookイベントURL・詳細URL | `sourceUrl` | テキスト | no |
-| 取り込み元 | `sourceType` | テキスト | no |
+| 取り込み元 | `sourceType` | hidden / 管理画面で自動入力 | no |
 | 画像 | `image` | 画像 | no |
 | 公開する | `isPublished` | 真偽値 | yes |
 
