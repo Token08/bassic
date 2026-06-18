@@ -100,7 +100,9 @@
 | メニュー名 | `name` | テキスト | yes |
 | 英語名 | `englishName` | テキスト | no |
 | 料金 | `price` | テキスト | no |
-| 説明 | `description` | テキストエリア | no |
+| 補足メモ | `description` | テキストエリア | no |
+
+メニューカードは画像、名前、料金を中心に表示します。`description` は検索向けや将来表示用の補足として扱い、通常のメニューカード本文としては使いません。
 | カテゴリ | `category` | セレクト | yes |
 | 画像 | `image` | 画像 | no |
 | 表示順 | `displayOrder` | 数字 | no |

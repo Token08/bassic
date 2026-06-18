@@ -217,7 +217,14 @@ export const sections: SectionDefinition[] = [
       { key: "name", label: "フード名", type: "text", required: true, placeholder: "ファズ・カレー" },
       { key: "englishName", label: "英語名", type: "text", placeholder: "Fuzz Curry" },
       { key: "price", label: "料金", type: "text", placeholder: "1,200円" },
-      { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "必要な場合だけ短く入力" },
+      {
+        key: "description",
+        label: "補足メモ",
+        type: "textarea",
+        rows: 3,
+        placeholder: "必要な場合だけ短く入力",
+        hint: "メニューカードは画像・名前・料金を中心に表示します。ここは検索向けや将来用の補足です。"
+      },
       { key: "image", label: "画像", type: "image", hint: imageFieldHint },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }

@@ -49,6 +49,7 @@ checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
+checkMenuDescriptionExplainsSupplementalUse();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
 checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
@@ -836,6 +837,28 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkMenuDescriptionExplainsSupplementalUse() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  if (!existsSync(schemaFile) || !existsSync(fieldDocsFile) || !existsSync(setupFile)) {
+    add("menu description explains supplemental use", false, `${schemaFile}, ${fieldDocsFile}, or ${setupFile} missing`);
+    return;
+  }
+
+  const checks = [
+    [schemaFile, readFileSync(schemaFile, "utf8"), "label: \"補足メモ\""],
+    [schemaFile, readFileSync(schemaFile, "utf8"), "メニューカードは画像・名前・料金を中心に表示します"],
+    [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "| 補足メモ | `description`"],
+    [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "通常のメニューカード本文としては使いません"],
+    [setupFile, readFileSync(setupFile, "utf8"), "`description` | 補足メモ"],
+    [setupFile, readFileSync(setupFile, "utf8"), "通常のメニューカード本文としては使いません"]
+  ];
+  const missing = checks.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("menu description explains supplemental use", missing.length === 0, missing.join(", "));
 }
 
 function checkEventFieldDocsExplainCalendarSync() {
