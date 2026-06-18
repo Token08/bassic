@@ -768,7 +768,7 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
   return (
     <div className={`required-progress ${remaining === 0 ? "complete" : ""}`}>
       <strong>必須 {completed}/{requiredFields.length} 入力済み</strong>
-      <span>{remaining === 0 ? "公開前チェックOKです。" : `あと${remaining}件入力すると確認できます。`}</span>
+      <span>{remaining === 0 ? "必須項目はそろっています。公開前チェックへ進めます。" : `あと${remaining}件の必須項目を入れると、プレビュー確認へ進めます。`}</span>
       {missingLabels.length ? <small>未入力: {missingLabels.join("、")}</small> : null}
     </div>
   );
@@ -820,7 +820,7 @@ function PreviewModal({
           <div>
             <p className="eyebrow">Preview</p>
             <h2>{section.title}</h2>
-            <p>公開前に、入力内容をざっと確認してください。</p>
+            <p>公開前に、入力内容・リンク先・画像をざっと確認してください。</p>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="閉じる">
             <X size={20} />
@@ -888,11 +888,11 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
       </div>
       <div>
         <strong>下書き保存</strong>
-        <span>サイトには出さず、入力内容だけ残します。</span>
+        <span>サイトには出さず、入力内容だけ残します。途中保存や後で確認したい時に使います。</span>
       </div>
       <div>
         <strong>プレビューして公開</strong>
-        <span>内容確認のあと、サイト更新を開始します。</span>
+        <span>「公開する」がONの項目を、内容確認のあと公開サイトへ反映します。</span>
       </div>
     </section>
   );
@@ -903,11 +903,11 @@ function SaveChoiceGuide() {
     <div className="save-choice-guide" aria-label="保存方法の違い">
       <div>
         <strong>下書き保存</strong>
-        <span>サイトには出さず、入力内容だけ残します。あとで確認したい時に使います。</span>
+        <span>サイトには出さず、入力内容だけ残します。途中保存や後で確認したい時に使います。</span>
       </div>
       <div>
         <strong>プレビューして公開</strong>
-        <span>すぐ公開せず、確認画面を見てから公開できます。</span>
+        <span>「公開する」がONの項目を、確認画面を見てから公開サイトへ反映します。</span>
       </div>
     </div>
   );

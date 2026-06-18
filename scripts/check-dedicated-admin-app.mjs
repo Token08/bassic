@@ -28,6 +28,7 @@ checkClientHandoffDocsLinked();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkPreviewChecklistIsSectionSpecific();
+checkAdminSaveFlowExplainsPublishBehavior();
 checkPublishWaitCopyIsSpecific();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
@@ -374,6 +375,25 @@ function checkPreviewChecklistIsSectionSpecific() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin preview checklist is section specific", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSaveFlowExplainsPublishBehavior() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin save flow explains publish behavior", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "プレビュー確認へ進めます",
+    "入力内容・リンク先・画像",
+    "「公開する」がONの項目",
+    "途中保存や後で確認したい時"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin save flow explains publish behavior", missing.length === 0, missing.join(", "));
 }
 
 function checkPublishWaitCopyIsSpecific() {
