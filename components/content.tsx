@@ -141,7 +141,7 @@ export function VisitInfoCards({ settings }: { settings?: SiteSettings }) {
     <VisitInfoGrid
       ariaLabel="来店前の基本情報"
       title="初めての来店前に、知っておくと安心なこと。"
-      lead="営業時間、チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
+      lead="営業時間、テーブル・チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
       items={items}
     />
   );

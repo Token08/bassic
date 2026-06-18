@@ -6,7 +6,7 @@
 
 | API ID | 形式 | 用途 |
 | --- | --- | --- |
-| `site-settings` | オブジェクト | 住所、電話、営業時間、喫煙、チャージ、SNS URL、Google Map URL |
+| `site-settings` | オブジェクト | 住所、電話、営業時間、喫煙、テーブル・チャージ、SNS URL、Google Map URL |
 | `home` | オブジェクト | TOPページの主要文言、初回来店文言、Instagram表示URL |
 | `hero-slides` | リスト | 各ページのメイン背景画像 |
 | `events` | リスト | イベント情報 |

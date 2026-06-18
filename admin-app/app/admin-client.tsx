@@ -717,7 +717,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
             type="text"
             value={image.alt || ""}
             onChange={(event) => onChange({ ...image, alt: event.target.value })}
-            placeholder="例: ライブ会場のステージ"
+            placeholder="例: ライヴ会場のステージ"
           />
         </label>
         <label className="upload-button">

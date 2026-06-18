@@ -6,7 +6,7 @@ const siteSettings = {
     "イベント時は営業時間が変動します。\nイベント終了後は 22:30 から通常営業です。\n詳細はイベントスケジュールページをご確認ください。",
   smokingLabel:
     "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容によりイベント中は禁煙になる場合がございます。",
-  chargeLabel: "チャージ 500円 / お一人様",
+  chargeLabel: "テーブル・チャージ 500円 / お一人様",
   googleMapsUrl:
     "https://www.google.com/maps/search/?api=1&query=public%20bar%20Bassic.%20福岡市中央区天神3-4-19%20WITH天神5F",
   directionsUrl:

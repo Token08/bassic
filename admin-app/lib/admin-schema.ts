@@ -88,7 +88,7 @@ export const sections: SectionDefinition[] = [
     id: "site-settings",
     title: "店舗基本情報",
     shortTitle: "店舗情報",
-    description: "住所、電話、営業時間、喫煙、チャージ、SNSリンクを更新します。",
+    description: "住所、電話、営業時間、喫煙、テーブル・チャージ、SNSリンクを更新します。",
     helperText: "全ページで使う基本情報です。変更後はスマホで電話・地図リンクも確認してください。",
     kind: "object",
     icon: Settings,
