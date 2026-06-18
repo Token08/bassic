@@ -174,6 +174,16 @@ function parseDateFromText(text: string) {
     };
   }
 
+  const jpWithoutYear = normalized.match(/(?:^|[^\d])(\d{1,2})月(\d{1,2})日?.*?(午前|午後)?\s*(\d{1,2})(?::|：|時)?(\d{2})?/);
+  if (jpWithoutYear) {
+    const year = inferEventYear(jpWithoutYear[1], jpWithoutYear[2]);
+    const hour = normalizeJapaneseHour(jpWithoutYear[4], jpWithoutYear[3]);
+    return {
+      date: `${year}-${pad(jpWithoutYear[1])}-${pad(jpWithoutYear[2])}`,
+      startTime: `${pad(hour)}:${pad(jpWithoutYear[5] || "00")}`
+    };
+  }
+
   const iso = normalized.match(/(\d{4})-(\d{2})-(\d{2})(?:.*?(\d{2}):(\d{2}))?/);
   if (iso) {
     return {
@@ -183,6 +193,22 @@ function parseDateFromText(text: string) {
   }
 
   return { date: "", startTime: "" };
+}
+
+function inferEventYear(monthValue: string, dayValue: string) {
+  const now = new Date();
+  let year = now.getFullYear();
+  const month = Number.parseInt(monthValue, 10);
+  const day = Number.parseInt(dayValue, 10);
+  const candidate = new Date(year, month - 1, day);
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  if (candidate < sixMonthsAgo) {
+    year += 1;
+  }
+
+  return String(year);
 }
 
 function normalizeJapaneseHour(value: string, period?: string) {

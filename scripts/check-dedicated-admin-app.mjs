@@ -518,6 +518,8 @@ function checkFacebookEventPreviewParsingFallbacks() {
     "&#x([0-9a-f]+);",
     "&#(\\d+);",
     "twitter:image:src",
+    "jpWithoutYear",
+    "inferEventYear",
     "normalizeJapaneseHour",
     "午後",
     "午前"
