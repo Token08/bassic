@@ -21,6 +21,7 @@ checkFile("health API route", "admin-app/app/api/health/route.ts");
 checkNoMojibake();
 checkClientFacingText();
 checkClientDocsText();
+checkClientDocsMentionFacebookEventFlow();
 checkClientHandoffDocsLinked();
 checkFacebookEventHandoffDocs();
 checkProductionUrlEnvDocs();
@@ -190,6 +191,30 @@ function checkClientDocsText() {
   }
 
   add("client handoff docs hide technical setup terms", leaks.length === 0, leaks.join(", "));
+}
+
+function checkClientDocsMentionFacebookEventFlow() {
+  const files = [
+    "docs/delivery-admin-manual.md",
+    "docs/client-handoff-checklist.md",
+    "docs/client-handoff-sheet.md"
+  ];
+  const requiredTerm = "FacebookイベントURL";
+  const missing = [];
+
+  for (const file of files) {
+    if (!existsSync(file)) {
+      missing.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    if (!text.includes(requiredTerm)) {
+      missing.push(`${file}: ${requiredTerm}`);
+    }
+  }
+
+  add("client docs mention Facebook event URL flow", missing.length === 0, missing.join(", "));
 }
 
 function checkClientHandoffDocsLinked() {
