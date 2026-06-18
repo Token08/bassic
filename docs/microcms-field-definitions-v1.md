@@ -88,6 +88,8 @@
 
 `sourceType` は管理画面側で自動入力する保守用の値です。通常は店舗側で直接編集しません。Facebookイベントを取り込んだ場合は `facebook` が入ります。
 `START` は通常イベントでは任意ですが、FacebookイベントURLから取り込んだイベントを公開する場合は管理画面側で入力確認します。
+`sourceUrl` はGoogle Calendarへ反映する時の詳細リンクにも使います。FacebookイベントをGoogle Calendarにも載せたい場合は、イベント一覧ページではなく個別イベントページのURLを入れてください。
+`image` はGoogle Calendarの説明欄に画像URLとして入ります。月表示で画像カードのように大きく表示されることは保証されません。
 
 ## `menu`
 

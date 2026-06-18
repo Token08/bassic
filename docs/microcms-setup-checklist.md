@@ -88,6 +88,12 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 `platform` は `instagram` / `facebook` / `x` の3択です。Xは自動タイムライン取得ではなく、投稿URLカードとして安定表示します。
 
+## FacebookイベントとGoogle Calendar連携の注意
+
+イベントをGoogle Calendarへ反映する場合、`events` の `sourceUrl` はFacebookの個別イベントページURLを入れます。イベント一覧ページのURLでは同期対象として扱えません。
+
+`image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
+
 ## 7. 接続確認
 
 ローカルまたはGitHub Actionsの環境変数に以下を設定します。

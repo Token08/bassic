@@ -38,6 +38,7 @@ checkAdminReadmeLinksHandoffDocs();
 checkDocsIndexBoundaries();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
+checkEventFieldDocsExplainCalendarSync();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
@@ -578,6 +579,26 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkEventFieldDocsExplainCalendarSync() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const docsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(schemaFile) || !existsSync(docsFile)) {
+    add("event field docs explain calendar sync meaning", false, `${schemaFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const required = [
+    [schemaFile, schemaText, "Google Calendarへ反映する時も、このURLが説明欄に入ります。"],
+    [docsFile, docsText, "`sourceUrl` はGoogle Calendarへ反映する時の詳細リンクにも使います。"],
+    [docsFile, docsText, "`image` はGoogle Calendarの説明欄に画像URLとして入ります。"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("event field docs explain calendar sync meaning", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSchemaEndpointsMatch() {
