@@ -10,6 +10,18 @@ Before writing to Google Calendar, run `npm run sync:calendar:dry` to preview th
 
 If the dry run prints a warning, check the event in the admin screen before syncing. The most common warning is using the Facebook page's event list URL instead of a single event URL. Use a URL like `https://www.facebook.com/events/1234567890/`.
 
+## Admin Import Workflow
+
+1. Open the dedicated admin screen and choose `イベント`.
+2. Paste a single Facebook event URL into `FacebookイベントURL・詳細URL`.
+3. Press `Facebookから読み取る`.
+4. Confirm the imported title, date, start time, end time, and image.
+5. If Facebook does not expose the event date/time in metadata, enter the date and time manually.
+6. Turn `公開する` on and publish after preview.
+7. Run `npm run sync:calendar:dry` before the real calendar sync.
+
+The importer reads `og:title`, `og:image`, `og:description`, and JSON-LD event metadata when Facebook exposes it. Facebook may hide date/time depending on login state or markup changes, so manual confirmation stays part of the workflow.
+
 ## Source Priority
 
 1. Meta Graph API with `FACEBOOK_PAGE_ACCESS_TOKEN` and `FACEBOOK_PAGE_ID`.

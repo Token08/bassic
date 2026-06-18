@@ -9,6 +9,7 @@ type Preview = {
   description: string;
   date: string;
   startTime: string;
+  endTime: string;
   sourceUrl: string;
 };
 
@@ -60,6 +61,89 @@ function decodeHtml(value: string) {
 
 function cleanTitle(value: string) {
   return value.replace(/\s*\|\s*Facebook\s*$/i, "").replace(/\s+/g, " ").trim();
+}
+
+function readJsonLdEvents(html: string) {
+  const events: Array<Record<string, unknown>> = [];
+  const blocks = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+
+  for (const block of blocks) {
+    try {
+      const parsed = JSON.parse(decodeHtml(block[1]));
+      collectJsonLdEvents(parsed, events);
+    } catch {
+      // Facebook markup changes often. Ignore malformed JSON-LD and fall back to meta text.
+    }
+  }
+
+  return events;
+}
+
+function collectJsonLdEvents(value: unknown, events: Array<Record<string, unknown>>) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectJsonLdEvents(item, events));
+    return;
+  }
+
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  const item = value as Record<string, unknown>;
+  const type = item["@type"];
+  const types = Array.isArray(type) ? type : [type];
+
+  if (types.some((entry) => String(entry).toLowerCase() === "event")) {
+    events.push(item);
+  }
+
+  for (const key of ["@graph", "mainEntity", "itemListElement"]) {
+    collectJsonLdEvents(item[key], events);
+  }
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function parseDateTimeValue(value: string) {
+  if (!value) {
+    return { date: "", time: "" };
+  }
+
+  const match = value.match(/(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}))?/);
+  if (!match) {
+    return { date: "", time: "" };
+  }
+
+  return {
+    date: `${match[1]}-${match[2]}-${match[3]}`,
+    time: match[4] ? `${match[4]}:${match[5]}` : ""
+  };
+}
+
+function parseJsonLdEvent(html: string) {
+  const event = readJsonLdEvents(html)[0];
+  if (!event) {
+    return { title: "", imageUrl: "", description: "", date: "", startTime: "", endTime: "" };
+  }
+
+  const start = parseDateTimeValue(readString(event.startDate));
+  const end = parseDateTimeValue(readString(event.endDate));
+  const image = event.image;
+  const firstImage = Array.isArray(image) ? image[0] : image;
+  const imageUrl =
+    readString(firstImage) ||
+    (firstImage && typeof firstImage === "object" ? readString((firstImage as Record<string, unknown>).url) : "");
+
+  return {
+    title: readString(event.name),
+    imageUrl,
+    description: readString(event.description),
+    date: start.date,
+    startTime: start.time,
+    endTime: end.time
+  };
 }
 
 function parseDateFromText(text: string) {
@@ -120,16 +204,18 @@ export async function POST(request: NextRequest) {
       throw new Error("Facebookを読み取れませんでした。");
     }
 
-    const title = cleanTitle(readMeta(html, "og:title") || readMeta(html, "twitter:title"));
-    const imageUrl = readMeta(html, "og:image") || readMeta(html, "twitter:image");
-    const description = readMeta(html, "og:description") || readMeta(html, "description");
+    const jsonLd = parseJsonLdEvent(html);
+    const title = cleanTitle(jsonLd.title || readMeta(html, "og:title") || readMeta(html, "twitter:title"));
+    const imageUrl = jsonLd.imageUrl || readMeta(html, "og:image") || readMeta(html, "twitter:image");
+    const description = jsonLd.description || readMeta(html, "og:description") || readMeta(html, "description");
     const parsed = parseDateFromText(`${title} ${description}`);
     const preview: Preview = {
       title,
       imageUrl,
       description,
-      date: parsed.date,
-      startTime: parsed.startTime,
+      date: jsonLd.date || parsed.date,
+      startTime: jsonLd.startTime || parsed.startTime,
+      endTime: jsonLd.endTime,
       sourceUrl: normalizedUrl
     };
 

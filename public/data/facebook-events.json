@@ -4,15 +4,15 @@
   "events": [
     {
       "id": "facebook-preview-20260712",
-      "sourceId": "preview-20260712",
+      "sourceId": "1234567890123456",
       "sourceType": "facebook",
-      "sourceUrl": "https://www.facebook.com/bar.Bassic/events",
+      "sourceUrl": "https://www.facebook.com/events/1234567890123456/",
       "title": "Facebookイベント自動反映プレビュー",
       "date": "2026-07-12",
       "startTime": "19:00",
       "endTime": "22:00",
       "performers": "Facebookイベントページから取得した想定のタイトル・日時・画像表示テストです。",
-      "reservation": "詳細: https://www.facebook.com/bar.Bassic/events",
+      "reservation": "詳細: https://www.facebook.com/events/1234567890123456/",
       "image": {
         "url": "/assets/brand/event-slides/event-01.jpg",
         "alt": "Bassic. event preview"

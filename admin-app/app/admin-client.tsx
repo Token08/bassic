@@ -67,6 +67,7 @@ type FacebookEventPreview = {
   description: string;
   date: string;
   startTime: string;
+  endTime: string;
   sourceUrl: string;
 };
 
@@ -881,13 +882,21 @@ function FacebookEventImportPanel({
         nextValues.startTime = data.startTime;
       }
 
+      if (data.endTime) {
+        nextValues.endTime = data.endTime;
+      }
+
       if (data.imageUrl) {
         nextValues.image = { url: data.imageUrl, alt: data.title || "Facebookイベント画像" };
       }
 
       onApply(nextValues);
       setPreview(data);
-      setMessage(data.date ? "読み取りました。日時と画像を確認してください。" : "読み取りました。日時は入力欄で確認してください。");
+      setMessage(
+        data.date && data.startTime
+          ? "読み取りました。タイトル、日時、画像を確認してください。"
+          : "タイトルと画像を読み取りました。日時は入力欄で確認してください。"
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
     } finally {
@@ -900,7 +909,7 @@ function FacebookEventImportPanel({
       <div className="facebook-import-heading">
         <div>
           <strong>Facebookイベントを取り込む</strong>
-          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトルと画像を読み取ります。</span>
+          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日時を読み取ります。</span>
         </div>
         <button className="secondary-button" type="button" disabled={!isFacebookEvent || loading} onClick={() => void importEvent()}>
           {loading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}
@@ -917,7 +926,11 @@ function FacebookEventImportPanel({
           ) : null}
           <div>
             <strong>{preview.title || "タイトル未取得"}</strong>
-            <span>{preview.date ? preview.date + (preview.startTime ? " " + preview.startTime : "") : "日時は入力欄で確認してください"}</span>
+            <span>
+              {preview.date
+                ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
+                : "日時は入力欄で確認してください"}
+            </span>
           </div>
         </div>
       ) : null}
