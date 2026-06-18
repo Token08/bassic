@@ -355,6 +355,7 @@ function checkFacebookEventImportPanel() {
     "読み取り結果の確認",
     "FacebookイベントURL・詳細URL",
     "Google Calendarへ載せたい場合",
+    "イベント名",
     "日時が自動取得できませんでした",
     "START",
     "Facebookイベントを公開する前にSTARTを入力してください。"
@@ -502,7 +503,9 @@ function checkAdminReadmeLinksHandoffDocs() {
     "docs/delivery-admin-manual.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
-    "docs/admin-docs-index.md"
+    "docs/admin-docs-index.md",
+    "イベント名",
+    "Google Calendarにも反映してください"
   ];
   const missing = required.filter((item) => !text.includes(item));
 

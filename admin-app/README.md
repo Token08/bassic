@@ -55,7 +55,7 @@ Facebookイベントは、管理画面へ個別イベントURLを貼る運用に
 3. 公開後、保守担当者が `npm run sync:calendar:check` で同期内容を確認する。
 4. 問題なければ `npm run sync:calendar` でGoogle Calendarへ反映する。
 
-詳しい保守手順は `docs/facebook-event-sync.md` を確認してください。納品先にはこの同期コマンドを触らせず、必要な時だけ「Google Calendarへ反映してください」と連絡してもらう運用にします。
+詳しい保守手順は `docs/facebook-event-sync.md` を確認してください。納品先にはこの同期コマンドを触らせず、必要な時だけ「イベント名」と「Google Calendarにも反映してください」を連絡してもらう運用にします。
 
 ## 納品時に渡す資料
 
