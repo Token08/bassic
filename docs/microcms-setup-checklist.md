@@ -106,7 +106,18 @@ FacebookイベントURLから取り込んだイベントを公開する場合は
 
 `image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
 
-## 8. 接続確認
+## 8. 作成時のミス防止
+
+microCMS側でAPIを作る時は、次を確認してください。
+
+- API IDは上の表と完全一致させる。ハイフン、複数形、大小文字を変えない
+- `site-settings`、`home`、`equipment-rental` はオブジェクト形式で作る
+- `hero-slides`、`events`、`menu`、`drink-menu-sheets`、`party-plans`、`social-notices`、`page-copy`、`page-sections`、`custom-sections` はリスト形式で作る
+- `sourceId`、`sourceType`、`category` は店舗側が普段触らない項目として扱う。microCMSでhidden相当の表示制御が難しい場合は、説明文に「管理画面で自動入力。通常は変更しない」と書く
+- 画像フィールドは、URL文字列ではなくmicroCMSの画像フィールドで作る
+- 数字フィールドは、表示順だけに使う。料金は `¥1,200` や `￥4,000〜 / 1名` のような表記を入れるためテキストで作る
+
+## 9. 接続確認
 
 ローカルまたはGitHub Actionsの環境変数に以下を設定します。
 

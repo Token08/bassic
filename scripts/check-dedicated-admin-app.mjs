@@ -1300,7 +1300,12 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
     "`sourceId` と `sourceType` は管理画面側で自動入力",
     "`date` と `startTime`",
     "## 7. FacebookイベントとGoogle Calendar連携の注意",
-    "## 8. 接続確認"
+    "## 8. 作成時のミス防止",
+    "API IDは上の表と完全一致",
+    "`sourceId`、`sourceType`、`category` は店舗側が普段触らない項目",
+    "画像フィールドは、URL文字列ではなくmicroCMSの画像フィールド",
+    "料金は `¥1,200` や `￥4,000〜 / 1名` のような表記を入れるためテキスト",
+    "## 9. 接続確認"
   ];
   const missing = required.filter((term) => !text.includes(term));
 
