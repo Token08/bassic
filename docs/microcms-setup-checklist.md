@@ -24,6 +24,20 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `page-sections` | リスト形式 | 既存セクションの表示/非表示、表示順 |
 | `custom-sections` | リスト形式 | 追加のお知らせセクション |
 
+最初から全部を店舗側に見せる必要はありません。初期納品では、まず `site-settings`、`home`、`hero-slides`、`events`、`menu`、`drink-menu-sheets`、`party-plans`、`equipment-rental`、`social-notices` を作り、日常更新できる状態を優先します。
+`page-copy`、`page-sections`、`custom-sections` は保守担当者向けです。公開後に構成を変えたい時だけ使う想定にし、納品先の通常メニューには出さない方針にします。
+
+作成順の目安:
+
+1. `site-settings`: 住所、電話、営業時間、喫煙、テーブル・チャージを先に固める
+2. `home`: TOP文言と初回来店向け文言を入れる
+3. `hero-slides`: TOP、Events、Menu、Party、Accessの背景画像を入れる
+4. `menu` / `drink-menu-sheets`: フードとドリンク表を入れる
+5. `events`: 直近イベント、FacebookイベントURL、Google Calendar依頼用情報を入れる
+6. `party-plans` / `equipment-rental`: 貸切、二次会、機材PDFを入れる
+7. `social-notices`: Instagram、Facebook、Xの誘導カードを入れる
+8. `page-copy` / `page-sections` / `custom-sections`: 保守担当者だけが必要時に設定する
+
 ## 2. home
 
 | fieldId | 表示名 | 種類 | 必須 |

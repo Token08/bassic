@@ -1140,7 +1140,14 @@ function checkMicrocmsSetupChecklistUsesCurrentDocs() {
     "`equipment-rental`",
     "`page-copy`",
     "`page-sections`",
-    "`custom-sections`"
+    "`custom-sections`",
+    "最初から全部を店舗側に見せる必要はありません",
+    "日常更新できる状態を優先",
+    "`page-copy`、`page-sections`、`custom-sections` は保守担当者向け",
+    "作成順の目安",
+    "`site-settings`: 住所、電話、営業時間、喫煙、テーブル・チャージを先に固める",
+    "`hero-slides`: TOP、Events、Menu、Party、Accessの背景画像を入れる",
+    "`events`: 直近イベント、FacebookイベントURL、Google Calendar依頼用情報を入れる"
   ];
   const stale = ["docs/cms-sample-content.json"].filter((term) => text.includes(term));
   const missing = required.filter((term) => !text.includes(term));
