@@ -4,6 +4,25 @@ import { join } from "node:path";
 const outDir = join(process.cwd(), "out");
 const failures = [];
 
+const menuRegressionTerms = [
+  "DRINK&FOOD MENU",
+  "FOOD MENU",
+  "Drink Menu 1",
+  "Drink Menu 2",
+  "Drink Menu 3",
+  "Drink Menu 4",
+  "fuzz-curry.jpg",
+  "tacos-potato.jpg",
+  "chorizo-con-papas.jpg",
+  "cheese-assortment.jpg",
+  "nachos.jpg",
+  "spicy-oil-sardine.jpg",
+  "pork-sausage.jpg",
+  "mexican-plain.jpg",
+  "prosciutto-assortment.jpg",
+  "daily-pasta.jpg"
+];
+
 const pages = [
   {
     label: "TOP",
@@ -86,6 +105,12 @@ for (const locale of ["ko", "zh-hant", "zh-hans"]) {
 for (const page of pages) {
   requireTerms(page);
 }
+
+requireTerms({
+  label: "Menu regression",
+  file: "menu/index.html",
+  terms: menuRegressionTerms
+});
 
 for (const page of localizedPages) {
   requireTerms(page);

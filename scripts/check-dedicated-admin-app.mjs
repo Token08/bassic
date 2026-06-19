@@ -86,6 +86,7 @@ checkPackageScript("check:admin-app");
 checkPackageScript("sync:calendar:dry");
 checkPackageScript("sync:calendar:check");
 checkPackageScript("smoke:content");
+checkContentSmokeCoversMenuRegression();
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
@@ -125,6 +126,28 @@ function checkPackageScript(scriptName) {
 
   const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
   add(`package script ${scriptName}`, Boolean(packageJson.scripts?.[scriptName]));
+}
+
+function checkContentSmokeCoversMenuRegression() {
+  const file = "scripts/smoke-content.mjs";
+  if (!existsSync(file)) {
+    add("content smoke covers menu regression", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "menuRegressionTerms",
+    "DRINK&FOOD MENU",
+    "FOOD MENU",
+    "Drink Menu 4",
+    "fuzz-curry.jpg",
+    "tacos-potato.jpg",
+    "daily-pasta.jpg"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("content smoke covers menu regression", missing.length === 0, missing.join(", "));
 }
 
 function checkLocalEnv(name, detail) {
