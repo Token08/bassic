@@ -1780,10 +1780,10 @@ function checkDocsExplainPublishedTextDepth() {
   const required = [
     [deliveryFile, deliveryText, "タイトルは6文字以上、説明は10文字以上"],
     [deliveryFile, deliveryText, "何のお知らせか"],
-    [fieldDocsFile, fieldDocsText, "説明を12文字以上"],
+    [fieldDocsFile, fieldDocsText, "プラン名を4文字以上、説明を12文字以上"],
     [fieldDocsFile, fieldDocsText, "表示タイトルを6文字以上、説明を10文字以上"],
     [fieldDocsFile, fieldDocsText, "見出しを6文字以上、本文を20文字以上"],
-    [setupFile, setupText, "説明は12文字以上"],
+    [setupFile, setupText, "プラン名を4文字以上、説明を12文字以上"],
     [setupFile, setupText, "表示タイトルを6文字以上、短い説明を10文字以上"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
@@ -1809,6 +1809,7 @@ function checkAdminValidatesPublishedTextDepth() {
     [adminFile, adminText, "タイトルを6文字以上"],
     [adminFile, adminText, "説明を10文字以上"],
     [adminFile, adminText, 'section.id === "party-plans"'],
+    [adminFile, adminText, "プラン名を4文字以上"],
     [adminFile, adminText, "説明を12文字以上"],
     [adminFile, adminText, 'section.id === "custom-sections"'],
     [adminFile, adminText, "本文を20文字以上"],

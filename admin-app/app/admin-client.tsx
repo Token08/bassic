@@ -1634,8 +1634,14 @@ function SectionEditor({
       }
     }
 
-    if (section.id === "party-plans" && nextDraft.isPublished && countTextLength(nextDraft.body) < 12) {
-      nextErrors.body = "公開する前に、説明を12文字以上で入力してください。";
+    if (section.id === "party-plans" && nextDraft.isPublished) {
+      if (countTextLength(nextDraft.title) < 4) {
+        nextErrors.title = "公開する前に、プラン名を4文字以上で入力してください。";
+      }
+
+      if (countTextLength(nextDraft.body) < 12) {
+        nextErrors.body = "公開する前に、説明を12文字以上で入力してください。";
+      }
     }
 
     if (section.id === "custom-sections" && nextDraft.isPublished) {
