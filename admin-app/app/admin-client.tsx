@@ -716,6 +716,8 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
       </section>
 
+      <PublicCheckStrip />
+
       <SetupStatus health={health} />
       <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
@@ -736,6 +738,34 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         compact
       />
     </div>
+  );
+}
+
+function PublicCheckStrip() {
+  const pages = [
+    { label: "TOP", path: "/", note: "見出し、画像、営業時間、SNS欄" },
+    { label: "EVENT", path: "/events/", note: "Google Calendar、イベント案内" },
+    { label: "MENU", path: "/menu/", note: "価格、画像、ドリンク表" },
+    { label: "PARTY", path: "/party/", note: "プラン料金、PDFリンク" },
+    { label: "ACCESS", path: "/access/", note: "地図、住所、電話、喫煙案内" }
+  ];
+
+  return (
+    <section className="public-check-strip" aria-label="公開前に確認するページ">
+      <div className="public-check-heading">
+        <strong>公開前に見る順番</strong>
+        <span>公開後は1〜3分待ってから、下の順番でPCとスマホの両方を確認します。</span>
+      </div>
+      <div className="public-check-links">
+        {pages.map((page) => (
+          <a key={page.path} href={new URL(page.path, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
+            <span>{page.label}</span>
+            <small>{page.note}</small>
+            <ExternalLink size={14} />
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }
 

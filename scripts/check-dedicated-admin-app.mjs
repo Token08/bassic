@@ -64,6 +64,7 @@ checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminSnsStatusCardLinksToEditors();
+checkAdminDashboardShowsPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
@@ -1464,6 +1465,34 @@ function checkAdminSnsStatusCardLinksToEditors() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin SNS status card links to editors", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminDashboardShowsPublicCheckOrder() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin dashboard shows public check order", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "function PublicCheckStrip()"],
+    [clientFile, clientText, "公開前に見る順番"],
+    [clientFile, clientText, "PCとスマホの両方を確認"],
+    [clientFile, clientText, "TOP"],
+    [clientFile, clientText, "EVENT"],
+    [clientFile, clientText, "MENU"],
+    [clientFile, clientText, "PARTY"],
+    [clientFile, clientText, "ACCESS"],
+    [clientFile, clientText, "new URL(page.path, publicSiteUrl).toString()"],
+    [cssFile, cssText, ".public-check-strip"],
+    [cssFile, cssText, ".public-check-links"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin dashboard shows public check order", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminEditorShowsSectionPublicPageLinks() {
