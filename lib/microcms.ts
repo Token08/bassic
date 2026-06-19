@@ -176,8 +176,15 @@ function withFallbackList<T>(items: T[] | undefined, fallback: T[]) {
   return items?.length ? items : fallback;
 }
 
+function normalizeMenuItem(item: MenuItem): MenuItem {
+  return {
+    ...item,
+    category: item.category === "drink" ? "drink" : "food"
+  };
+}
+
 function visibleMenu(menu?: MenuItem[]) {
-  const visibleItems = (menu || []).filter((item) => item.isPublished !== false);
+  const visibleItems = (menu || []).map(normalizeMenuItem).filter((item) => item.isPublished !== false);
   const fallbackItems = defaultMenuItems.filter((item) => item.isPublished !== false);
 
   if (!visibleItems.length) {

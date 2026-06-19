@@ -57,7 +57,9 @@ const endpointChecks = [
     path: "/menu?limit=1",
     validateItem: (item) => {
       requiredString(item, "name", "menu");
-      requiredEnum(item, "category", ["food", "drink"], "menu");
+      if (item.category) {
+        requiredEnum(item, "category", ["food", "drink"], "menu");
+      }
     }
   },
   {

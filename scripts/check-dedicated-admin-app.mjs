@@ -1120,16 +1120,21 @@ function checkAdminSchemaDocsMatch() {
 
 function checkMenuDescriptionExplainsSupplementalUse() {
   const schemaFile = "admin-app/lib/admin-schema.ts";
+  const publicCmsFile = "lib/microcms.ts";
+  const smokeFile = "scripts/smoke-cms.mjs";
   const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
   const setupFile = "docs/microcms-setup-checklist.md";
-  if (!existsSync(schemaFile) || !existsSync(fieldDocsFile) || !existsSync(setupFile)) {
-    add("menu description explains supplemental use", false, `${schemaFile}, ${fieldDocsFile}, or ${setupFile} missing`);
+  if (!existsSync(schemaFile) || !existsSync(publicCmsFile) || !existsSync(smokeFile) || !existsSync(fieldDocsFile) || !existsSync(setupFile)) {
+    add("menu description explains supplemental use", false, `${schemaFile}, ${publicCmsFile}, ${smokeFile}, ${fieldDocsFile}, or ${setupFile} missing`);
     return;
   }
 
   const checks = [
     [schemaFile, readFileSync(schemaFile, "utf8"), "label: \"補足メモ\""],
     [schemaFile, readFileSync(schemaFile, "utf8"), "メニューカードは画像・名前・料金を中心に表示します"],
+    [publicCmsFile, readFileSync(publicCmsFile, "utf8"), "function normalizeMenuItem"],
+    [publicCmsFile, readFileSync(publicCmsFile, "utf8"), "category: item.category === \"drink\" ? \"drink\" : \"food\""],
+    [smokeFile, readFileSync(smokeFile, "utf8"), "if (item.category)"],
     [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "| 補足メモ | `description`"],
     [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "通常のメニューカード本文としては使いません"],
     [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "店舗側が選ぶ必要はありません"],
