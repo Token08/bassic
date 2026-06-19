@@ -1926,6 +1926,14 @@ function checkPublicCmsFallbackGuards() {
   const text = readFileSync(file, "utf8");
   const requiredTerms = [
     "const fallbackSiteSettings = fallbackContents.siteSettings as SiteSettings",
+    "function mergeSiteSettings",
+    "function isGoogleMapUrl",
+    "function isInstagramUrl",
+    "function isFacebookUrl",
+    "function isXUrl",
+    "address: nonEmptyString(settings?.address) || fallbackSiteSettings.address",
+    "googleMapsUrl,",
+    "directionsUrl,",
     "const visiblePlans",
     "visiblePlans.length ? visiblePlans",
     "const visibleSheets",

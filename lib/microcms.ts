@@ -145,10 +145,28 @@ function mergeHomeContent(home?: Partial<HomeContent> | null): HomeContent {
 }
 
 function mergeSiteSettings(settings?: Partial<SiteSettings> | null): SiteSettings {
+  const googleMapsUrl = isGoogleMapUrl(settings?.googleMapsUrl) ? settings!.googleMapsUrl! : fallbackSiteSettings.googleMapsUrl;
+  const directionsUrl = isGoogleMapUrl(settings?.directionsUrl)
+    ? settings!.directionsUrl!
+    : isGoogleMapUrl(settings?.googleMapsUrl)
+      ? settings!.googleMapsUrl!
+      : fallbackSiteSettings.directionsUrl;
+
   return {
     ...fallbackSiteSettings,
     ...settings,
-    directionsUrl: settings?.directionsUrl || settings?.googleMapsUrl || fallbackSiteSettings.directionsUrl
+    address: nonEmptyString(settings?.address) || fallbackSiteSettings.address,
+    phone: nonEmptyString(settings?.phone) || fallbackSiteSettings.phone,
+    hoursLabel: nonEmptyString(settings?.hoursLabel) || fallbackSiteSettings.hoursLabel,
+    eventHoursNote: nonEmptyString(settings?.eventHoursNote) || fallbackSiteSettings.eventHoursNote,
+    smokingLabel: nonEmptyString(settings?.smokingLabel) || fallbackSiteSettings.smokingLabel,
+    chargeLabel: nonEmptyString(settings?.chargeLabel) || fallbackSiteSettings.chargeLabel,
+    googleMapsUrl,
+    directionsUrl,
+    instagramUrl: isInstagramUrl(settings?.instagramUrl) ? settings!.instagramUrl! : fallbackSiteSettings.instagramUrl,
+    facebookUrl: isFacebookUrl(settings?.facebookUrl) ? settings!.facebookUrl! : fallbackSiteSettings.facebookUrl,
+    xUrl: isXUrl(settings?.xUrl) ? settings!.xUrl! : fallbackSiteSettings.xUrl,
+    onlineStoreUrl: isManagedUrl(settings?.onlineStoreUrl) ? settings!.onlineStoreUrl : fallbackSiteSettings.onlineStoreUrl
   };
 }
 
@@ -260,6 +278,41 @@ function isManagedUrl(value?: string) {
   } catch {
     return false;
   }
+}
+
+function nonEmptyString(value?: string) {
+  return typeof value === "string" && value.trim() ? value : "";
+}
+
+function getUrlHost(value?: string) {
+  if (!value) {
+    return "";
+  }
+
+  try {
+    return new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function isGoogleMapUrl(value?: string) {
+  const host = getUrlHost(value);
+  return host === "google.com" || host === "maps.google.com" || host === "maps.app.goo.gl" || host === "goo.gl";
+}
+
+function isInstagramUrl(value?: string) {
+  return getUrlHost(value) === "instagram.com";
+}
+
+function isFacebookUrl(value?: string) {
+  const host = getUrlHost(value);
+  return host === "facebook.com" || host === "m.facebook.com" || host === "mbasic.facebook.com" || host === "fb.me";
+}
+
+function isXUrl(value?: string) {
+  const host = getUrlHost(value);
+  return host === "x.com" || host === "twitter.com";
 }
 
 function hasUsableCustomSectionLink(section: CustomSection) {
