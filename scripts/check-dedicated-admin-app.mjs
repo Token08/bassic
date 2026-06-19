@@ -63,6 +63,7 @@ checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
+checkAdminSchemaFieldsAreDocumented();
 checkAdminFieldDocsRequiredFlags();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
@@ -1395,6 +1396,22 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSchemaFieldsAreDocumented() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const docsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(schemaFile) || !existsSync(docsFile)) {
+    add("admin schema fields are documented", false, `${schemaFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const keys = [...schemaText.matchAll(/key:\s*"([^"]+)"/g)].map((match) => match[1]);
+  const missing = [...new Set(keys)].filter((key) => !docsText.includes(`\`${key}\``));
+
+  add("admin schema fields are documented", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminFieldDocsRequiredFlags() {
