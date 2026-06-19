@@ -264,7 +264,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
       ? "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
       : notice.tone === "info"
         ? "このまま画面を閉じずに、少し待ってください。"
-        : "反映には1〜3分ほどかかることがあります。少し待ってから公開サイトを確認してください。";
+        : "反映には1〜3分ほどかかることがあります。少し待ってから公開サイトを開き、再読み込みして確認してください。";
 
   return (
     <div className={`notice ${notice.tone}`}>
@@ -322,7 +322,7 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
       </div>
       <div>
         <strong>{label}</strong>
-        <span>{timeLabel ? `${timeLabel} に実行。1〜3分後に公開サイトで確認してください。` : "時刻は未取得です。公開サイトで表示を確認してください。"}</span>
+        <span>{timeLabel ? `${timeLabel} に実行。1〜3分後に公開サイトを再読み込みして確認してください。` : "時刻は未取得です。公開サイトを再読み込みして確認してください。"}</span>
       </div>
       <div className="deploy-status-actions">
         {notice.actionsUrl ? (
@@ -1534,7 +1534,7 @@ function SectionEditor({
         });
         const deployNotice = {
           tone: "success" as const,
-          message: "公開しました。1〜3分ほど待ってから公開サイトを確認してください。",
+          message: "公開しました。1〜3分ほど待ってから公開サイトを再読み込みして確認してください。",
           actionsUrl: deployResult.data?.actionsUrl,
           requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
           sourceLabel: `${section.shortTitle}を公開`

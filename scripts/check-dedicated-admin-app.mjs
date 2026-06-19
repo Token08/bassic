@@ -571,6 +571,9 @@ function checkPublishWaitCopyIsSpecific() {
     if (!text.includes("1〜3分")) {
       missing.push(`${file}: 1〜3分`);
     }
+    if (["docs/delivery-admin-manual.md", "docs/client-handoff-checklist.md", "docs/client-handoff-sheet.md"].includes(file) && !text.includes("再読み込み")) {
+      missing.push(`${file}: 再読み込み`);
+    }
   }
 
   add("publish wait copy is specific for clients", missing.length === 0, missing.join(", "));
@@ -907,7 +910,7 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = ["publicSiteUrl", "反映状況を見る", "公開サイトを開く", "deploy-status-actions", "notice-actions"];
+  const required = ["publicSiteUrl", "反映状況を見る", "公開サイトを開く", "再読み込み", "deploy-status-actions", "notice-actions"];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
