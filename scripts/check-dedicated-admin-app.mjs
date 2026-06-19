@@ -36,6 +36,7 @@ checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
 checkCmsSmokeExternalUrlValidation();
+checkCmsSmokeSiteSettingsUrlValidation();
 checkCmsSmokeValidatesFacebookEventSourceIds();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
@@ -709,6 +710,31 @@ function checkCmsSmokeExternalUrlValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("CMS smoke validates external URLs", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeSiteSettingsUrlValidation() {
+  const file = "scripts/smoke-cms.mjs";
+  if (!existsSync(file)) {
+    add("CMS smoke validates site settings URLs by field", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "requiredSiteSettingsUrl",
+    "field === \"googleMapsUrl\"",
+    "field === \"directionsUrl\"",
+    "field === \"instagramUrl\"",
+    "field === \"facebookUrl\"",
+    "field === \"xUrl\"",
+    "Google Map URLs must use google.com",
+    "Instagram URL must use instagram.com",
+    "Facebook URL must use facebook.com",
+    "X URL must use x.com or twitter.com"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates site settings URLs by field", missing.length === 0, missing.join(", "));
 }
 
 function checkCmsSmokeValidatesFacebookEventSourceIds() {

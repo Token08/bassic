@@ -171,6 +171,7 @@ try {
   for (const field of requiredSiteSettingsFields) {
     if (field.endsWith("Url")) {
       requiredExternalUrl(siteSettings, field, "site-settings");
+      requiredSiteSettingsUrl(siteSettings, field, "site-settings");
     } else {
       requiredString(siteSettings, field, "site-settings");
     }
@@ -349,6 +350,36 @@ function requiredSocialNoticeUrl(item, endpoint) {
 
   if (platform === "x" && !["x.com", "twitter.com"].includes(host)) {
     errors.push(`${endpoint}.url: X notices must use x.com or twitter.com URLs.`);
+  }
+}
+
+function requiredSiteSettingsUrl(item, field, endpoint) {
+  const value = item?.[field];
+  if (typeof value !== "string" || !value.trim()) {
+    return;
+  }
+
+  let host = "";
+  try {
+    host = new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return;
+  }
+
+  if ((field === "googleMapsUrl" || field === "directionsUrl") && !["google.com", "maps.google.com", "maps.app.goo.gl", "goo.gl"].includes(host)) {
+    errors.push(`${endpoint}.${field}: Google Map URLs must use google.com, maps.google.com, maps.app.goo.gl, or goo.gl.`);
+  }
+
+  if (field === "instagramUrl" && host !== "instagram.com") {
+    errors.push(`${endpoint}.${field}: Instagram URL must use instagram.com.`);
+  }
+
+  if (field === "facebookUrl" && !["facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(host)) {
+    errors.push(`${endpoint}.${field}: Facebook URL must use facebook.com.`);
+  }
+
+  if (field === "xUrl" && !["x.com", "twitter.com"].includes(host)) {
+    errors.push(`${endpoint}.${field}: X URL must use x.com or twitter.com.`);
   }
 }
 
