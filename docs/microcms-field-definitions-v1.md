@@ -160,6 +160,9 @@ TOPを含む各ページのメイン画像は、下記の `hero-slides` で管�
 
 ## `page-copy`
 
+保守用の文言設定です。日常更新は `home`、`menu`、`events`、`site-settings` を優先します。
+同じページの文言が複数ある場合は、`displayOrder` が大きいものを優先して使います。
+
 | 表示名 | fieldId | 種類 | 必須 |
 | --- | --- | --- | --- |
 | ページ | `page` | セレクト | yes |
@@ -171,22 +174,22 @@ TOPを含む各ページのメイン画像は、下記の `hero-slides` で管�
 | SNS見出し1行目 | `socialTitleLine1` | テキスト | no |
 | SNS見出し2行目 | `socialTitleLine2` | テキスト | no |
 | SNS説明文 | `socialLead` | テキストエリア | no |
-| 一覧小見出し | `listEyebrow` | テキスト | no |
-| 一覧見出し | `listTitle` | テキスト | no |
 | カレンダー補足 | `calendarNote` | テキストエリア | no |
 | ドリンク補足 | `drinkLead` | テキストエリア | no |
 | フード補足 | `foodLead` | テキストエリア | no |
 | 貸切補足 | `partyLead` | テキストエリア | no |
 | 機材レンタル補足 | `rentalLead` | テキストエリア | no |
-| 表示順 | `displayOrder` | 数字 | no |
+| 優先順位 | `displayOrder` | 数字 | no |
 | 公開する | `isPublished` | 真偽値 | no |
 
 ## `page-sections`
 
+保守用の表示切替です。OFFにすると該当セクションが公開サイトから消えます。通常運用では変更しません。
+
 | 表示名 | fieldId | 種類 | 必須 |
 | --- | --- | --- | --- |
 | ページ | `page` | セレクト | yes |
-| セクションキー | `sectionKey` | テキスト | yes |
+| セクション | `sectionKey` | セレクト | yes |
 | 表示順 | `displayOrder` | 数字 | no |
 | 公開する | `isPublished` | 真偽値 | no |
 

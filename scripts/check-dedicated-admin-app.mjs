@@ -59,6 +59,7 @@ checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkTopImagesAreManagedByHeroSlides();
+checkMaintainerOnlyFieldsAreClear();
 checkMenuDescriptionExplainsSupplementalUse();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
@@ -1153,6 +1154,34 @@ function checkTopImagesAreManagedByHeroSlides() {
   }
 
   add("TOP images are managed only through hero-slides", problems.length === 0, problems.join(", "));
+}
+
+function checkMaintainerOnlyFieldsAreClear() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const docsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(schemaFile) || !existsSync(docsFile)) {
+    add("maintainer-only page settings are clear", false, `${schemaFile} or ${docsFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const docsText = readFileSync(docsFile, "utf8");
+  const problems = [];
+
+  if (schemaText.includes('key: "listTitle"') || schemaText.includes('key: "listEyebrow"')) {
+    problems.push("unused list copy fields should not appear in admin schema");
+  }
+  if (docsText.includes("`listTitle`") || docsText.includes("`listEyebrow`")) {
+    problems.push("unused list copy fields should not appear in field docs");
+  }
+  if (!schemaText.includes('title: "ページ文言（保守用）"') || !schemaText.includes('title: "セクション表示（保守用）"')) {
+    problems.push("admin schema should label page copy and section settings as maintainer-facing");
+  }
+  if (!docsText.includes("保守用の文言設定") || !docsText.includes("保守用の表示切替")) {
+    problems.push("field docs should explain maintainer-only page settings");
+  }
+
+  add("maintainer-only page settings are clear", problems.length === 0, problems.join(", "));
 }
 
 function checkMenuDescriptionExplainsSupplementalUse() {
