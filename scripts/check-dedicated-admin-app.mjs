@@ -86,6 +86,7 @@ checkDocsExplainPublishedTextDepth();
 checkAdminValidatesPublishedTextDepth();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
+checkSeedDataMatchesPublishRules();
 checkPublicCmsFallbackGuards();
 checkAssetPathKeepsExternalUrls();
 checkSampleContentUsesCurrentCopy();
@@ -1846,6 +1847,63 @@ function checkSeedDataKeepsEventsCalendarFocused() {
   const seedsEventList = text.includes('"eventList"') || text.includes("'eventList'");
 
   add("seed data keeps events page calendar-focused", !seedsEventList, "eventList should stay out of initial seed data");
+}
+
+function checkSeedDataMatchesPublishRules() {
+  const file = "scripts/microcms-seed-data.mjs";
+  if (!existsSync(file)) {
+    add("microCMS seed data matches publish rules", false, `${file} missing`);
+    return;
+  }
+
+  let seedData;
+  try {
+    seedData = loadSeedDataForCheck(file);
+  } catch (error) {
+    add("microCMS seed data matches publish rules", false, `${file} could not be evaluated: ${error.message}`);
+    return;
+  }
+
+  const lists = seedData?.lists || {};
+  const problems = [];
+  for (const [index, item] of (lists.menu || []).entries()) {
+    if (item?.isPublished !== false && (!item?.price || !item?.image?.url)) {
+      problems.push(`menu[${index}] published item needs price and image`);
+    }
+  }
+  for (const [index, item] of (lists.events || []).entries()) {
+    if (item?.date && !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
+      problems.push(`events[${index}].date should be YYYY-MM-DD`);
+    }
+  }
+  for (const [index, item] of (lists["drink-menu-sheets"] || []).entries()) {
+    if (item?.isPublished !== false && !item?.image?.url) {
+      problems.push(`drink-menu-sheets[${index}] published item needs image`);
+    }
+  }
+  for (const [index, item] of (lists["party-plans"] || []).entries()) {
+    if (item?.isPublished !== false && (!item?.price || typeof item?.body !== "string" || item.body.length < 12)) {
+      problems.push(`party-plans[${index}] published item needs price and body`);
+    }
+  }
+  for (const [index, item] of (lists["social-notices"] || []).entries()) {
+    if (item?.isPublished !== false && (!item?.url || typeof item?.title !== "string" || item.title.length < 6 || typeof item?.description !== "string" || item.description.length < 10)) {
+      problems.push(`social-notices[${index}] published item needs URL, title, and description`);
+    }
+  }
+
+  add("microCMS seed data matches publish rules", problems.length === 0, problems.join(", "));
+}
+
+function loadSeedDataForCheck(file) {
+  const text = readFileSync(file, "utf8");
+  const marker = "export const seedData =";
+  if (!text.includes(marker)) {
+    throw new Error("seedData export missing");
+  }
+
+  const body = text.replace(marker, "return");
+  return new Function(body)();
 }
 
 function checkPublicCmsFallbackGuards() {
