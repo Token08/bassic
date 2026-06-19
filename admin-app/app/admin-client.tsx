@@ -955,7 +955,7 @@ function PreviewModal({
           <div>
             <p className="eyebrow">Preview</p>
             <h2>{section.title}</h2>
-            <p>公開前に、入力内容・リンク先・画像をざっと確認してください。</p>
+            <p>公開前に、入力内容・リンク先・画像を確認してください。公開後はPCだけでなくスマホでも見てください。</p>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="閉じる">
             <X size={20} />
@@ -1039,7 +1039,7 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
       {sectionPublicUrl ? (
         <div className="public-page-guide">
           <strong>確認するページ</strong>
-          <span>公開後はこのページを開き、再読み込みして表示を確認します。</span>
+          <span>公開後はこのページを開き、再読み込みします。最後にスマホでも表示を確認します。</span>
           <a href={sectionPublicUrl} target="_blank" rel="noreferrer">
             公開ページを開く
             <ExternalLink size={14} />
