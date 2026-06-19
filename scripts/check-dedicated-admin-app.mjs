@@ -88,6 +88,7 @@ checkPackageScript("sync:calendar:check");
 checkPackageScript("smoke:content");
 checkContentSmokeCoversMenuRegression();
 checkLinkSmokeValidatesMapEmbeds();
+checkSeoSmokeRejectsTemporaryUrls();
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
@@ -170,6 +171,26 @@ function checkLinkSmokeValidatesMapEmbeds() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("link smoke validates Google Map embeds", missing.length === 0, missing.join(", "));
+}
+
+function checkSeoSmokeRejectsTemporaryUrls() {
+  const file = "scripts/smoke-seo.mjs";
+  if (!existsSync(file)) {
+    add("SEO smoke rejects temporary URLs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "forbiddenSeoUrlFragments",
+    "https://token08.github.io/bassic",
+    "/index.html",
+    "Unexpected SEO URL fragment",
+    "Unexpected sitemap URL fragment"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("SEO smoke rejects temporary URLs", missing.length === 0, missing.join(", "));
 }
 
 function checkLocalEnv(name, detail) {

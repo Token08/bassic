@@ -25,6 +25,10 @@ const pages = [
 ];
 
 const requiredHreflang = ["ja", "en", "ko", "zh-Hant", "zh-Hans", "x-default"];
+const forbiddenSeoUrlFragments = [
+  "https://token08.github.io/bassic",
+  `${siteUrl}/index.html`
+].filter((fragment) => !siteUrl.startsWith(fragment));
 const failures = [];
 
 function readOutFile(file) {
@@ -58,6 +62,12 @@ for (const page of pages) {
     failures.push(`Missing OGP/Twitter metadata on ${page.path}`);
   }
 
+  for (const fragment of forbiddenSeoUrlFragments) {
+    if (html.includes(fragment)) {
+      failures.push(`Unexpected SEO URL fragment on ${page.path}: ${fragment}`);
+    }
+  }
+
   if (page.path === "/events/" && (!html.includes('"@type":"Event"') || !html.includes('"endDate"'))) {
     failures.push("Missing Event structured data with endDate on /events/");
   }
@@ -68,6 +78,12 @@ for (const page of pages) {
   const expected = `${siteUrl}${page.path}`;
   if (sitemap && !sitemap.includes(expected)) {
     failures.push(`Missing sitemap URL: ${expected}`);
+  }
+}
+
+for (const fragment of forbiddenSeoUrlFragments) {
+  if (sitemap && sitemap.includes(fragment)) {
+    failures.push(`Unexpected sitemap URL fragment: ${fragment}`);
   }
 }
 
