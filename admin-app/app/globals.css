@@ -1431,6 +1431,17 @@ a {
   font-weight: 800;
 }
 
+.notice-checklist {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding-left: 1.1rem;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 900;
+  line-height: 1.55;
+}
+
 .notice.success {
   border-color: rgba(31, 107, 79, 0.28);
   color: var(--green);

@@ -62,6 +62,7 @@ checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminEditorShowsSectionPublicPageLinks();
+checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
@@ -1376,6 +1377,34 @@ function checkAdminEditorShowsSectionPublicPageLinks() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin editor shows section public page links", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminPublishNoticeShowsConfirmationSteps() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin publish notice shows confirmation steps", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "confirmationSteps?: string[]"],
+    [clientFile, clientText, "getPostPublishSteps(section)"],
+    [clientFile, clientText, "1〜3分待ってから公開ページを再読み込み"],
+    [clientFile, clientText, "スマホでも同じページを確認"],
+    [clientFile, clientText, "TOPページのSNS欄を確認"],
+    [clientFile, clientText, "Event ScheduleページとGoogle Calendar欄を確認"],
+    [clientFile, clientText, "メニューページの画像・価格・チャージ表記を確認"],
+    [clientFile, clientText, "Partyページの機材レンタル欄とPDFリンクを確認"],
+    [clientFile, clientText, "Accessページで住所・電話・Google Mapを確認"],
+    [clientFile, clientText, "notice-checklist"],
+    [cssFile, cssText, ".notice-checklist"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin publish notice shows confirmation steps", missing.length === 0, missing.join(", "));
 }
 
 function checkDocsIndexBoundaries() {

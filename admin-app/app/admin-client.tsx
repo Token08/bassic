@@ -36,6 +36,7 @@ type Notice = {
   actionsUrl?: string;
   requestedAt?: string;
   sourceLabel?: string;
+  confirmationSteps?: string[];
 };
 
 type HealthCheck = {
@@ -106,6 +107,23 @@ function getPublicPageUrl(section: SectionDefinition) {
   }
 
   return new URL(path, publicSiteUrl).toString();
+}
+
+function getPostPublishSteps(section: SectionDefinition) {
+  const commonSteps = ["1〜3分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
+  const sectionSteps: Partial<Record<SectionDefinition["id"], string[]>> = {
+    "site-settings": ["Accessページで住所・電話・Google Mapを確認"],
+    home: ["TOPページの見出し・画像・案内カードを確認"],
+    "hero-slides": ["TOPページのメイン画像を確認"],
+    events: ["Event ScheduleページとGoogle Calendar欄を確認"],
+    menu: ["メニューページの画像・価格・チャージ表記を確認"],
+    "drink-menu-sheets": ["メニューページのDRINK&FOOD MENU画像を確認"],
+    "party-plans": ["Partyページのプラン名・価格・説明を確認"],
+    "equipment-rental": ["Partyページの機材レンタル欄とPDFリンクを確認"],
+    "social-notices": ["TOPページのSNS欄を確認"]
+  };
+
+  return [...(sectionSteps[section.id] || ["公開ページで変更箇所を確認"]), ...commonSteps];
 }
 
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
@@ -344,6 +362,13 @@ function NoticeBox({ notice }: { notice: Notice }) {
       <div>
         <span>{notice.message}</span>
         <small>{helper}</small>
+        {notice.confirmationSteps?.length ? (
+          <ul className="notice-checklist" aria-label="公開後の確認手順">
+            {notice.confirmationSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ul>
+        ) : null}
       </div>
       <div className="notice-actions">
         {notice.actionsUrl ? (
@@ -1808,7 +1833,8 @@ function SectionEditor({
           message: "公開しました。1〜3分ほど待ってから公開サイトを再読み込みして確認してください。",
           actionsUrl: deployResult.data?.actionsUrl,
           requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
-          sourceLabel: `${section.shortTitle}を公開`
+          sourceLabel: `${section.shortTitle}を公開`,
+          confirmationSteps: getPostPublishSteps(section)
         };
         setNotice(deployNotice);
         onDeployNotice(deployNotice);
