@@ -60,6 +60,7 @@ checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
+checkCmsSmokeTimeValidation();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
 checkSampleContentUsesCurrentCopy();
@@ -1076,6 +1077,24 @@ function checkCmsSmokeCoversAdminEndpoints() {
   const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`));
 
   add("CMS smoke test covers admin endpoints", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeTimeValidation() {
+  const smokeFile = "scripts/smoke-cms.mjs";
+  if (!existsSync(smokeFile)) {
+    add("CMS smoke validates event times as HH:mm", false, `${smokeFile} missing`);
+    return;
+  }
+
+  const text = readFileSync(smokeFile, "utf8");
+  const requiredTerms = [
+    "function optionalTime",
+    "^\\d{1,2}:\\d{2}$",
+    "time should include HH:mm"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates event times as HH:mm", missing.length === 0, missing.join(", "));
 }
 
 function checkSeedDataCoversAdminEndpoints() {

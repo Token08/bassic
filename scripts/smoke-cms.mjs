@@ -258,7 +258,7 @@ function optionalTime(item, field, endpoint) {
     return;
   }
 
-  if (typeof value !== "string" || !/(\d{1,2})[:時](\d{2})?/.test(value)) {
+  if (typeof value !== "string" || !/^\d{1,2}:\d{2}$/.test(value.trim())) {
     errors.push(`${endpoint}.${field}: time should include HH:mm, for example 19:00.`);
   }
 }
