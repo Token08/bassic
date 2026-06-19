@@ -77,6 +77,7 @@ checkCmsSmokeCoversAdminEndpoints();
 checkCmsSmokeValidatesPublishedMenuItems();
 checkCmsSmokeTimeValidation();
 checkCmsSmokeValidatesPublishedTextDepth();
+checkDocsExplainPublishedTextDepth();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
@@ -1628,6 +1629,32 @@ function checkCmsSmokeValidatesPublishedTextDepth() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("CMS smoke validates published text depth", missing.length === 0, missing.join(", "));
+}
+
+function checkDocsExplainPublishedTextDepth() {
+  const deliveryFile = "docs/delivery-admin-manual.md";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  if (!existsSync(deliveryFile) || !existsSync(fieldDocsFile) || !existsSync(setupFile)) {
+    add("CMS docs explain published text depth", false, `${deliveryFile}, ${fieldDocsFile}, or ${setupFile} missing`);
+    return;
+  }
+
+  const deliveryText = readFileSync(deliveryFile, "utf8");
+  const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
+  const setupText = readFileSync(setupFile, "utf8");
+  const required = [
+    [deliveryFile, deliveryText, "タイトルは6文字以上、説明は10文字以上"],
+    [deliveryFile, deliveryText, "何のお知らせか"],
+    [fieldDocsFile, fieldDocsText, "説明を12文字以上"],
+    [fieldDocsFile, fieldDocsText, "表示タイトルを6文字以上、説明を10文字以上"],
+    [fieldDocsFile, fieldDocsText, "見出しを6文字以上、本文を20文字以上"],
+    [setupFile, setupText, "説明は12文字以上"],
+    [setupFile, setupText, "表示タイトルを6文字以上、短い説明を10文字以上"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("CMS docs explain published text depth", missing.length === 0, missing.join(", "));
 }
 
 function checkSeedDataCoversAdminEndpoints() {

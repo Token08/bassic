@@ -98,6 +98,8 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 | `price` | 料金 | テキストフィールド | 必須 |
 | `body` | 説明 | テキストエリア | 必須 |
 
+公開するプランの説明は12文字以上にします。料金、人数、利用内容が分かる一文を入れてください。
+
 ## 6. social-notices
 
 | fieldId | 表示名 | 種類 | 必須 |
@@ -111,6 +113,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 
 `platform` は `instagram` / `facebook` / `x` の3択です。Xは自動タイムライン取得ではなく、投稿URLカードとして安定表示します。
 管理画面では、選んだSNSと `url` の種類が合っているか入力中に確認できます。Instagramには `instagram.com`、Facebookには `facebook.com`、Xには `x.com` または `twitter.com` のURLを入れます。
+公開するSNSお知らせは、表示タイトルを6文字以上、短い説明を10文字以上にします。説明は1〜2文で投稿内容や見てほしいポイントが分かるようにします。
 
 ## 7. FacebookイベントとGoogle Calendar連携の注意
 
