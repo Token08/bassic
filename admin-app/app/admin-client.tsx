@@ -218,6 +218,22 @@ function isGoogleMapUrl(value: string) {
   }
 }
 
+function getUrlPreviewLabel(field: FieldDefinition) {
+  if (field.key === "googleMapsUrl" || field.key === "directionsUrl") {
+    return "地図を開いて確認";
+  }
+
+  if (field.key === "pdfUrl") {
+    return "PDFを開いて確認";
+  }
+
+  if (field.key === "instagramUrl" || field.key === "facebookUrl" || field.key === "xUrl" || field.key === "url") {
+    return "SNSを開いて確認";
+  }
+
+  return "リンクを開いて確認";
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -789,7 +805,7 @@ function Field({
       {canPreviewUrl ? (
         <a className="field-link-check" href={urlValue} target="_blank" rel="noreferrer">
           <ExternalLink size={15} />
-          リンクを開いて確認
+          {getUrlPreviewLabel(field)}
         </a>
       ) : null}
       {field.type === "select" ? (

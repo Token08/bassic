@@ -41,6 +41,7 @@ checkCmsSmokeSiteSettingsUrlValidation();
 checkCmsSmokeValidatesFacebookEventSourceIds();
 checkAdminEditorShowsFocusTips();
 checkPreviewChecklistIsSectionSpecific();
+checkAdminUrlPreviewLabelsAreContextual();
 checkAdminValidationNoticeNamesFields();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
@@ -820,6 +821,32 @@ function checkPreviewChecklistIsSectionSpecific() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin preview checklist is section specific", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminUrlPreviewLabelsAreContextual() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin URL preview labels are contextual", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function getUrlPreviewLabel",
+    "field.key === \"googleMapsUrl\"",
+    "field.key === \"directionsUrl\"",
+    "地図を開いて確認",
+    "field.key === \"pdfUrl\"",
+    "PDFを開いて確認",
+    "field.key === \"instagramUrl\"",
+    "field.key === \"facebookUrl\"",
+    "field.key === \"xUrl\"",
+    "SNSを開いて確認",
+    "{getUrlPreviewLabel(field)}"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin URL preview labels are contextual", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminEditorShowsFocusTips() {
