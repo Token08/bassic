@@ -75,7 +75,7 @@
   "events": [
     {
       "title": "Bassic. Music Night",
-      "date": "2026-07-12T00:00:00.000Z",
+      "date": "2026-07-12",
       "openTime": "19:00",
       "startTime": "20:00",
       "endTime": "22:00",
@@ -94,6 +94,10 @@
       "englishName": "Fuzz Curry",
       "price": "¥1,200",
       "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/fuzz-curry.jpg",
+        "alt": "ファズ・カレー"
+      },
       "displayOrder": 1,
       "isPublished": true
     },
@@ -102,6 +106,10 @@
       "englishName": "Tacos & Potato",
       "price": "¥900",
       "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/tacos-potato.jpg",
+        "alt": "タコス＆ポテト"
+      },
       "displayOrder": 2,
       "isPublished": true
     }

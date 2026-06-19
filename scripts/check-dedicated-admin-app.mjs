@@ -89,6 +89,7 @@ checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
 checkAssetPathKeepsExternalUrls();
 checkSampleContentUsesCurrentCopy();
+checkSampleContentMatchesPublishRules();
 checkEventDateIsDateOnlyGuidance();
 checkGoogleBusinessProfileChecklistUsesCurrentCopy();
 checkPackageScript("dev:admin-app");
@@ -1919,6 +1920,41 @@ function checkSampleContentUsesCurrentCopy() {
   const problems = [...missing, ...stale.map((term) => `stale ${term}`)];
 
   add("CMS sample content uses current copy", problems.length === 0, problems.join(", "));
+}
+
+function checkSampleContentMatchesPublishRules() {
+  const file = "docs/cms-sample-content-v1.json";
+  if (!existsSync(file)) {
+    add("CMS sample content matches publish rules", false, `${file} missing`);
+    return;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    add("CMS sample content matches publish rules", false, `${file} is not valid JSON: ${error.message}`);
+    return;
+  }
+
+  const problems = [];
+  for (const [index, item] of (data.menu || []).entries()) {
+    if (item?.isPublished !== false && (!item?.price || !item?.image?.url)) {
+      problems.push(`menu[${index}] published item needs price and image`);
+    }
+  }
+  for (const [index, item] of (data.events || []).entries()) {
+    if (item?.date && !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
+      problems.push(`events[${index}].date should be YYYY-MM-DD`);
+    }
+  }
+  for (const [index, item] of (data["drink-menu-sheets"] || []).entries()) {
+    if (item?.isPublished !== false && !item?.image?.url) {
+      problems.push(`drink-menu-sheets[${index}] published item needs image`);
+    }
+  }
+
+  add("CMS sample content matches publish rules", problems.length === 0, problems.join(", "));
 }
 
 function checkEventDateIsDateOnlyGuidance() {
