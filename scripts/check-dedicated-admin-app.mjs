@@ -1086,16 +1086,22 @@ function checkDocsIndexBoundaries() {
 
   const text = readFileSync(file, "utf8");
   const required = [
+    "## 初回セットアップで見る順番",
     "## 納品先へ渡す資料",
     "## 制作者・保守担当だけが見る資料",
     "## 旧版・控え",
+    "docs/microcms-current-status.md",
     "docs/microcms-field-definitions-v1.md",
     "docs/cms-sample-content-v1.json",
     "docs/microcms-setup-checklist.md",
+    "docs/production-handoff-checklist.md",
     "docs/facebook-event-sync.md",
     "docs/delivery-admin-manual.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
+    "日常更新用と保守用の切り分け",
+    "公開後24時間以内の確認",
+    "3つだけを店舗側へ渡す",
     "sync:calendar:check"
   ];
   const missing = required.filter((heading) => !text.includes(heading));

@@ -9,6 +9,25 @@
 - `docs/client-handoff-checklist.md`
   - 納品先へ何を渡すか、何を渡さないかを確認するチェックリストです。
 
+## 初回セットアップで見る順番
+
+保守担当者は、まず次の順番で確認します。
+
+1. `docs/microcms-current-status.md`
+   - 現在の実装状況と、まだ必要な接続情報を確認します。
+2. `docs/microcms-setup-checklist.md`
+   - microCMSで作るAPI ID、作成順、日常更新用と保守用の切り分けを確認します。
+3. `docs/microcms-field-definitions-v1.md`
+   - 各APIのfieldId、種類、必須項目を確認します。
+4. `docs/cms-sample-content-v1.json`
+   - 初期入力する値の参考にします。
+5. `docs/production-handoff-checklist.md`
+   - 本番URL、公開前チェック、公開後24時間以内の確認を見ます。
+6. `docs/facebook-event-sync.md`
+   - FacebookイベントをGoogle Calendarへ反映する運用が必要な場合だけ見ます。
+
+納品直前は `docs/delivery-admin-manual.md`、`docs/client-handoff-checklist.md`、`docs/client-handoff-sheet.md` の3つだけを店舗側へ渡す前提で確認します。
+
 ## 納品先へ渡す資料
 
 納品先に渡す資料は、基本的にこの3つだけにします。専門的な設定名や制作者向けの画面名は出さない方針です。
