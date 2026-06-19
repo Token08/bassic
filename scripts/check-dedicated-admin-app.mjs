@@ -43,6 +43,7 @@ checkAdminEditorShowsFocusTips();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminUrlPreviewLabelsAreContextual();
 checkAdminValidationNoticeNamesFields();
+checkAdminValidationSummaryLinksFields();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -915,6 +916,30 @@ function checkAdminValidationNoticeNamesFields() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin validation notice names fields to fix", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminValidationSummaryLinksFields() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin validation summary links fields", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "function ValidationSummary"],
+    [clientFile, clientText, "公開前に直す項目があります。"],
+    [clientFile, clientText, "項目名を押すと、入力欄へ移動できます。"],
+    [clientFile, clientText, "href={`#${key}`}"],
+    [clientFile, clientText, "<ValidationSummary errors={errors} section={section} />"],
+    [cssFile, cssText, ".validation-summary"],
+    [cssFile, cssText, ".validation-summary a"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin validation summary links fields", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSaveFlowExplainsPublishBehavior() {

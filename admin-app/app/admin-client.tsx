@@ -1300,6 +1300,36 @@ function SaveChoiceGuide() {
   );
 }
 
+function ValidationSummary({ errors, section }: { errors: Record<string, string>; section: SectionDefinition }) {
+  const entries = Object.entries(errors);
+
+  if (!entries.length) {
+    return null;
+  }
+
+  return (
+    <section className="validation-summary" aria-label="直す項目">
+      <AlertCircle size={18} />
+      <div>
+        <strong>公開前に直す項目があります。</strong>
+        <span>項目名を押すと、入力欄へ移動できます。</span>
+        <ul>
+          {entries.map(([key, message]) => {
+            const label = section.fields.find((field) => field.key === key)?.label || key;
+
+            return (
+              <li key={key}>
+                <a href={`#${key}`}>{label}</a>
+                <small>{message}</small>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
   const platform = getString(draft.platform) || "instagram";
   const currentUrl = getString(draft.url).trim();
@@ -2176,6 +2206,7 @@ function SectionEditor({
               void save("draft");
             }}
           >
+            <ValidationSummary errors={errors} section={section} />
             <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} />
             <RequiredProgress section={section} draft={draft} />
             <EditorFocusTips section={section} />
