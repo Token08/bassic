@@ -991,13 +991,14 @@ function FacebookEventImportPanel({
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
-  const previewNeedsDateInput = Boolean(preview && !(preview.date && preview.startTime));
+  const previewHasInvalidTime = Boolean(preview && preview.startTime && !isValidEventTime(preview.startTime));
+  const previewNeedsDateInput = Boolean(preview && (!(preview.date && preview.startTime) || previewHasInvalidTime));
   const previewChecks = preview
     ? [
         { label: "タイトル", ok: Boolean(preview.title), text: preview.title || "手入力してください" },
         {
           label: "日付・START",
-          ok: Boolean(preview.date && preview.startTime),
+          ok: Boolean(preview.date && preview.startTime && !previewHasInvalidTime),
           text: preview.date
             ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
             : "日付とSTARTは入力欄で確認してください"
@@ -1038,11 +1039,11 @@ function FacebookEventImportPanel({
       }
 
       if (data.startTime) {
-        nextValues.startTime = data.startTime;
+        nextValues.startTime = isValidEventTime(data.startTime) ? data.startTime : "";
       }
 
       if (data.endTime) {
-        nextValues.endTime = data.endTime;
+        nextValues.endTime = isValidEventTime(data.endTime) ? data.endTime : "";
       }
 
       if (data.imageUrl) {
@@ -1101,7 +1102,7 @@ function FacebookEventImportPanel({
             {previewNeedsDateInput ? (
               <div className="facebook-import-date-warning" role="status">
                 <AlertCircle size={16} />
-                <span>日付またはSTARTが自動取得できませんでした。公開前に「日付」と「START」を手入力してください。</span>
+                <span>日付またはSTARTが自動取得できませんでした。時間は「19:00」の形で手入力してください。</span>
               </div>
             ) : null}
             <ul className="facebook-import-checklist" aria-label="読み取り結果の確認">

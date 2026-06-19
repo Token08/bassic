@@ -735,8 +735,10 @@ function checkAdminEventTimeValidation() {
   ].join("\n");
   const required = [
     "function isValidEventTime",
+    "previewHasInvalidTime",
     "^\\d{1,2}:\\d{2}$",
     "OPENやSTARTの文字は不要です",
+    "時間は「19:00」の形で手入力してください",
     "placeholder: \"18:30\"",
     "placeholder: \"19:00\"",
     "placeholder: \"22:00\"",
