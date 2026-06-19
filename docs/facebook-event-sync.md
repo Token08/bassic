@@ -67,6 +67,8 @@ npm run sync:calendar
 - `source.url`: FacebookイベントURL
 - `extendedProperties.private.sourceId`: FacebookイベントID。重複同期を防ぐために使います。
 
+ENDがSTART以前の時刻の場合は、深夜またぎとして翌日の終了時刻にします。例: START `23:00` / END `02:00` は、翌日2:00終了としてGoogle Calendarへ入ります。
+
 画像はGoogle Calendarの説明欄にURLとして入ります。Google Calendarの月表示で、画像カードとして大きく表示されることは保証しません。
 
 サイト内画像URLが `/images/...` のような相対パスの場合、同期時に公開URLへ変換します。本番同期前は `NEXT_PUBLIC_SITE_URL` または `NEXT_PUBLIC_PUBLIC_SITE_URL` を本番URLに合わせてください。

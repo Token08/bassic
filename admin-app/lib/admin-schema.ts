@@ -191,7 +191,7 @@ export const sections: SectionDefinition[] = [
       { key: "date", label: "日付", type: "date", required: true },
       { key: "openTime", label: "開場時間", type: "text", placeholder: "18:30", hint: "OPENなどの文字は入れず、18:30 のように半角数字と : で入力します。" },
       { key: "startTime", label: "開始時間", type: "text", placeholder: "19:00", hint: "STARTなどの文字は入れず、19:00 のように半角数字と : で入力します。" },
-      { key: "endTime", label: "終了時間", type: "text", placeholder: "22:00", hint: "空欄の場合、Google Calendarには開始から2時間の予定として入ります。入れる場合は 22:00 のように入力します。" },
+      { key: "endTime", label: "終了時間", type: "text", placeholder: "22:00", hint: "空欄の場合、Google Calendarには開始から2時間の予定として入ります。深夜2時終了なら 02:00 と入力します。" },
       { key: "performers", label: "出演者", type: "textarea", rows: 3, placeholder: "出演者名を改行で入力" },
       { key: "price", label: "料金", type: "text", placeholder: "前売 3,000円 / 当日 3,500円" },
       { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "電話、DM、フォームなど" },

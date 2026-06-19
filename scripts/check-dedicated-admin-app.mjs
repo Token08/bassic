@@ -742,7 +742,8 @@ function checkAdminEventTimeValidation() {
     "placeholder: \"18:30\"",
     "placeholder: \"19:00\"",
     "placeholder: \"22:00\"",
-    "`19:00` のように入力"
+    "`19:00` のように入力",
+    "深夜2時終了なら"
   ];
   const stale = ["placeholder: \"OPEN 18:30\"", "placeholder: \"START 19:00\"", "placeholder: \"END 22:00\""].filter((term) => text.includes(term));
   const missing = required.filter((term) => !text.includes(term));
@@ -764,9 +765,11 @@ function checkCalendarSyncPrefersManagedFacebookEvents() {
     [syncFile, syncText, "dedupeEvents([...managedEvents, ...fileEvents])"],
     [syncFile, syncText, "facebook-${facebookEventId}"],
     [syncFile, syncText, "sourceId: event.sourceId"],
+    [syncFile, syncText, "if (end <= start)"],
     [docsFile, docsText, "sourceId"],
     [docsFile, docsText, "管理画面で確認・修正した内容を優先"],
-    [docsFile, docsText, "管理画面の内容を正"]
+    [docsFile, docsText, "管理画面の内容を正"],
+    [docsFile, docsText, "深夜またぎとして翌日の終了時刻"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

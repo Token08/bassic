@@ -25,7 +25,7 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | date | 開催日 | 日時 | true |  |
 | openTime | OPEN | テキストフィールド | false | `18:30` のように入力 |
 | startTime | START | テキストフィールド | false | `19:00` のように入力 |
-| endTime | END | テキストフィールド | false | `22:00` のように入力 |
+| endTime | END | テキストフィールド | false | `22:00` のように入力。深夜2時終了なら `02:00` |
 | performers | 出演者 | テキストエリア | false |  |
 | price | 料金 | テキストフィールド | false |  |
 | reservation | 予約方法 | テキストエリア | false |  |
