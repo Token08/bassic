@@ -1132,8 +1132,10 @@ function checkMenuDescriptionExplainsSupplementalUse() {
     [schemaFile, readFileSync(schemaFile, "utf8"), "メニューカードは画像・名前・料金を中心に表示します"],
     [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "| 補足メモ | `description`"],
     [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "通常のメニューカード本文としては使いません"],
+    [fieldDocsFile, readFileSync(fieldDocsFile, "utf8"), "店舗側が選ぶ必要はありません"],
     [setupFile, readFileSync(setupFile, "utf8"), "`description` | 補足メモ"],
-    [setupFile, readFileSync(setupFile, "utf8"), "通常のメニューカード本文としては使いません"]
+    [setupFile, readFileSync(setupFile, "utf8"), "通常のメニューカード本文としては使いません"],
+    [setupFile, readFileSync(setupFile, "utf8"), "店舗側が選ぶ必要はありません"]
   ];
   const missing = checks.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

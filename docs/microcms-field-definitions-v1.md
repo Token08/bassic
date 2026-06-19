@@ -101,21 +101,14 @@
 | 英語名 | `englishName` | テキスト | no |
 | 料金 | `price` | テキスト | no |
 | 補足メモ | `description` | テキストエリア | no |
-| カテゴリ | `category` | セレクト | yes |
+| カテゴリ | `category` | hidden / 管理画面で自動入力 | no |
 | 画像 | `image` | 画像 | no |
 | 表示順 | `displayOrder` | 数字 | no |
 | 公開する | `isPublished` | 真偽値 | no |
 
 メニューカードは画像、名前、料金を中心に表示します。`description` は検索向けや将来表示用の補足として扱い、通常のメニューカード本文としては使いません。
 
-`category` の選択肢:
-
-| 表示名 | 値 |
-| --- | --- |
-| Food | `food` |
-| Drink | `drink` |
-
-現在のサイトでは、フードは `menu`、ドリンク表は `drink-menu-sheets` で管理します。
+現在のサイトでは、フードは `menu`、ドリンク表は `drink-menu-sheets` で管理します。`category` はフードメニュー作成時に管理画面側で `food` を自動入力するため、店舗側が選ぶ必要はありません。
 
 ## `drink-menu-sheets`
 
