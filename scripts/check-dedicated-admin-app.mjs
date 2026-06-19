@@ -890,7 +890,7 @@ function checkPublicConfirmationGuidanceIsComplete() {
       "1〜3分ほど待ってから公開サイトを再読み込みして確認してください",
       "最後にスマホでも表示を確認します"
     ],
-    "docs/delivery-admin-manual.md": ["確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ"],
+    "docs/delivery-admin-manual.md": ["公開後の確認", "確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ", "TOPのSNS欄", "Google Calendar", "スクリーンショット"],
     "docs/client-handoff-sheet.md": ["確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ"],
     "docs/client-handoff-checklist.md": ["確認するページ", "1〜3分", "再読み込み", "スマホ"]
   };
