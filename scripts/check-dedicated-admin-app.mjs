@@ -65,6 +65,7 @@ checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminSnsStatusCardLinksToEditors();
 checkAdminDashboardShowsPublicCheckOrder();
+checkAdminHealthShowsPublicSiteUrl();
 checkClientDocsMentionPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
@@ -1497,6 +1498,35 @@ function checkAdminDashboardShowsPublicCheckOrder() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin dashboard shows public check order", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminHealthShowsPublicSiteUrl() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const routeFile = "admin-app/app/api/health/route.ts";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(routeFile) || !existsSync(cssFile)) {
+    add("admin health shows public site URL", false, `${clientFile}, ${routeFile}, or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const routeText = readFileSync(routeFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [routeFile, routeText, "function getPublicSiteUrlStatus()"],
+    [routeFile, routeText, "NEXT_PUBLIC_PUBLIC_SITE_URL"],
+    [routeFile, routeText, "https://www.bassic.jp/"],
+    [routeFile, routeText, "publicSiteUrl: getPublicSiteUrlStatus()"],
+    [clientFile, clientText, "type PublicSiteUrlStatus"],
+    [clientFile, clientText, "publicSiteUrl?: PublicSiteUrlStatus"],
+    [clientFile, clientText, "公開サイトURL"],
+    [clientFile, clientText, "public-url-status"],
+    [cssFile, cssText, ".public-url-status"],
+    [cssFile, cssText, ".public-url-status.needs-check"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin health shows public site URL", missing.length === 0, missing.join(", "));
 }
 
 function checkClientDocsMentionPublicCheckOrder() {

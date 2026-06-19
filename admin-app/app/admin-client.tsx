@@ -46,10 +46,18 @@ type HealthCheck = {
   requiredFor: "login" | "save" | "publish";
 };
 
+type PublicSiteUrlStatus = {
+  url: string;
+  isProduction: boolean;
+  isTemporary: boolean;
+  message: string;
+};
+
 type HealthState = {
   ok: boolean;
   checks: HealthCheck[];
   missing: HealthCheck[];
+  publicSiteUrl?: PublicSiteUrlStatus;
 };
 
 type SnsStatus = {
@@ -474,6 +482,19 @@ function SetupStatus({ health }: { health?: HealthState }) {
     { key: "save", label: "保存" },
     { key: "publish", label: "公開反映" }
   ] as const;
+  const publicUrlStatus = health.publicSiteUrl;
+  const publicUrlCard = publicUrlStatus ? (
+    <section className={`public-url-status ${publicUrlStatus.isProduction ? "ready" : "needs-check"}`}>
+      <div>
+        <strong>公開サイトURL</strong>
+        <span>{publicUrlStatus.message}</span>
+      </div>
+      <a href={publicUrlStatus.url} target="_blank" rel="noreferrer">
+        {publicUrlStatus.url}
+        <ExternalLink size={14} />
+      </a>
+    </section>
+  ) : null;
 
   if (health.ok) {
     return (
@@ -482,6 +503,7 @@ function SetupStatus({ health }: { health?: HealthState }) {
         <div>
           <strong>本番設定はそろっています。</strong>
           <span>ログイン、保存、公開反映の準備ができています。</span>
+          {publicUrlCard}
         </div>
       </div>
     );
@@ -493,6 +515,7 @@ function SetupStatus({ health }: { health?: HealthState }) {
       <div>
         <strong>設定が不足しています</strong>
         <span>保存や反映の前に、担当者側の初期設定が必要です。</span>
+        {publicUrlCard}
         <div className="setup-groups">
           {groups.map((group) => {
             const missingItems = health.missing.filter((item) => item.requiredFor === group.key);
