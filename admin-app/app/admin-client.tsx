@@ -980,6 +980,39 @@ function SaveChoiceGuide() {
   );
 }
 
+function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
+  const platform = getString(draft.platform) || "instagram";
+  const guides: Record<string, { label: string; example: string; note: string }> = {
+    instagram: {
+      label: "Instagram",
+      example: "https://www.instagram.com/bassic_official/",
+      note: "プロフィールURLか、見せたい投稿を開いた時のURLを入れます。"
+    },
+    facebook: {
+      label: "Facebook",
+      example: "https://www.facebook.com/bar.Bassic/",
+      note: "Facebookページか、見せたい投稿・イベントを開いた時のURLを入れます。"
+    },
+    x: {
+      label: "X",
+      example: "https://x.com/bar_Bassic",
+      note: "Xアカウントか、見せたい投稿を開いた時のURLを入れます。"
+    }
+  };
+  const guide = guides[platform] || guides.instagram;
+
+  return (
+    <section className="social-notice-url-guide" aria-label="SNSお知らせURLの入力例">
+      <Info size={18} />
+      <div>
+        <strong>{guide.label}のURLを入力してください</strong>
+        <span>{guide.note}</span>
+        <code>{guide.example}</code>
+      </div>
+    </section>
+  );
+}
+
 function FacebookEventImportPanel({
   draft,
   onApply
@@ -1687,6 +1720,7 @@ function SectionEditor({
           >
             <RequiredProgress section={section} draft={draft} />
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
+            {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
             {section.fields.map((field) => (
               <Field
                 field={field}

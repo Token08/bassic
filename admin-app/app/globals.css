@@ -858,6 +858,52 @@ a {
   overflow-wrap: anywhere;
 }
 
+.social-notice-url-guide {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  border: 1px solid rgba(134, 12, 22, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(134, 12, 22, 0.06);
+}
+
+.social-notice-url-guide svg {
+  color: var(--accent);
+}
+
+.social-notice-url-guide div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.social-notice-url-guide strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.social-notice-url-guide span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.social-notice-url-guide code {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
 .facebook-import-date-warning {
   display: flex;
   align-items: flex-start;
