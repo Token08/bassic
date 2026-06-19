@@ -141,6 +141,9 @@ const endpointChecks = [
       requiredText(item, "title", "custom-sections", 6);
       requiredText(item, "body", "custom-sections", 20);
       requiredBoolean(item, "isPublished", "custom-sections");
+      optionalImage(item, "image", "custom-sections");
+      optionalUrl(item, "linkUrl", "custom-sections");
+      optionalLinkPair(item, "linkLabel", "linkUrl", "custom-sections");
       optionalWholeNumber(item, "displayOrder", "custom-sections");
     }
   }
@@ -277,6 +280,17 @@ function requiredUrl(item, field, endpoint) {
   }
 }
 
+function optionalUrl(item, field, endpoint) {
+  const value = item?.[field];
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+
+  if (!isValidManagedUrl(value)) {
+    errors.push(`${endpoint}.${field}: URL must start with https:// or / when this field is set.`);
+  }
+}
+
 function requiredExternalUrl(item, field, endpoint) {
   if (!isValidExternalUrl(item?.[field])) {
     errors.push(`${endpoint}.${field}: external URL must start with https://.`);
@@ -295,6 +309,18 @@ function optionalFacebookSourceIdMatchesUrl(item, endpoint) {
   const eventId = getFacebookEventId(item?.sourceUrl);
   if (sourceId && eventId && sourceId !== eventId) {
     errors.push(`${endpoint}.sourceId: Facebook event ID should match the sourceUrl event ID.`);
+  }
+}
+
+function optionalLinkPair(item, labelField, urlField, endpoint) {
+  const label = typeof item?.[labelField] === "string" ? item[labelField].trim() : "";
+  const url = typeof item?.[urlField] === "string" ? item[urlField].trim() : "";
+  if (label && !url) {
+    errors.push(`${endpoint}.${urlField}: URL is required when ${labelField} is set.`);
+  }
+
+  if (url && !label) {
+    errors.push(`${endpoint}.${labelField}: label is required when ${urlField} is set.`);
   }
 }
 

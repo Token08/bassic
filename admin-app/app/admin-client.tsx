@@ -1652,6 +1652,16 @@ function SectionEditor({
       if (countTextLength(nextDraft.body) < 20) {
         nextErrors.body = "公開する前に、本文を20文字以上で入力してください。";
       }
+
+      const linkLabel = getString(nextDraft.linkLabel).trim();
+      const linkUrl = getString(nextDraft.linkUrl).trim();
+      if (linkUrl && !linkLabel) {
+        nextErrors.linkLabel = "リンクURLを使う場合は、リンクボタン名も入力してください。";
+      }
+
+      if (linkLabel && !linkUrl) {
+        nextErrors.linkUrl = "リンクボタン名を使う場合は、リンクURLも入力してください。";
+      }
     }
 
     setErrors(nextErrors);

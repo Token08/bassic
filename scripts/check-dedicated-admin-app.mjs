@@ -1758,7 +1758,11 @@ function checkCmsSmokeValidatesPublishedTextDepth() {
     'requiredText(item, "title", "events", 4)',
     'requiredText(item, "body", "party-plans", 12)',
     'requiredText(item, "description", "social-notices", 10)',
-    'requiredText(item, "body", "custom-sections", 20)'
+    'requiredText(item, "body", "custom-sections", 20)',
+    "function optionalUrl",
+    "function optionalLinkPair",
+    'optionalUrl(item, "linkUrl", "custom-sections")',
+    'optionalLinkPair(item, "linkLabel", "linkUrl", "custom-sections")'
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
@@ -1783,6 +1787,7 @@ function checkDocsExplainPublishedTextDepth() {
     [fieldDocsFile, fieldDocsText, "プラン名を4文字以上、説明を12文字以上"],
     [fieldDocsFile, fieldDocsText, "表示タイトルを6文字以上、説明を10文字以上"],
     [fieldDocsFile, fieldDocsText, "見出しを6文字以上、本文を20文字以上"],
+    [fieldDocsFile, fieldDocsText, "リンク文言とリンクURLを両方入力"],
     [setupFile, setupText, "プラン名を4文字以上、説明を12文字以上"],
     [setupFile, setupText, "表示タイトルを6文字以上、短い説明を10文字以上"]
   ];
@@ -1813,6 +1818,8 @@ function checkAdminValidatesPublishedTextDepth() {
     [adminFile, adminText, "説明を12文字以上"],
     [adminFile, adminText, 'section.id === "custom-sections"'],
     [adminFile, adminText, "本文を20文字以上"],
+    [adminFile, adminText, "リンクURLを使う場合は、リンクボタン名も入力"],
+    [adminFile, adminText, "リンクボタン名を使う場合は、リンクURLも入力"],
     [schemaFile, schemaText, "公開する場合は12文字以上"],
     [schemaFile, schemaText, "公開する場合は6文字以上"],
     [schemaFile, schemaText, "公開する場合は10文字以上"],
