@@ -77,6 +77,7 @@ checkPublicCmsFallbackGuards();
 checkAssetPathKeepsExternalUrls();
 checkSampleContentUsesCurrentCopy();
 checkEventDateIsDateOnlyGuidance();
+checkGoogleBusinessProfileChecklistUsesCurrentCopy();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -1539,6 +1540,27 @@ function checkEventDateIsDateOnlyGuidance() {
   const staleHits = stale.filter(([, text, term]) => text.includes(term)).map(([file, , term]) => `${file}: stale ${term}`);
 
   add("event date field is explained as date-only", missing.length === 0 && staleHits.length === 0, [...missing, ...staleHits].join(", "));
+}
+
+function checkGoogleBusinessProfileChecklistUsesCurrentCopy() {
+  const file = "docs/google-business-profile-checklist.md";
+  if (!existsSync(file)) {
+    add("Google Business Profile checklist uses current copy", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "https://www.bassic.jp/index.html",
+    "Search Consoleやsitemapは `/` 基準",
+    "イベント終了後は22:30から通常営業",
+    "未成年入店不可",
+    "イベント内容によりイベント中は禁煙になる場合あり",
+    "テーブル・チャージ: 500円 / お一人様"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("Google Business Profile checklist uses current copy", missing.length === 0, missing.join(", "));
 }
 
 function checkMenuPublishRequiresPriceAndImage() {
