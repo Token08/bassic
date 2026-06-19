@@ -87,6 +87,7 @@ checkPackageScript("sync:calendar:dry");
 checkPackageScript("sync:calendar:check");
 checkPackageScript("smoke:content");
 checkContentSmokeCoversMenuRegression();
+checkLinkSmokeValidatesMapEmbeds();
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
@@ -148,6 +149,27 @@ function checkContentSmokeCoversMenuRegression() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("content smoke covers menu regression", missing.length === 0, missing.join(", "));
+}
+
+function checkLinkSmokeValidatesMapEmbeds() {
+  const file = "scripts/smoke-links.mjs";
+  if (!existsSync(file)) {
+    add("link smoke validates Google Map embeds", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "function validateMapEmbed",
+    "output=embed",
+    "/maps/embed",
+    "/maps/search",
+    "/maps/dir",
+    "may be refused by the browser"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("link smoke validates Google Map embeds", missing.length === 0, missing.join(", "));
 }
 
 function checkLocalEnv(name, detail) {

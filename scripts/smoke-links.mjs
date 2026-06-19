@@ -58,6 +58,19 @@ function extractAttributes(html, attr) {
   return values;
 }
 
+function validateMapEmbed(file, value) {
+  if (!/https:\/\/(?:www\.)?(?:maps\.)?google\.com\/maps/.test(value)) {
+    return;
+  }
+
+  const isEmbedUrl = value.includes("output=embed") || value.includes("/maps/embed");
+  const isOpenOnlyUrl = value.includes("/maps/search") || value.includes("/maps/dir");
+
+  if (!isEmbedUrl || isOpenOnlyUrl) {
+    failures.push(`${normalize(file)} uses a Google Map iframe URL that may be refused by the browser: ${value}`);
+  }
+}
+
 for (const file of walk(outDir).filter((path) => path.endsWith(".html"))) {
   const html = readFileSync(file, "utf8");
   const attrs = [
@@ -65,6 +78,10 @@ for (const file of walk(outDir).filter((path) => path.endsWith(".html"))) {
     ...extractAttributes(html, "src").map((value) => ({ value, type: "src" })),
     ...extractAttributes(html, "content").filter((value) => value.startsWith("/") || value.startsWith(siteUrl)).map((value) => ({ value, type: "content" }))
   ];
+
+  for (const value of extractAttributes(html, "src")) {
+    validateMapEmbed(file, value);
+  }
 
   for (const { value, type } of attrs) {
     if (!value || isExternal(value) || value.startsWith("data:")) {
