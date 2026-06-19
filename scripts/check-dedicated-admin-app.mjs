@@ -34,6 +34,7 @@ checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
+checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
 checkPublishWaitCopyIsSpecific();
 checkFacebookEventPreviewMessages();
@@ -530,6 +531,23 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin save flow explains publish behavior", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminDraftSaveDoesNotClaimPublicPublish() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin draft save does not claim public publish", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "下書き保存しました。公開するまでサイトには出ません。",
+    "公開しました。1〜3分ほど待ってから公開サイトを再読み込みして確認してください。"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin draft save does not claim public publish", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminErrorsExplainWhatToTellSupport() {
