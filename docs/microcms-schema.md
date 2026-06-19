@@ -2,6 +2,27 @@
 
 microCMS管理画面で以下のAPIを作成します。API IDはコードと一致させてください。
 
+## site-settings
+
+種類: オブジェクト形式
+
+| フィールドID | 表示名 | 種類 | 必須 | 備考 |
+| --- | --- | --- | --- | --- |
+| address | 住所 | テキストエリア | true |  |
+| phone | 電話番号 | テキストフィールド | true |  |
+| hoursLabel | 通常営業時間 | テキストエリア | true |  |
+| eventHoursNote | イベント時の営業時間補足 | テキストエリア | false |  |
+| smokingLabel | 喫煙について | テキストエリア | false |  |
+| chargeLabel | テーブル・チャージ | テキストフィールド | false |  |
+| googleMapsUrl | Google Map URL | テキストフィールド | true | Google MapのURLを入れます |
+| directionsUrl | 現在地から向かうURL | テキストフィールド | false | Google Mapの経路案内URLを入れます |
+| instagramUrl | Instagram URL | テキストフィールド | true | `instagram.com` のURLを入れます |
+| facebookUrl | Facebook URL | テキストフィールド | true | `facebook.com` のURLを入れます |
+| xUrl | X URL | テキストフィールド | true | `x.com` または `twitter.com` のURLを入れます |
+| onlineStoreUrl | オンラインストアURL | テキストフィールド | false |  |
+
+店舗基本情報は、公開サイトの全ページとGoogle Map導線に影響します。管理画面側では、Google Map欄にSNS URLを入れる、Instagram欄にFacebook URLを入れる、といった取り違えを公開前に止めます。
+
 ## home
 
 種類: オブジェクト形式
@@ -69,7 +90,7 @@ Facebookイベントから取り込んだイベントは `sourceUrl` に個別�
 - イベント更新を最優先にするため、`events` は公開/非公開を必ず設定します。
 - トップ画像はDrive素材から選び、横長で店内の雰囲気が伝わる写真を推奨します。
 - メニュー画像は正方形または横長を推奨します。未設定でも公開できますが、来店前の分かりやすさを優先するメニューには画像を設定します。
-- 営業時間やGoogle Map URLはCMSではなく `lib/site.ts` / 環境変数で管理します。表記ゆれを防ぐためです。
+- 営業時間、Google Map URL、SNS URLは `site-settings` で管理します。変更後は管理画面の「リンクを開いて確認」と公開サイトのスマホ表示を必ず確認します。
 
 ## social-notices
 

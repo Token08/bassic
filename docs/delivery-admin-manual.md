@@ -196,6 +196,8 @@ Instagramの一覧表示を使う場合は、保守担当者が表示用URLを�
 6. プレビューして公開する
 7. 公開サイトで電話、地図、SNSリンクが開くか確認する
 
+Google Map欄にはGoogle MapのURL、Instagram欄にはInstagramのURL、Facebook欄にはFacebookのURL、X欄にはXまたはTwitterのURLを入れます。違う種類のURLを入れると管理画面でエラーが出ます。
+
 営業時間、料金、喫煙可否は来店判断に直結します。変更後は必ず公開サイトで確認してください。
 
 ## 反映されない時

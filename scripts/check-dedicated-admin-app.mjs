@@ -61,6 +61,7 @@ checkAdminEditorShowsSectionPublicPageLinks();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
+checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
@@ -1349,6 +1350,34 @@ function checkMicrocmsSetupChecklistUsesCurrentDocs() {
   const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
 
   add("microCMS setup checklist uses current docs", problems.length === 0, problems.join(", "));
+}
+
+function checkMicrocmsSchemaUsesManagedSiteSettings() {
+  const schemaFile = "docs/microcms-schema.md";
+  const manualFile = "docs/delivery-admin-manual.md";
+  if (!existsSync(schemaFile) || !existsSync(manualFile)) {
+    add("microCMS schema uses managed site settings", false, `${schemaFile} or ${manualFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const manualText = readFileSync(manualFile, "utf8");
+  const required = [
+    [schemaFile, schemaText, "## site-settings"],
+    [schemaFile, schemaText, "googleMapsUrl"],
+    [schemaFile, schemaText, "directionsUrl"],
+    [schemaFile, schemaText, "instagramUrl"],
+    [schemaFile, schemaText, "facebookUrl"],
+    [schemaFile, schemaText, "xUrl"],
+    [schemaFile, schemaText, "Google Map欄にSNS URLを入れる"],
+    [schemaFile, schemaText, "営業時間、Google Map URL、SNS URLは `site-settings` で管理します"],
+    [manualFile, manualText, "違う種類のURLを入れると管理画面でエラーが出ます。"]
+  ];
+  const stale = [[schemaFile, schemaText, "営業時間やGoogle Map URLはCMSではなく"]];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+  const staleFound = stale.filter(([, text, term]) => text.includes(term)).map(([file, , term]) => `${file}: stale ${term}`);
+
+  add("microCMS schema uses managed site settings", missing.length === 0 && staleFound.length === 0, [...missing, ...staleFound].join(", "));
 }
 
 function checkAdminSchemaDocsMatch() {
