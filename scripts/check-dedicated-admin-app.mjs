@@ -42,6 +42,7 @@ checkFacebookEventFetchParsingFallbacks();
 checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
+checkAdminEventTimeValidation();
 checkCalendarSyncPrefersManagedFacebookEvents();
 checkCalendarSyncBlocksWarnings();
 checkProductionUrlEnvDocs();
@@ -714,6 +715,37 @@ function checkFacebookEventUrlParserHandlesNestedPaths() {
   ];
 
   add("Facebook event URL parser handles nested event paths", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminEventTimeValidation() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(adminFile) || !existsSync(schemaFile) || !existsSync(setupFile) || !existsSync(fieldDocsFile)) {
+    add("admin event times use HH:mm guidance", false, `${adminFile}, ${schemaFile}, ${setupFile}, or ${fieldDocsFile} missing`);
+    return;
+  }
+
+  const text = [
+    readFileSync(adminFile, "utf8"),
+    readFileSync(schemaFile, "utf8"),
+    readFileSync(setupFile, "utf8"),
+    readFileSync(fieldDocsFile, "utf8")
+  ].join("\n");
+  const required = [
+    "function isValidEventTime",
+    "^\\d{1,2}:\\d{2}$",
+    "OPENやSTARTの文字は不要です",
+    "placeholder: \"18:30\"",
+    "placeholder: \"19:00\"",
+    "placeholder: \"22:00\"",
+    "`19:00` のように入力"
+  ];
+  const stale = ["placeholder: \"OPEN 18:30\"", "placeholder: \"START 19:00\"", "placeholder: \"END 22:00\""].filter((term) => text.includes(term));
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin event times use HH:mm guidance", missing.length === 0 && stale.length === 0, [...missing, ...stale].join(", "));
 }
 
 function checkCalendarSyncPrefersManagedFacebookEvents() {

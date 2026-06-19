@@ -39,21 +39,21 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 ## 3. events
 
-| fieldId | 表示名 | 種類 | 必須 |
-| --- | --- | --- | --- |
-| `title` | イベント名 | テキストフィールド | 必須 |
-| `date` | 開催日 | 日時 | 必須 |
-| `openTime` | OPEN | テキストフィールド | 任意 |
-| `startTime` | START | テキストフィールド | 任意 |
-| `endTime` | END | テキストフィールド | 任意 |
-| `performers` | 出演者 | テキストエリア | 任意 |
-| `price` | 料金 | テキストフィールド | 任意 |
-| `reservation` | 予約方法 | テキストエリア | 任意 |
-| `sourceUrl` | FacebookイベントURL・詳細URL | テキストフィールド | 任意 |
-| `sourceId` | FacebookイベントID | テキストフィールド | 任意 |
-| `sourceType` | 取り込み元 | テキストフィールド | 任意 |
-| `image` | イベント画像 | 画像 | 任意 |
-| `isPublished` | 公開する | 真偽値 | 必須 |
+| fieldId | 表示名 | 種類 | 必須 | 備考 |
+| --- | --- | --- | --- | --- |
+| `title` | イベント名 | テキストフィールド | 必須 |  |
+| `date` | 開催日 | 日時 | 必須 |  |
+| `openTime` | OPEN | テキストフィールド | 任意 | `18:30` のように半角数字と `:` で入力 |
+| `startTime` | START | テキストフィールド | 任意 | `19:00` のように半角数字と `:` で入力 |
+| `endTime` | END | テキストフィールド | 任意 | `22:00` のように半角数字と `:` で入力 |
+| `performers` | 出演者 | テキストエリア | 任意 |  |
+| `price` | 料金 | テキストフィールド | 任意 |  |
+| `reservation` | 予約方法 | テキストエリア | 任意 |  |
+| `sourceUrl` | FacebookイベントURL・詳細URL | テキストフィールド | 任意 |  |
+| `sourceId` | FacebookイベントID | テキストフィールド | 任意 |  |
+| `sourceType` | 取り込み元 | テキストフィールド | 任意 |  |
+| `image` | イベント画像 | 画像 | 任意 |  |
+| `isPublished` | 公開する | 真偽値 | 必須 |  |
 
 下書き中は `isPublished` をオフにします。
 Facebookイベントから取り込む場合、`sourceUrl` は個別イベントページURLを入れ、`sourceId` と `sourceType` は管理画面側で自動入力します。`sourceId` はGoogle Calendar同期時の重複防止に使います。
@@ -98,7 +98,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 
 イベントをGoogle Calendarへ反映する場合、`events` の `sourceUrl` はFacebookの個別イベントページURLを入れます。イベント一覧ページのURLでは同期対象として扱えません。
 
-FacebookイベントURLから取り込んだイベントを公開する場合は、`date` と `startTime` が入っているか管理画面側で確認します。日付またはSTARTが取れない場合は手入力します。
+FacebookイベントURLから取り込んだイベントを公開する場合は、`date` と `startTime` が入っているか管理画面側で確認します。日付またはSTARTが取れない場合は手入力します。時間は `19:00` のように入力し、`OPEN` や `START` の文字は入れません。
 
 `image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
 

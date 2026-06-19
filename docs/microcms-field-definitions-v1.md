@@ -71,21 +71,21 @@
 
 ## `events`
 
-| 表示名 | fieldId | 種類 | 必須 |
-| --- | --- | --- | --- |
-| イベント名 | `title` | テキスト | yes |
-| 日付 | `date` | 日時 | yes |
-| OPEN | `openTime` | テキスト | no |
-| START | `startTime` | テキスト | no |
-| END | `endTime` | テキスト | no |
-| 出演者 | `performers` | テキストエリア | no |
-| 料金 | `price` | テキスト | no |
-| 予約方法 | `reservation` | テキストエリア | no |
-| FacebookイベントURL・詳細URL | `sourceUrl` | テキスト | no |
-| FacebookイベントID | `sourceId` | hidden / 管理画面で自動入力 | no |
-| 取り込み元 | `sourceType` | hidden / 管理画面で自動入力 | no |
-| 画像 | `image` | 画像 | no |
-| 公開する | `isPublished` | 真偽値 | yes |
+| 表示名 | fieldId | 種類 | 必須 | 備考 |
+| --- | --- | --- | --- | --- |
+| イベント名 | `title` | テキスト | yes |  |
+| 日付 | `date` | 日時 | yes |  |
+| OPEN | `openTime` | テキスト | no | `18:30` のように半角数字と `:` で入力 |
+| START | `startTime` | テキスト | no | `19:00` のように半角数字と `:` で入力 |
+| END | `endTime` | テキスト | no | `22:00` のように半角数字と `:` で入力 |
+| 出演者 | `performers` | テキストエリア | no |  |
+| 料金 | `price` | テキスト | no |  |
+| 予約方法 | `reservation` | テキストエリア | no |  |
+| FacebookイベントURL・詳細URL | `sourceUrl` | テキスト | no |  |
+| FacebookイベントID | `sourceId` | hidden / 管理画面で自動入力 | no |  |
+| 取り込み元 | `sourceType` | hidden / 管理画面で自動入力 | no |  |
+| 画像 | `image` | 画像 | no |  |
+| 公開する | `isPublished` | 真偽値 | yes |  |
 
 `sourceId` はFacebookイベントURLから取り込めたイベントIDです。Google Calendar同期時の重複防止に使うため、通常は店舗側で直接編集しません。
 `sourceType` は管理画面側で自動入力する保守用の値です。通常は店舗側で直接編集しません。Facebookイベントを取り込んだ場合は `facebook` が入ります。

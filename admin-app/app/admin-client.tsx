@@ -183,6 +183,10 @@ function getSocialUrlError(platform: string, url: string) {
   return "";
 }
 
+function isValidEventTime(value: string) {
+  return /^\d{1,2}:\d{2}$/.test(value.trim());
+}
+
 function getFacebookEventId(value: string) {
   try {
     const url = new URL(value);
@@ -1289,6 +1293,15 @@ function SectionEditor({
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
     if (section.id === "events" && sourceUrl && (sourceType === "facebook" || isFacebookUrl(sourceUrl)) && !isFacebookEventUrl(sourceUrl)) {
       nextErrors.sourceUrl = "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入力してください。";
+    }
+
+    if (section.id === "events") {
+      for (const key of ["openTime", "startTime", "endTime"]) {
+        const value = getString(nextDraft[key]).trim();
+        if (value && !isValidEventTime(value)) {
+          nextErrors[key] = "時間は 19:00 のように半角数字と : で入力してください。OPENやSTARTの文字は不要です。";
+        }
+      }
     }
 
     if (section.id === "events" && nextDraft.isPublished && (sourceType === "facebook" || isFacebookEventUrl(sourceUrl))) {
