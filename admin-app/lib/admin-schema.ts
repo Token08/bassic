@@ -95,9 +95,28 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "address", label: "住所", type: "textarea", required: true, rows: 2, placeholder: "福岡市中央区天神3-4-19 WITH天神5F" },
       { key: "phone", label: "電話番号", type: "text", required: true, placeholder: "092-713-1040" },
-      { key: "hoursLabel", label: "通常営業時間", type: "textarea", required: true, rows: 3, placeholder: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE" },
-      { key: "eventHoursNote", label: "イベント時の営業時間補足", type: "textarea", rows: 3, placeholder: "イベントがある日は22:30から通常営業。イベントにより異なる場合もございます。" },
-      { key: "smokingLabel", label: "喫煙について", type: "textarea", rows: 4, placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）" },
+      {
+        key: "hoursLabel",
+        label: "通常営業時間",
+        type: "textarea",
+        required: true,
+        rows: 4,
+        placeholder: "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE\nイベントがある日は 22:30 から通常営業\n※イベントにより異なる場合もございます"
+      },
+      {
+        key: "eventHoursNote",
+        label: "イベント時の営業時間補足",
+        type: "textarea",
+        rows: 4,
+        placeholder: "イベント時は営業時間が変動します。\nイベント終了後は 22:30 から通常営業です。\n詳細はイベントスケジュールページをご確認ください。"
+      },
+      {
+        key: "smokingLabel",
+        label: "喫煙について",
+        type: "textarea",
+        rows: 5,
+        placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容によりイベント中は禁煙になる場合がございます。"
+      },
       { key: "chargeLabel", label: "テーブル・チャージ", type: "text", placeholder: "テーブル・チャージ 500円 / お一人様" },
       {
         key: "googleMapsUrl",

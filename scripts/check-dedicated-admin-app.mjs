@@ -60,6 +60,7 @@ checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
+checkSiteSettingsPlaceholdersUseCurrentCopy();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
 checkNumberFieldsUseWholeNumberValidation();
@@ -1197,6 +1198,29 @@ function checkMaintainerOnlyFieldsAreClear() {
   }
 
   add("maintainer-only page settings are clear", problems.length === 0, problems.join(", "));
+}
+
+function checkSiteSettingsPlaceholdersUseCurrentCopy() {
+  const file = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(file)) {
+    add("site settings placeholders use current copy", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "通常営業 20:00 OPEN / L.O. 1:30 / 2:00 CLOSE",
+    "イベントがある日は 22:30 から通常営業",
+    "※イベントにより異なる場合もございます",
+    "イベント終了後は 22:30 から通常営業です。",
+    "店内喫煙OK（紙タバコ・電子タバコOK）",
+    "※未成年の入店はお断りしております。",
+    "※イベント内容によりイベント中は禁煙になる場合がございます。",
+    "テーブル・チャージ 500円 / お一人様"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("site settings placeholders use current copy", missing.length === 0, missing.join(", "));
 }
 
 function checkMenuDescriptionExplainsSupplementalUse() {
