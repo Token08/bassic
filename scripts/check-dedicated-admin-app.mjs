@@ -65,6 +65,7 @@ checkSiteSettingsPlaceholdersUseCurrentCopy();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
 checkNumberFieldsUseWholeNumberValidation();
+checkCmsSmokeValidatesDisplayOrderNumbers();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
 checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
@@ -1760,4 +1761,27 @@ function checkNumberFieldsUseWholeNumberValidation() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("number fields use whole-number validation", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeValidatesDisplayOrderNumbers() {
+  const file = "scripts/smoke-cms.mjs";
+  if (!existsSync(file)) {
+    add("CMS smoke validates display order numbers", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function optionalWholeNumber",
+    'optionalWholeNumber(item, "displayOrder", "hero-slides")',
+    'optionalWholeNumber(item, "displayOrder", "menu")',
+    'optionalWholeNumber(item, "displayOrder", "drink-menu-sheets")',
+    'optionalWholeNumber(item, "displayOrder", "party-plans")',
+    'optionalWholeNumber(item, "displayOrder", "page-copy")',
+    'optionalWholeNumber(item, "displayOrder", "page-sections")',
+    'optionalWholeNumber(item, "displayOrder", "custom-sections")'
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates display order numbers", missing.length === 0, missing.join(", "));
 }

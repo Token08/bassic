@@ -25,6 +25,7 @@ const endpointChecks = [
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "party", "menu", "access"], "hero-slides");
       requiredImage(item, "image", "hero-slides");
+      optionalWholeNumber(item, "displayOrder", "hero-slides");
     }
   },
   {
@@ -60,6 +61,7 @@ const endpointChecks = [
       if (item.category) {
         requiredEnum(item, "category", ["food", "drink"], "menu");
       }
+      optionalWholeNumber(item, "displayOrder", "menu");
       if (item.isPublished !== false) {
         requiredString(item, "price", "menu");
         requiredImage(item, "image", "menu");
@@ -74,6 +76,7 @@ const endpointChecks = [
     validateItem: (item) => {
       requiredString(item, "title", "drink-menu-sheets");
       requiredImage(item, "image", "drink-menu-sheets");
+      optionalWholeNumber(item, "displayOrder", "drink-menu-sheets");
     }
   },
   {
@@ -83,6 +86,7 @@ const endpointChecks = [
       requiredString(item, "title", "party-plans");
       requiredString(item, "price", "party-plans");
       requiredString(item, "body", "party-plans");
+      optionalWholeNumber(item, "displayOrder", "party-plans");
     }
   },
   {
@@ -102,6 +106,7 @@ const endpointChecks = [
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-copy");
       requiredBoolean(item, "isPublished", "page-copy");
+      optionalWholeNumber(item, "displayOrder", "page-copy");
     }
   },
   {
@@ -111,6 +116,7 @@ const endpointChecks = [
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-sections");
       requiredString(item, "sectionKey", "page-sections");
       requiredBoolean(item, "isPublished", "page-sections");
+      optionalWholeNumber(item, "displayOrder", "page-sections");
     }
   },
   {
@@ -121,6 +127,7 @@ const endpointChecks = [
       requiredString(item, "title", "custom-sections");
       requiredString(item, "body", "custom-sections");
       requiredBoolean(item, "isPublished", "custom-sections");
+      optionalWholeNumber(item, "displayOrder", "custom-sections");
     }
   }
 ];
@@ -268,6 +275,18 @@ function optionalTime(item, field, endpoint) {
 
   if (typeof value !== "string" || !/^\d{1,2}:\d{2}$/.test(value.trim())) {
     errors.push(`${endpoint}.${field}: time should include HH:mm, for example 19:00.`);
+  }
+}
+
+function optionalWholeNumber(item, field, endpoint) {
+  const value = item?.[field];
+  if (value === undefined || value === null || value === "") {
+    return;
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    errors.push(`${endpoint}.${field}: display order should be a whole number like 1, 2, 3.`);
   }
 }
 
