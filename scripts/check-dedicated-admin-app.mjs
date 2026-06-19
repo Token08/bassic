@@ -53,6 +53,7 @@ checkFacebookEventUrlParserHandlesNestedPaths();
 checkAdminEventTimeValidation();
 checkCalendarSyncPrefersManagedFacebookEvents();
 checkCalendarSyncBlocksWarnings();
+checkProductionHandoffCommands();
 checkProductionUrlEnvDocs();
 checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
@@ -1197,6 +1198,39 @@ function checkProductionUrlEnvDocs() {
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   add("production checklist explains public URL envs", missing.length === 0, missing.join(", "));
+}
+
+function checkProductionHandoffCommands() {
+  const file = "docs/production-handoff-checklist.md";
+  if (!existsSync(file)) {
+    add("production checklist lists current verification commands", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredCommands = [
+    "npm run typecheck",
+    "npm run typecheck:admin-app",
+    "npm run check:admin-app",
+    "npm run build",
+    "npm run build:admin-app",
+    "npm run smoke:links",
+    "npm run smoke:content",
+    "npm run smoke:seo",
+    "npm run smoke:cms",
+    "npm run sync:calendar:check"
+  ];
+  const requiredGuidance = [
+    "毎回実行するもの",
+    "microCMS接続情報を設定した後だけ実行するもの",
+    "本物のmicroCMS接続情報で一度通します",
+    "FacebookイベントをGoogle Calendarへ反映する前に実行するもの",
+    "Google Calendarへ書き込まず",
+    "警告が出た場合は同期せず"
+  ];
+  const missing = [...requiredCommands, ...requiredGuidance].filter((term) => !text.includes(term));
+
+  add("production checklist lists current verification commands", missing.length === 0, missing.join(", "));
 }
 
 function checkProductionCalendarSyncDocsMatchOutput() {

@@ -55,8 +55,9 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 
 ## 4. 公開前チェック
 
+毎回実行するもの:
+
 ```bash
-npm run smoke:cms
 npm run typecheck
 npm run typecheck:admin-app
 npm run check:admin-app
@@ -67,7 +68,21 @@ npm run smoke:content
 npm run smoke:seo
 ```
 
-`smoke:cms` はmicroCMSのAPI IDや必須項目が合っているか確認します。microCMS未接続の場合はスキップします。
+microCMS接続情報を設定した後だけ実行するもの:
+
+```bash
+npm run smoke:cms
+```
+
+`smoke:cms` はmicroCMSのAPI IDや必須項目が合っているか確認します。microCMS未接続の場合はスキップします。納品前に管理画面を実運用へ移す時は、必ず本物のmicroCMS接続情報で一度通します。
+
+FacebookイベントをGoogle Calendarへ反映する前に実行するもの:
+
+```bash
+npm run sync:calendar:check
+```
+
+`sync:calendar:check` はGoogle Calendarへ書き込まず、同期予定のタイトル、日時、FacebookイベントURL、画像URLを確認します。警告が出た場合は同期せず、管理画面のイベント内容を直してから再実行します。
 
 本番URLへ切り替える時は、`NEXT_PUBLIC_BASE_PATH` を空にしてからビルドします。仮URLの `https://token08.github.io/bassic/` で使う `/bassic` の設定が残っていると、本番URLのリンクや画像パスがずれます。
 
