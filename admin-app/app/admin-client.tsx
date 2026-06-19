@@ -1016,6 +1016,15 @@ function FacebookEventImportPanel({
   const currentStartTime = getString(draft.startTime).trim();
   const currentEndTime = getString(draft.endTime).trim();
   const currentImageUrl = getImageUrl(draft.image);
+  const calendarRequestMissingLabels = preview
+    ? [
+        !currentTitle && !preview.title ? "イベント名" : "",
+        !currentDate && !preview.date ? "日付" : "",
+        !currentStartTime && !preview.startTime ? "START" : "",
+        !sourceUrl && !preview.sourceUrl ? "FacebookイベントURL" : "",
+        !currentImageUrl && !preview.imageUrl ? "画像URL" : ""
+      ].filter(Boolean)
+    : [];
   const calendarRequestText = preview
     ? [
         "Google Calendarにも反映してください。",
@@ -1027,7 +1036,7 @@ function FacebookEventImportPanel({
         `画像URL: ${currentImageUrl || preview.imageUrl || "未入力"}`
       ].join("\n")
     : "";
-  const calendarRequestHasMissingFields = calendarRequestText.includes("未入力");
+  const calendarRequestHasMissingFields = calendarRequestMissingLabels.length > 0;
 
   useEffect(() => {
     if (copyMessage) {
@@ -1168,7 +1177,9 @@ function FacebookEventImportPanel({
               </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
               {calendarRequestHasMissingFields ? (
-                <small className="request-warning">未入力があります。コピーする前に、日付・START・イベント名を確認してください。</small>
+                <small className="request-warning">
+                  未入力があります。コピーする前に、{calendarRequestMissingLabels.join("、")} を確認してください。
+                </small>
               ) : null}
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
