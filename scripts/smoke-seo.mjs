@@ -87,6 +87,18 @@ for (const fragment of forbiddenSeoUrlFragments) {
   }
 }
 
+const robots = readOutFile("robots.txt");
+const expectedSitemapLine = `Sitemap: ${siteUrl}/sitemap.xml`;
+if (robots && !robots.includes(expectedSitemapLine)) {
+  failures.push(`Missing robots sitemap line: ${expectedSitemapLine}`);
+}
+
+for (const fragment of forbiddenSeoUrlFragments) {
+  if (robots && robots.includes(fragment)) {
+    failures.push(`Unexpected robots URL fragment: ${fragment}`);
+  }
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);

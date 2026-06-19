@@ -210,7 +210,10 @@ function checkSeoSmokeRejectsTemporaryUrls() {
     "https://token08.github.io/bassic",
     "/index.html",
     "Unexpected SEO URL fragment",
-    "Unexpected sitemap URL fragment"
+    "Unexpected sitemap URL fragment",
+    "robots.txt",
+    "Sitemap: ${siteUrl}/sitemap.xml",
+    "Unexpected robots URL fragment"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
