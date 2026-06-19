@@ -772,7 +772,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
       }
 
       onChange({ url: result.data.url, alt: image.alt || "" });
-      setUploadMessage("画像をアップロードしました。下書き保存または公開で反映されます。");
+      setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、下書き保存またはプレビューして公開してください。");
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "画像をアップロードできませんでした。");
     } finally {
@@ -831,7 +831,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
           />
         </label>
       </div>
-      <p className="field-hint">画像はアップロードするか、https:// または /assets/ から始まるURLを入れてください。横長画像は1600px以上がおすすめです。</p>
+      <p className="field-hint">画像はアップロードするか、https:// または /assets/ から始まるURLを入れてください。公開前に「画像を開いて確認」で正しい画像を確認します。横長画像は1600px以上がおすすめです。</p>
       {uploadMessage ? <small className="form-success">{uploadMessage}</small> : null}
       {error ? <small className="form-error">{error}</small> : null}
     </div>

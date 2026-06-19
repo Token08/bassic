@@ -465,7 +465,12 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = ["aria-label=\"この画像を外す\"", "画像を外す", "画像をアップロードしました。下書き保存または公開で反映されます。"];
+  const required = [
+    "aria-label=\"この画像を外す\"",
+    "画像を外す",
+    "画像をアップロードしました。まだ公開サイトには反映されていません。",
+    "画像を開いて確認し、下書き保存またはプレビューして公開してください。"
+  ];
   const stale = [">削除<"].filter((term) => text.includes(term));
   const missing = required.filter((term) => !text.includes(term));
   const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
