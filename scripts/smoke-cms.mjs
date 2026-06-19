@@ -22,6 +22,7 @@ const endpointChecks = [
   {
     label: "hero-slides",
     path: "/hero-slides?limit=1",
+    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "party", "menu", "access"], "hero-slides");
       requiredImage(item, "image", "hero-slides");
@@ -57,6 +58,7 @@ const endpointChecks = [
   {
     label: "menu",
     path: "/menu?limit=100",
+    orderGroupFields: ["category"],
     validateItem: (item) => {
       requiredString(item, "name", "menu");
       if (item.category) {
@@ -74,6 +76,7 @@ const endpointChecks = [
   {
     label: "drink-menu-sheets",
     path: "/drink-menu-sheets?limit=1",
+    orderGroupFields: [],
     validateItem: (item) => {
       requiredString(item, "title", "drink-menu-sheets");
       requiredImage(item, "image", "drink-menu-sheets");
@@ -83,6 +86,7 @@ const endpointChecks = [
   {
     label: "party-plans",
     path: "/party-plans?limit=1",
+    orderGroupFields: [],
     validateItem: (item) => {
       requiredString(item, "title", "party-plans");
       requiredString(item, "price", "party-plans");
@@ -93,6 +97,7 @@ const endpointChecks = [
   {
     label: "social-notices",
     path: "/social-notices?limit=1",
+    orderGroupFields: ["platform"],
     validateItem: (item) => {
       requiredEnum(item, "platform", ["instagram", "facebook", "x"], "social-notices");
       requiredString(item, "title", "social-notices");
@@ -104,6 +109,7 @@ const endpointChecks = [
   {
     label: "page-copy",
     path: "/page-copy?limit=1",
+    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-copy");
       requiredBoolean(item, "isPublished", "page-copy");
@@ -113,6 +119,7 @@ const endpointChecks = [
   {
     label: "page-sections",
     path: "/page-sections?limit=1",
+    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-sections");
       requiredString(item, "sectionKey", "page-sections");
@@ -123,6 +130,7 @@ const endpointChecks = [
   {
     label: "custom-sections",
     path: "/custom-sections?limit=1",
+    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "custom-sections");
       requiredString(item, "title", "custom-sections");
@@ -178,6 +186,9 @@ try {
 
     for (const item of list.contents) {
       check.validateItem(item);
+    }
+    if (check.orderGroupFields) {
+      validateDisplayOrderUniqueness(list.contents, check.label, check.orderGroupFields);
     }
 
     console.log(`OK ${check.label} (${list.contents.length} checked)`);
@@ -318,6 +329,33 @@ function optionalWholeNumber(item, field, endpoint) {
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) {
     errors.push(`${endpoint}.${field}: display order should be a whole number like 1, 2, 3.`);
+  }
+}
+
+function validateDisplayOrderUniqueness(items, endpoint, groupFields) {
+  const seen = new Map();
+
+  for (const item of items) {
+    if (item?.isPublished === false || item?.displayOrder === undefined || item?.displayOrder === null || item?.displayOrder === "") {
+      continue;
+    }
+
+    const order = Number(item.displayOrder);
+    if (!Number.isInteger(order) || order < 0) {
+      continue;
+    }
+
+    const group = groupFields.length
+      ? groupFields.map((field) => `${field}:${item?.[field] || "未設定"}`).join(" / ")
+      : "all";
+    const key = `${group}:${order}`;
+
+    if (seen.has(key)) {
+      errors.push(`${endpoint}.displayOrder: duplicate display order ${order} in ${group}. Use unique numbers for published items.`);
+      continue;
+    }
+
+    seen.set(key, true);
   }
 }
 

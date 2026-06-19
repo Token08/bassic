@@ -1822,6 +1822,10 @@ function checkCmsSmokeValidatesDisplayOrderNumbers() {
   const text = readFileSync(file, "utf8");
   const required = [
     "function optionalWholeNumber",
+    "function validateDisplayOrderUniqueness",
+    "duplicate display order",
+    "Use unique numbers for published items",
+    "orderGroupFields",
     'optionalWholeNumber(item, "displayOrder", "hero-slides")',
     'optionalWholeNumber(item, "displayOrder", "menu")',
     'optionalWholeNumber(item, "displayOrder", "drink-menu-sheets")',
