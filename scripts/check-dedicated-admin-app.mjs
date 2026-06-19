@@ -34,6 +34,7 @@ checkImageRemoveRequiresConfirmation();
 checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
+checkCmsSmokeExternalUrlValidation();
 checkCmsSmokeValidatesFacebookEventSourceIds();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
@@ -650,6 +651,27 @@ function checkCmsSmokeSocialNoticeUrlValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("CMS smoke validates social notice URLs by platform", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeExternalUrlValidation() {
+  const file = "scripts/smoke-cms.mjs";
+  if (!existsSync(file)) {
+    add("CMS smoke validates external URLs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "function requiredExternalUrl",
+    "function isValidExternalUrl",
+    "external URL must start with https://",
+    "social notice URLs must be full https:// URLs",
+    'requiredExternalUrl(siteSettings, field, "site-settings")',
+    'requiredExternalUrl(home, "instagramWidgetSrc", "home")'
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates external URLs", missing.length === 0, missing.join(", "));
 }
 
 function checkCmsSmokeValidatesFacebookEventSourceIds() {

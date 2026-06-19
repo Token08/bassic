@@ -147,14 +147,14 @@ try {
     requiredString(home, field, "home");
   }
   if (home.instagramWidgetSrc) {
-    requiredUrl(home, "instagramWidgetSrc", "home");
+    requiredExternalUrl(home, "instagramWidgetSrc", "home");
   }
   console.log("OK home");
 
   const siteSettings = await fetchJson("/site-settings");
   for (const field of requiredSiteSettingsFields) {
     if (field.endsWith("Url")) {
-      requiredUrl(siteSettings, field, "site-settings");
+      requiredExternalUrl(siteSettings, field, "site-settings");
     } else {
       requiredString(siteSettings, field, "site-settings");
     }
@@ -234,6 +234,12 @@ function requiredUrl(item, field, endpoint) {
   }
 }
 
+function requiredExternalUrl(item, field, endpoint) {
+  if (!isValidExternalUrl(item?.[field])) {
+    errors.push(`${endpoint}.${field}: external URL must start with https://.`);
+  }
+}
+
 function requiredFacebookEventUrl(item, field, endpoint) {
   const value = item?.[field];
   if (typeof value !== "string" || !getFacebookEventId(value)) {
@@ -260,6 +266,7 @@ function requiredSocialNoticeUrl(item, endpoint) {
   try {
     host = new URL(value).hostname.replace(/^www\./, "");
   } catch {
+    errors.push(`${endpoint}.url: social notice URLs must be full https:// URLs.`);
     return;
   }
 
@@ -347,6 +354,19 @@ function isValidManagedUrl(value) {
 
   if (value.startsWith("/")) {
     return !value.startsWith("//");
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isValidExternalUrl(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
   }
 
   try {
