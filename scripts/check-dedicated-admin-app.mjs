@@ -51,6 +51,7 @@ checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
+checkAdminEditorShowsSectionPublicPageLinks();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
@@ -932,6 +933,28 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminEditorShowsSectionPublicPageLinks() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin editor shows section public page links", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "publicPagePaths",
+    "getPublicPageUrl(section)",
+    "確認するページ",
+    "公開ページを開く",
+    "events: \"/events/\"",
+    "\"drink-menu-sheets\": \"/menu/\"",
+    "\"equipment-rental\": \"/party/\""
+  ];
+  const missing = required.filter((item) => !text.includes(item));
+
+  add("admin editor shows section public page links", missing.length === 0, missing.join(", "));
 }
 
 function checkDocsIndexBoundaries() {

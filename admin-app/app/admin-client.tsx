@@ -86,6 +86,28 @@ const dailySectionIds = new Set([
   "social-notices"
 ]);
 
+const publicPagePaths: Partial<Record<SectionDefinition["id"], string>> = {
+  "site-settings": "/access/",
+  home: "/",
+  "hero-slides": "/",
+  events: "/events/",
+  menu: "/menu/",
+  "drink-menu-sheets": "/menu/",
+  "party-plans": "/party/",
+  "equipment-rental": "/party/",
+  "social-notices": "/"
+};
+
+function getPublicPageUrl(section: SectionDefinition) {
+  const path = publicPagePaths[section.id];
+
+  if (!path) {
+    return "";
+  }
+
+  return new URL(path, publicSiteUrl).toString();
+}
+
 function isImageObject(value: unknown): value is { url?: string; alt?: string } {
   return typeof value === "object" && value !== null && "url" in value;
 }
@@ -960,6 +982,7 @@ function PreviewModal({
 
 function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinition; dirty: boolean; selectedId: string }) {
   const isNewListItem = section.kind === "list" && selectedId === "new";
+  const sectionPublicUrl = getPublicPageUrl(section);
 
   return (
     <section className="editor-guide" aria-label="編集の進め方">
@@ -975,6 +998,16 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
         <strong>プレビューして公開</strong>
         <span>「公開する」がONの項目を、内容確認のあと公開サイトへ反映します。</span>
       </div>
+      {sectionPublicUrl ? (
+        <div className="public-page-guide">
+          <strong>確認するページ</strong>
+          <span>公開後はこのページを開き、再読み込みして表示を確認します。</span>
+          <a href={sectionPublicUrl} target="_blank" rel="noreferrer">
+            公開ページを開く
+            <ExternalLink size={14} />
+          </a>
+        </div>
+      ) : null}
     </section>
   );
 }

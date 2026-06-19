@@ -266,7 +266,7 @@ a {
 
 .editor-guide {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -310,6 +310,17 @@ a {
   color: var(--muted);
   font-size: 0.88rem;
   font-weight: 800;
+}
+
+.public-page-guide a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 900;
+  text-decoration: underline;
 }
 
 .setup-status {
