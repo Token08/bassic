@@ -40,6 +40,7 @@ checkCmsSmokeSiteSettingsUrlValidation();
 checkCmsSmokeValidatesFacebookEventSourceIds();
 checkAdminEditorShowsFocusTips();
 checkPreviewChecklistIsSectionSpecific();
+checkAdminValidationNoticeNamesFields();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -814,6 +815,27 @@ function checkAdminEditorShowsFocusTips() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin editor shows section focus tips before editing", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminValidationNoticeNamesFields() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin validation notice names fields to fix", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function getValidationNoticeMessage",
+    "直す項目:",
+    "section.fields.find((field) => field.key === key)?.label",
+    "入力内容を直してから確認してください。",
+    "入力内容を直してください。",
+    "Object.keys(nextErrors).length"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin validation notice names fields to fix", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSaveFlowExplainsPublishBehavior() {

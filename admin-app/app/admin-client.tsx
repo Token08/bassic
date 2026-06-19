@@ -1593,6 +1593,19 @@ function SectionEditor({
     });
   }
 
+  function getValidationNoticeMessage(nextErrors: Record<string, string>, fallback: string) {
+    const labels = Object.keys(nextErrors)
+      .map((key) => section.fields.find((field) => field.key === key)?.label || key)
+      .slice(0, 5);
+
+    if (!labels.length) {
+      return fallback;
+    }
+
+    const suffix = Object.keys(nextErrors).length > labels.length ? " ほか" : "";
+    return `${fallback} 直す項目: ${labels.join("、")}${suffix}`;
+  }
+
   function validate(nextDraft: Draft) {
     const nextErrors: Record<string, string> = {};
 
@@ -1716,16 +1729,16 @@ function SectionEditor({
     }
 
     setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    return nextErrors;
   }
 
   function openPreview() {
     userInteractedRef.current = true;
-    const valid = validate(draft);
+    const nextErrors = validate(draft);
 
-    if (!valid) {
+    if (Object.keys(nextErrors).length) {
       setShowPreview(false);
-      setNotice({ tone: "error", message: "必須項目を入力してから確認してください。" });
+      setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してから確認してください。") });
       return;
     }
 
@@ -1747,8 +1760,9 @@ function SectionEditor({
           }
         : nextDraft;
 
-    if (!validate(preparedDraft)) {
-      setNotice({ tone: "error", message: "必須項目を入力してください。" });
+    const nextErrors = validate(preparedDraft);
+    if (Object.keys(nextErrors).length) {
+      setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してください。") });
       return;
     }
 
