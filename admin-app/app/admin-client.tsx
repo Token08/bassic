@@ -1416,6 +1416,7 @@ function SectionEditor({
       }
 
       event.preventDefault();
+      event.returnValue = "";
     };
 
     window.addEventListener("beforeunload", onBeforeUnload);

@@ -614,7 +614,9 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "「公開する」がONの項目",
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
-    "途中保存や後で確認したい時"
+    "途中保存や後で確認したい時",
+    "window.addEventListener(\"beforeunload\"",
+    "event.returnValue = \"\""
   ];
   const missing = required.filter((term) => !text.includes(term));
 
