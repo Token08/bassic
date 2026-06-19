@@ -65,6 +65,7 @@ checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaFieldsAreDocumented();
 checkAdminFieldDocsRequiredFlags();
+checkMicrocmsSetupChecklistFieldDetails();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
 checkSiteSettingsPlaceholdersUseCurrentCopy();
@@ -1434,6 +1435,36 @@ function checkAdminFieldDocsRequiredFlags() {
   add("admin field docs required flags match safe defaults", missing.length === 0, missing.join(", "));
 }
 
+function checkMicrocmsSetupChecklistFieldDetails() {
+  const file = "docs/microcms-setup-checklist.md";
+  if (!existsSync(file)) {
+    add("microCMS setup checklist field details are current", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "| `firstVisitLead` | 初めての方向け説明 | テキストエリア | 任意 |",
+    "| `accessNote` | アクセス補足 | テキストエリア | 任意 |",
+    "`firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。",
+    "## 5. drink-menu-sheets",
+    "| `image` | メニュー表画像 | 画像 | 必須 |",
+    "## 7. equipment-rental",
+    "| `pdfUrl` | PDFリンク | テキストフィールド | 任意 |",
+    "## 11. 接続確認"
+  ];
+  const stale = [
+    "| `firstVisitLead` | 初めての方向け説明 | テキストエリア | 必須 |",
+    "| `accessNote` | アクセス補足 | テキストエリア | 必須 |",
+    "## 7. FacebookイベントとGoogle Calendar連携の注意",
+    "## 9. 接続確認"
+  ];
+  const missing = required.filter((term) => !text.includes(term)).map((term) => `missing ${term}`);
+  const staleFound = stale.filter((term) => text.includes(term)).map((term) => `stale ${term}`);
+
+  add("microCMS setup checklist field details are current", missing.length === 0 && staleFound.length === 0, [...missing, ...staleFound].join(", "));
+}
+
 function checkTopImagesAreManagedByHeroSlides() {
   const adminSchema = "admin-app/lib/admin-schema.ts";
   const seedFile = "scripts/microcms-seed-data.mjs";
@@ -1585,13 +1616,13 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
     "`sourceType` | 取り込み元",
     "`sourceId` と `sourceType` は管理画面側で自動入力",
     "`date` と `startTime`",
-    "## 7. FacebookイベントとGoogle Calendar連携の注意",
-    "## 8. 作成時のミス防止",
+    "## 9. FacebookイベントとGoogle Calendar連携の注意",
+    "## 10. 作成時のミス防止",
     "API IDは上の表と完全一致",
     "`sourceId`、`sourceType`、`category` は店舗側が普段触らない項目",
     "画像フィールドは、URL文字列ではなくmicroCMSの画像フィールド",
     "料金は `¥1,200` や `￥4,000〜 / 1名` のような表記を入れるためテキスト",
-    "## 9. 接続確認"
+    "## 11. 接続確認"
   ];
   const missing = required.filter((term) => !text.includes(term));
 
