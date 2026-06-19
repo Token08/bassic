@@ -340,7 +340,7 @@ function checkClientHandoffDocsLinked() {
 
   const checklistText = readFileSync(checklistFile, "utf8");
   const sheetText = readFileSync(sheetFile, "utf8");
-  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "スマホでAccessページ", "スマホでTOPページのSNS欄"];
+  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
   const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認"];
