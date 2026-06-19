@@ -645,6 +645,8 @@ function checkFacebookEventImportPanel() {
     "FacebookイベントURL・詳細URL",
     "sourceId: data.sourceId",
     "Google Calendarへ載せたい場合",
+    "Google Calendar反映依頼メモ",
+    "Google Calendarにも反映してください。",
     "イベント名",
     "日付",
     "日付またはSTARTが自動取得できませんでした",

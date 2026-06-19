@@ -1009,6 +1009,17 @@ function FacebookEventImportPanel({
         { label: "FacebookイベントURL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
       ]
     : [];
+  const calendarRequestText = preview
+    ? [
+        "Google Calendarにも反映してください。",
+        `イベント名: ${preview.title || getString(draft.title).trim() || "未入力"}`,
+        `日付: ${preview.date || getString(draft.date).trim() || "未入力"}`,
+        `START: ${preview.startTime || getString(draft.startTime).trim() || "未入力"}`,
+        `END: ${preview.endTime || getString(draft.endTime).trim() || "未入力"}`,
+        `FacebookイベントURL: ${preview.sourceUrl || sourceUrl || "未入力"}`,
+        `画像URL: ${preview.imageUrl || getImageUrl(draft.image) || "未入力"}`
+      ].join("\n")
+    : "";
 
   async function importEvent() {
     setLoading(true);
@@ -1118,6 +1129,11 @@ function FacebookEventImportPanel({
                 </li>
               ))}
             </ul>
+            <div className="facebook-calendar-request" aria-label="Google Calendar反映依頼メモ">
+              <strong>Google Calendar反映依頼メモ</strong>
+              <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
+              <textarea readOnly value={calendarRequestText} rows={7} />
+            </div>
           </div>
         </div>
       ) : null}

@@ -933,6 +933,38 @@ a {
   font-size: 0.78rem;
 }
 
+.facebook-calendar-request {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  border: 1px solid rgba(36, 93, 131, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(36, 93, 131, 0.05);
+}
+
+.facebook-calendar-request strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.facebook-calendar-request span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.facebook-calendar-request textarea {
+  min-height: 128px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fffaf1;
+  color: var(--ink);
+  font: 800 0.86rem/1.65 var(--font-sans);
+}
+
 .field {
   display: grid;
   gap: 8px;
