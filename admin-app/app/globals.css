@@ -840,6 +840,34 @@ a {
   display: none;
 }
 
+.edit-focus-tips {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(159, 23, 32, 0.16);
+  border-radius: 8px;
+  padding: 13px 14px;
+  background: linear-gradient(135deg, rgba(159, 23, 32, 0.06), rgba(255, 253, 248, 0.78));
+}
+
+.edit-focus-tips strong {
+  color: var(--accent);
+  font-size: 0.92rem;
+}
+
+.edit-focus-tips ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.edit-focus-tips li {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .facebook-import-panel {
   display: grid;
   gap: 10px;

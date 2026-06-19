@@ -992,6 +992,57 @@ function getPublishChecklistItems(section: SectionDefinition) {
   return ["内容、料金、日付に間違いがない", "URLや画像は確認リンクで開けた", "公開後にスマホでも表示を確認する"];
 }
 
+function getEditorFocusTips(section: SectionDefinition) {
+  if (section.id === "site-settings") {
+    return ["営業時間、喫煙、テーブル・チャージは来店判断に直結します。", "Google MapとSNS URLは、入力後に確認リンクを開いてください。"];
+  }
+
+  if (section.id === "home") {
+    return ["初めて来る人が、店の雰囲気と入りやすさをすぐ分かる文章にします。", "長い文章はスマホで読みにくいため、1文を短めにします。"];
+  }
+
+  if (section.id === "events") {
+    return ["公開する前に、イベント名、日付、STARTを必ず確認してください。", "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入れます。"];
+  }
+
+  if (section.id === "menu") {
+    return ["フードを公開する時は、名前、料金、画像の3点をそろえます。", "売り切れや季節限定で一時的に隠す時は、公開するをOFFにします。"];
+  }
+
+  if (section.id === "drink-menu-sheets") {
+    return ["ドリンク表は、クリック前と拡大表示の両方で文字が読める画像を使います。", "差し替え後は画像を開いて、上下が切れていないか確認してください。"];
+  }
+
+  if (section.id === "party-plans" || section.id === "equipment-rental") {
+    return ["料金、人数、条件が古くないか確認します。", "PDFや問い合わせ先を入れた場合は、リンクを開いて確認してください。"];
+  }
+
+  if (section.id === "social-notices") {
+    return ["Instagram、Facebook、Xの種類とリンクURLが合っているか確認します。", "自動タイムラインではなく、見てほしい投稿やページへのお知らせカードとして使います。"];
+  }
+
+  return ["公開する内容が、誰に何を伝えるものか分かる文章にします。", "URLや画像を入れた場合は、公開前に確認リンクを開きます。"];
+}
+
+function EditorFocusTips({ section }: { section: SectionDefinition }) {
+  const tips = getEditorFocusTips(section);
+
+  if (!tips.length) {
+    return null;
+  }
+
+  return (
+    <section className="edit-focus-tips" aria-label="編集前に見るポイント">
+      <strong>先に見るポイント</strong>
+      <ul>
+        {tips.map((tip) => (
+          <li key={tip}>{tip}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function PreviewModal({
   draft,
   section,
@@ -1940,6 +1991,7 @@ function SectionEditor({
           >
             <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} />
             <RequiredProgress section={section} draft={draft} />
+            <EditorFocusTips section={section} />
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
             {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
             {section.fields.map((field) => (

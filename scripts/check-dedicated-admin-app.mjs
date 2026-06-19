@@ -38,6 +38,7 @@ checkCmsSmokeSocialNoticeUrlValidation();
 checkCmsSmokeExternalUrlValidation();
 checkCmsSmokeSiteSettingsUrlValidation();
 checkCmsSmokeValidatesFacebookEventSourceIds();
+checkAdminEditorShowsFocusTips();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
@@ -789,6 +790,30 @@ function checkPreviewChecklistIsSectionSpecific() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin preview checklist is section specific", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminEditorShowsFocusTips() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin editor shows section focus tips before editing", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function getEditorFocusTips",
+    "function EditorFocusTips",
+    "先に見るポイント",
+    "営業時間、喫煙、テーブル・チャージは来店判断に直結します。",
+    "FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを入れます。",
+    "フードを公開する時は、名前、料金、画像の3点をそろえます。",
+    "ドリンク表は、クリック前と拡大表示の両方で文字が読める画像を使います。",
+    "Instagram、Facebook、Xの種類とリンクURLが合っているか確認します。",
+    "<EditorFocusTips section={section} />"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin editor shows section focus tips before editing", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSaveFlowExplainsPublishBehavior() {
