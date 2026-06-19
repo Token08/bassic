@@ -502,6 +502,7 @@ function checkPreviewChecklistIsSectionSpecific() {
     "フード名、料金、写真に間違いがない",
     "section.id === \"drink-menu-sheets\"",
     "画像を開いて文字が読めるか確認した",
+    "選んだSNSとリンクURLの種類が合っている",
     "公開後にスマホのTOPページでSNS欄を確認する",
     "getPublishChecklistItems(section).map"
   ];

@@ -861,6 +861,7 @@ function getPublishChecklistItems(section: SectionDefinition) {
   if (section.id === "social-notices") {
     return [
       "タイトル、説明、SNS種別に間違いがない",
+      "選んだSNSとリンクURLの種類が合っている",
       "リンクを開いて正しい投稿やページを確認した",
       "公開後にスマホのTOPページでSNS欄を確認する"
     ];
