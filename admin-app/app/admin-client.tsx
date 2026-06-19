@@ -1029,6 +1029,13 @@ function FacebookEventImportPanel({
     : "";
   const calendarRequestHasMissingFields = calendarRequestText.includes("未入力");
 
+  useEffect(() => {
+    if (copyMessage) {
+      setCopyMessage("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calendarRequestText]);
+
   async function importEvent() {
     setLoading(true);
     setMessage("");
