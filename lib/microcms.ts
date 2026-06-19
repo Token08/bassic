@@ -204,9 +204,8 @@ function visibleMenu(menu?: MenuItem[]) {
 }
 
 function visiblePartyPlans(plans?: PartyPlan[]) {
-  return sortByDisplayOrder(withFallbackList(plans, fallbackContents.partyPlans as PartyPlan[])).filter(
-    (plan) => plan.isPublished !== false
-  );
+  const visiblePlans = sortByDisplayOrder(plans || []).filter((plan) => plan.isPublished !== false && plan.title && plan.price && plan.body);
+  return visiblePlans.length ? visiblePlans : sortByDisplayOrder(fallbackContents.partyPlans as PartyPlan[]);
 }
 
 function visibleDrinkMenuSheets(sheets?: DrinkMenuSheet[]) {
@@ -217,13 +216,20 @@ function visibleDrinkMenuSheets(sheets?: DrinkMenuSheet[]) {
     isPublished: true
   }));
 
-  return sortByDisplayOrder(withFallbackList(sheets, fallbackSheets)).filter((sheet) => sheet.isPublished !== false);
+  const visibleSheets = sortByDisplayOrder(sheets || []).filter((sheet) => sheet.isPublished !== false && (sheet.image?.url || sheet.src));
+  return visibleSheets.length ? visibleSheets : fallbackSheets;
 }
 
 function visibleSocialNotices(notices?: SocialNotice[]) {
-  return (notices?.length ? notices : (fallbackContents.socialNotices as SocialNotice[]))
+  const fallbackNotices = (fallbackContents.socialNotices as SocialNotice[])
     .filter((notice) => notice.isPublished && notice.title && isSocialNoticeUrlForPlatform(notice))
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  const visibleNotices = (notices || [])
+    .filter((notice) => notice.isPublished && notice.title && isSocialNoticeUrlForPlatform(notice))
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  return visibleNotices.length ? visibleNotices : fallbackNotices;
 }
 
 function isSocialNoticeUrlForPlatform(notice: SocialNotice) {

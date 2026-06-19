@@ -68,6 +68,7 @@ checkCmsSmokeCoversAdminEndpoints();
 checkCmsSmokeTimeValidation();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
+checkPublicCmsFallbackGuards();
 checkSampleContentUsesCurrentCopy();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
@@ -1308,6 +1309,27 @@ function checkSeedDataKeepsEventsCalendarFocused() {
   const seedsEventList = text.includes('"eventList"') || text.includes("'eventList'");
 
   add("seed data keeps events page calendar-focused", !seedsEventList, "eventList should stay out of initial seed data");
+}
+
+function checkPublicCmsFallbackGuards() {
+  const file = "lib/microcms.ts";
+  if (!existsSync(file)) {
+    add("public CMS fallback guards keep partial content visible", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "const visiblePlans",
+    "visiblePlans.length ? visiblePlans",
+    "const visibleSheets",
+    "visibleSheets.length ? visibleSheets",
+    "const fallbackNotices",
+    "visibleNotices.length ? visibleNotices : fallbackNotices"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("public CMS fallback guards keep partial content visible", missing.length === 0, missing.join(", "));
 }
 
 function checkSampleContentUsesCurrentCopy() {
