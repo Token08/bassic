@@ -84,6 +84,7 @@ checkPackageScript("typecheck:admin-app");
 checkPackageScript("check:admin-app");
 checkPackageScript("sync:calendar:dry");
 checkPackageScript("sync:calendar:check");
+checkPackageScript("smoke:content");
 checkLocalEnv("ADMIN_PASSWORD", "Vercel required; local optional");
 checkLocalEnv("ADMIN_SESSION_SECRET", "Vercel required; local optional");
 checkLocalEnv("MICROCMS_SERVICE_DOMAIN", "Vercel required; local optional");
@@ -1102,7 +1103,8 @@ function checkDocsIndexBoundaries() {
     "日常更新用と保守用の切り分け",
     "公開後24時間以内の確認",
     "3つだけを店舗側へ渡す",
-    "sync:calendar:check"
+    "sync:calendar:check",
+    "smoke:content"
   ];
   const missing = required.filter((heading) => !text.includes(heading));
   const stale = ["docs/cms-sample-content.json"].filter((term) => text.includes(term));

@@ -23,6 +23,7 @@
     "check:admin": "node scripts/check-admin-readiness.mjs",
     "check:admin-app": "node scripts/check-dedicated-admin-app.mjs",
     "smoke:links": "node scripts/smoke-links.mjs",
+    "smoke:content": "node scripts/smoke-content.mjs",
     "smoke:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:admin-app": "npm --prefix admin-app run typecheck"

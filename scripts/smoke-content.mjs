@@ -1,0 +1,95 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const outDir = join(process.cwd(), "out");
+const failures = [];
+
+const pages = [
+  {
+    label: "TOP",
+    file: "index.html",
+    terms: [
+      "public bar Bassic.",
+      "通常営業 20:00 OPEN",
+      "店内喫煙OK",
+      "テーブル・チャージ",
+      "Google Mapで開く",
+      "公式SNSから"
+    ]
+  },
+  {
+    label: "Events",
+    file: "events/index.html",
+    terms: ["Google Calendarで開く", "イベント日は営業時間が変動します", "通常営業は20:00 OPENです"]
+  },
+  {
+    label: "Menu",
+    file: "menu/index.html",
+    terms: ["DRINK&FOOD MENU", "FOOD MENU", "Drink Menu 1", "ファズ・カレー", "本日のパスタ"]
+  },
+  {
+    label: "Party",
+    file: "party/index.html",
+    terms: [
+      "Bassic. Party Plan",
+      ["￥4,000", "￥４,000", "¥4,000"],
+      "機材レンタルについて",
+      "詳細はコチラ",
+      "/assets/pdf/equipment-rental-list.pdf"
+    ]
+  },
+  {
+    label: "Access",
+    file: "access/index.html",
+    terms: ["天神駅から徒歩約4分", "WITH天神5F", "092-713-1040", "mail@bassic.jp", "Google Mapで開く"]
+  }
+];
+
+for (const page of pages) {
+  requireTerms(page);
+}
+
+if (failures.length) {
+  console.error("Content smoke check failed:");
+  for (const failure of failures) {
+    console.error(`- ${failure}`);
+  }
+  process.exit(1);
+}
+
+console.log("Content smoke check passed.");
+
+function requireTerms({ label, file, terms }) {
+  const html = readPage(file);
+  if (!html) {
+    return;
+  }
+
+  for (const term of terms) {
+    const options = Array.isArray(term) ? term : [term];
+    if (!options.some((option) => html.includes(option))) {
+      failures.push(`${label} missing: ${options.join(" / ")}`);
+    }
+  }
+}
+
+function readPage(file) {
+  const path = join(outDir, file);
+  if (!existsSync(path)) {
+    failures.push(`missing exported page: out/${file}`);
+    return "";
+  }
+
+  return decodeBasicEntities(readFileSync(path, "utf8"));
+}
+
+function decodeBasicEntities(value) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, "/")
+    .replace(/&#(\d+);/g, (_, number) => String.fromCodePoint(Number(number)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, number) => String.fromCodePoint(parseInt(number, 16)));
+}

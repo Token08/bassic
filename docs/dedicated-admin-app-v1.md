@@ -86,6 +86,7 @@ npm run build:admin-app
 npm run typecheck
 npm run build
 npm run smoke:links
+npm run smoke:content
 npm run smoke:seo
 ```
 

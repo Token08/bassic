@@ -119,6 +119,7 @@ MICROCMS_API_KEY
 npm run typecheck
 npm run build
 npm run smoke:links
+npm run smoke:content
 npm run smoke:seo
 npm run check:admin-app
 ```

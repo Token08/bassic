@@ -63,6 +63,7 @@ npm run check:admin-app
 npm run build
 npm run build:admin-app
 npm run smoke:links
+npm run smoke:content
 npm run smoke:seo
 ```
 
@@ -76,6 +77,7 @@ Remove-Item Env:\NEXT_PUBLIC_BASE_PATH -ErrorAction SilentlyContinue
 npm run build
 npm run smoke:seo
 npm run smoke:links
+npm run smoke:content
 ```
 
 ## 5. 画面で見る場所
