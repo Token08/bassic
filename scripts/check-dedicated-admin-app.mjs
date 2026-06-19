@@ -282,9 +282,9 @@ function checkAdminDocsUseCurrentPublishButtonCopy() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "イベント名", "日付", "Google Calendar本体は更新されません"] },
-    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへの反映", "日付とSTART", "イベント名", "連絡文テンプレート"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "イベント名", "日付:", "START:", "Google Calendarにも載せたい時の連絡文", "反映されない時の連絡文"] }
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "Google Calendar反映依頼メモ", "コピーする", "Google Calendar本体は更新されません"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendar反映依頼メモ", "日付とSTART", "コピーする"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "Google Calendar反映依頼メモ", "コピーする", "イベント名:", "日付:", "START:", "END:", "FacebookイベントURL:", "画像URL:", "反映されない時の連絡文"] }
   ];
   const missing = [];
 
@@ -676,14 +676,18 @@ function checkFacebookEventHandoffDocs() {
     "読み取り結果のチェックリスト",
     "タイトル、画像、日付、STARTが入ったか確認",
     "個別イベントページのURL",
-    "日付とSTARTの両方が入っていないと保存時に確認メッセージ"
+    "日付とSTARTの両方が入っていないと保存時に確認メッセージ",
+    "Google Calendar反映依頼メモ",
+    "コピーする"
   ];
-  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "sync:calendar:check"];
+  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "Google Calendar反映依頼メモ", "コピーする", "sync:calendar:check"];
   const requiredSyncDocTerms = [
     "## 読み取りに失敗した時",
     "イベント名、日付、STARTを手入力する",
     "画像が取れない場合",
-    "管理画面で確認・修正した内容を正として扱います"
+    "管理画面で確認・修正した内容を正として扱います",
+    "Google Calendar反映依頼メモ",
+    "コピーする"
   ];
   const staleTerms = ["ライヴ取得"];
   const missing = [

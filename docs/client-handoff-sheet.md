@@ -39,17 +39,20 @@
 - Facebookイベントから追加した時は、STARTが空欄のままになっていないか見る
 - FacebookイベントURLは、イベント一覧ではなく個別イベントページのURLを使う
 - FacebookイベントをGoogle Calendarにも載せたい時は、公開後に保守担当者へ連絡する
-- 連絡する時は「イベント名」「日付」「START」と「Google Calendarにも反映してください」を伝える
+- 連絡する時は、管理画面の「Google Calendar反映依頼メモ」で「コピーする」を押して、その内容を送る
 
 ## Google Calendarにも載せたい時の連絡文
 
-次の形で送ると、保守担当者が迷わず確認できます。
+管理画面の「Google Calendar反映依頼メモ」で「コピーする」を押すと、次の形のメモをそのまま送れます。
 
 ```text
+Google Calendarにも反映してください。
 イベント名: 
 日付:
 START:
-Google Calendarにも反映してください。
+END:
+FacebookイベントURL:
+画像URL:
 ```
 
 ## 基本の流れ
