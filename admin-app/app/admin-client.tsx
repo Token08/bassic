@@ -991,7 +991,9 @@ function FacebookEventImportPanel({
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
-  const previewHasInvalidTime = Boolean(preview && preview.startTime && !isValidEventTime(preview.startTime));
+  const previewHasInvalidTime = Boolean(
+    preview && ((preview.startTime && !isValidEventTime(preview.startTime)) || (preview.endTime && !isValidEventTime(preview.endTime)))
+  );
   const previewNeedsDateInput = Boolean(preview && (!(preview.date && preview.startTime) || previewHasInvalidTime));
   const previewChecks = preview
     ? [
@@ -1001,7 +1003,7 @@ function FacebookEventImportPanel({
           ok: Boolean(preview.date && preview.startTime && !previewHasInvalidTime),
           text: preview.date
             ? `${preview.date}${preview.startTime ? ` ${preview.startTime}` : ""}${preview.endTime ? `-${preview.endTime}` : ""}`
-            : "日付とSTARTは入力欄で確認してください"
+            : "日付とSTARTは入力欄で確認してください。ENDがある場合も19:00形式で確認してください"
         },
         { label: "画像", ok: Boolean(preview.imageUrl), text: preview.imageUrl ? "取得済み" : "画像が必要な場合は手入力してください" },
         { label: "FacebookイベントURL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
@@ -1102,7 +1104,7 @@ function FacebookEventImportPanel({
             {previewNeedsDateInput ? (
               <div className="facebook-import-date-warning" role="status">
                 <AlertCircle size={16} />
-                <span>日付またはSTARTが自動取得できませんでした。時間は「19:00」の形で手入力してください。</span>
+                <span>日付またはSTARTが自動取得できませんでした。START/ENDは「19:00」の形で手入力してください。</span>
               </div>
             ) : null}
             <ul className="facebook-import-checklist" aria-label="読み取り結果の確認">
