@@ -27,6 +27,7 @@ checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
 checkClientDocsMentionSectionPublicPageLinks();
+checkClientManualUsesPublishButtonForPublicUpdates();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
@@ -379,6 +380,33 @@ function checkClientDocsMentionSectionPublicPageLinks() {
   }
 
   add("client docs mention section public page links", missing.length === 0, missing.join(", "));
+}
+
+function checkClientManualUsesPublishButtonForPublicUpdates() {
+  const file = "docs/delivery-admin-manual.md";
+  if (!existsSync(file)) {
+    add("client manual uses publish button for public updates", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "6. プレビューして公開する",
+    "5. プレビューして公開する",
+    "7. プレビューして公開する"
+  ];
+  const stale = [
+    "6. 保存する",
+    "5. 保存する",
+    "7. 保存する"
+  ].filter((term) => text.includes(term));
+  const missing = required.filter((term) => !text.includes(term));
+  const problems = [
+    ...missing.map((term) => `missing ${term}`),
+    ...stale.map((term) => `stale ${term}`)
+  ];
+
+  add("client manual uses publish button for public updates", problems.length === 0, problems.join(", "));
 }
 
 function checkClientSupportRequestDetails() {
