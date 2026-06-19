@@ -45,7 +45,49 @@ const pages = [
   }
 ];
 
+const localizedPages = [
+  {
+    label: "English TOP",
+    file: "en/index.html",
+    terms: ["public bar Bassic.", "Regular hours:", "Smoking allowed:", "Cover charge:"]
+  },
+  {
+    label: "English Events",
+    file: "en/events/index.html",
+    terms: ["Event hours may vary", "Open Google Map", "Email reservation"]
+  },
+  {
+    label: "English Menu",
+    file: "en/menu/index.html",
+    terms: ["Food and drinks for a music night.", "Cover charge: 500 yen per person", "View menu"]
+  },
+  {
+    label: "English Party",
+    file: "en/party/index.html",
+    terms: ["Private parties and after-parties.", "Cover charge: 500 yen per person", "Open Google Map"]
+  },
+  {
+    label: "English Access",
+    file: "en/access/index.html",
+    terms: ["4 minutes from Tenjin Station.", "092-713-1040", "mail@bassic.jp"]
+  }
+];
+
+for (const locale of ["ko", "zh-hant", "zh-hans"]) {
+  for (const file of ["index.html", "events/index.html", "menu/index.html", "party/index.html", "access/index.html"]) {
+    localizedPages.push({
+      label: `${locale} ${file}`,
+      file: `${locale}/${file}`,
+      terms: ["Google Map"]
+    });
+  }
+}
+
 for (const page of pages) {
+  requireTerms(page);
+}
+
+for (const page of localizedPages) {
   requireTerms(page);
 }
 

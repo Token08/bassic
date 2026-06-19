@@ -47,6 +47,7 @@ npm run sync:calendar:check
 npm run seed:cms
 npm run smoke:cms
 npm run build
+npm run smoke:content
 ```
 
 When real microCMS credentials are ready:
