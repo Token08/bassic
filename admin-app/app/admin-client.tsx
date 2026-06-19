@@ -1705,6 +1705,10 @@ function SectionEditor({
         nextErrors.title = "公開する前に、イベント名を4文字以上で入力してください。";
       }
 
+      if (nextDraft.isPublished && !getString(nextDraft.startTime).trim()) {
+        nextErrors.startTime = "イベントを公開する前にSTARTを入力してください。";
+      }
+
       for (const key of ["openTime", "startTime", "endTime"]) {
         const value = getString(nextDraft[key]).trim();
         if (value && !isValidEventTime(value)) {
@@ -1716,10 +1720,6 @@ function SectionEditor({
     if (section.id === "events" && nextDraft.isPublished && (sourceType === "facebook" || isFacebookEventUrl(sourceUrl))) {
       if (!getString(nextDraft.date).trim()) {
         nextErrors.date = "Facebookイベントを公開する前に日付を入力してください。";
-      }
-
-      if (!getString(nextDraft.startTime).trim()) {
-        nextErrors.startTime = "Facebookイベントを公開する前にSTARTを入力してください。";
       }
     }
 

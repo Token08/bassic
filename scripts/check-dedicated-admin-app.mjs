@@ -1088,7 +1088,7 @@ function checkFacebookEventImportPanel() {
     "日付またはSTARTが自動取得できませんでした",
     "START",
     "Facebookイベントを公開する前に日付を入力してください。",
-    "Facebookイベントを公開する前にSTARTを入力してください。"
+    "イベントを公開する前にSTARTを入力してください。"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
@@ -1187,6 +1187,8 @@ function checkAdminEventTimeValidation() {
     "hours <= 23",
     "minutes <= 59",
     "OPENやSTARTの文字は不要です",
+    "公開する場合は必ず入れます",
+    "公開するイベントは、日付とSTART",
     "START/ENDは「19:00」の形で手入力してください",
     "placeholder: \"18:30\"",
     "placeholder: \"19:00\"",
