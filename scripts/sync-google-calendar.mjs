@@ -425,7 +425,17 @@ function extractTime(value) {
 
   const hour = match[1] || match[3];
   const minute = match[2] || match[4] || "00";
+  if (!isValidClockTime(hour, minute)) {
+    return "";
+  }
+
   return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+}
+
+function isValidClockTime(hour, minute) {
+  const hours = Number(hour);
+  const minutes = Number(minute);
+  return Number.isInteger(hours) && Number.isInteger(minutes) && hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
 }
 
 function normalizeSiteUrl(value) {
