@@ -210,6 +210,11 @@ function isValidEventTime(value: string) {
   return /^\d{1,2}:\d{2}$/.test(value.trim());
 }
 
+function isValidWholeNumber(value: string) {
+  const trimmed = value.trim();
+  return /^\d+$/.test(trimmed) && Number(trimmed) >= 0;
+}
+
 function getFacebookEventId(value: string) {
   try {
     const url = new URL(value);
@@ -1450,6 +1455,10 @@ function SectionEditor({
 
       if (!emptyValue && field.type === "url" && !isValidManagedUrl(getString(value).trim())) {
         nextErrors[field.key] = `${field.label}は https:// または / から始まるURLを入力してください。`;
+      }
+
+      if (!emptyValue && field.type === "number" && !isValidWholeNumber(getString(value))) {
+        nextErrors[field.key] = `${field.label}は0以上の半角整数で入力してください。小数やマイナスは使えません。`;
       }
 
       if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value).trim())) {

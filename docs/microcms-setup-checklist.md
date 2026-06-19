@@ -36,6 +36,7 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 
 `instagramWidgetSrc` は LightWidget などで発行された iframe の `src` URLだけを貼ります。未入力でもサイトは崩れません。
 TOP画像は `home` ではなく、`hero-slides` の `page = home` で管理します。
+`displayOrder` や `優先順位` などの数字欄は、0以上の半角整数だけを入力します。小数やマイナスは使いません。
 
 ## 3. events
 

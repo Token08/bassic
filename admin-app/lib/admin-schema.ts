@@ -80,7 +80,7 @@ const sectionOptions: FieldOption[] = [
 ];
 
 const imageFieldHint = "画像を入れた後は「画像を開いて確認」で正しい写真が開くか確認してください。横長の写真がおすすめです。";
-const displayOrderHint = "数字が小さいものから先に表示されます。迷ったら1、2、3の順に入れてください。";
+const displayOrderHint = "数字が小さいものから先に表示されます。0以上の半角整数で、迷ったら1、2、3の順に入れてください。";
 const publishFieldHint = "ONにするとサイトに表示されます。まだ見せたくない時はOFFのまま保存してください。";
 
 export const sections: SectionDefinition[] = [
@@ -338,7 +338,7 @@ export const sections: SectionDefinition[] = [
       { key: "foodLead", label: "フードメニュー説明", type: "textarea", rows: 2, placeholder: "フードメニューの上に出す一言", hint: "メニューページのフード一覧上部に出ます。空欄でも問題ありません。" },
       { key: "partyLead", label: "貸切説明", type: "textarea", rows: 3, placeholder: "貸切ページのプラン上に出す説明", hint: "貸切ページのプラン一覧上部に出ます。" },
       { key: "rentalLead", label: "機材レンタル説明", type: "textarea", rows: 3, placeholder: "機材レンタルカードで使う説明", hint: "貸切ページの機材レンタルカード本文に使います。" },
-      { key: "displayOrder", label: "優先順位", type: "number", placeholder: "1", hint: "同じページの文言が複数ある時、数字が大きいものが優先されます。通常は1のままで大丈夫です。" },
+      { key: "displayOrder", label: "優先順位", type: "number", placeholder: "1", hint: "同じページの文言が複数ある時、数字が大きいものが優先されます。0以上の半角整数で、通常は1のままで大丈夫です。" },
       { key: "isPublished", label: "使う", type: "checkbox", hint: "ONにすると、この文言がサイトで使われます。下書きにしたい時はOFFにしてください。" }
     ],
     defaults: { page: "home", displayOrder: 1, isPublished: true }
@@ -356,7 +356,7 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "page", label: "ページ", type: "select", required: true, options: pageOptions, hint: "表示を変えるページを選びます。" },
       { key: "sectionKey", label: "セクション", type: "select", required: true, options: sectionOptions, hint: "ページ内のどの部品を出すか選びます。分からない場合は変更しないでください。" },
-      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: "小さい数字ほど上に表示されます。数字が重なると意図しない順番になる場合があります。" },
+      { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: "小さい数字ほど上に表示されます。0以上の半角整数で入力します。数字が重なると意図しない順番になる場合があります。" },
       { key: "isPublished", label: "表示する", type: "checkbox", hint: "OFFにすると、そのセクションが公開サイトから消えます。" }
     ],
     defaults: { page: "home", sectionKey: "hero", displayOrder: 1, isPublished: true }

@@ -62,6 +62,7 @@ checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
+checkNumberFieldsUseWholeNumberValidation();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
 checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
@@ -1505,4 +1506,31 @@ function checkMenuPublishRequiresPriceAndImage() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("menu publish requires price and image", missing.length === 0, missing.join(", "));
+}
+
+function checkNumberFieldsUseWholeNumberValidation() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(adminFile) || !existsSync(schemaFile) || !existsSync(setupFile) || !existsSync(fieldDocsFile)) {
+    add("number fields use whole-number validation", false, `${adminFile}, ${schemaFile}, ${setupFile}, or ${fieldDocsFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const setupText = readFileSync(setupFile, "utf8");
+  const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
+  const required = [
+    [adminFile, adminText, "function isValidWholeNumber"],
+    [adminFile, adminText, "field.type === \"number\" && !isValidWholeNumber"],
+    [adminFile, adminText, "0以上の半角整数"],
+    [schemaFile, schemaText, "0以上の半角整数"],
+    [setupFile, setupText, "0以上の半角整数だけを入力します"],
+    [fieldDocsFile, fieldDocsText, "0以上の半角整数だけを入力します"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("number fields use whole-number validation", missing.length === 0, missing.join(", "));
 }

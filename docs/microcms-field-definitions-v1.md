@@ -49,6 +49,7 @@
 `instagramWidgetSrc` はLightWidgetなど外部サービスで発行したiframe URLだけを入力します。Instagram IDだけでは直近投稿一覧を安定表示できません。
 
 TOPを含む各ページのメイン画像は、下記の `hero-slides` で管理します。画像変更の入口を分けないため、`home` には画像フィールドを作りません。
+`displayOrder` や `優先順位` などの数字欄は、0以上の半角整数だけを入力します。小数やマイナスは使いません。
 
 ## `hero-slides`
 
