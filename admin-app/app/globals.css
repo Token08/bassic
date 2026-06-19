@@ -985,6 +985,29 @@ a {
   font-weight: 900;
 }
 
+.social-notice-writing-example {
+  display: grid;
+  gap: 4px;
+  width: min(100%, 560px);
+  border: 1px solid rgba(134, 12, 22, 0.14);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.social-notice-writing-example b {
+  color: var(--accent);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+
+.social-notice-writing-example span {
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
 .facebook-import-date-warning {
   display: flex;
   align-items: flex-start;

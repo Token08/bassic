@@ -659,28 +659,37 @@ function checkSiteSettingsContactValidation() {
 
 function checkSocialNoticeUrlValidation() {
   const file = "admin-app/app/admin-client.tsx";
+  const manualFile = "docs/delivery-admin-manual.md";
   if (!existsSync(file)) {
     add("admin validates social notice URLs by platform", false, `${file} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
   const requiredTerms = [
-    "getSocialUrlError",
-    "isInstagramUrl",
-    "isXUrl",
-    "SocialNoticeUrlGuide",
-    "SNSお知らせURLの入力例",
-    "プロフィールURLか、見せたい投稿を開いた時のURL",
-    "Facebookページか、見せたい投稿・イベントを開いた時のURL",
-    "選んだSNSとURLの種類は合っています。",
-    "リンクURLを入れると、SNSの種類が合っているかここに表示します。",
-    "section.id === \"social-notices\"",
-    "instagram.com",
-    "facebook.com",
-    "x.com"
+    [file, text, "getSocialUrlError"],
+    [file, text, "isInstagramUrl"],
+    [file, text, "isXUrl"],
+    [file, text, "SocialNoticeUrlGuide"],
+    [file, text, "SNSお知らせURLの入力例"],
+    [file, text, "プロフィールURLか、見せたい投稿を開いた時のURL"],
+    [file, text, "Facebookページか、見せたい投稿・イベントを開いた時のURL"],
+    [file, text, "TOPページに出る文言例"],
+    [file, text, "Instagramで店内写真を更新中"],
+    [file, text, "Facebookでイベント投稿を確認"],
+    [file, text, "Xでイベント告知・営業情報を確認"],
+    [file, text, "公開前に「SNSを開いて確認」でリンク先を見てください。"],
+    [file, text, "タイトルと説明はTOPページのカードにそのまま出ます。"],
+    [file, text, "social-notice-writing-example"],
+    [file, text, "section.id === \"social-notices\""],
+    [file, text, "instagram.com"],
+    [file, text, "facebook.com"],
+    [file, text, "x.com"],
+    [manualFile, manualText, "タイトルと説明は、TOPページのSNSカードにそのまま表示されます。"],
+    [manualFile, manualText, "長い投稿本文を丸ごと貼らず"]
   ];
-  const missing = requiredTerms.filter((term) => !text.includes(term));
+  const missing = requiredTerms.filter(([, sourceText, term]) => !sourceText.includes(term)).map(([sourceFile, , term]) => `${sourceFile}: ${term}`);
 
   add("admin validates social notice URLs by platform", missing.length === 0, missing.join(", "));
 }

@@ -1232,21 +1232,27 @@ function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
   const platform = getString(draft.platform) || "instagram";
   const currentUrl = getString(draft.url).trim();
   const currentUrlError = getSocialUrlError(platform, currentUrl);
-  const guides: Record<string, { label: string; example: string; note: string }> = {
+  const guides: Record<string, { label: string; example: string; note: string; titleExample: string; descriptionExample: string }> = {
     instagram: {
       label: "Instagram",
       example: "https://www.instagram.com/bassic_official/",
-      note: "プロフィールURLか、見せたい投稿を開いた時のURLを入れます。"
+      note: "プロフィールURLか、見せたい投稿を開いた時のURLを入れます。",
+      titleExample: "Instagramで店内写真を更新中",
+      descriptionExample: "イベント告知、料理、店内の雰囲気は公式Instagramで確認できます。"
     },
     facebook: {
       label: "Facebook",
       example: "https://www.facebook.com/bar.Bassic/",
-      note: "Facebookページか、見せたい投稿・イベントを開いた時のURLを入れます。"
+      note: "Facebookページか、見せたい投稿・イベントを開いた時のURLを入れます。",
+      titleExample: "Facebookでイベント投稿を確認",
+      descriptionExample: "ライヴ、DJ、イベント告知などをFacebookでも更新しています。"
     },
     x: {
       label: "X",
       example: "https://x.com/bar_Bassic",
-      note: "Xアカウントか、見せたい投稿を開いた時のURLを入れます。"
+      note: "Xアカウントか、見せたい投稿を開いた時のURLを入れます。",
+      titleExample: "Xでイベント告知・営業情報を確認",
+      descriptionExample: "当日の営業情報やイベント告知はXでも確認できます。"
     }
   };
   const guide = guides[platform] || guides.instagram;
@@ -1258,12 +1264,17 @@ function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
         <strong>{guide.label}のURLを入力してください</strong>
         <span>{guide.note}</span>
         <code>{guide.example}</code>
+        <div className="social-notice-writing-example" aria-label="TOPページに表示される文言例">
+          <b>TOPページに出る文言例</b>
+          <span>タイトル: {guide.titleExample}</span>
+          <span>説明: {guide.descriptionExample}</span>
+        </div>
         {currentUrl ? (
           <small className={currentUrlError ? "form-error" : "form-success"}>
-            {currentUrlError || "選んだSNSとURLの種類は合っています。"}
+            {currentUrlError || "選んだSNSとURLの種類は合っています。公開前に「SNSを開いて確認」でリンク先を見てください。"}
           </small>
         ) : (
-          <small>リンクURLを入れると、SNSの種類が合っているかここに表示します。</small>
+          <small>リンクURLを入れると、SNSの種類が合っているかここに表示します。タイトルと説明はTOPページのカードにそのまま出ます。</small>
         )}
       </div>
     </section>
