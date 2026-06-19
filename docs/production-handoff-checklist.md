@@ -87,7 +87,16 @@ npm run smoke:links
 - Access: 背景画像、住所、営業時間、喫煙、Google Map
 - スマホ: ハンバーガーメニュー、Language、下部固定CTA、H1のはみ出し
 
-## 6. FacebookイベントからGoogle Calendarへ反映する時
+## 6. 公開後24時間以内に見ること
+
+- スマホとPCで `https://www.bassic.jp/index.html` を開き、TOP、Events、Menu、Party、Accessへ移動できる
+- スマホでハンバーガーメニュー、Language、下部固定CTA（電話、地図、Instagram、予約）が押せる
+- Google Mapで `public bar Bassic.` を開き、公式サイトURL、住所、電話、営業時間がサイト表記と一致している
+- 電話、Google Map、予約メール、Instagram、Facebook、X、オンラインストア、機材PDFリンクが開く
+- Search Consoleで `https://www.bassic.jp/sitemap.xml` を送信し、インデックス登録状況を確認する
+- 管理画面の「確認するページ」から公開ページを開き、再読み込み後に反映を確認できる
+
+## 7. FacebookイベントからGoogle Calendarへ反映する時
 
 1. 管理画面で「イベント」を開く
 2. FacebookイベントURL（個別ページURL）を貼る
@@ -103,7 +112,7 @@ npm run smoke:links
 画像はGoogle Calendarの説明欄にURLとして入ります。月表示で大きく画像カードとして表示されることは保証しません。
 警告が残っている場合、`sync:calendar:check` と本番同期は止まります。警告が出た時は管理画面のイベント内容を直してから、もう一度 `sync:calendar:check` を実行してください。
 
-## 7. 納品先に渡すもの
+## 8. 納品先に渡すもの
 
 - サイトURL
 - 管理画面URL

@@ -966,7 +966,14 @@ function checkProductionUrlEnvDocs() {
     "検索エンジン向けの正規URL",
     "canonical、sitemap、OGP、JSON-LD、hreflang",
     "NEXT_PUBLIC_BASE_PATH",
-    "Remove-Item Env:\\NEXT_PUBLIC_BASE_PATH"
+    "Remove-Item Env:\\NEXT_PUBLIC_BASE_PATH",
+    "公開後24時間以内に見ること",
+    "https://www.bassic.jp/index.html",
+    "下部固定CTA（電話、地図、Instagram、予約）",
+    "Google Mapで `public bar Bassic.`",
+    "機材PDFリンク",
+    "Search Consoleで `https://www.bassic.jp/sitemap.xml`",
+    "確認するページ"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   add("production checklist explains public URL envs", missing.length === 0, missing.join(", "));
