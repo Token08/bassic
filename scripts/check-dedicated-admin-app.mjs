@@ -649,6 +649,7 @@ function checkFacebookEventImportPanel() {
     "Google Calendarにも反映してください。",
     "コピーする",
     "コピーしました。担当者へのメッセージに貼り付けてください。",
+    "未入力があります。コピーする前に、日付・START・イベント名を確認してください。",
     "event.currentTarget.select()",
     "イベント名",
     "日付",

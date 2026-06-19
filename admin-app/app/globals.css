@@ -985,6 +985,10 @@ a {
   font-weight: 900;
 }
 
+.facebook-calendar-request .request-warning {
+  color: var(--accent);
+}
+
 .facebook-calendar-request textarea {
   min-height: 128px;
   resize: vertical;

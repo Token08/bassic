@@ -1027,6 +1027,7 @@ function FacebookEventImportPanel({
         `画像URL: ${currentImageUrl || preview.imageUrl || "未入力"}`
       ].join("\n")
     : "";
+  const calendarRequestHasMissingFields = calendarRequestText.includes("未入力");
 
   async function importEvent() {
     setLoading(true);
@@ -1159,6 +1160,9 @@ function FacebookEventImportPanel({
                 </button>
               </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
+              {calendarRequestHasMissingFields ? (
+                <small className="request-warning">未入力があります。コピーする前に、日付・START・イベント名を確認してください。</small>
+              ) : null}
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
                 readOnly
