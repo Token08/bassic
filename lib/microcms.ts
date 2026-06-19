@@ -3,7 +3,6 @@ import { editableMedia } from "./editable-content";
 import { fallbackContents } from "./fallback-data";
 import { drinkMenuSheets, defaultMenuItems } from "./menu-data";
 import { equipmentRentalInfo, pageHeroes, socialUpdatesCopy } from "./page-content";
-import { site } from "./site";
 import type {
   CmsContents,
   CustomSection,
@@ -39,20 +38,7 @@ type MicroCmsList<T> = {
 const heroPages: HeroSlide["page"][] = ["home", "events", "party", "menu", "access"];
 const managedPages: ManagedPage[] = ["home", "events", "menu", "party", "access"];
 
-const fallbackSiteSettings: SiteSettings = {
-  address: site.address,
-  phone: site.phone,
-  hoursLabel: site.hoursLabel,
-  eventHoursNote: site.eventHoursNote,
-  smokingLabel: site.smokingLabel,
-  chargeLabel: site.chargeLabel,
-  googleMapsUrl: site.googleMapsUrl,
-  directionsUrl: site.directionsUrl,
-  instagramUrl: site.instagramUrl,
-  facebookUrl: site.facebookUrl,
-  xUrl: site.xUrl,
-  onlineStoreUrl: site.onlineStoreUrl
-};
+const fallbackSiteSettings = fallbackContents.siteSettings as SiteSettings;
 
 const fallbackEquipmentRental: EquipmentRental = {
   title: equipmentRentalInfo.title,

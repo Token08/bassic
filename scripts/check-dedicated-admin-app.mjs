@@ -1787,6 +1787,7 @@ function checkPublicCmsFallbackGuards() {
 
   const text = readFileSync(file, "utf8");
   const requiredTerms = [
+    "const fallbackSiteSettings = fallbackContents.siteSettings as SiteSettings",
     "const visiblePlans",
     "visiblePlans.length ? visiblePlans",
     "const visibleSheets",
@@ -1795,8 +1796,9 @@ function checkPublicCmsFallbackGuards() {
     "visibleNotices.length ? visibleNotices : fallbackNotices"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
+  const stale = ['import { site } from "./site"'].filter((term) => text.includes(term));
 
-  add("public CMS fallback guards keep partial content visible", missing.length === 0, missing.join(", "));
+  add("public CMS fallback guards keep partial content visible", missing.length === 0 && stale.length === 0, [...missing, ...stale.map((term) => `stale ${term}`)].join(", "));
 }
 
 function checkAssetPathKeepsExternalUrls() {
