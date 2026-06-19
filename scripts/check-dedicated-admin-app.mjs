@@ -63,6 +63,7 @@ checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
+checkAdminSnsStatusCardLinksToEditors();
 checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
@@ -1436,6 +1437,33 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSnsStatusCardLinksToEditors() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin SNS status card links to editors", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "function SnsStatusCard({ onSelect }"],
+    [clientFile, clientText, "SNSリンクを直す"],
+    [clientFile, clientText, "SNSカードを追加"],
+    [clientFile, clientText, "Instagram表示URLを確認"],
+    [clientFile, clientText, "onSelect(\"site-settings\")"],
+    [clientFile, clientText, "onSelect(\"social-notices\")"],
+    [clientFile, clientText, "onSelect(\"home\")"],
+    [clientFile, clientText, "<SnsStatusCard onSelect={onSelect} />"],
+    [cssFile, cssText, ".sns-status-actions"],
+    [cssFile, cssText, ".sns-status-actions button"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin SNS status card links to editors", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminEditorShowsSectionPublicPageLinks() {

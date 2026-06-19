@@ -517,6 +517,30 @@ a {
   background: rgba(195, 154, 69, 0.12);
 }
 
+.sns-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sns-status-actions button {
+  border: 1px solid rgba(134, 12, 22, 0.22);
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.sns-status-actions button:hover,
+.sns-status-actions button:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(134, 12, 22, 0.12);
+  outline: none;
+}
+
 .dashboard-tile {
   display: grid;
   min-height: 176px;

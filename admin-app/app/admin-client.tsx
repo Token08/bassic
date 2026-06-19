@@ -520,7 +520,7 @@ function SetupStatus({ health }: { health?: HealthState }) {
   );
 }
 
-function SnsStatusCard() {
+function SnsStatusCard({ onSelect }: { onSelect: (id: string) => void }) {
   const [status, setStatus] = useState<SnsStatus | null>(null);
   const [error, setError] = useState("");
 
@@ -550,6 +550,14 @@ function SnsStatusCard() {
         <div>
           <strong>SNS状況</strong>
           <span>{error}</span>
+        </div>
+        <div className="sns-status-actions">
+          <button type="button" onClick={() => onSelect("site-settings")}>
+            SNSリンクを確認
+          </button>
+          <button type="button" onClick={() => onSelect("social-notices")}>
+            SNSお知らせを確認
+          </button>
         </div>
       </section>
     );
@@ -586,6 +594,17 @@ function SnsStatusCard() {
             {item.label}
           </span>
         ))}
+      </div>
+      <div className="sns-status-actions" aria-label="SNS状況を直す場所">
+        <button type="button" onClick={() => onSelect("site-settings")}>
+          SNSリンクを直す
+        </button>
+        <button type="button" onClick={() => onSelect("social-notices")}>
+          SNSカードを追加
+        </button>
+        <button type="button" onClick={() => onSelect("home")}>
+          Instagram表示URLを確認
+        </button>
       </div>
     </section>
   );
@@ -700,7 +719,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       <SetupStatus health={health} />
       <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
-      <SnsStatusCard />
+      <SnsStatusCard onSelect={onSelect} />
 
       <DashboardSectionGroup
         title="よく使う更新"
