@@ -45,9 +45,10 @@
 | 初回来店説明文 | `firstVisitLead` | テキストエリア | yes |
 | アクセス補足 | `accessNote` | テキストエリア | yes |
 | Instagram表示URL | `instagramWidgetSrc` | テキスト | no |
-| TOP画像 | `heroImage` | 画像 | no |
 
 `instagramWidgetSrc` はLightWidgetなど外部サービスで発行したiframe URLだけを入力します。Instagram IDだけでは直近投稿一覧を安定表示できません。
+
+TOPを含む各ページのメイン画像は、下記の `hero-slides` で管理します。画像変更の入口を分けないため、`home` には画像フィールドを作りません。
 
 ## `hero-slides`
 

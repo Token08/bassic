@@ -32,10 +32,10 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 | `heroLead` | TOP説明文 | テキストエリア | 必須 |
 | `firstVisitLead` | 初めての方向け説明 | テキストエリア | 必須 |
 | `accessNote` | アクセス補足 | テキストエリア | 必須 |
-| `heroImage` | TOP画像 | 画像 | 任意 |
 | `instagramWidgetSrc` | Instagram表示URL | テキストフィールド | 任意 |
 
 `instagramWidgetSrc` は LightWidget などで発行された iframe の `src` URLだけを貼ります。未入力でもサイトは崩れません。
+TOP画像は `home` ではなく、`hero-slides` の `page = home` で管理します。
 
 ## 3. events
 

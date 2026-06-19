@@ -12,8 +12,9 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | heroLead | トップ説明文 | テキストエリア | true |
 | firstVisitLead | 初めての方向け説明 | テキストエリア | true |
 | accessNote | アクセス補足 | テキストエリア | true |
-| heroImage | トップ画像 | 画像 | false |
 | instagramWidgetSrc | Instagram表示URL | テキストフィールド | false |
+
+TOP画像は `home` ではなく `hero-slides` の `page = home` で管理します。画像変更の入口を分けないため、`home.heroImage` は新規作成しません。
 
 ## events
 

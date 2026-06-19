@@ -24,11 +24,7 @@ const home = {
   firstVisitLead:
     "お一人でも、ライヴ後でも会話を愉しみたい夜でも。初めてでも入りやすい、大人の隠れ家的な空間で、それぞれの夜を深めていく。\nライヴイベントのない日は通常バータイムとして、ゆったりご利用できます。",
   accessNote:
-    "天神駅から徒歩約4分。WITH天神ビル5Fまで上がってください。イベント日は通常営業開始時間が変わる場合があります。",
-  heroImage: {
-    url: "/assets/brand/top-slides/hero-01.jpg",
-    alt: "public bar Bassic.の店内"
-  }
+    "天神駅から徒歩約4分。WITH天神ビル5Fまで上がってください。イベント日は通常営業開始時間が変わる場合があります。"
 };
 
 const heroSlides = [

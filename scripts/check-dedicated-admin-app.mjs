@@ -58,6 +58,7 @@ checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkAdminSchemaDocsMatch();
+checkTopImagesAreManagedByHeroSlides();
 checkMenuDescriptionExplainsSupplementalUse();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
@@ -1118,6 +1119,40 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkTopImagesAreManagedByHeroSlides() {
+  const adminSchema = "admin-app/lib/admin-schema.ts";
+  const seedFile = "scripts/microcms-seed-data.mjs";
+  const fieldDocs = "docs/microcms-field-definitions-v1.md";
+  const setupDocs = "docs/microcms-setup-checklist.md";
+  const files = [adminSchema, seedFile, fieldDocs, setupDocs];
+  const missingFiles = files.filter((file) => !existsSync(file));
+  if (missingFiles.length) {
+    add("TOP images are managed only through hero-slides", false, `${missingFiles.join(", ")} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminSchema, "utf8");
+  const seedText = readFileSync(seedFile, "utf8");
+  const fieldText = readFileSync(fieldDocs, "utf8");
+  const setupText = readFileSync(setupDocs, "utf8");
+  const problems = [];
+
+  if (adminText.includes('key: "heroImage"')) {
+    problems.push("admin schema still exposes home.heroImage");
+  }
+  if (seedText.includes("heroImage:")) {
+    problems.push("seed data still writes home.heroImage");
+  }
+  if (fieldText.includes("| TOP画像 | `heroImage`")) {
+    problems.push("field docs still instruct home.heroImage");
+  }
+  if (!fieldText.includes("`hero-slides`") || !setupText.includes("`hero-slides` の `page = home`")) {
+    problems.push("docs should direct TOP画像 to hero-slides page = home");
+  }
+
+  add("TOP images are managed only through hero-slides", problems.length === 0, problems.join(", "));
 }
 
 function checkMenuDescriptionExplainsSupplementalUse() {
