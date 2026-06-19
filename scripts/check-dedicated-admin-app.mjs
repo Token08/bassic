@@ -2044,6 +2044,8 @@ function checkSampleContentMatchesPublishRules() {
   }
 
   const problems = [];
+  validateSampleSiteSettingsUrls(data["site-settings"], problems);
+
   for (const [index, item] of (data.menu || []).entries()) {
     if (item?.isPublished !== false && (!item?.price || !item?.image?.url)) {
       problems.push(`menu[${index}] published item needs price and image`);
@@ -2059,8 +2061,59 @@ function checkSampleContentMatchesPublishRules() {
       problems.push(`drink-menu-sheets[${index}] published item needs image`);
     }
   }
+  for (const [index, item] of (data["social-notices"] || []).entries()) {
+    validateSampleSocialNoticeUrl(item, index, problems);
+  }
 
   add("CMS sample content matches publish rules", problems.length === 0, problems.join(", "));
+}
+
+function validateSampleSiteSettingsUrls(settings, problems) {
+  const urlRules = [
+    ["googleMapsUrl", ["google.com", "maps.google.com", "maps.app.goo.gl", "goo.gl"]],
+    ["directionsUrl", ["google.com", "maps.google.com", "maps.app.goo.gl", "goo.gl"]],
+    ["instagramUrl", ["instagram.com"]],
+    ["facebookUrl", ["facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"]],
+    ["xUrl", ["x.com", "twitter.com"]]
+  ];
+
+  for (const [field, hosts] of urlRules) {
+    const host = getSampleUrlHost(settings?.[field]);
+    if (!host || !hosts.includes(host)) {
+      problems.push(`site-settings.${field} should use ${hosts.join(" or ")}`);
+    }
+  }
+}
+
+function validateSampleSocialNoticeUrl(item, index, problems) {
+  if (!item?.url) {
+    problems.push(`social-notices[${index}].url is required`);
+    return;
+  }
+
+  const host = getSampleUrlHost(item.url);
+  if (item.platform === "instagram" && host !== "instagram.com") {
+    problems.push(`social-notices[${index}].url should use instagram.com`);
+  }
+  if (item.platform === "facebook" && !["facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(host)) {
+    problems.push(`social-notices[${index}].url should use facebook.com`);
+  }
+  if (item.platform === "x" && !["x.com", "twitter.com"].includes(host)) {
+    problems.push(`social-notices[${index}].url should use x.com or twitter.com`);
+  }
+}
+
+function getSampleUrlHost(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return "";
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.hostname.replace(/^www\./, "") : "";
+  } catch {
+    return "";
+  }
 }
 
 function checkEventDateIsDateOnlyGuidance() {
