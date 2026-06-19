@@ -412,6 +412,8 @@ function checkClientManualUsesPublishButtonForPublicUpdates() {
 function checkClientSupportRequestDetails() {
   const files = ["docs/delivery-admin-manual.md", "docs/client-handoff-sheet.md", "docs/client-handoff-checklist.md"];
   const requiredTerms = ["どのページ", "何を変更", "画面に出たメッセージ", "スクリーンショット"];
+  const templateFiles = ["docs/delivery-admin-manual.md", "docs/client-handoff-sheet.md"];
+  const templateTerms = ["直したページ:", "変更した内容:", "押したボタン:", "押した時間:", "画面に出たメッセージ:", "スクリーンショット: あり / なし"];
   const missing = [];
 
   for (const file of files) {
@@ -422,6 +424,20 @@ function checkClientSupportRequestDetails() {
 
     const text = readFileSync(file, "utf8");
     for (const term of requiredTerms) {
+      if (!text.includes(term)) {
+        missing.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  for (const file of templateFiles) {
+    if (!existsSync(file)) {
+      missing.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of templateTerms) {
       if (!text.includes(term)) {
         missing.push(`${file}: ${term}`);
       }
