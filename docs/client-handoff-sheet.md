@@ -50,6 +50,7 @@
 
 ```text
 Google Calendarにも反映してください。
+公開状態:
 イベント名: 
 日付:
 START:

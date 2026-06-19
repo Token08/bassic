@@ -382,9 +382,9 @@ function checkAdminDocsUseCurrentPublishButtonCopy() {
 
 function checkClientDocsMentionFacebookEventFlow() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "Google Calendar反映依頼メモ", "コピーする", "Google Calendar本体は更新されません", "空欄の場合は「コピーする」が押せません"] },
-    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendar反映依頼メモ", "日付とSTART", "コピーする"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "Google Calendar反映依頼メモ", "コピーする", "イベント名:", "日付:", "START:", "END:", "FacebookイベントURL:", "画像URL:", "反映されない時の連絡文", "STARTが空欄だと「コピーする」は押せない"] }
+    { path: "docs/delivery-admin-manual.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarへ反映", "START", "Google Calendar反映依頼メモ", "コピーする", "Google Calendar本体は更新されません", "空欄の場合は「コピーする」が押せません", "公開状態"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendar反映依頼メモ", "日付とSTART", "コピーする", "公開状態: 公開するON"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["FacebookイベントURL", "個別イベントページのURL", "Google Calendarにも載せたい", "STARTが空欄", "Google Calendar反映依頼メモ", "コピーする", "公開状態:", "イベント名:", "日付:", "START:", "END:", "FacebookイベントURL:", "画像URL:", "反映されない時の連絡文", "STARTが空欄だと「コピーする」は押せない"] }
   ];
   const missing = [];
 
@@ -1044,6 +1044,9 @@ function checkFacebookEventImportPanel() {
     "Google Calendarへ載せたい場合",
     "Google Calendar反映依頼メモ",
     "Google Calendarにも反映してください。",
+    "公開状態",
+    "公開するON",
+    "Google Calendarへ依頼する前に、「公開する」をONにして公開してください。",
     "コピーする",
     "コピーしました。担当者へのメッセージに貼り付けてください。",
     "calendarRequestMissingLabels",
@@ -1082,9 +1085,10 @@ function checkFacebookEventHandoffDocs() {
     "日付とSTARTの両方が入っていないと保存時に確認メッセージ",
     "Google Calendar反映依頼メモ",
     "コピーする",
-    "空欄の場合は「コピーする」が押せません"
+    "空欄の場合は「コピーする」が押せません",
+    "公開状態"
   ];
-  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "Google Calendar反映依頼メモ", "コピーする", "sync:calendar:check"];
+  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "Google Calendar反映依頼メモ", "コピーする", "sync:calendar:check", "公開するON"];
   const requiredSyncDocTerms = [
     "## 読み取りに失敗した時",
     "イベント名、日付、STARTを手入力する",
@@ -1092,7 +1096,9 @@ function checkFacebookEventHandoffDocs() {
     "管理画面で確認・修正した内容を正として扱います",
     "Google Calendar反映依頼メモ",
     "コピーする",
-    "依頼メモの `コピーする` は押せません"
+    "依頼メモの `コピーする` は押せません",
+    "`公開状態`",
+    "`公開状態: 公開するON`"
   ];
   const staleTerms = ["ライヴ取得"];
   const missing = [
@@ -1334,6 +1340,8 @@ function checkAdminReadmeCalendarRequestVerification() {
     "START",
     "Facebook URL",
     "画像URL",
+    "公開状態",
+    "公開するON",
     "依頼内容",
     "読み取れない項目がある場合",
     "管理画面で手入力する"

@@ -1277,6 +1277,7 @@ function FacebookEventImportPanel({
   const currentStartTime = getString(draft.startTime).trim();
   const currentEndTime = getString(draft.endTime).trim();
   const currentImageUrl = getImageUrl(draft.image);
+  const currentPublishStatus = draft.isPublished ? "公開するON" : "公開するOFF";
   const calendarRequestMissingLabels = preview
     ? [
         !currentTitle && !preview.title ? "イベント名" : "",
@@ -1296,6 +1297,7 @@ function FacebookEventImportPanel({
   const calendarRequestText = preview
     ? [
         "Google Calendarにも反映してください。",
+        `公開状態: ${currentPublishStatus}`,
         `イベント名: ${currentTitle || preview.title || "未入力"}`,
         `日付: ${currentDate || preview.date || "未入力"}`,
         `START: ${currentStartTime || preview.startTime || "未入力"}`,
@@ -1454,6 +1456,9 @@ function FacebookEventImportPanel({
                 <small className="request-warning">
                   未入力があります。コピーする前に、{calendarRequestMissingLabels.join("、")} を確認してください。
                 </small>
+              ) : null}
+              {!draft.isPublished ? (
+                <small className="request-warning">Google Calendarへ依頼する前に、「公開する」をONにして公開してください。</small>
               ) : null}
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
