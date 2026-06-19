@@ -957,7 +957,16 @@ function checkProductionUrlEnvDocs() {
   }
 
   const text = readFileSync(file, "utf8");
-  const requiredTerms = ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_PUBLIC_SITE_URL", "公開サイトの本番URLと揃えてください"];
+  const requiredTerms = [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_PUBLIC_SITE_URL",
+    "公開サイトの本番URLと揃えてください",
+    "ユーザーが開く本番URL",
+    "検索エンジン向けの正規URL",
+    "canonical、sitemap、OGP、JSON-LD、hreflang",
+    "NEXT_PUBLIC_BASE_PATH",
+    "Remove-Item Env:\\NEXT_PUBLIC_BASE_PATH"
+  ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   add("production checklist explains public URL envs", missing.length === 0, missing.join(", "));
 }

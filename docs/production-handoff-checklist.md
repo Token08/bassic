@@ -4,7 +4,8 @@
 
 ## 1. 公開前に決めること
 
-- 本番URL: `https://www.bassic.jp`
+- ユーザーが開く本番URL: `https://www.bassic.jp/index.html`
+- 検索エンジン向けの正規URL: `https://www.bassic.jp/`
 - Googleビジネスプロフィールの公式サイトURL
 - 通常営業時間とイベント日の通常営業開始時間
 - 喫煙可否とイベント中の禁煙対応
@@ -42,6 +43,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_URL=
 ```
 
 `NEXT_PUBLIC_SITE_URL` はURL確定前なら仮URLでも動きます。本番切り替え時に `https://www.bassic.jp` にします。
+ユーザー向けの入口が `https://www.bassic.jp/index.html` でも、canonical、sitemap、OGP、JSON-LD、hreflang は `https://www.bassic.jp/` 基準に統一します。`/` と `/index.html` が別ページ扱いになると検索評価が分散するためです。
 
 管理画面:
 
@@ -65,6 +67,16 @@ npm run smoke:seo
 ```
 
 `smoke:cms` はmicroCMSのAPI IDや必須項目が合っているか確認します。microCMS未接続の場合はスキップします。
+
+本番URLへ切り替える時は、`NEXT_PUBLIC_BASE_PATH` を空にしてからビルドします。仮URLの `https://token08.github.io/bassic/` で使う `/bassic` の設定が残っていると、本番URLのリンクや画像パスがずれます。
+
+```powershell
+$env:NEXT_PUBLIC_SITE_URL="https://www.bassic.jp"
+Remove-Item Env:\NEXT_PUBLIC_BASE_PATH -ErrorAction SilentlyContinue
+npm run build
+npm run smoke:seo
+npm run smoke:links
+```
 
 ## 5. 画面で見る場所
 
