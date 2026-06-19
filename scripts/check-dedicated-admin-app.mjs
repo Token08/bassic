@@ -73,6 +73,7 @@ checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
 checkAssetPathKeepsExternalUrls();
 checkSampleContentUsesCurrentCopy();
+checkEventDateIsDateOnlyGuidance();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
 checkPackageScript("typecheck:admin-app");
@@ -1446,4 +1447,34 @@ function checkSampleContentUsesCurrentCopy() {
   const problems = [...missing, ...stale.map((term) => `stale ${term}`)];
 
   add("CMS sample content uses current copy", problems.length === 0, problems.join(", "));
+}
+
+function checkEventDateIsDateOnlyGuidance() {
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(schemaFile) || !existsSync(setupFile) || !existsSync(fieldDocsFile)) {
+    add("event date field is explained as date-only", false, `${schemaFile}, ${setupFile}, or ${fieldDocsFile} missing`);
+    return;
+  }
+
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const setupText = readFileSync(setupFile, "utf8");
+  const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
+  const required = [
+    [schemaFile, schemaText, "開催日だけを選びます"],
+    [schemaFile, schemaText, "時刻は下の時間欄に入力します"],
+    [setupFile, setupText, "| `date` | 開催日 | 日付 |"],
+    [setupFile, setupText, "`date` は開催日だけを入れます"],
+    [fieldDocsFile, fieldDocsText, "| 日付 | `date` | 日付 |"],
+    [fieldDocsFile, fieldDocsText, "`日付` は開催日のみを入れます"]
+  ];
+  const stale = [
+    [setupFile, setupText, "| `date` | 開催日 | 日時 |"],
+    [fieldDocsFile, fieldDocsText, "| 日付 | `date` | 日時 |"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+  const staleHits = stale.filter(([, text, term]) => text.includes(term)).map(([file, , term]) => `${file}: stale ${term}`);
+
+  add("event date field is explained as date-only", missing.length === 0 && staleHits.length === 0, [...missing, ...staleHits].join(", "));
 }

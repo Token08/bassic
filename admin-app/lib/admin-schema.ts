@@ -187,7 +187,7 @@ export const sections: SectionDefinition[] = [
     titleKey: "title",
     fields: [
       { key: "title", label: "イベント名", type: "text", required: true, placeholder: "Bassic. Live Night" },
-      { key: "date", label: "日付", type: "date", required: true },
+      { key: "date", label: "日付", type: "date", required: true, hint: "開催日だけを選びます。開場・開始・終了の時刻は下の時間欄に入力します。" },
       { key: "openTime", label: "開場時間", type: "text", placeholder: "18:30", hint: "OPENなどの文字は入れず、18:30 のように半角数字と : で入力します。" },
       { key: "startTime", label: "開始時間", type: "text", placeholder: "19:00", hint: "STARTなどの文字は入れず、19:00 のように半角数字と : で入力します。" },
       { key: "endTime", label: "終了時間", type: "text", placeholder: "22:00", hint: "空欄の場合、Google Calendarには開始から2時間の予定として入ります。深夜2時終了なら 02:00 と入力します。" },

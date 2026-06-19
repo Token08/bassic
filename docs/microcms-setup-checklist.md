@@ -42,7 +42,7 @@ TOP画像は `home` ではなく、`hero-slides` の `page = home` で管理し�
 | fieldId | 表示名 | 種類 | 必須 | 備考 |
 | --- | --- | --- | --- | --- |
 | `title` | イベント名 | テキストフィールド | 必須 |  |
-| `date` | 開催日 | 日時 | 必須 |  |
+| `date` | 開催日 | 日付 | 必須 | 開催日だけを入れます。時刻は `OPEN` / `START` / `END` に分けて入力 |
 | `openTime` | OPEN | テキストフィールド | 任意 | `18:30` のように半角数字と `:` で入力 |
 | `startTime` | START | テキストフィールド | 任意 | `19:00` のように半角数字と `:` で入力 |
 | `endTime` | END | テキストフィールド | 任意 | `22:00` のように半角数字と `:` で入力。深夜2時終了なら `02:00` |
@@ -57,6 +57,7 @@ TOP画像は `home` ではなく、`hero-slides` の `page = home` で管理し�
 
 下書き中は `isPublished` をオフにします。
 Facebookイベントから取り込む場合、`sourceUrl` は個別イベントページURLを入れ、`sourceId` と `sourceType` は管理画面側で自動入力します。`sourceId` はGoogle Calendar同期時の重複防止に使います。
+`date` は開催日だけを入れます。開場・開始・終了の時刻は `OPEN` / `START` / `END` に分けて入力します。
 
 ## 4. menu
 
