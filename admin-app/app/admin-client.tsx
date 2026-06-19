@@ -1154,7 +1154,13 @@ function FacebookEventImportPanel({
               </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
               {copyMessage ? <small>{copyMessage}</small> : null}
-              <textarea readOnly value={calendarRequestText} rows={7} />
+              <textarea
+                readOnly
+                value={calendarRequestText}
+                rows={7}
+                onFocus={(event) => event.currentTarget.select()}
+                onClick={(event) => event.currentTarget.select()}
+              />
             </div>
           </div>
         </div>
