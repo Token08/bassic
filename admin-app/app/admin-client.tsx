@@ -950,7 +950,7 @@ function PreviewModal({
           </button>
           <button className="primary-button" type="button" onClick={onPublish}>
             <CheckCircle2 size={18} />
-            この内容で公開
+            {publishToggleOff ? "保存して反映（この項目は非表示）" : "この内容で公開"}
           </button>
         </div>
       </div>
