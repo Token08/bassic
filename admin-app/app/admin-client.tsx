@@ -1491,6 +1491,16 @@ function SectionEditor({
       }
     }
 
+    if (section.id === "menu" && nextDraft.isPublished) {
+      if (!getString(nextDraft.price).trim()) {
+        nextErrors.price = "フードを公開する前に料金を入力してください。";
+      }
+
+      if (!getImageUrl(nextDraft.image).trim()) {
+        nextErrors.image = "フードを公開する前に画像を入れてください。";
+      }
+    }
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }

@@ -61,6 +61,7 @@ checkAdminSchemaDocsMatch();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
 checkMenuDescriptionExplainsSupplementalUse();
+checkMenuPublishRequiresPriceAndImage();
 checkEventFieldDocsExplainCalendarSync();
 checkMicrocmsSetupChecklistIncludesFacebookEventFields();
 checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
@@ -1477,4 +1478,31 @@ function checkEventDateIsDateOnlyGuidance() {
   const staleHits = stale.filter(([, text, term]) => text.includes(term)).map(([file, , term]) => `${file}: stale ${term}`);
 
   add("event date field is explained as date-only", missing.length === 0 && staleHits.length === 0, [...missing, ...staleHits].join(", "));
+}
+
+function checkMenuPublishRequiresPriceAndImage() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const setupFile = "docs/microcms-setup-checklist.md";
+  const fieldDocsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(adminFile) || !existsSync(schemaFile) || !existsSync(setupFile) || !existsSync(fieldDocsFile)) {
+    add("menu publish requires price and image", false, `${adminFile}, ${schemaFile}, ${setupFile}, or ${fieldDocsFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const setupText = readFileSync(setupFile, "utf8");
+  const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
+  const required = [
+    [adminFile, adminText, "section.id === \"menu\" && nextDraft.isPublished"],
+    [adminFile, adminText, "フードを公開する前に料金を入力してください。"],
+    [adminFile, adminText, "フードを公開する前に画像を入れてください。"],
+    [schemaFile, schemaText, "公開する場合は必ず入れます"],
+    [setupFile, setupText, "公開する場合は料金と画像の入力を必須として扱います"],
+    [fieldDocsFile, fieldDocsText, "公開する場合は料金と画像の入力を必須として扱います"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("menu publish requires price and image", missing.length === 0, missing.join(", "));
 }
