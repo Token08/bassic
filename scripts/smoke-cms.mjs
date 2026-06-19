@@ -33,7 +33,7 @@ const endpointChecks = [
     label: "events",
     path: "/events?limit=1",
     validateItem: (item) => {
-      requiredString(item, "title", "events");
+      requiredText(item, "title", "events", 4);
       requiredString(item, "date", "events");
       requiredBoolean(item, "isPublished", "events");
       optionalTime(item, "openTime", "events");
@@ -88,9 +88,9 @@ const endpointChecks = [
     path: "/party-plans?limit=1",
     orderGroupFields: [],
     validateItem: (item) => {
-      requiredString(item, "title", "party-plans");
+      requiredText(item, "title", "party-plans", 4);
       requiredString(item, "price", "party-plans");
-      requiredString(item, "body", "party-plans");
+      requiredText(item, "body", "party-plans", 12);
       optionalWholeNumber(item, "displayOrder", "party-plans");
     }
   },
@@ -100,7 +100,12 @@ const endpointChecks = [
     orderGroupFields: ["platform"],
     validateItem: (item) => {
       requiredEnum(item, "platform", ["instagram", "facebook", "x"], "social-notices");
-      requiredString(item, "title", "social-notices");
+      requiredText(item, "title", "social-notices", 6);
+      if (item.isPublished !== false) {
+        requiredText(item, "description", "social-notices", 10);
+      } else if (item.description) {
+        optionalText(item, "description", "social-notices", 10);
+      }
       requiredUrl(item, "url", "social-notices");
       requiredSocialNoticeUrl(item, "social-notices");
       requiredBoolean(item, "isPublished", "social-notices");
@@ -133,8 +138,8 @@ const endpointChecks = [
     orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "custom-sections");
-      requiredString(item, "title", "custom-sections");
-      requiredString(item, "body", "custom-sections");
+      requiredText(item, "title", "custom-sections", 6);
+      requiredText(item, "body", "custom-sections", 20);
       requiredBoolean(item, "isPublished", "custom-sections");
       optionalWholeNumber(item, "displayOrder", "custom-sections");
     }
@@ -225,6 +230,33 @@ function requiredString(item, field, endpoint) {
   if (typeof item?.[field] !== "string" || !item[field].trim()) {
     errors.push(`${endpoint}.${field}: non-empty text is required.`);
   }
+}
+
+function requiredText(item, field, endpoint, minLength) {
+  const value = typeof item?.[field] === "string" ? item[field].trim() : "";
+  if (!value) {
+    errors.push(`${endpoint}.${field}: non-empty text is required.`);
+    return;
+  }
+
+  if (countTextLength(value) < minLength) {
+    errors.push(`${endpoint}.${field}: text is too short. Use at least ${minLength} characters for published content.`);
+  }
+}
+
+function optionalText(item, field, endpoint, minLength) {
+  const value = typeof item?.[field] === "string" ? item[field].trim() : "";
+  if (!value) {
+    return;
+  }
+
+  if (countTextLength(value) < minLength) {
+    errors.push(`${endpoint}.${field}: text is too short. Use at least ${minLength} characters when this field is set.`);
+  }
+}
+
+function countTextLength(value) {
+  return value.replace(/\s+/g, "").length;
 }
 
 function requiredBoolean(item, field, endpoint) {

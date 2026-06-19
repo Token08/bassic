@@ -76,6 +76,7 @@ checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
 checkCmsSmokeValidatesPublishedMenuItems();
 checkCmsSmokeTimeValidation();
+checkCmsSmokeValidatesPublishedTextDepth();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
@@ -1604,6 +1605,29 @@ function checkCmsSmokeTimeValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("CMS smoke validates event times as HH:mm", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeValidatesPublishedTextDepth() {
+  const smokeFile = "scripts/smoke-cms.mjs";
+  if (!existsSync(smokeFile)) {
+    add("CMS smoke validates published text depth", false, `${smokeFile} missing`);
+    return;
+  }
+
+  const text = readFileSync(smokeFile, "utf8");
+  const requiredTerms = [
+    "function requiredText",
+    "function optionalText",
+    "function countTextLength",
+    "text is too short",
+    'requiredText(item, "title", "events", 4)',
+    'requiredText(item, "body", "party-plans", 12)',
+    'requiredText(item, "description", "social-notices", 10)',
+    'requiredText(item, "body", "custom-sections", 20)'
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates published text depth", missing.length === 0, missing.join(", "));
 }
 
 function checkSeedDataCoversAdminEndpoints() {
