@@ -929,17 +929,30 @@ function getPublishChecklistItems(section: SectionDefinition) {
     return ["ドリンク表の画像が切れていない", "画像を開いて文字が読めるか確認した", "公開後にスマホで拡大表示も確認する"];
   }
 
-  if (section.id === "party-plans" || section.id === "equipment-rental") {
-    return ["料金、人数、条件が古くない", "PDFや問い合わせリンクを開いて確認した", "公開後にスマホのPartyページで確認する"];
+  if (section.id === "party-plans") {
+    return [
+      "料金、人数、条件が古くない",
+      "説明は12文字以上で、料金・人数・利用内容が分かる",
+      "公開後にスマホのPartyページで確認する"
+    ];
+  }
+
+  if (section.id === "equipment-rental") {
+    return ["料金、条件が古くない", "PDFリンクを開いて確認した", "公開後にスマホのPartyページで確認する"];
   }
 
   if (section.id === "social-notices") {
     return [
-      "タイトル、説明、SNS種別に間違いがない",
+      "タイトル6文字以上、説明10文字以上で内容が伝わる",
+      "SNS種別に間違いがない",
       "選んだSNSとリンクURLの種類が合っている",
       "リンクを開いて正しい投稿やページを確認した",
       "公開後にスマホのTOPページでSNS欄を確認する"
     ];
+  }
+
+  if (section.id === "custom-sections") {
+    return ["タイトル6文字以上、本文20文字以上で内容が伝わる", "URLや画像は確認リンクで開けた", "公開後にスマホでも表示を確認する"];
   }
 
   return ["内容、料金、日付に間違いがない", "URLや画像は確認リンクで開けた", "公開後にスマホでも表示を確認する"];

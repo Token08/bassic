@@ -716,8 +716,13 @@ function checkPreviewChecklistIsSectionSpecific() {
     "フード名、料金、写真に間違いがない",
     "section.id === \"drink-menu-sheets\"",
     "画像を開いて文字が読めるか確認した",
+    "説明は12文字以上で、料金・人数・利用内容が分かる",
+    "PDFリンクを開いて確認した",
+    "タイトル6文字以上、説明10文字以上で内容が伝わる",
     "選んだSNSとリンクURLの種類が合っている",
     "公開後にスマホのTOPページでSNS欄を確認する",
+    "section.id === \"custom-sections\"",
+    "タイトル6文字以上、本文20文字以上で内容が伝わる",
     "getPublishChecklistItems(section).map"
   ];
   const missing = required.filter((term) => !text.includes(term));
