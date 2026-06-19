@@ -1931,7 +1931,11 @@ function checkPublicCmsFallbackGuards() {
     "const visibleSheets",
     "visibleSheets.length ? visibleSheets",
     "const fallbackNotices",
-    "visibleNotices.length ? visibleNotices : fallbackNotices"
+    "visibleNotices.length ? visibleNotices : fallbackNotices",
+    "function hasUsableCustomSectionLink",
+    "function isManagedUrl",
+    "hasUsableCustomSectionLink(section)",
+    "Boolean(section.title && section.body)"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
   const stale = ['import { site } from "./site"'].filter((term) => text.includes(term));

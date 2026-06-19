@@ -245,6 +245,31 @@ function isSocialNoticeUrlForPlatform(notice: SocialNotice) {
   }
 }
 
+function isManagedUrl(value?: string) {
+  if (!value) {
+    return false;
+  }
+
+  if (value.startsWith("/")) {
+    return !value.startsWith("//");
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function hasUsableCustomSectionLink(section: CustomSection) {
+  if (!section.linkLabel && !section.linkUrl) {
+    return true;
+  }
+
+  return Boolean(section.linkLabel && section.linkUrl && isManagedUrl(section.linkUrl));
+}
+
 function heroSlidesByPage(slides?: HeroSlide[]): CmsContents["heroSlides"] {
   const visibleSlides = (slides || []).filter((slide) => slide.isPublished !== false && slide.image?.url);
 
@@ -284,7 +309,13 @@ function pageSectionsByPage(sections?: PageSection[]): CmsContents["pageSections
 function customSectionsByPage(sections?: CustomSection[]): CmsContents["customSections"] {
   return managedPages.reduce((acc, page) => {
     acc[page] = sortByDisplayOrder(
-      (sections || []).filter((section) => section.page === page && section.isPublished !== false && (section.title || section.body))
+      (sections || []).filter(
+        (section) =>
+          section.page === page &&
+          section.isPublished !== false &&
+          Boolean(section.title && section.body) &&
+          hasUsableCustomSectionLink(section)
+      )
     );
     return acc;
   }, {} as CmsContents["customSections"]);
