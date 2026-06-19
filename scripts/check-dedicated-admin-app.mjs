@@ -69,6 +69,7 @@ checkCmsSmokeTimeValidation();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
+checkAssetPathKeepsExternalUrls();
 checkSampleContentUsesCurrentCopy();
 checkPackageScript("dev:admin-app");
 checkPackageScript("build:admin-app");
@@ -1330,6 +1331,25 @@ function checkPublicCmsFallbackGuards() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("public CMS fallback guards keep partial content visible", missing.length === 0, missing.join(", "));
+}
+
+function checkAssetPathKeepsExternalUrls() {
+  const file = "lib/assets.ts";
+  if (!existsSync(file)) {
+    add("asset path helper keeps CMS/external URLs usable", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "externalUrlPattern",
+    "specialUrlPattern",
+    "externalUrlPattern.test(path)",
+    "specialUrlPattern.test(path)"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("asset path helper keeps CMS/external URLs usable", missing.length === 0, missing.join(", "));
 }
 
 function checkSampleContentUsesCurrentCopy() {

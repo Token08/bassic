@@ -47,7 +47,7 @@ const localSearchIcons = {
 } as const;
 
 function imageSrc(path: string) {
-  return path.startsWith("/") || /^https?:\/\//.test(path) ? assetPath(path) : path;
+  return assetPath(path);
 }
 
 export function PageHero({

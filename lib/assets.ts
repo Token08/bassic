@@ -1,7 +1,9 @@
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const externalUrlPattern = /^(?:[a-z][a-z\d+\-.]*:)?\/\//i;
+const specialUrlPattern = /^(?:data|blob|mailto|tel):/i;
 
 export function assetPath(path: string) {
-  if (/^https?:\/\//.test(path)) {
+  if (!path || externalUrlPattern.test(path) || specialUrlPattern.test(path)) {
     return path;
   }
 
