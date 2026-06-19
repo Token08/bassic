@@ -1011,21 +1011,27 @@ function FacebookEventImportPanel({
         { label: "FacebookイベントURL", ok: Boolean(preview.sourceUrl), text: preview.sourceUrl || sourceUrl }
       ]
     : [];
+  const currentTitle = getString(draft.title).trim();
+  const currentDate = getString(draft.date).trim();
+  const currentStartTime = getString(draft.startTime).trim();
+  const currentEndTime = getString(draft.endTime).trim();
+  const currentImageUrl = getImageUrl(draft.image);
   const calendarRequestText = preview
     ? [
         "Google Calendarにも反映してください。",
-        `イベント名: ${preview.title || getString(draft.title).trim() || "未入力"}`,
-        `日付: ${preview.date || getString(draft.date).trim() || "未入力"}`,
-        `START: ${preview.startTime || getString(draft.startTime).trim() || "未入力"}`,
-        `END: ${preview.endTime || getString(draft.endTime).trim() || "未入力"}`,
-        `FacebookイベントURL: ${preview.sourceUrl || sourceUrl || "未入力"}`,
-        `画像URL: ${preview.imageUrl || getImageUrl(draft.image) || "未入力"}`
+        `イベント名: ${currentTitle || preview.title || "未入力"}`,
+        `日付: ${currentDate || preview.date || "未入力"}`,
+        `START: ${currentStartTime || preview.startTime || "未入力"}`,
+        `END: ${currentEndTime || preview.endTime || "未入力"}`,
+        `FacebookイベントURL: ${sourceUrl || preview.sourceUrl || "未入力"}`,
+        `画像URL: ${currentImageUrl || preview.imageUrl || "未入力"}`
       ].join("\n")
     : "";
 
   async function importEvent() {
     setLoading(true);
     setMessage("");
+    setCopyMessage("");
     setPreview(null);
 
     try {
