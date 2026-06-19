@@ -348,7 +348,15 @@ function checkClientHandoffDocsLinked() {
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
   const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例"].filter((term) => !manualText.includes(term));
-  const manualUpdateMapTerms = ["更新したい内容", "管理画面で選ぶ項目", "確認するページ", "TOPのSNS欄", "住所、電話、営業時間、喫煙、チャージ"];
+  const manualUpdateMapTerms = [
+    "更新したい内容",
+    "管理画面で選ぶ項目",
+    "確認するページ",
+    "TOPのSNS欄",
+    "住所、電話、営業時間、喫煙、チャージ",
+    "| 貸切、二次会 | 貸切 | Party & Rental |",
+    "| 機材レンタル、PDFリンク | 機材 | Party & Rental |"
+  ];
   const missingManualUpdateMapTerms = manualUpdateMapTerms.filter((term) => !manualText.includes(term));
   const socialUrlTerms = ["instagram.com", "facebook.com", "x.com", "twitter.com"];
   const missingSocialUrlTerms = [

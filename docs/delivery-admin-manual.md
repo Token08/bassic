@@ -34,7 +34,8 @@
 | イベント情報、FacebookイベントURL | イベント | Event Schedule |
 | フードメニュー名、料金、画像 | メニュー | Menu |
 | ドリンク表画像 | ドリンク表 | Menu |
-| 貸切、二次会、機材レンタル | Party & Rental | Party & Rental |
+| 貸切、二次会 | 貸切 | Party & Rental |
+| 機材レンタル、PDFリンク | 機材 | Party & Rental |
 | Instagram、Facebook、Xのお知らせ | SNSお知らせ | TOPのSNS欄 |
 | 住所、電話、営業時間、喫煙、チャージ | 店舗情報 | TOP、Access、Menu |
 
