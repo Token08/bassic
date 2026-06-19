@@ -112,15 +112,15 @@ function getPublicPageUrl(section: SectionDefinition) {
 function getPostPublishSteps(section: SectionDefinition) {
   const commonSteps = ["1〜3分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
   const sectionSteps: Partial<Record<SectionDefinition["id"], string[]>> = {
-    "site-settings": ["Accessページで住所・電話・Google Mapを確認"],
-    home: ["TOPページの見出し・画像・案内カードを確認"],
-    "hero-slides": ["TOPページのメイン画像を確認"],
-    events: ["Event ScheduleページとGoogle Calendar欄を確認"],
-    menu: ["メニューページの画像・価格・チャージ表記を確認"],
-    "drink-menu-sheets": ["メニューページのDRINK&FOOD MENU画像を確認"],
-    "party-plans": ["Partyページのプラン名・価格・説明を確認"],
-    "equipment-rental": ["Partyページの機材レンタル欄とPDFリンクを確認"],
-    "social-notices": ["TOPページのSNS欄を確認"]
+    "site-settings": ["Accessページで住所・電話・Google Mapを確認", "電話・地図・SNSボタンが正しく開くか確認"],
+    home: ["TOPページの見出し・画像・案内カードを確認", "営業時間・喫煙・チャージの表示を確認"],
+    "hero-slides": ["TOPページのメイン画像を確認", "スマホでロゴや見出しと画像が重なっていないか確認"],
+    events: ["Event ScheduleページとGoogle Calendar欄を確認", "イベント日は日付・START・予約方法が読めるか確認"],
+    menu: ["メニューページの画像・価格・チャージ表記を確認", "フード画像を押して拡大表示を確認"],
+    "drink-menu-sheets": ["メニューページのDRINK&FOOD MENU画像を確認", "クリック前と拡大表示の両方で上下が切れていないか確認"],
+    "party-plans": ["Partyページのプラン名・価格・説明を確認", "スマホで料金と条件が読めるか確認"],
+    "equipment-rental": ["Partyページの機材レンタル欄とPDFリンクを確認", "詳細リンクからPDFが開くか確認"],
+    "social-notices": ["TOPページのSNS欄を確認", "SNSカードのタイトル・説明・ボタンリンクを確認"]
   };
 
   return [...(sectionSteps[section.id] || ["公開ページで変更箇所を確認"]), ...commonSteps];
