@@ -65,6 +65,7 @@ checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminSnsStatusCardLinksToEditors();
 checkAdminDashboardShowsPublicCheckOrder();
+checkClientDocsMentionPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
@@ -1493,6 +1494,31 @@ function checkAdminDashboardShowsPublicCheckOrder() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin dashboard shows public check order", missing.length === 0, missing.join(", "));
+}
+
+function checkClientDocsMentionPublicCheckOrder() {
+  const requiredByFile = {
+    "docs/delivery-admin-manual.md": ["公開前に見る順番", "TOP、EVENT、MENU、PARTY、ACCESS", "PCとスマホの両方"],
+    "docs/client-handoff-checklist.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ"],
+    "docs/client-handoff-sheet.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ"]
+  };
+  const missing = [];
+
+  for (const [file, terms] of Object.entries(requiredByFile)) {
+    if (!existsSync(file)) {
+      missing.push(`${file} missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of terms) {
+      if (!text.includes(term)) {
+        missing.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  add("client docs mention public check order", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminEditorShowsSectionPublicPageLinks() {
