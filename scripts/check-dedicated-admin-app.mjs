@@ -1803,6 +1803,8 @@ function checkAdminValidatesPublishedTextDepth() {
   const schemaText = readFileSync(schemaFile, "utf8");
   const required = [
     [adminFile, adminText, "function countTextLength"],
+    [adminFile, adminText, 'section.id === "events"'],
+    [adminFile, adminText, "イベント名を4文字以上"],
     [adminFile, adminText, 'section.id === "social-notices"'],
     [adminFile, adminText, "タイトルを6文字以上"],
     [adminFile, adminText, "説明を10文字以上"],

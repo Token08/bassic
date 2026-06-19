@@ -1583,6 +1583,10 @@ function SectionEditor({
     }
 
     if (section.id === "events") {
+      if (nextDraft.isPublished && countTextLength(nextDraft.title) < 4) {
+        nextErrors.title = "公開する前に、イベント名を4文字以上で入力してください。";
+      }
+
       for (const key of ["openTime", "startTime", "endTime"]) {
         const value = getString(nextDraft[key]).trim();
         if (value && !isValidEventTime(value)) {
