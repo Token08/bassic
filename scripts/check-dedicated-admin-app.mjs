@@ -78,6 +78,7 @@ checkCmsSmokeValidatesPublishedMenuItems();
 checkCmsSmokeTimeValidation();
 checkCmsSmokeValidatesPublishedTextDepth();
 checkDocsExplainPublishedTextDepth();
+checkAdminValidatesPublishedTextDepth();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
 checkPublicCmsFallbackGuards();
@@ -1655,6 +1656,35 @@ function checkDocsExplainPublishedTextDepth() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("CMS docs explain published text depth", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminValidatesPublishedTextDepth() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(adminFile) || !existsSync(schemaFile)) {
+    add("admin validates published text depth", false, `${adminFile} or ${schemaFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const required = [
+    [adminFile, adminText, "function countTextLength"],
+    [adminFile, adminText, 'section.id === "social-notices"'],
+    [adminFile, adminText, "タイトルを6文字以上"],
+    [adminFile, adminText, "説明を10文字以上"],
+    [adminFile, adminText, 'section.id === "party-plans"'],
+    [adminFile, adminText, "説明を12文字以上"],
+    [adminFile, adminText, 'section.id === "custom-sections"'],
+    [adminFile, adminText, "本文を20文字以上"],
+    [schemaFile, schemaText, "公開する場合は12文字以上"],
+    [schemaFile, schemaText, "公開する場合は6文字以上"],
+    [schemaFile, schemaText, "公開する場合は10文字以上"],
+    [schemaFile, schemaText, "公開する場合は20文字以上"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin validates published text depth", missing.length === 0, missing.join(", "));
 }
 
 function checkSeedDataCoversAdminEndpoints() {

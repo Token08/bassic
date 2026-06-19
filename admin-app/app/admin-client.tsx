@@ -116,6 +116,10 @@ function getString(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
+function countTextLength(value: unknown) {
+  return getString(value).replace(/\s+/g, "").length;
+}
+
 function getNumber(value: unknown) {
   return typeof value === "number" ? String(value) : getString(value);
 }
@@ -1548,6 +1552,16 @@ function SectionEditor({
       if (socialUrlError) {
         nextErrors.url = socialUrlError;
       }
+
+      if (nextDraft.isPublished) {
+        if (countTextLength(nextDraft.title) < 6) {
+          nextErrors.title = "公開する前に、タイトルを6文字以上で入力してください。";
+        }
+
+        if (countTextLength(nextDraft.description) < 10) {
+          nextErrors.description = "公開する前に、説明を10文字以上で入力してください。";
+        }
+      }
     }
 
     if (section.id === "menu" && nextDraft.isPublished) {
@@ -1557,6 +1571,20 @@ function SectionEditor({
 
       if (!getImageUrl(nextDraft.image).trim()) {
         nextErrors.image = "フードを公開する前に画像を入れてください。";
+      }
+    }
+
+    if (section.id === "party-plans" && nextDraft.isPublished && countTextLength(nextDraft.body) < 12) {
+      nextErrors.body = "公開する前に、説明を12文字以上で入力してください。";
+    }
+
+    if (section.id === "custom-sections" && nextDraft.isPublished) {
+      if (countTextLength(nextDraft.title) < 6) {
+        nextErrors.title = "公開する前に、タイトルを6文字以上で入力してください。";
+      }
+
+      if (countTextLength(nextDraft.body) < 20) {
+        nextErrors.body = "公開する前に、本文を20文字以上で入力してください。";
       }
     }
 

@@ -280,7 +280,7 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "title", label: "プラン名", type: "text", required: true, placeholder: "Bassic. Party Plan" },
       { key: "price", label: "料金", type: "text", required: true, placeholder: "4,000円〜 / 1名" },
-      { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "内容、人数、注意点など" },
+      { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "内容、人数、注意点など", hint: "公開する場合は12文字以上で、料金・人数・利用内容が分かる一文を入れてください。" },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
@@ -324,8 +324,8 @@ export const sections: SectionDefinition[] = [
           { value: "x", label: "X" }
         ]
       },
-      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "今週のライヴ情報" },
-      { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "短い紹介文" },
+      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "今週のライヴ情報", hint: "公開する場合は6文字以上で、何のお知らせか分かるタイトルにします。" },
+      { key: "description", label: "説明", type: "textarea", rows: 3, placeholder: "短い紹介文", hint: "公開する場合は10文字以上で、投稿内容や見てほしいポイントを1〜2文で書きます。" },
       { key: "url", label: "リンクURL", type: "url", required: true, placeholder: "https://...", hint: "入力後は「リンクを開いて確認」で正しい投稿やページが開くか確認してください。" },
       { key: "date", label: "日付", type: "date" },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
@@ -392,8 +392,8 @@ export const sections: SectionDefinition[] = [
     titleKey: "title",
     fields: [
       { key: "page", label: "表示ページ", type: "select", required: true, options: pageOptions },
-      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "臨時休業のお知らせ" },
-      { key: "body", label: "本文", type: "textarea", required: true, rows: 5, placeholder: "お客様に伝えたい内容を短く入力します。" },
+      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "臨時休業のお知らせ", hint: "公開する場合は6文字以上で、内容が分かるタイトルにします。" },
+      { key: "body", label: "本文", type: "textarea", required: true, rows: 5, placeholder: "お客様に伝えたい内容を短く入力します。", hint: "公開する場合は20文字以上で、誰に何を伝える案内か分かる文章にします。" },
       { key: "image", label: "画像", type: "image", hint: `必要な時だけ追加します。${imageFieldHint}` },
       { key: "linkLabel", label: "リンクボタン名", type: "text", placeholder: "詳しく見る" },
       { key: "linkUrl", label: "リンクURL", type: "url", placeholder: "https://..." },
