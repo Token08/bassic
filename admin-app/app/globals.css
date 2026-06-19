@@ -948,10 +948,41 @@ a {
   font-size: 0.9rem;
 }
 
+.facebook-calendar-request-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.facebook-calendar-request-heading button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(36, 93, 131, 0.24);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #fffaf1;
+  color: var(--accent);
+  font: 900 0.8rem/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.facebook-calendar-request-heading button:hover {
+  background: rgba(36, 93, 131, 0.08);
+}
+
 .facebook-calendar-request span {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
+}
+
+.facebook-calendar-request small {
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .facebook-calendar-request textarea {

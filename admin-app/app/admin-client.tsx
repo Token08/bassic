@@ -5,6 +5,7 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
+  Copy,
   Eye,
   ExternalLink,
   Info,
@@ -989,6 +990,7 @@ function FacebookEventImportPanel({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
   const sourceUrl = getString(draft.sourceUrl).trim();
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
   const previewHasInvalidTime = Boolean(
@@ -1077,6 +1079,19 @@ function FacebookEventImportPanel({
     }
   }
 
+  async function copyCalendarRequest() {
+    if (!calendarRequestText) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(calendarRequestText);
+      setCopyMessage("コピーしました。担当者へのメッセージに貼り付けてください。");
+    } catch {
+      setCopyMessage("コピーできませんでした。下のメモを選択してコピーしてください。");
+    }
+  }
+
   return (
     <section className="facebook-import-panel" aria-label="Facebookイベント取り込み">
       <div className="facebook-import-heading">
@@ -1130,8 +1145,15 @@ function FacebookEventImportPanel({
               ))}
             </ul>
             <div className="facebook-calendar-request" aria-label="Google Calendar反映依頼メモ">
-              <strong>Google Calendar反映依頼メモ</strong>
+              <div className="facebook-calendar-request-heading">
+                <strong>Google Calendar反映依頼メモ</strong>
+                <button type="button" onClick={() => void copyCalendarRequest()}>
+                  <Copy size={16} />
+                  コピーする
+                </button>
+              </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
+              {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea readOnly value={calendarRequestText} rows={7} />
             </div>
           </div>
