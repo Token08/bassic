@@ -885,6 +885,9 @@ function PreviewModal({
   onClose: () => void;
   onPublish: () => void;
 }) {
+  const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
+  const publishToggleOff = hasPublishToggle && !Boolean(draft.isPublished);
+
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="preview-modal">
@@ -927,6 +930,12 @@ function PreviewModal({
             );
           })}
         </dl>
+        {publishToggleOff ? (
+          <div className="preview-warning" role="status">
+            <AlertCircle size={18} />
+            <span>「公開する」がOFFです。このまま公開しても公開サイトには表示されません。サイトに出す場合は戻って「公開する」をONにしてください。</span>
+          </div>
+        ) : null}
         <div className="publish-checklist" aria-label="公開前の確認">
           <strong>公開前に確認</strong>
           <ul>
