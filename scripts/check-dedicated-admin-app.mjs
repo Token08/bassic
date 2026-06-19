@@ -1382,13 +1382,19 @@ function checkAdminEditorShowsSectionPublicPageLinks() {
 function checkAdminPublishNoticeShowsConfirmationSteps() {
   const clientFile = "admin-app/app/admin-client.tsx";
   const cssFile = "admin-app/app/globals.css";
-  if (!existsSync(clientFile) || !existsSync(cssFile)) {
-    add("admin publish notice shows confirmation steps", false, `${clientFile} or ${cssFile} missing`);
+  const manualFile = "docs/delivery-admin-manual.md";
+  const checklistFile = "docs/client-handoff-checklist.md";
+  const sheetFile = "docs/client-handoff-sheet.md";
+  if (!existsSync(clientFile) || !existsSync(cssFile) || !existsSync(manualFile) || !existsSync(checklistFile) || !existsSync(sheetFile)) {
+    add("admin publish notice shows confirmation steps", false, `${clientFile}, ${cssFile}, or client docs missing`);
     return;
   }
 
   const clientText = readFileSync(clientFile, "utf8");
   const cssText = readFileSync(cssFile, "utf8");
+  const manualText = readFileSync(manualFile, "utf8");
+  const checklistText = readFileSync(checklistFile, "utf8");
+  const sheetText = readFileSync(sheetFile, "utf8");
   const required = [
     [clientFile, clientText, "confirmationSteps?: string[]"],
     [clientFile, clientText, "getPostPublishSteps(section)"],
@@ -1400,7 +1406,11 @@ function checkAdminPublishNoticeShowsConfirmationSteps() {
     [clientFile, clientText, "Partyページの機材レンタル欄とPDFリンクを確認"],
     [clientFile, clientText, "Accessページで住所・電話・Google Mapを確認"],
     [clientFile, clientText, "notice-checklist"],
-    [cssFile, cssText, ".notice-checklist"]
+    [cssFile, cssText, ".notice-checklist"],
+    [manualFile, manualText, "公開後の確認手順"],
+    [manualFile, manualText, "上から順番に"],
+    [checklistFile, checklistText, "公開後の確認手順"],
+    [sheetFile, sheetText, "公開後の確認手順"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
