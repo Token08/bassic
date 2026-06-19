@@ -26,6 +26,7 @@ checkAdminDocsUseCurrentPublishButtonCopy();
 checkClientDocsMentionFacebookEventFlow();
 checkPageCopyPlaceholdersAvoidRemovedEventList();
 checkClientHandoffDocsLinked();
+checkClientDocsMentionSectionPublicPageLinks();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
@@ -353,6 +354,31 @@ function checkClientHandoffDocsLinked() {
   ];
 
   add("client handoff checklist references handoff sheet", problems.length === 0, problems.join(", "));
+}
+
+function checkClientDocsMentionSectionPublicPageLinks() {
+  const files = [
+    { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "該当ページを開く", "イベントならイベントページ", "メニューならメニューページ"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["確認するページ", "該当ページを開き", "反映を確認する"] },
+    { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか"] }
+  ];
+  const missing = [];
+
+  for (const file of files) {
+    if (!existsSync(file.path)) {
+      missing.push(`${file.path}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file.path, "utf8");
+    for (const term of file.terms) {
+      if (!text.includes(term)) {
+        missing.push(`${file.path}: ${term}`);
+      }
+    }
+  }
+
+  add("client docs mention section public page links", missing.length === 0, missing.join(", "));
 }
 
 function checkClientSupportRequestDetails() {
