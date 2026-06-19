@@ -95,6 +95,7 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "address", label: "住所", type: "textarea", required: true, rows: 2, placeholder: "福岡市中央区天神3-4-19 WITH天神5F" },
       { key: "phone", label: "電話番号", type: "text", required: true, placeholder: "092-713-1040" },
+      { key: "email", label: "メールアドレス", type: "text", required: true, placeholder: "mail@bassic.jp" },
       {
         key: "hoursLabel",
         label: "通常営業時間",

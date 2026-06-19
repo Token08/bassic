@@ -32,6 +32,7 @@ checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
 checkSiteSettingsUrlValidation();
+checkSiteSettingsContactValidation();
 checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
@@ -619,6 +620,33 @@ function checkSiteSettingsUrlValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("admin validates site settings URLs by field", missing.length === 0, missing.join(", "));
+}
+
+function checkSiteSettingsContactValidation() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  const manualFile = "docs/delivery-admin-manual.md";
+  if (!existsSync(adminFile) || !existsSync(schemaFile) || !existsSync(manualFile)) {
+    add("admin validates site settings contact fields", false, `${adminFile}, ${schemaFile}, or ${manualFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const manualText = readFileSync(manualFile, "utf8");
+  const required = [
+    [adminFile, adminText, "function isValidEmail"],
+    [adminFile, adminText, "function hasEnoughPhoneDigits"],
+    [adminFile, adminText, "電話番号は数字を9桁以上含めて入力してください。"],
+    [adminFile, adminText, "メールアドレスは example@bassic.jp の形で入力してください。"],
+    [schemaFile, schemaText, "key: \"email\""],
+    [schemaFile, schemaText, "メールアドレス"],
+    [manualFile, manualText, "電話番号は数字が9桁以上含まれる形で入力します。"],
+    [manualFile, manualText, "メールアドレスは `mail@bassic.jp`"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin validates site settings contact fields", missing.length === 0, missing.join(", "));
 }
 
 function checkSocialNoticeUrlValidation() {

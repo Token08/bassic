@@ -25,6 +25,7 @@
 | --- | --- | --- | --- |
 | 住所 | `address` | テキスト | yes |
 | 電話番号 | `phone` | テキスト | yes |
+| メールアドレス | `email` | テキスト | yes |
 | 通常営業時間 | `hoursLabel` | テキストエリア | yes |
 | イベント日の営業時間補足 | `eventHoursNote` | テキストエリア | no |
 | 喫煙について | `smokingLabel` | テキストエリア | no |

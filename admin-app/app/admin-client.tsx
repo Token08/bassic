@@ -218,6 +218,14 @@ function isGoogleMapUrl(value: string) {
   }
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function hasEnoughPhoneDigits(value: string) {
+  return value.replace(/\D/g, "").length >= 9;
+}
+
 function getSocialUrlError(platform: string, url: string) {
   if (!url) {
     return "";
@@ -1662,6 +1670,17 @@ function SectionEditor({
     }
 
     if (section.id === "site-settings") {
+      const phone = getString(nextDraft.phone).trim();
+      const email = getString(nextDraft.email).trim();
+
+      if (phone && !hasEnoughPhoneDigits(phone)) {
+        nextErrors.phone = "電話番号は数字を9桁以上含めて入力してください。";
+      }
+
+      if (email && !isValidEmail(email)) {
+        nextErrors.email = "メールアドレスは example@bassic.jp の形で入力してください。";
+      }
+
       for (const key of ["googleMapsUrl", "directionsUrl", "instagramUrl", "facebookUrl", "xUrl"]) {
         const urlError = getSiteSettingsUrlError(key, getString(nextDraft[key]).trim());
         if (urlError) {
