@@ -54,11 +54,17 @@ const endpointChecks = [
   },
   {
     label: "menu",
-    path: "/menu?limit=1",
+    path: "/menu?limit=100",
     validateItem: (item) => {
       requiredString(item, "name", "menu");
       if (item.category) {
         requiredEnum(item, "category", ["food", "drink"], "menu");
+      }
+      if (item.isPublished !== false) {
+        requiredString(item, "price", "menu");
+        requiredImage(item, "image", "menu");
+      } else if (item.image) {
+        optionalImage(item, "image", "menu");
       }
     }
   },
@@ -162,11 +168,11 @@ try {
       continue;
     }
 
-    if (list.contents[0]) {
-      check.validateItem(list.contents[0]);
+    for (const item of list.contents) {
+      check.validateItem(item);
     }
 
-    console.log(`OK ${check.label} (${list.contents.length} sampled)`);
+    console.log(`OK ${check.label} (${list.contents.length} checked)`);
   }
 } catch (error) {
   errors.push(error instanceof Error ? error.message : String(error));

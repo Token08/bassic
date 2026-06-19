@@ -70,6 +70,7 @@ checkLegacyMicrocmsSchemaIncludesFacebookEventFields();
 checkAdminSchemaEndpointsMatch();
 checkAdminSchemaKeepsEventsCalendarFocused();
 checkCmsSmokeCoversAdminEndpoints();
+checkCmsSmokeValidatesPublishedMenuItems();
 checkCmsSmokeTimeValidation();
 checkSeedDataCoversAdminEndpoints();
 checkSeedDataKeepsEventsCalendarFocused();
@@ -1413,6 +1414,26 @@ function checkCmsSmokeCoversAdminEndpoints() {
   const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`));
 
   add("CMS smoke test covers admin endpoints", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeValidatesPublishedMenuItems() {
+  const smokeFile = "scripts/smoke-cms.mjs";
+  if (!existsSync(smokeFile)) {
+    add("CMS smoke validates published menu items", false, `${smokeFile} missing`);
+    return;
+  }
+
+  const text = readFileSync(smokeFile, "utf8");
+  const requiredTerms = [
+    'path: "/menu?limit=100"',
+    "for (const item of list.contents)",
+    "item.isPublished !== false",
+    'requiredString(item, "price", "menu")',
+    'requiredImage(item, "image", "menu")'
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates published menu items", missing.length === 0, missing.join(", "));
 }
 
 function checkCmsSmokeTimeValidation() {
