@@ -31,6 +31,7 @@ checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
 checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
+checkCmsSmokeSocialNoticeUrlValidation();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -450,6 +451,29 @@ function checkPublicSocialNoticeUrlFiltering() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("public site filters social notice URLs by platform", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeSocialNoticeUrlValidation() {
+  const file = "scripts/smoke-cms.mjs";
+  if (!existsSync(file)) {
+    add("CMS smoke validates social notice URLs by platform", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "requiredSocialNoticeUrl",
+    "platform === \"instagram\"",
+    "platform === \"facebook\"",
+    "platform === \"x\"",
+    "instagram.com",
+    "facebook.com",
+    "x.com",
+    "twitter.com"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates social notice URLs by platform", missing.length === 0, missing.join(", "));
 }
 
 function checkPreviewChecklistIsSectionSpecific() {

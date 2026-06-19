@@ -84,6 +84,7 @@ const endpointChecks = [
       requiredEnum(item, "platform", ["instagram", "facebook", "x"], "social-notices");
       requiredString(item, "title", "social-notices");
       requiredUrl(item, "url", "social-notices");
+      requiredSocialNoticeUrl(item, "social-notices");
       requiredBoolean(item, "isPublished", "social-notices");
     }
   },
@@ -221,6 +222,33 @@ function requiredFacebookEventUrl(item, field, endpoint) {
   const value = item?.[field];
   if (typeof value !== "string" || !getFacebookEventId(value)) {
     errors.push(`${endpoint}.${field}: Facebook events must use a single event URL like https://www.facebook.com/events/1234567890/.`);
+  }
+}
+
+function requiredSocialNoticeUrl(item, endpoint) {
+  const platform = item?.platform;
+  const value = item?.url;
+  if (typeof value !== "string" || !value.trim()) {
+    return;
+  }
+
+  let host = "";
+  try {
+    host = new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return;
+  }
+
+  if (platform === "instagram" && host !== "instagram.com") {
+    errors.push(`${endpoint}.url: Instagram notices must use instagram.com URLs.`);
+  }
+
+  if (platform === "facebook" && !["facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(host)) {
+    errors.push(`${endpoint}.url: Facebook notices must use facebook.com URLs.`);
+  }
+
+  if (platform === "x" && !["x.com", "twitter.com"].includes(host)) {
+    errors.push(`${endpoint}.url: X notices must use x.com or twitter.com URLs.`);
   }
 }
 
