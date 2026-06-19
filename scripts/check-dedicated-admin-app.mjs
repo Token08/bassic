@@ -335,7 +335,7 @@ function checkClientHandoffDocsLinked() {
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
-  const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります"].filter((term) => !manualText.includes(term));
+  const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例"].filter((term) => !manualText.includes(term));
   const socialUrlTerms = ["instagram.com", "facebook.com", "x.com", "twitter.com"];
   const missingSocialUrlTerms = [
     ...socialUrlTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile} missing ${term}`),
