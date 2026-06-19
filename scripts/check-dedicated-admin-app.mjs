@@ -39,6 +39,7 @@ checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
 checkPublishWaitCopyIsSpecific();
+checkPublicConfirmationGuidanceIsComplete();
 checkFacebookEventPreviewMessages();
 checkFacebookEventPreviewParsingFallbacks();
 checkFacebookEventFetchParsingFallbacks();
@@ -768,6 +769,41 @@ function checkPublishWaitCopyIsSpecific() {
   }
 
   add("publish wait copy is specific for clients", missing.length === 0, missing.join(", "));
+}
+
+function checkPublicConfirmationGuidanceIsComplete() {
+  const requiredByFile = {
+    "admin-app/app/admin-client.tsx": [
+      "確認するページ",
+      "公開ページを開く",
+      "1〜3分ほど待ってから公開サイトを再読み込みして確認してください",
+      "最後にスマホでも表示を確認します"
+    ],
+    "docs/delivery-admin-manual.md": ["確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ"],
+    "docs/client-handoff-sheet.md": ["確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ"],
+    "docs/client-handoff-checklist.md": ["確認するページ", "1〜3分", "再読み込み", "スマホ"]
+  };
+  const missing = [];
+
+  for (const [file, terms] of Object.entries(requiredByFile)) {
+    if (!existsSync(file)) {
+      missing.push(`${file}: missing`);
+      continue;
+    }
+
+    const text = readFileSync(file, "utf8");
+    for (const term of terms) {
+      if (!text.includes(term)) {
+        missing.push(`${file}: ${term}`);
+      }
+    }
+  }
+
+  add(
+    "admin and handoff docs explain public confirmation after publish",
+    missing.length === 0,
+    missing.join(", ")
+  );
 }
 
 function checkFacebookEventPreviewMessages() {
