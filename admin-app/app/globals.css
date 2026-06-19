@@ -761,6 +761,48 @@ a {
   font-weight: 800;
 }
 
+.current-edit-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(36, 93, 131, 0.16);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(36, 93, 131, 0.06);
+}
+
+.current-edit-summary > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.current-edit-summary span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.current-edit-summary strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 1.04rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current-edit-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .required-progress {
   display: flex;
   flex-wrap: wrap;
@@ -1609,6 +1651,19 @@ a {
   .required-progress {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .current-edit-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .current-edit-summary strong {
+    white-space: normal;
+  }
+
+  .current-edit-badges {
+    justify-content: flex-start;
   }
 
   .facebook-import-heading {

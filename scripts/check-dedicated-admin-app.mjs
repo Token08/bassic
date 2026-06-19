@@ -615,6 +615,9 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
     "途中保存や後で確認したい時",
+    "current-edit-summary",
+    "現在編集中の内容",
+    "公開するON",
     "window.addEventListener(\"beforeunload\"",
     "event.returnValue = \"\""
   ];
