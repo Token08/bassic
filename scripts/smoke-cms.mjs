@@ -282,9 +282,24 @@ function optionalTime(item, field, endpoint) {
     return;
   }
 
-  if (typeof value !== "string" || !/^\d{1,2}:\d{2}$/.test(value.trim())) {
-    errors.push(`${endpoint}.${field}: time should include HH:mm, for example 19:00.`);
+  if (!isValidTimeValue(value)) {
+    errors.push(`${endpoint}.${field}: time should be a valid HH:mm value, for example 19:00 or 02:00.`);
   }
+}
+
+function isValidTimeValue(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) {
+    return false;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
 }
 
 function optionalWholeNumber(item, field, endpoint) {

@@ -1010,7 +1010,9 @@ function checkAdminEventTimeValidation() {
   const required = [
     "function isValidEventTime",
     "previewHasInvalidTime",
-    "^\\d{1,2}:\\d{2}$",
+    "^(\\d{1,2}):(\\d{2})$",
+    "hours <= 23",
+    "minutes <= 59",
     "OPENやSTARTの文字は不要です",
     "START/ENDは「19:00」の形で手入力してください",
     "placeholder: \"18:30\"",
@@ -1569,8 +1571,10 @@ function checkCmsSmokeTimeValidation() {
   const text = readFileSync(smokeFile, "utf8");
   const requiredTerms = [
     "function optionalTime",
-    "^\\d{1,2}:\\d{2}$",
-    "time should include HH:mm"
+    "function isValidTimeValue",
+    "hours <= 23",
+    "minutes <= 59",
+    "time should be a valid HH:mm value"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 

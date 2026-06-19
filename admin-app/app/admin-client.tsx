@@ -207,7 +207,14 @@ function getSocialUrlError(platform: string, url: string) {
 }
 
 function isValidEventTime(value: string) {
-  return /^\d{1,2}:\d{2}$/.test(value.trim());
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) {
+    return false;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
 }
 
 function isValidWholeNumber(value: string) {
