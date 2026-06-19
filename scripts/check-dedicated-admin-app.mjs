@@ -31,6 +31,7 @@ checkClientManualUsesPublishButtonForPublicUpdates();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
+checkSiteSettingsUrlValidation();
 checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
@@ -580,6 +581,33 @@ function checkImageRemoveRequiresConfirmation() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin image remove requires confirmation", missing.length === 0, missing.join(", "));
+}
+
+function checkSiteSettingsUrlValidation() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin validates site settings URLs by field", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "function isGoogleMapUrl",
+    "function getSiteSettingsUrlError",
+    "section.id === \"site-settings\"",
+    "Google MapのURLを入力してください。",
+    "Instagram URLは instagram.com のURLを入力してください。",
+    "Facebook URLは facebook.com のURLを入力してください。",
+    "X URLは x.com または twitter.com のURLを入力してください。",
+    "\"googleMapsUrl\"",
+    "\"directionsUrl\"",
+    "\"instagramUrl\"",
+    "\"facebookUrl\"",
+    "\"xUrl\""
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("admin validates site settings URLs by field", missing.length === 0, missing.join(", "));
 }
 
 function checkSocialNoticeUrlValidation() {

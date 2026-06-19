@@ -190,6 +190,16 @@ function isXUrl(value: string) {
   }
 }
 
+function isGoogleMapUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return host === "google.com" || host === "maps.google.com" || host === "maps.app.goo.gl" || host === "goo.gl";
+  } catch {
+    return false;
+  }
+}
+
 function getSocialUrlError(platform: string, url: string) {
   if (!url) {
     return "";
@@ -205,6 +215,30 @@ function getSocialUrlError(platform: string, url: string) {
 
   if (platform === "x" && !isXUrl(url)) {
     return "Xのお知らせは x.com または twitter.com のURLを入力してください。";
+  }
+
+  return "";
+}
+
+function getSiteSettingsUrlError(key: string, url: string) {
+  if (!url) {
+    return "";
+  }
+
+  if ((key === "googleMapsUrl" || key === "directionsUrl") && !isGoogleMapUrl(url)) {
+    return "Google MapのURLを入力してください。";
+  }
+
+  if (key === "instagramUrl" && !isInstagramUrl(url)) {
+    return "Instagram URLは instagram.com のURLを入力してください。";
+  }
+
+  if (key === "facebookUrl" && !isFacebookUrl(url)) {
+    return "Facebook URLは facebook.com のURLを入力してください。";
+  }
+
+  if (key === "xUrl" && !isXUrl(url)) {
+    return "X URLは x.com または twitter.com のURLを入力してください。";
   }
 
   return "";
@@ -1530,6 +1564,15 @@ function SectionEditor({
 
       if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value).trim())) {
         nextErrors[field.key] = `${field.label}のURLは https:// または / から始まるURLを入力してください。`;
+      }
+    }
+
+    if (section.id === "site-settings") {
+      for (const key of ["googleMapsUrl", "directionsUrl", "instagramUrl", "facebookUrl", "xUrl"]) {
+        const urlError = getSiteSettingsUrlError(key, getString(nextDraft[key]).trim());
+        if (urlError) {
+          nextErrors[key] = urlError;
+        }
       }
     }
 
