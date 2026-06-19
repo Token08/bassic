@@ -286,6 +286,11 @@ function isValidWholeNumber(value: string) {
   return /^\d+$/.test(trimmed) && Number(trimmed) >= 0;
 }
 
+function hasPriceOrInquirySignal(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return /\d/.test(normalized) || /(時価|要問合せ|要問い合わせ|お問い合わせ|問い合わせ|応相談|ask|market price)/i.test(normalized);
+}
+
 function getFacebookEventId(value: string) {
   try {
     const url = new URL(value);
@@ -1738,8 +1743,12 @@ function SectionEditor({
     }
 
     if (section.id === "menu" && nextDraft.isPublished) {
-      if (!getString(nextDraft.price).trim()) {
+      const price = getString(nextDraft.price).trim();
+
+      if (!price) {
         nextErrors.price = "フードを公開する前に料金を入力してください。";
+      } else if (!hasPriceOrInquirySignal(price)) {
+        nextErrors.price = "料金は 1,200円、時価、お問い合わせ のように来店前に意味が分かる表記にしてください。";
       }
 
       if (!getImageUrl(nextDraft.image).trim()) {
@@ -1748,6 +1757,12 @@ function SectionEditor({
     }
 
     if (section.id === "party-plans" && nextDraft.isPublished) {
+      const price = getString(nextDraft.price).trim();
+
+      if (price && !hasPriceOrInquirySignal(price)) {
+        nextErrors.price = "料金は 4,000円〜 / 1名、応相談、お問い合わせ のように意味が分かる表記にしてください。";
+      }
+
       if (countTextLength(nextDraft.title) < 4) {
         nextErrors.title = "公開する前に、プラン名を4文字以上で入力してください。";
       }

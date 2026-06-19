@@ -235,7 +235,7 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "name", label: "フード名", type: "text", required: true, placeholder: "ファズ・カレー" },
       { key: "englishName", label: "英語名", type: "text", placeholder: "Fuzz Curry" },
-      { key: "price", label: "料金", type: "text", placeholder: "1,200円", hint: "公開する場合は必ず入れます。未定や時価の場合も、来店前に分かる表記にしてください。" },
+      { key: "price", label: "料金", type: "text", placeholder: "1,200円", hint: "公開する場合は必ず入れます。1,200円、時価、お問い合わせ のように来店前に意味が分かる表記にしてください。" },
       {
         key: "description",
         label: "補足メモ",
@@ -280,7 +280,7 @@ export const sections: SectionDefinition[] = [
     titleKey: "title",
     fields: [
       { key: "title", label: "プラン名", type: "text", required: true, placeholder: "Bassic. Party Plan" },
-      { key: "price", label: "料金", type: "text", required: true, placeholder: "4,000円〜 / 1名" },
+      { key: "price", label: "料金", type: "text", required: true, placeholder: "4,000円〜 / 1名", hint: "4,000円〜 / 1名、応相談、お問い合わせ のように意味が分かる表記にしてください。" },
       { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "内容、人数、注意点など", hint: "公開する場合は12文字以上で、料金・人数・利用内容が分かる一文を入れてください。" },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }

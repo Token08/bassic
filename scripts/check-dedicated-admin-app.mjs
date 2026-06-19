@@ -2339,11 +2339,17 @@ function checkMenuPublishRequiresPriceAndImage() {
   const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
   const required = [
     [adminFile, adminText, "section.id === \"menu\" && nextDraft.isPublished"],
+    [adminFile, adminText, "function hasPriceOrInquirySignal"],
     [adminFile, adminText, "フードを公開する前に料金を入力してください。"],
+    [adminFile, adminText, "料金は 1,200円、時価、お問い合わせ のように来店前に意味が分かる表記にしてください。"],
     [adminFile, adminText, "フードを公開する前に画像を入れてください。"],
+    [adminFile, adminText, "料金は 4,000円〜 / 1名、応相談、お問い合わせ のように意味が分かる表記にしてください。"],
     [schemaFile, schemaText, "公開する場合は必ず入れます"],
+    [schemaFile, schemaText, "来店前に意味が分かる表記"],
     [setupFile, setupText, "公開する場合は料金と画像の入力を必須として扱います"],
-    [fieldDocsFile, fieldDocsText, "公開する場合は料金と画像の入力を必須として扱います"]
+    [setupFile, setupText, "来店前に意味が分かる表記"],
+    [fieldDocsFile, fieldDocsText, "公開する場合は料金と画像の入力を必須として扱います"],
+    [fieldDocsFile, fieldDocsText, "来店前に意味が分かる表記"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
