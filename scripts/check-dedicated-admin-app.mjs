@@ -508,6 +508,8 @@ function checkSocialNoticeUrlValidation() {
     "SNSお知らせURLの入力例",
     "プロフィールURLか、見せたい投稿を開いた時のURL",
     "Facebookページか、見せたい投稿・イベントを開いた時のURL",
+    "選んだSNSとURLの種類は合っています。",
+    "リンクURLを入れると、SNSの種類が合っているかここに表示します。",
     "section.id === \"social-notices\"",
     "instagram.com",
     "facebook.com",

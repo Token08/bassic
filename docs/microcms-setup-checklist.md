@@ -96,6 +96,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 | `isPublished` | 公開する | 真偽値 | 必須 |
 
 `platform` は `instagram` / `facebook` / `x` の3択です。Xは自動タイムライン取得ではなく、投稿URLカードとして安定表示します。
+管理画面では、選んだSNSと `url` の種類が合っているか入力中に確認できます。Instagramには `instagram.com`、Facebookには `facebook.com`、Xには `x.com` または `twitter.com` のURLを入れます。
 
 ## 7. FacebookイベントとGoogle Calendar連携の注意
 

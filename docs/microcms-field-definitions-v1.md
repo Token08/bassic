@@ -161,6 +161,8 @@ TOPを含む各ページのメイン画像は、下記の `hero-slides` で管�
 | Facebook | `facebook` |
 | X | `x` |
 
+管理画面では、選んだSNSと `url` の種類が合っているか入力中に確認できます。Instagramには `instagram.com`、Facebookには `facebook.com`、Xには `x.com` または `twitter.com` のURLを入れます。
+
 ## `page-copy`
 
 保守用の文言設定です。日常更新は `home`、`menu`、`events`、`site-settings` を優先します。

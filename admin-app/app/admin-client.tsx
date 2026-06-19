@@ -1034,6 +1034,8 @@ function SaveChoiceGuide() {
 
 function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
   const platform = getString(draft.platform) || "instagram";
+  const currentUrl = getString(draft.url).trim();
+  const currentUrlError = getSocialUrlError(platform, currentUrl);
   const guides: Record<string, { label: string; example: string; note: string }> = {
     instagram: {
       label: "Instagram",
@@ -1060,6 +1062,13 @@ function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
         <strong>{guide.label}のURLを入力してください</strong>
         <span>{guide.note}</span>
         <code>{guide.example}</code>
+        {currentUrl ? (
+          <small className={currentUrlError ? "form-error" : "form-success"}>
+            {currentUrlError || "選んだSNSとURLの種類は合っています。"}
+          </small>
+        ) : (
+          <small>リンクURLを入れると、SNSの種類が合っているかここに表示します。</small>
+        )}
       </div>
     </section>
   );

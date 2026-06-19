@@ -288,7 +288,7 @@ export const sections: SectionDefinition[] = [
     title: "SNSお知らせカード",
     shortTitle: "SNSお知らせ",
     description: "Instagram、Facebook、Xへの誘導カードを更新します。",
-    helperText: "SNS投稿そのものを自動取得するのではなく、見に行ってほしい投稿へのリンクカードを作ります。",
+    helperText: "SNS投稿そのものを自動取得するのではなく、見に行ってほしい投稿へのリンクカードを作ります。SNSを選ぶと、URLの種類が合っているか入力中に確認できます。",
     kind: "list",
     createLabel: "お知らせを追加",
     icon: Megaphone,
