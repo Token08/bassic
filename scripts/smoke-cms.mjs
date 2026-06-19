@@ -49,6 +49,7 @@ const endpointChecks = [
       }
       if (item.sourceType === "facebook") {
         requiredFacebookEventUrl(item, "sourceUrl", "events");
+        optionalFacebookSourceIdMatchesUrl(item, "events");
       }
       optionalImage(item, "image", "events");
     }
@@ -237,6 +238,14 @@ function requiredFacebookEventUrl(item, field, endpoint) {
   const value = item?.[field];
   if (typeof value !== "string" || !getFacebookEventId(value)) {
     errors.push(`${endpoint}.${field}: Facebook events must use a single event URL like https://www.facebook.com/events/1234567890/.`);
+  }
+}
+
+function optionalFacebookSourceIdMatchesUrl(item, endpoint) {
+  const sourceId = typeof item?.sourceId === "string" ? item.sourceId.trim() : "";
+  const eventId = getFacebookEventId(item?.sourceUrl);
+  if (sourceId && eventId && sourceId !== eventId) {
+    errors.push(`${endpoint}.sourceId: Facebook event ID should match the sourceUrl event ID.`);
   }
 }
 

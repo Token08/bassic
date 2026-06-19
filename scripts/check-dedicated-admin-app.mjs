@@ -34,6 +34,7 @@ checkImageRemoveRequiresConfirmation();
 checkSocialNoticeUrlValidation();
 checkPublicSocialNoticeUrlFiltering();
 checkCmsSmokeSocialNoticeUrlValidation();
+checkCmsSmokeValidatesFacebookEventSourceIds();
 checkPreviewChecklistIsSectionSpecific();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
@@ -649,6 +650,25 @@ function checkCmsSmokeSocialNoticeUrlValidation() {
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
   add("CMS smoke validates social notice URLs by platform", missing.length === 0, missing.join(", "));
+}
+
+function checkCmsSmokeValidatesFacebookEventSourceIds() {
+  const file = "scripts/smoke-cms.mjs";
+  if (!existsSync(file)) {
+    add("CMS smoke validates Facebook event source IDs", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "optionalFacebookSourceIdMatchesUrl",
+    "getFacebookEventId(item?.sourceUrl)",
+    "sourceId !== eventId",
+    "Facebook event ID should match the sourceUrl event ID"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("CMS smoke validates Facebook event source IDs", missing.length === 0, missing.join(", "));
 }
 
 function checkPreviewChecklistIsSectionSpecific() {
