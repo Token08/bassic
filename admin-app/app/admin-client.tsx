@@ -1025,6 +1025,13 @@ function FacebookEventImportPanel({
         !currentImageUrl && !preview.imageUrl ? "画像URL" : ""
       ].filter(Boolean)
     : [];
+  const calendarRequestBlockingLabels = preview
+    ? [
+        !currentTitle && !preview.title ? "イベント名" : "",
+        !currentDate && !preview.date ? "日付" : "",
+        !currentStartTime && !preview.startTime ? "START" : ""
+      ].filter(Boolean)
+    : [];
   const calendarRequestText = preview
     ? [
         "Google Calendarにも反映してください。",
@@ -1037,6 +1044,7 @@ function FacebookEventImportPanel({
       ].join("\n")
     : "";
   const calendarRequestHasMissingFields = calendarRequestMissingLabels.length > 0;
+  const calendarRequestCannotCopy = calendarRequestBlockingLabels.length > 0;
 
   useEffect(() => {
     if (copyMessage) {
@@ -1107,6 +1115,11 @@ function FacebookEventImportPanel({
       return;
     }
 
+    if (calendarRequestCannotCopy) {
+      setCopyMessage(`コピー前に ${calendarRequestBlockingLabels.join("、")} を入力してください。`);
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(calendarRequestText);
       setCopyMessage("コピーしました。担当者へのメッセージに貼り付けてください。");
@@ -1170,7 +1183,7 @@ function FacebookEventImportPanel({
             <div className="facebook-calendar-request" aria-label="Google Calendar反映依頼メモ">
               <div className="facebook-calendar-request-heading">
                 <strong>Google Calendar反映依頼メモ</strong>
-                <button type="button" onClick={() => void copyCalendarRequest()}>
+                <button type="button" disabled={calendarRequestCannotCopy} onClick={() => void copyCalendarRequest()}>
                   <Copy size={16} />
                   コピーする
                 </button>

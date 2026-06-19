@@ -973,6 +973,11 @@ a {
   background: rgba(36, 93, 131, 0.08);
 }
 
+.facebook-calendar-request-heading button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
 .facebook-calendar-request span {
   color: var(--muted);
   font-size: 0.82rem;
