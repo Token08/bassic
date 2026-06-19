@@ -1702,6 +1702,15 @@ function SectionEditor({
         nextErrors.email = "メールアドレスは example@bassic.jp の形で入力してください。";
       }
 
+      if (countTextLength(nextDraft.smokingLabel) < 8) {
+        nextErrors.smokingLabel = "喫煙については、店内喫煙OK、禁煙、イベント中は禁煙など、来店前に分かる表記で入力してください。";
+      }
+
+      const chargeLabel = getString(nextDraft.chargeLabel).trim();
+      if (chargeLabel && !hasPriceOrInquirySignal(chargeLabel)) {
+        nextErrors.chargeLabel = "テーブル・チャージは 500円 / お一人様 のように料金が分かる表記にしてください。";
+      }
+
       for (const key of ["googleMapsUrl", "directionsUrl", "instagramUrl", "facebookUrl", "xUrl"]) {
         const urlError = getSiteSettingsUrlError(key, getString(nextDraft[key]).trim());
         if (urlError) {

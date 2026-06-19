@@ -115,10 +115,11 @@ export const sections: SectionDefinition[] = [
         key: "smokingLabel",
         label: "喫煙について",
         type: "textarea",
+        required: true,
         rows: 5,
         placeholder: "店内喫煙OK（紙タバコ・電子タバコOK）\n※未成年の入店はお断りしております。\n※イベント内容によりイベント中は禁煙になる場合がございます。"
       },
-      { key: "chargeLabel", label: "テーブル・チャージ", type: "text", placeholder: "テーブル・チャージ 500円 / お一人様" },
+      { key: "chargeLabel", label: "テーブル・チャージ", type: "text", required: true, placeholder: "テーブル・チャージ 500円 / お一人様" },
       {
         key: "googleMapsUrl",
         label: "Google Map URL",

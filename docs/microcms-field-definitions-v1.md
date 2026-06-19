@@ -28,8 +28,8 @@
 | メールアドレス | `email` | テキスト | yes |
 | 通常営業時間 | `hoursLabel` | テキストエリア | yes |
 | イベント日の営業時間補足 | `eventHoursNote` | テキストエリア | no |
-| 喫煙について | `smokingLabel` | テキストエリア | no |
-| テーブル・チャージ | `chargeLabel` | テキスト | no |
+| 喫煙について | `smokingLabel` | テキストエリア | yes |
+| テーブル・チャージ | `chargeLabel` | テキスト | yes |
 | Google Map URL | `googleMapsUrl` | テキスト | yes |
 | 現在地から向かうURL | `directionsUrl` | テキスト | no |
 | Instagram URL | `instagramUrl` | テキスト | yes |

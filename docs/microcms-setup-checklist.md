@@ -38,7 +38,28 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 7. `social-notices`: Instagram、Facebook、Xの誘導カードを入れる
 8. `page-copy` / `page-sections` / `custom-sections`: 保守担当者だけが必要時に設定する
 
-## 2. home
+## 2. site-settings
+
+| fieldId | 表示名 | 種類 | 必須 |
+| --- | --- | --- | --- |
+| `address` | 住所 | テキストエリア | 必須 |
+| `phone` | 電話番号 | テキストフィールド | 必須 |
+| `email` | メールアドレス | テキストフィールド | 必須 |
+| `hoursLabel` | 通常営業時間 | テキストエリア | 必須 |
+| `eventHoursNote` | イベント時の営業時間補足 | テキストエリア | 任意 |
+| `smokingLabel` | 喫煙について | テキストエリア | 必須 |
+| `chargeLabel` | テーブル・チャージ | テキストフィールド | 必須 |
+| `googleMapsUrl` | Google Map URL | テキストフィールド | 必須 |
+| `directionsUrl` | 現在地から向かうURL | テキストフィールド | 任意 |
+| `instagramUrl` | Instagram URL | テキストフィールド | 必須 |
+| `facebookUrl` | Facebook URL | テキストフィールド | 必須 |
+| `xUrl` | X URL | テキストフィールド | 必須 |
+| `onlineStoreUrl` | オンラインストアURL | テキストフィールド | 任意 |
+
+喫煙とテーブル・チャージは来店判断に直結するため、空欄にしません。
+Google MapとSNS URLは、管理画面の「地図を開いて確認」「SNSを開いて確認」で正しいページが開くか確認します。
+
+## 3. home
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -53,7 +74,7 @@ microCMSで以下のAPIを作成します。API IDはコードと一致させて
 TOP画像は `home` ではなく、`hero-slides` の `page = home` で管理します。
 `displayOrder` や `優先順位` などの数字欄は、0以上の半角整数だけを入力します。小数やマイナスは使いません。
 
-## 3. events
+## 4. events
 
 | fieldId | 表示名 | 種類 | 必須 | 備考 |
 | --- | --- | --- | --- | --- |
@@ -76,7 +97,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 `date` は開催日だけを入れます。開場・開始・終了の時刻は `OPEN` / `START` / `END` に分けて入力します。
 公開するイベントは、日付とSTARTの両方を入力します。
 
-## 4. menu
+## 5. menu
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -95,7 +116,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 
 現在のサイトでは、フードは `menu`、ドリンク表は `drink-menu-sheets` で管理します。`category` はフードメニュー作成時に管理画面側で `food` を自動入力するため、店舗側が選ぶ必要はありません。
 
-## 5. drink-menu-sheets
+## 6. drink-menu-sheets
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -107,7 +128,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 ドリンク表は、1枚ずつ画像として登録します。複数枚ある場合は `displayOrder` を 1、2、3 のように入れます。
 画像を差し替えたら、公開サイトのメニューページで通常表示と拡大表示の両方を確認してください。
 
-## 6. party-plans
+## 7. party-plans
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -120,7 +141,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 公開するプランは、プラン名を4文字以上、説明を12文字以上にします。料金、人数、利用内容が分かる一文を入れてください。
 料金は `4,000円〜 / 1名`、`応相談`、`お問い合わせ` のように意味が分かる表記にします。
 
-## 7. equipment-rental
+## 8. equipment-rental
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -130,9 +151,9 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 | `pdfUrl` | PDFリンク | テキストフィールド | 任意 |
 
 機材レンタルのPDFを差し替えた時は、`pdfUrl` も新しいURLへ変更します。
-入力後は管理画面の「リンクを開いて確認」でPDFが開くか確認してください。
+入力後は管理画面の「PDFを開いて確認」でPDFが開くか確認してください。
 
-## 8. social-notices
+## 9. social-notices
 
 | fieldId | 表示名 | 種類 | 必須 |
 | --- | --- | --- | --- |
@@ -147,7 +168,7 @@ Facebookイベントから取り込む場合、`sourceUrl` は個別イベント
 管理画面では、選んだSNSと `url` の種類が合っているか入力中に確認できます。Instagramには `instagram.com`、Facebookには `facebook.com`、Xには `x.com` または `twitter.com` のURLを入れます。
 公開するSNSお知らせは、表示タイトルを6文字以上、短い説明を10文字以上にします。説明は1〜2文で投稿内容や見てほしいポイントが分かるようにします。
 
-## 9. FacebookイベントとGoogle Calendar連携の注意
+## 10. FacebookイベントとGoogle Calendar連携の注意
 
 イベントをGoogle Calendarへ反映する場合、`events` の `sourceUrl` はFacebookの個別イベントページURLを入れます。イベント一覧ページのURLでは同期対象として扱えません。
 
@@ -155,7 +176,7 @@ FacebookイベントURLから取り込んだイベントを公開する場合は
 
 `image` はCalendar説明欄の画像URLとして使います。Google Calendarの月表示で画像カードとして大きく出ることは保証されないため、画像はサイト側のイベント表示と説明欄リンク用と考えてください。
 
-## 10. 作成時のミス防止
+## 11. 作成時のミス防止
 
 microCMS側でAPIを作る時は、次を確認してください。
 
@@ -166,7 +187,7 @@ microCMS側でAPIを作る時は、次を確認してください。
 - 画像フィールドは、URL文字列ではなくmicroCMSの画像フィールドで作る
 - 数字フィールドは、表示順だけに使う。料金は `¥1,200` や `￥4,000〜 / 1名` のような表記を入れるためテキストで作る
 
-## 11. 接続確認
+## 12. 接続確認
 
 ローカルまたはGitHub Actionsの環境変数に以下を設定します。
 

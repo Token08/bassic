@@ -640,10 +640,17 @@ function checkSiteSettingsContactValidation() {
     [adminFile, adminText, "function hasEnoughPhoneDigits"],
     [adminFile, adminText, "電話番号は数字を9桁以上含めて入力してください。"],
     [adminFile, adminText, "メールアドレスは example@bassic.jp の形で入力してください。"],
+    [adminFile, adminText, "喫煙については、店内喫煙OK、禁煙、イベント中は禁煙など、来店前に分かる表記で入力してください。"],
+    [adminFile, adminText, "テーブル・チャージは 500円 / お一人様 のように料金が分かる表記にしてください。"],
     [schemaFile, schemaText, "key: \"email\""],
     [schemaFile, schemaText, "メールアドレス"],
+    [schemaFile, schemaText, "key: \"smokingLabel\""],
+    [schemaFile, schemaText, "label: \"喫煙について\""],
+    [schemaFile, schemaText, "key: \"chargeLabel\""],
+    [schemaFile, schemaText, "label: \"テーブル・チャージ\""],
     [manualFile, manualText, "電話番号は数字が9桁以上含まれる形で入力します。"],
-    [manualFile, manualText, "メールアドレスは `mail@bassic.jp`"]
+    [manualFile, manualText, "メールアドレスは `mail@bassic.jp`"],
+    [manualFile, manualText, "喫煙について、テーブル・チャージが空欄になっていないか確認する"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
@@ -1586,7 +1593,7 @@ function checkMicrocmsSchemaUsesManagedSiteSettings() {
     [schemaFile, schemaText, "facebookUrl"],
     [schemaFile, schemaText, "xUrl"],
     [schemaFile, schemaText, "Google Map欄にSNS URLを入れる"],
-    [schemaFile, schemaText, "営業時間、Google Map URL、SNS URLは `site-settings` で管理します"],
+    [schemaFile, schemaText, "営業時間、喫煙、テーブル・チャージ、Google Map URL、SNS URLは `site-settings` で管理します"],
     [manualFile, manualText, "違う種類のURLを入れると管理画面でエラーが出ます。"]
   ];
   const stale = [[schemaFile, schemaText, "営業時間やGoogle Map URLはCMSではなく"]];
@@ -1637,8 +1644,8 @@ function checkAdminFieldDocsRequiredFlags() {
 
   const text = readFileSync(docsFile, "utf8");
   const required = [
-    "| 喫煙について | `smokingLabel` | テキストエリア | no |",
-    "| テーブル・チャージ | `chargeLabel` | テキスト | no |",
+    "| 喫煙について | `smokingLabel` | テキストエリア | yes |",
+    "| テーブル・チャージ | `chargeLabel` | テキスト | yes |",
     "| 初回来店説明文 | `firstVisitLead` | テキストエリア | no |",
     "| アクセス補足 | `accessNote` | テキストエリア | no |",
     "`firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。"
@@ -1657,14 +1664,18 @@ function checkMicrocmsSetupChecklistFieldDetails() {
 
   const text = readFileSync(file, "utf8");
   const required = [
+    "## 2. site-settings",
+    "| `smokingLabel` | 喫煙について | テキストエリア | 必須 |",
+    "| `chargeLabel` | テーブル・チャージ | テキストフィールド | 必須 |",
+    "喫煙とテーブル・チャージは来店判断に直結するため、空欄にしません。",
     "| `firstVisitLead` | 初めての方向け説明 | テキストエリア | 任意 |",
     "| `accessNote` | アクセス補足 | テキストエリア | 任意 |",
     "`firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。",
-    "## 5. drink-menu-sheets",
+    "## 6. drink-menu-sheets",
     "| `image` | メニュー表画像 | 画像 | 必須 |",
-    "## 7. equipment-rental",
+    "## 8. equipment-rental",
     "| `pdfUrl` | PDFリンク | テキストフィールド | 任意 |",
-    "## 11. 接続確認"
+    "## 12. 接続確認"
   ];
   const stale = [
     "| `firstVisitLead` | 初めての方向け説明 | テキストエリア | 必須 |",
@@ -1829,13 +1840,13 @@ function checkMicrocmsSetupChecklistIncludesFacebookEventFields() {
     "`sourceType` | 取り込み元",
     "`sourceId` と `sourceType` は管理画面側で自動入力",
     "`date` と `startTime`",
-    "## 9. FacebookイベントとGoogle Calendar連携の注意",
-    "## 10. 作成時のミス防止",
+    "## 10. FacebookイベントとGoogle Calendar連携の注意",
+    "## 11. 作成時のミス防止",
     "API IDは上の表と完全一致",
     "`sourceId`、`sourceType`、`category` は店舗側が普段触らない項目",
     "画像フィールドは、URL文字列ではなくmicroCMSの画像フィールド",
     "料金は `¥1,200` や `￥4,000〜 / 1名` のような表記を入れるためテキスト",
-    "## 11. 接続確認"
+    "## 12. 接続確認"
   ];
   const missing = required.filter((term) => !text.includes(term));
 

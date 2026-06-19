@@ -12,8 +12,8 @@ microCMS管理画面で以下のAPIを作成します。API IDはコードと一
 | phone | 電話番号 | テキストフィールド | true |  |
 | hoursLabel | 通常営業時間 | テキストエリア | true |  |
 | eventHoursNote | イベント時の営業時間補足 | テキストエリア | false |  |
-| smokingLabel | 喫煙について | テキストエリア | false |  |
-| chargeLabel | テーブル・チャージ | テキストフィールド | false |  |
+| smokingLabel | 喫煙について | テキストエリア | true | 来店判断に直結するため必須 |
+| chargeLabel | テーブル・チャージ | テキストフィールド | true | 例: テーブル・チャージ 500円 / お一人様 |
 | googleMapsUrl | Google Map URL | テキストフィールド | true | Google MapのURLを入れます |
 | directionsUrl | 現在地から向かうURL | テキストフィールド | false | Google Mapの経路案内URLを入れます |
 | instagramUrl | Instagram URL | テキストフィールド | true | `instagram.com` のURLを入れます |
@@ -90,7 +90,7 @@ Facebookイベントから取り込んだイベントは `sourceUrl` に個別�
 - イベント更新を最優先にするため、`events` は公開/非公開を必ず設定します。
 - トップ画像はDrive素材から選び、横長で店内の雰囲気が伝わる写真を推奨します。
 - メニュー画像は正方形または横長を推奨します。未設定でも公開できますが、来店前の分かりやすさを優先するメニューには画像を設定します。
-- 営業時間、Google Map URL、SNS URLは `site-settings` で管理します。変更後は管理画面の「リンクを開いて確認」と公開サイトのスマホ表示を必ず確認します。
+- 営業時間、喫煙、テーブル・チャージ、Google Map URL、SNS URLは `site-settings` で管理します。変更後は管理画面の「地図を開いて確認」「SNSを開いて確認」と公開サイトのスマホ表示を必ず確認します。
 
 ## social-notices
 
