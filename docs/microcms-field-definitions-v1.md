@@ -27,8 +27,8 @@
 | 電話番号 | `phone` | テキスト | yes |
 | 通常営業時間 | `hoursLabel` | テキストエリア | yes |
 | イベント日の営業時間補足 | `eventHoursNote` | テキストエリア | no |
-| 喫煙について | `smokingLabel` | テキストエリア | yes |
-| テーブル・チャージ | `chargeLabel` | テキスト | yes |
+| 喫煙について | `smokingLabel` | テキストエリア | no |
+| テーブル・チャージ | `chargeLabel` | テキスト | no |
 | Google Map URL | `googleMapsUrl` | テキスト | yes |
 | 現在地から向かうURL | `directionsUrl` | テキスト | no |
 | Instagram URL | `instagramUrl` | テキスト | yes |
@@ -42,11 +42,13 @@
 | --- | --- | --- | --- |
 | TOP見出し | `heroTitle` | テキスト | yes |
 | TOP説明文 | `heroLead` | テキストエリア | yes |
-| 初回来店説明文 | `firstVisitLead` | テキストエリア | yes |
-| アクセス補足 | `accessNote` | テキストエリア | yes |
+| 初回来店説明文 | `firstVisitLead` | テキストエリア | no |
+| アクセス補足 | `accessNote` | テキストエリア | no |
 | Instagram表示URL | `instagramWidgetSrc` | テキスト | no |
 
 `instagramWidgetSrc` はLightWidgetなど外部サービスで発行したiframe URLだけを入力します。Instagram IDだけでは直近投稿一覧を安定表示できません。
+
+`firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。文言を変えたい時だけ入力してください。
 
 TOPを含む各ページのメイン画像は、下記の `hero-slides` で管理します。画像変更の入口を分けないため、`home` には画像フィールドを作りません。
 `displayOrder` や `優先順位` などの数字欄は、0以上の半角整数だけを入力します。小数やマイナスは使いません。

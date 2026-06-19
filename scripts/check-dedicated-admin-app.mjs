@@ -63,6 +63,7 @@ checkLegacyDeliveryManualMarkedAsOld();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
+checkAdminFieldDocsRequiredFlags();
 checkTopImagesAreManagedByHeroSlides();
 checkMaintainerOnlyFieldsAreClear();
 checkSiteSettingsPlaceholdersUseCurrentCopy();
@@ -1394,6 +1395,26 @@ function checkAdminSchemaDocsMatch() {
   const missing = [...new Set(sectionIds)].filter((id) => !docsText.includes(`## \`${id}\``));
 
   add("admin schema sections are documented", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminFieldDocsRequiredFlags() {
+  const docsFile = "docs/microcms-field-definitions-v1.md";
+  if (!existsSync(docsFile)) {
+    add("admin field docs required flags match safe defaults", false, `${docsFile} missing`);
+    return;
+  }
+
+  const text = readFileSync(docsFile, "utf8");
+  const required = [
+    "| 喫煙について | `smokingLabel` | テキストエリア | no |",
+    "| テーブル・チャージ | `chargeLabel` | テキスト | no |",
+    "| 初回来店説明文 | `firstVisitLead` | テキストエリア | no |",
+    "| アクセス補足 | `accessNote` | テキストエリア | no |",
+    "`firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin field docs required flags match safe defaults", missing.length === 0, missing.join(", "));
 }
 
 function checkTopImagesAreManagedByHeroSlides() {
