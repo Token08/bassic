@@ -177,6 +177,43 @@ function getItemTitle(section: SectionDefinition, item: Draft) {
   return getString(item[section.titleKey || "title"]) || getString(item.name) || "タイトル未入力";
 }
 
+function getSelectOptionLabel(section: SectionDefinition, key: string, value: unknown) {
+  const stringValue = getString(value);
+  const field = section.fields.find((candidate) => candidate.key === key);
+
+  return field?.options?.find((option) => option.value === stringValue)?.label || stringValue;
+}
+
+function getItemMeta(section: SectionDefinition, item: Draft) {
+  if (section.id === "events") {
+    return [getString(item.date), getString(item.startTime), getString(item.price)].filter(Boolean).join(" / ");
+  }
+
+  if (section.id === "menu" || section.id === "party-plans") {
+    return getString(item.price);
+  }
+
+  if (section.id === "hero-slides") {
+    const pageLabel = getSelectOptionLabel(section, "page", item.page);
+    return pageLabel ? `使うページ: ${pageLabel}` : "";
+  }
+
+  if (section.id === "drink-menu-sheets") {
+    return `表示順 ${getNumber(item.displayOrder) || "未入力"}`;
+  }
+
+  if (section.id === "equipment-rental") {
+    return getString(item.pdfUrl) ? "PDFリンクあり" : "PDFリンク未設定";
+  }
+
+  if (section.id === "social-notices") {
+    const platformLabel = getSelectOptionLabel(section, "platform", item.platform);
+    return platformLabel ? `SNS種別: ${platformLabel}` : "";
+  }
+
+  return getString(item.displayOrder) ? `表示順 ${getString(item.displayOrder)}` : "";
+}
+
 function isPublished(item: Draft) {
   return item.isPublished !== false;
 }
@@ -2344,31 +2381,36 @@ function SectionEditor({
               </div>
               {items.length ? (
                 filteredItems.length ? (
-                  filteredItems.map((item) => (
-                    <button
-                      className={selectedId === item.id ? "selected" : ""}
-                      key={item.id || JSON.stringify(item)}
-                      type="button"
-                      onClick={() => {
-                        if (!confirmDiscardChanges()) {
-                          return;
-                        }
+                  filteredItems.map((item) => {
+                    const itemMeta = getItemMeta(section, item);
 
-                        userInteractedRef.current = true;
-                        setSelectedId(item.id || "");
-                        setDraft(mergeDefaults(section, item));
-                        setErrors({});
-                        setNotice(null);
-                        setDirty(false);
-                        setLastSavedAt("");
-                      }}
-                    >
-                      <span>{getItemTitle(section, item)}</span>
-                      <small className={isPublished(item) ? "status-public" : "status-draft"}>
-                        {isPublished(item) ? "公開" : "下書き"}
-                      </small>
-                    </button>
-                  ))
+                    return (
+                      <button
+                        className={selectedId === item.id ? "selected" : ""}
+                        key={item.id || JSON.stringify(item)}
+                        type="button"
+                        onClick={() => {
+                          if (!confirmDiscardChanges()) {
+                            return;
+                          }
+
+                          userInteractedRef.current = true;
+                          setSelectedId(item.id || "");
+                          setDraft(mergeDefaults(section, item));
+                          setErrors({});
+                          setNotice(null);
+                          setDirty(false);
+                          setLastSavedAt("");
+                        }}
+                      >
+                        <span className="item-list-title">{getItemTitle(section, item)}</span>
+                        <small className={isPublished(item) ? "status-public" : "status-draft"}>
+                          {isPublished(item) ? "公開" : "下書き"}
+                        </small>
+                        {itemMeta ? <small className="item-list-meta">{itemMeta}</small> : null}
+                      </button>
+                    );
+                  })
                 ) : (
                   <div className="empty-list">条件に合う項目がありません。検索文字か公開状態を変えてください。</div>
                 )

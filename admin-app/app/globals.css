@@ -781,7 +781,7 @@ a {
 
 .item-list button {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px 10px;
   align-items: center;
   border: 1px solid var(--line);
@@ -859,8 +859,19 @@ a {
   color: var(--accent);
 }
 
-.item-list small {
-  grid-column: 2;
+.item-list-title {
+  overflow: hidden;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-list-meta {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .empty-list {

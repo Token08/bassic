@@ -47,6 +47,7 @@ checkAdminUrlPreviewLabelsAreContextual();
 checkAdminValidationNoticeNamesFields();
 checkAdminValidationSummaryLinksFields();
 checkAdminSaveFlowExplainsPublishBehavior();
+checkAdminItemListShowsUsefulMeta();
 checkAdminPreviewRequiresConfirmation();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
@@ -1045,6 +1046,30 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin save flow explains publish behavior", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminItemListShowsUsefulMeta() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin item list shows useful meta", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "function getItemMeta"],
+    [clientFile, clientText, "使うページ:"],
+    [clientFile, clientText, "PDFリンクあり"],
+    [clientFile, clientText, "SNS種別:"],
+    [clientFile, clientText, "item-list-meta"],
+    [cssFile, cssText, ".item-list-title"],
+    [cssFile, cssText, ".item-list-meta"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin item list shows useful meta", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminPreviewRequiresConfirmation() {
