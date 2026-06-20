@@ -1986,6 +1986,11 @@ function SectionEditor({
       const platform = getString(nextDraft.platform);
       const socialUrl = getString(nextDraft.url).trim();
       const socialUrlError = getSocialUrlError(platform, socialUrl);
+      const allowedPlatforms = ["instagram", "facebook", "x"];
+      if (nextDraft.isPublished && !allowedPlatforms.includes(platform)) {
+        nextErrors.platform = "公開する前に、SNS種別をInstagram、Facebook、Xから選んでください。";
+      }
+
       if (socialUrlError) {
         nextErrors.url = socialUrlError;
       }
