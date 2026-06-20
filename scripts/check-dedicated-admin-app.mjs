@@ -663,27 +663,32 @@ function checkPdfUrlValidationIsSpecific() {
 
 function checkSiteSettingsUrlValidation() {
   const file = "admin-app/app/admin-client.tsx";
-  if (!existsSync(file)) {
-    add("admin validates site settings URLs by field", false, `${file} missing`);
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(file) || !existsSync(schemaFile)) {
+    add("admin validates site settings URLs by field", false, `${file} or ${schemaFile} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
   const requiredTerms = [
-    "function isGoogleMapUrl",
-    "function getSiteSettingsUrlError",
-    "section.id === \"site-settings\"",
-    "Google MapのURLを入力してください。",
-    "Instagram URLは instagram.com のURLを入力してください。",
-    "Facebook URLは facebook.com のURLを入力してください。",
-    "X URLは x.com または twitter.com のURLを入力してください。",
-    "\"googleMapsUrl\"",
-    "\"directionsUrl\"",
-    "\"instagramUrl\"",
-    "\"facebookUrl\"",
-    "\"xUrl\""
+    [file, text, "function isGoogleMapUrl"],
+    [file, text, "function getSiteSettingsUrlError"],
+    [file, text, "section.id === \"site-settings\""],
+    [file, text, "Google MapのURLを入力してください。"],
+    [file, text, "Instagram URLは instagram.com のURLを入力してください。"],
+    [file, text, "Facebook URLは facebook.com のURLを入力してください。"],
+    [file, text, "X URLは x.com または twitter.com のURLを入力してください。"],
+    [file, text, "\"googleMapsUrl\""],
+    [file, text, "\"directionsUrl\""],
+    [file, text, "\"instagramUrl\""],
+    [file, text, "\"facebookUrl\""],
+    [file, text, "\"xUrl\""],
+    [schemaFile, schemaText, "Google Mapの店舗ページURL"],
+    [schemaFile, schemaText, "保存前に「地図を開いて確認」"],
+    [schemaFile, schemaText, "現在地から向かう導線が開くか確認"]
   ];
-  const missing = requiredTerms.filter((term) => !text.includes(term));
+  const missing = requiredTerms.filter(([, source, term]) => !source.includes(term)).map(([sourceFile, , term]) => `${sourceFile}: ${term}`);
 
   add("admin validates site settings URLs by field", missing.length === 0, missing.join(", "));
 }

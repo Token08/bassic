@@ -126,14 +126,14 @@ export const sections: SectionDefinition[] = [
         type: "url",
         required: true,
         placeholder: "https://maps.google.com/...",
-        hint: "保存前に「リンクを開いて確認」でBassic.の地図が開くか確認してください。"
+        hint: "Google Mapの店舗ページURLを入れます。保存前に「地図を開いて確認」でBassic.の地図が開くか確認してください。"
       },
       {
         key: "directionsUrl",
         label: "現在地から向かうURL",
         type: "url",
         placeholder: "https://maps.google.com/...",
-        hint: "Google Mapの経路案内URLを入れます。未入力でも通常の地図リンクは使えます。"
+        hint: "Google Mapの経路案内URLを入れます。入力後は「地図を開いて確認」で現在地から向かう導線が開くか確認してください。未入力でも通常の地図リンクは使えます。"
       },
       {
         key: "instagramUrl",
