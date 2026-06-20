@@ -107,6 +107,18 @@ const publicPagePaths: Partial<Record<SectionDefinition["id"], string>> = {
   "social-notices": "/"
 };
 
+const publicPageLabels: Partial<Record<SectionDefinition["id"], string>> = {
+  "site-settings": "Accessページ",
+  home: "TOPページ",
+  "hero-slides": "TOPページ",
+  events: "Event Scheduleページ",
+  menu: "Menuページ",
+  "drink-menu-sheets": "Menuページ",
+  "party-plans": "Partyページ",
+  "equipment-rental": "Partyページ",
+  "social-notices": "TOPページのSNS欄"
+};
+
 function getPublicPageUrl(section: SectionDefinition) {
   const path = publicPagePaths[section.id];
 
@@ -115,6 +127,10 @@ function getPublicPageUrl(section: SectionDefinition) {
   }
 
   return new URL(path, publicSiteUrl).toString();
+}
+
+function getPublicPageLabel(section: SectionDefinition) {
+  return publicPageLabels[section.id] || "公開ページ";
 }
 
 function getPostPublishSteps(section: SectionDefinition) {
@@ -1043,12 +1059,14 @@ function CurrentEditSummary({
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
   const itemLabel = section.kind === "list" ? (isNewListItem ? "新しく追加する項目" : getItemTitle(section, draft)) : section.shortTitle;
+  const publicPageLabel = getPublicPageLabel(section);
 
   return (
     <div className="current-edit-summary" aria-label="現在編集中の内容">
       <div>
         <span>編集中</span>
         <strong>{itemLabel}</strong>
+        <small className="current-edit-page">反映先: {publicPageLabel}</small>
       </div>
       <div className="current-edit-badges">
         {dirty ? <small className="dirty-pill">未保存</small> : <small className="saved-pill">保存済み</small>}
@@ -1265,6 +1283,7 @@ function PreviewModal({
 function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinition; dirty: boolean; selectedId: string }) {
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const sectionPublicUrl = getPublicPageUrl(section);
+  const publicPageLabel = getPublicPageLabel(section);
 
   return (
     <section className="editor-guide" aria-label="編集の進め方">
@@ -1283,7 +1302,7 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
       {sectionPublicUrl ? (
         <div className="public-page-guide">
           <strong>確認するページ</strong>
-          <span>公開後はこのページを開き、再読み込みします。最後にスマホでも表示を確認します。</span>
+          <span>公開後は{publicPageLabel}を開き、再読み込みします。最後にスマホでも表示を確認します。</span>
           <a href={sectionPublicUrl} target="_blank" rel="noreferrer">
             公開ページを開く
             <ExternalLink size={14} />

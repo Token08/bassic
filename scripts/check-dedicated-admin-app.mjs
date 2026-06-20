@@ -1614,6 +1614,10 @@ function checkAdminEditorShowsSectionPublicPageLinks() {
   const text = readFileSync(file, "utf8");
   const required = [
     "publicPagePaths",
+    "publicPageLabels",
+    "getPublicPageLabel(section)",
+    "反映先:",
+    "current-edit-page",
     "getPublicPageUrl(section)",
     "確認するページ",
     "公開ページを開く",

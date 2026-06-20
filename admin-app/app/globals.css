@@ -923,6 +923,13 @@ a {
   white-space: nowrap;
 }
 
+.current-edit-page {
+  color: var(--accent-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
 .current-edit-badges {
   display: flex;
   flex: 0 0 auto;
