@@ -1219,6 +1219,8 @@ function PreviewModal({
   const [confirmed, setConfirmed] = useState(false);
   const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
   const publishToggleOff = hasPublishToggle && !Boolean(draft.isPublished);
+  const sectionPublicUrl = getPublicPageUrl(section);
+  const publicPageLabel = getPublicPageLabel(section);
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -1275,6 +1277,12 @@ function PreviewModal({
               <li key={item}>{item}</li>
             ))}
           </ul>
+          {sectionPublicUrl ? (
+            <a className="preview-public-link" href={sectionPublicUrl} target="_blank" rel="noreferrer">
+              確認するページを開く: {publicPageLabel}
+              <ExternalLink size={14} />
+            </a>
+          ) : null}
         </div>
         <label className="publish-confirmation">
           <input
