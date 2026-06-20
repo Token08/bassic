@@ -1929,6 +1929,16 @@ a.current-edit-page:hover {
   text-decoration: underline;
 }
 
+.post-publish-link {
+  border-color: rgba(22, 101, 52, 0.22);
+  background: rgba(22, 101, 52, 0.08);
+  color: var(--green);
+}
+
+.post-publish-link:hover {
+  background: rgba(22, 101, 52, 0.12);
+}
+
 .publish-confirmation {
   display: flex;
   align-items: flex-start;

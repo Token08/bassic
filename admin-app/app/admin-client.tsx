@@ -1406,6 +1406,12 @@ function PreviewModal({
               <li key={item}>{item}</li>
             ))}
           </ul>
+          {sectionPublicUrl ? (
+            <a className="preview-public-link post-publish-link" href={sectionPublicUrl} target="_blank" rel="noreferrer">
+              公開後に開くページ: {publicPageLabel}
+              <ExternalLink size={14} />
+            </a>
+          ) : null}
         </div>
         <label className="publish-confirmation">
           <input

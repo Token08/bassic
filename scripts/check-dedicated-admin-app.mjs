@@ -1105,13 +1105,16 @@ function checkAdminPreviewRequiresConfirmation() {
     [clientFile, clientText, "publish-confirmation"],
     [clientFile, clientText, "入力内容、画像、リンク先、公開後の確認項目を見ました。"],
     [clientFile, clientText, "確認するページを開く:"],
+    [clientFile, clientText, "公開後に開くページ:"],
     [clientFile, clientText, "公開後に見るところ"],
     [clientFile, clientText, "getPostPublishSteps(section)"],
     [clientFile, clientText, "preview-public-link"],
+    [clientFile, clientText, "post-publish-link"],
     [clientFile, clientText, "sectionPublicUrl"],
     [clientFile, clientText, "disabled={!confirmed}"],
     [cssFile, cssText, ".publish-confirmation"],
-    [cssFile, cssText, ".preview-public-link"]
+    [cssFile, cssText, ".preview-public-link"],
+    [cssFile, cssText, ".post-publish-link"]
   ];
   const missing = required
     .filter(([, text, term]) => !text.includes(term))
