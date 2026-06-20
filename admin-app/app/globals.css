@@ -845,6 +845,13 @@ a {
   line-height: 1.5;
 }
 
+.item-filter-result {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: right;
+}
+
 .status-filter {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

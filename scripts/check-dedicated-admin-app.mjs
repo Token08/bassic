@@ -1066,10 +1066,12 @@ function checkAdminItemListShowsUsefulMeta() {
     [clientFile, clientText, "searchableText.includes(query)"],
     [clientFile, clientText, "名前・日付・料金などで検索"],
     [clientFile, clientText, "一覧に出ている補足情報も検索できます。"],
+    [clientFile, clientText, "表示 {filteredItems.length}件 / 全{items.length}件"],
     [clientFile, clientText, "item-list-meta"],
     [cssFile, cssText, ".item-list-title"],
     [cssFile, cssText, ".item-list-meta"],
-    [cssFile, cssText, ".item-search-hint"]
+    [cssFile, cssText, ".item-search-hint"],
+    [cssFile, cssText, ".item-filter-result"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

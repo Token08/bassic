@@ -2380,6 +2380,7 @@ function SectionEditor({
                     下書き
                   </button>
                 </div>
+                <small className="item-filter-result">表示 {filteredItems.length}件 / 全{items.length}件</small>
               </div>
               {items.length ? (
                 filteredItems.length ? (
