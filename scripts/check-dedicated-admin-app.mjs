@@ -1025,6 +1025,7 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const text = readFileSync(file, "utf8");
   const required = [
     "プレビュー確認へ進めます",
+    "次は画面下の「プレビュー確認」を押してください。",
     "入力内容・リンク先・画像",
     "「公開する」がONの項目",
     "ONにすると「プレビューして公開」後に公開サイトへ表示されます",

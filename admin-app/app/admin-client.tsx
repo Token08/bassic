@@ -1152,6 +1152,7 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
       <strong>必須 {completed}/{requiredFields.length} 入力済み</strong>
       <span>{remaining === 0 ? "必須項目はそろっています。公開前チェックへ進めます。" : `あと${remaining}件の必須項目を入れると、プレビュー確認へ進めます。`}</span>
       {missingLabels.length ? <small>未入力: {missingLabels.join("、")}</small> : null}
+      {remaining === 0 ? <small>次は画面下の「プレビュー確認」を押してください。</small> : null}
     </div>
   );
 }
