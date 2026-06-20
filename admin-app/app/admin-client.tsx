@@ -2010,6 +2010,10 @@ function SectionEditor({
       }
     }
 
+    if (section.id === "drink-menu-sheets" && nextDraft.isPublished && !getImageUrl(nextDraft.image).trim()) {
+      nextErrors.image = "ドリンクメニューを公開する前に画像を入れてください。";
+    }
+
     if (section.id === "party-plans" && nextDraft.isPublished) {
       const price = getString(nextDraft.price).trim();
 

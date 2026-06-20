@@ -86,6 +86,7 @@ checkMaintainerOnlyFieldsAreClear();
 checkSiteSettingsPlaceholdersUseCurrentCopy();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
+checkDrinkMenuSheetsPublishRequiresImage();
 checkNumberFieldsUseWholeNumberValidation();
 checkCmsSmokeValidatesDisplayOrderNumbers();
 checkEventFieldDocsExplainCalendarSync();
@@ -2656,6 +2657,27 @@ function checkMenuPublishRequiresPriceAndImage() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("menu publish requires price and image", missing.length === 0, missing.join(", "));
+}
+
+function checkDrinkMenuSheetsPublishRequiresImage() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(adminFile) || !existsSync(schemaFile)) {
+    add("drink menu sheets publish requires image", false, `${adminFile} or ${schemaFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const required = [
+    [adminFile, adminText, 'section.id === "drink-menu-sheets" && nextDraft.isPublished'],
+    [adminFile, adminText, "ドリンクメニューを公開する前に画像を入れてください。"],
+    [schemaFile, schemaText, "id: \"drink-menu-sheets\""],
+    [schemaFile, schemaText, "公開する場合は必ず入れます。文字が切れていないメニュー表画像"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("drink menu sheets publish requires image", missing.length === 0, missing.join(", "));
 }
 
 function checkNumberFieldsUseWholeNumberValidation() {

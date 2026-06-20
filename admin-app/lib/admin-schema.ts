@@ -263,7 +263,7 @@ export const sections: SectionDefinition[] = [
     titleKey: "title",
     fields: [
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "Drink Menu 1" },
-      { key: "image", label: "画像", type: "image", required: true, hint: "文字が切れていないメニュー表画像を入れてください。入れた後は「画像を開いて確認」で確認してください。" },
+      { key: "image", label: "画像", type: "image", required: true, hint: "公開する場合は必ず入れます。文字が切れていないメニュー表画像を入れてください。入れた後は「画像を開いて確認」で確認してください。" },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
