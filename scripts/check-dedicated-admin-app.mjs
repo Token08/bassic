@@ -740,8 +740,10 @@ function checkSocialNoticeUrlValidation() {
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
   const requiredTerms = [
     [file, text, "getSocialUrlError"],
+    [file, text, "detectSocialPlatformFromUrl"],
     [file, text, "isInstagramUrl"],
     [file, text, "isXUrl"],
+    [file, text, "detectedPlatform ? { platform: detectedPlatform } : {}"],
     [file, text, "SocialNoticeUrlGuide"],
     [file, text, "SNSお知らせURLの入力例"],
     [file, text, "プロフィールURLか、見せたい投稿を開いた時のURL"],
@@ -753,6 +755,7 @@ function checkSocialNoticeUrlValidation() {
     [file, text, "公開前に「SNSを開いて確認」でリンク先を見てください。"],
     [file, text, "タイトルと説明はTOPページのカードにそのまま出ます。"],
     [file, text, "social-notice-writing-example"],
+    [file, text, "URLを貼るとSNS種別を自動で合わせ"],
     [file, text, "section.id === \"social-notices\""],
     [file, text, "const allowedPlatforms = [\"instagram\", \"facebook\", \"x\"]"],
     [file, text, "nextDraft.isPublished && !allowedPlatforms.includes(platform)"],
@@ -761,6 +764,7 @@ function checkSocialNoticeUrlValidation() {
     [file, text, "facebook.com"],
     [file, text, "x.com"],
     [manualFile, manualText, "タイトルと説明は、TOPページのSNSカードにそのまま表示されます。"],
+    [manualFile, manualText, "URLを貼るとSNS種別は自動で合います。"],
     [manualFile, manualText, "長い投稿本文を丸ごと貼らず"]
   ];
   const missing = requiredTerms.filter(([, sourceText, term]) => !sourceText.includes(term)).map(([sourceFile, , term]) => `${sourceFile}: ${term}`);

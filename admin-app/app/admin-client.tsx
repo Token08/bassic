@@ -329,6 +329,26 @@ function getSocialUrlError(platform: string, url: string) {
   return "";
 }
 
+function detectSocialPlatformFromUrl(url: string) {
+  if (!url) {
+    return "";
+  }
+
+  if (isInstagramUrl(url)) {
+    return "instagram";
+  }
+
+  if (isFacebookUrl(url)) {
+    return "facebook";
+  }
+
+  if (isXUrl(url)) {
+    return "x";
+  }
+
+  return "";
+}
+
 function getSiteSettingsUrlError(key: string, url: string) {
   if (!url) {
     return "";
@@ -1461,6 +1481,7 @@ function SocialNoticeUrlGuide({ draft }: { draft: Draft }) {
       <Info size={18} />
       <div>
         <strong>{guide.label}のURLを入力してください</strong>
+        <span>URLを貼るとSNS種別を自動で合わせます。</span>
         <span>{guide.note}</span>
         <code>{guide.example}</code>
         <div className="social-notice-writing-example" aria-label="TOPページに表示される文言例">
@@ -1851,14 +1872,29 @@ function SectionEditor({
 
   function updateField(key: string, value: unknown) {
     userInteractedRef.current = true;
-    setDraft((current) => ({
-      ...current,
-      [key]: value
-    }));
+    setDraft((current) => {
+      if (section.id === "social-notices" && key === "url") {
+        const detectedPlatform = detectSocialPlatformFromUrl(getString(value).trim());
+
+        return {
+          ...current,
+          ...(detectedPlatform ? { platform: detectedPlatform } : {}),
+          [key]: value
+        };
+      }
+
+      return {
+        ...current,
+        [key]: value
+      };
+    });
     setDirty(true);
     setErrors((current) => {
       const next = { ...current };
       delete next[key];
+      if (section.id === "social-notices" && key === "url") {
+        delete next.platform;
+      }
       return next;
     });
   }
