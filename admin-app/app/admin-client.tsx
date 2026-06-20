@@ -1644,33 +1644,33 @@ function FacebookEventImportPanel({
   const currentEndTime = getString(draft.endTime).trim();
   const currentImageUrl = getImageUrl(draft.image);
   const currentPublishStatus = draft.isPublished ? "公開するON" : "公開するOFF";
-  const calendarRequestMissingLabels = preview
+  const calendarRequestMissingLabels = isFacebookEvent
     ? [
-        !currentTitle && !preview.title ? "イベント名" : "",
-        !currentDate && !preview.date ? "日付" : "",
-        !currentStartTime && !preview.startTime ? "START" : "",
-        !sourceUrl && !preview.sourceUrl ? "FacebookイベントURL" : "",
-        !currentImageUrl && !preview.imageUrl ? "画像URL" : ""
+        !currentTitle && !preview?.title ? "イベント名" : "",
+        !currentDate && !preview?.date ? "日付" : "",
+        !currentStartTime && !preview?.startTime ? "START" : "",
+        !sourceUrl && !preview?.sourceUrl ? "FacebookイベントURL" : "",
+        !currentImageUrl && !preview?.imageUrl ? "画像URL" : ""
       ].filter(Boolean)
     : [];
-  const calendarRequestBlockingLabels = preview
+  const calendarRequestBlockingLabels = isFacebookEvent
     ? [
         !draft.isPublished ? "公開するON" : "",
-        !currentTitle && !preview.title ? "イベント名" : "",
-        !currentDate && !preview.date ? "日付" : "",
-        !currentStartTime && !preview.startTime ? "START" : ""
+        !currentTitle && !preview?.title ? "イベント名" : "",
+        !currentDate && !preview?.date ? "日付" : "",
+        !currentStartTime && !preview?.startTime ? "START" : ""
       ].filter(Boolean)
     : [];
-  const calendarRequestText = preview
+  const calendarRequestText = isFacebookEvent
     ? [
         "Google Calendarにも反映してください。",
         `公開状態: ${currentPublishStatus}`,
-        `イベント名: ${currentTitle || preview.title || "未入力"}`,
-        `日付: ${currentDate || preview.date || "未入力"}`,
-        `START: ${currentStartTime || preview.startTime || "未入力"}`,
-        `END: ${currentEndTime || preview.endTime || "未入力"}`,
-        `FacebookイベントURL: ${sourceUrl || preview.sourceUrl || "未入力"}`,
-        `画像URL: ${currentImageUrl || preview.imageUrl || "未入力"}`
+        `イベント名: ${currentTitle || preview?.title || "未入力"}`,
+        `日付: ${currentDate || preview?.date || "未入力"}`,
+        `START: ${currentStartTime || preview?.startTime || "未入力"}`,
+        `END: ${currentEndTime || preview?.endTime || "未入力"}`,
+        `FacebookイベントURL: ${sourceUrl || preview?.sourceUrl || "未入力"}`,
+        `画像URL: ${currentImageUrl || preview?.imageUrl || "未入力"}`
       ].join("\n")
     : "";
   const calendarRequestHasMissingFields = calendarRequestMissingLabels.length > 0;
@@ -1849,6 +1849,40 @@ function FacebookEventImportPanel({
               />
             </div>
           </div>
+        </div>
+      ) : null}
+      {!preview && calendarRequestText ? (
+        <div className="facebook-calendar-request" aria-label="Google Calendar反映依頼メモ">
+          <div className="facebook-calendar-request-heading">
+            <strong>Google Calendar反映依頼メモ</strong>
+            <div className="calendar-request-actions">
+              <button type="button" disabled={calendarRequestCannotCopy} onClick={() => void copyCalendarRequest()}>
+                <Copy size={16} />
+                コピーする
+              </button>
+              <button type="button" disabled={!calendarRequestText} onClick={selectCalendarRequest}>
+                メモを選択
+              </button>
+            </div>
+          </div>
+          <span>Facebook読み取りを使わず手入力した場合も、この内容を担当者へ送れます。</span>
+          {calendarRequestHasMissingFields ? (
+            <small className="request-warning">
+              未入力があります。コピーする前に、{calendarRequestMissingLabels.join("、")} を確認してください。
+            </small>
+          ) : null}
+          {!draft.isPublished ? (
+            <small className="request-warning">Google Calendarへ依頼する前に、「公開する」をONにして公開してください。公開するONになるまで「コピーする」は押せません。</small>
+          ) : null}
+          {copyMessage ? <small>{copyMessage}</small> : null}
+          <textarea
+            ref={calendarRequestRef}
+            readOnly
+            value={calendarRequestText}
+            rows={7}
+            onFocus={(event) => event.currentTarget.select()}
+            onClick={(event) => event.currentTarget.select()}
+          />
         </div>
       ) : null}
     </section>
