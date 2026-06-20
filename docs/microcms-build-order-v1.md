@@ -62,10 +62,13 @@ npm run smoke:cms
 npm run deploy:cms
 ```
 
-公開URL:
+確認用URL:
 
 ```text
 https://token08.github.io/bassic/
 ```
+
+本番公開時は `NEXT_PUBLIC_SITE_URL=https://www.bassic.jp` にし、`NEXT_PUBLIC_BASE_PATH` を空にしてビルドします。
+ユーザーが開く入口が `https://www.bassic.jp/index.html` の場合でも、canonical、sitemap、OGP、hreflang は `https://www.bassic.jp/` 基準に統一します。
 
 microCMSのAPIキーとサービスドメインが未設定でも、サイトは静的フォールバックで表示されます。

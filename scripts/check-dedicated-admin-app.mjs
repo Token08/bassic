@@ -79,6 +79,7 @@ checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
 checkGitHubIssuePlanMarkedAsUnused();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
+checkMicrocmsBuildOrderExplainsProductionUrl();
 checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
 checkAdminSchemaFieldsAreDocumented();
@@ -1968,6 +1969,28 @@ function checkMicrocmsSetupChecklistUsesCurrentDocs() {
   const problems = [...missing.map((term) => `missing ${term}`), ...stale.map((term) => `stale ${term}`)];
 
   add("microCMS setup checklist uses current docs", problems.length === 0, problems.join(", "));
+}
+
+function checkMicrocmsBuildOrderExplainsProductionUrl() {
+  const file = "docs/microcms-build-order-v1.md";
+  if (!existsSync(file)) {
+    add("microCMS build order explains production URL", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "確認用URL",
+    "https://token08.github.io/bassic/",
+    "NEXT_PUBLIC_SITE_URL=https://www.bassic.jp",
+    "NEXT_PUBLIC_BASE_PATH",
+    "https://www.bassic.jp/index.html",
+    "canonical、sitemap、OGP、hreflang",
+    "https://www.bassic.jp/"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("microCMS build order explains production URL", missing.length === 0, missing.join(", "));
 }
 
 function checkMicrocmsSchemaUsesManagedSiteSettings() {
