@@ -1063,6 +1063,7 @@ function checkAdminItemListShowsUsefulMeta() {
     [clientFile, clientText, "使うページ:"],
     [clientFile, clientText, "PDFリンクあり"],
     [clientFile, clientText, "SNS種別:"],
+    [clientFile, clientText, "searchableText.includes(query)"],
     [clientFile, clientText, "item-list-meta"],
     [cssFile, cssText, ".item-list-title"],
     [cssFile, cssText, ".item-list-meta"]

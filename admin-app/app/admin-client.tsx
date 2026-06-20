@@ -1833,7 +1833,8 @@ function SectionEditor({
     return items.filter((item) => {
       const statusMatches =
         itemStatusFilter === "all" || (itemStatusFilter === "public" ? isPublished(item) : !isPublished(item));
-      const textMatches = !query || getItemTitle(section, item).toLowerCase().includes(query);
+      const searchableText = [getItemTitle(section, item), getItemMeta(section, item)].join(" ").toLowerCase();
+      const textMatches = !query || searchableText.includes(query);
 
       return statusMatches && textMatches;
     });
