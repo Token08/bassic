@@ -162,6 +162,12 @@ function countTextLength(value: unknown) {
   return getString(value).replace(/\s+/g, "").length;
 }
 
+function textIncludesAll(value: unknown, terms: string[]) {
+  const text = getString(value).replace(/\s+/g, "");
+
+  return terms.every((term) => text.includes(term.replace(/\s+/g, "")));
+}
+
 function getNumber(value: unknown) {
   return typeof value === "number" ? String(value) : getString(value);
 }
@@ -2069,8 +2075,18 @@ function SectionEditor({
         nextErrors.email = "メールアドレスは example@bassic.jp の形で入力してください。";
       }
 
+      if (!textIncludesAll(nextDraft.hoursLabel, ["20:00", "1:30", "2:00", "22:30", "イベント"])) {
+        nextErrors.hoursLabel =
+          "通常営業時間には、20:00 OPEN / L.O. 1:30 / 2:00 CLOSE、イベントがある日は22:30から通常営業、※イベントにより異なる場合もございます、を含めてください。";
+      }
+
       if (countTextLength(nextDraft.smokingLabel) < 8) {
         nextErrors.smokingLabel = "喫煙については、店内喫煙OK、禁煙、イベント中は禁煙など、来店前に分かる表記で入力してください。";
+      }
+
+      if (!nextErrors.smokingLabel && !textIncludesAll(nextDraft.smokingLabel, ["店内喫煙OK", "未成年", "イベント中", "禁煙"])) {
+        nextErrors.smokingLabel =
+          "喫煙については、店内喫煙OK、未成年の入店不可、イベント中は禁煙になる場合があることを含めてください。";
       }
 
       const chargeLabel = getString(nextDraft.chargeLabel).trim();
