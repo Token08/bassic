@@ -633,13 +633,15 @@ function checkImageUrlValidationIsSpecific() {
 
 function checkPdfUrlValidationIsSpecific() {
   const file = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
   const manualFile = "docs/delivery-admin-manual.md";
-  if (!existsSync(file) || !existsSync(manualFile)) {
-    add("admin PDF URL validation is specific", false, `${file} or ${manualFile} missing`);
+  if (!existsSync(file) || !existsSync(schemaFile) || !existsSync(manualFile)) {
+    add("admin PDF URL validation is specific", false, `${file}, ${schemaFile}, or ${manualFile} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
   const manualText = readFileSync(manualFile, "utf8");
   const required = [
     [file, text, "function isValidManagedPdfUrl"],
@@ -649,6 +651,7 @@ function checkPdfUrlValidationIsSpecific() {
     [file, text, "function isPreviewableManagedUrl"],
     [file, text, "field.key === \"pdfUrl\""],
     [file, text, "https://...pdf または /assets/pdf/...pdf"],
+    [schemaFile, schemaText, "入力後は「PDFを開いて確認」"],
     [manualFile, manualText, "PDFのURLを直接入れる場合は"],
     [manualFile, manualText, "`https://...pdf` または `/assets/pdf/...pdf`"],
     [manualFile, manualText, "「PDFを開いて確認」"]
