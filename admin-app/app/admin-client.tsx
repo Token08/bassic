@@ -2196,6 +2196,16 @@ function SectionEditor({
       }
     }
 
+    if (section.id === "equipment-rental") {
+      if (countTextLength(nextDraft.title) < 6) {
+        nextErrors.title = "機材レンタルの見出しは6文字以上で入力してください。";
+      }
+
+      if (countTextLength(nextDraft.body) < 20) {
+        nextErrors.body = "機材レンタルの説明は20文字以上で、利用内容や注意点が分かる文章にしてください。";
+      }
+    }
+
     if (section.id === "custom-sections" && nextDraft.isPublished) {
       if (countTextLength(nextDraft.title) < 6) {
         nextErrors.title = "公開する前に、タイトルを6文字以上で入力してください。";

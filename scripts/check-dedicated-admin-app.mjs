@@ -2433,9 +2433,11 @@ function checkDocsExplainPublishedTextDepth() {
     [fieldDocsFile, fieldDocsText, "プラン名を4文字以上、説明を12文字以上"],
     [fieldDocsFile, fieldDocsText, "表示タイトルを6文字以上、説明を10文字以上"],
     [fieldDocsFile, fieldDocsText, "見出しを6文字以上、本文を20文字以上"],
+    [fieldDocsFile, fieldDocsText, "見出しは6文字以上、説明は20文字以上"],
     [fieldDocsFile, fieldDocsText, "リンク文言とリンクURLを両方入力"],
     [setupFile, setupText, "プラン名を4文字以上、説明を12文字以上"],
-    [setupFile, setupText, "表示タイトルを6文字以上、短い説明を10文字以上"]
+    [setupFile, setupText, "表示タイトルを6文字以上、短い説明を10文字以上"],
+    [setupFile, setupText, "見出しは6文字以上、説明は20文字以上"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
@@ -2462,11 +2464,15 @@ function checkAdminValidatesPublishedTextDepth() {
     [adminFile, adminText, 'section.id === "party-plans"'],
     [adminFile, adminText, "プラン名を4文字以上"],
     [adminFile, adminText, "説明を12文字以上"],
+    [adminFile, adminText, 'section.id === "equipment-rental"'],
+    [adminFile, adminText, "機材レンタルの見出しは6文字以上"],
+    [adminFile, adminText, "機材レンタルの説明は20文字以上"],
     [adminFile, adminText, 'section.id === "custom-sections"'],
     [adminFile, adminText, "本文を20文字以上"],
     [adminFile, adminText, "リンクURLを使う場合は、リンクボタン名も入力"],
     [adminFile, adminText, "リンクボタン名を使う場合は、リンクURLも入力"],
     [schemaFile, schemaText, "公開する場合は12文字以上"],
+    [schemaFile, schemaText, "20文字以上で、利用内容や注意点が分かる文章"],
     [schemaFile, schemaText, "公開する場合は6文字以上"],
     [schemaFile, schemaText, "公開する場合は10文字以上"],
     [schemaFile, schemaText, "公開する場合は20文字以上"]
