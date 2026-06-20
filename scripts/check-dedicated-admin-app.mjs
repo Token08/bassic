@@ -448,11 +448,11 @@ function checkClientHandoffDocsLinked() {
   const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
-  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "1〜2箇所ずつ変更", "スクリーンショット"];
+  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット"];
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
-  const missingManualTerms = ["画像を外す", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例", "1〜2箇所ずつ変更", "スクリーンショット"].filter((term) => !manualText.includes(term));
+  const missingManualTerms = ["画像を外す", "画像の説明", "検索や読み上げ用", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例", "1〜2箇所ずつ変更", "スクリーンショット"].filter((term) => !manualText.includes(term));
   const manualUpdateMapTerms = [
     "更新したい内容",
     "管理画面で選ぶ項目",
