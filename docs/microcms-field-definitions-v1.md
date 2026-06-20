@@ -148,7 +148,7 @@ TOPを含む各ページのメイン画像は、下記の `hero-slides` で管�
 | 見出し | `title` | テキスト | yes |
 | 料金 | `price` | テキスト | no |
 | 説明 | `body` | テキストエリア | yes |
-| PDF URL | `pdfUrl` | テキスト | no |
+| PDF URL | `pdfUrl` | テキスト | yes |
 
 ## `social-notices`
 

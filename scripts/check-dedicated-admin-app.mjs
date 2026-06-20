@@ -1978,7 +1978,7 @@ function checkMicrocmsSetupChecklistFieldDetails() {
     "## 6. drink-menu-sheets",
     "| `image` | メニュー表画像 | 画像 | 必須 |",
     "## 8. equipment-rental",
-    "| `pdfUrl` | PDFリンク | テキストフィールド | 任意 |",
+    "| `pdfUrl` | PDFリンク | テキストフィールド | 必須 |",
     "## 12. 接続確認"
   ];
   const stale = [

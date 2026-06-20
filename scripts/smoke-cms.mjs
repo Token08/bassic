@@ -181,9 +181,7 @@ try {
   const equipmentRental = await fetchJson("/equipment-rental");
   requiredString(equipmentRental, "title", "equipment-rental");
   requiredString(equipmentRental, "body", "equipment-rental");
-  if (equipmentRental.pdfUrl) {
-    requiredUrl(equipmentRental, "pdfUrl", "equipment-rental");
-  }
+  requiredUrl(equipmentRental, "pdfUrl", "equipment-rental");
   console.log("OK equipment-rental");
 
   for (const check of endpointChecks) {
