@@ -916,6 +916,11 @@ function Field({
           {Boolean(value) ? `${field.label} ON` : `${field.label} OFF`}
         </span>
       ) : null}
+      {field.key === "isPublished" ? (
+        <small className="field-publish-help">
+          ONにすると「プレビューして公開」後に公開サイトへ表示されます。OFFのまま保存すると下書きとして残ります。
+        </small>
+      ) : null}
       {field.type === "image" ? <ImageField value={value} onChange={onChange} /> : null}
       {field.hint ? <small className="field-hint">{field.hint}</small> : null}
       {error ? <small className="form-error">{error}</small> : null}

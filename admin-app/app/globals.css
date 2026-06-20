@@ -1445,6 +1445,16 @@ a {
   font-weight: 700;
 }
 
+.field-publish-help {
+  display: block;
+  border-left: 3px solid rgba(159, 23, 32, 0.6);
+  padding-left: 10px;
+  color: var(--accent-dark);
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.7;
+}
+
 .field-link-check {
   display: inline-flex;
   width: fit-content;
