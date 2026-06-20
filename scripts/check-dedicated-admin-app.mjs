@@ -631,22 +631,27 @@ function checkImageUrlValidationIsSpecific() {
 
 function checkPdfUrlValidationIsSpecific() {
   const file = "admin-app/app/admin-client.tsx";
-  if (!existsSync(file)) {
-    add("admin PDF URL validation is specific", false, `${file} missing`);
+  const manualFile = "docs/delivery-admin-manual.md";
+  if (!existsSync(file) || !existsSync(manualFile)) {
+    add("admin PDF URL validation is specific", false, `${file} or ${manualFile} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const manualText = readFileSync(manualFile, "utf8");
   const required = [
-    "function isValidManagedPdfUrl",
-    "value.startsWith(\"/assets/pdf/\")",
-    "url.protocol === \"https:\"",
-    "url.pathname.toLowerCase().endsWith(\".pdf\")",
-    "function isPreviewableManagedUrl",
-    "field.key === \"pdfUrl\"",
-    "https://...pdf または /assets/pdf/...pdf"
+    [file, text, "function isValidManagedPdfUrl"],
+    [file, text, "value.startsWith(\"/assets/pdf/\")"],
+    [file, text, "url.protocol === \"https:\""],
+    [file, text, "url.pathname.toLowerCase().endsWith(\".pdf\")"],
+    [file, text, "function isPreviewableManagedUrl"],
+    [file, text, "field.key === \"pdfUrl\""],
+    [file, text, "https://...pdf または /assets/pdf/...pdf"],
+    [manualFile, manualText, "PDFのURLを直接入れる場合は"],
+    [manualFile, manualText, "`https://...pdf` または `/assets/pdf/...pdf`"],
+    [manualFile, manualText, "「PDFを開いて確認」"]
   ];
-  const missing = required.filter((term) => !text.includes(term));
+  const missing = required.filter(([, source, term]) => !source.includes(term)).map(([sourceFile, , term]) => `${sourceFile}: ${term}`);
 
   add("admin PDF URL validation is specific", missing.length === 0, missing.join(", "));
 }
