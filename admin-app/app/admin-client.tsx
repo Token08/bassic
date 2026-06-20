@@ -1285,6 +1285,7 @@ function PreviewModal({
   const publishToggleOff = hasPublishToggle && !Boolean(draft.isPublished);
   const sectionPublicUrl = getPublicPageUrl(section);
   const publicPageLabel = getPublicPageLabel(section);
+  const postPublishSteps = getPostPublishSteps(section);
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -1347,6 +1348,14 @@ function PreviewModal({
               <ExternalLink size={14} />
             </a>
           ) : null}
+        </div>
+        <div className="publish-checklist" aria-label="公開後の確認">
+          <strong>公開後に見るところ</strong>
+          <ul>
+            {postPublishSteps.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
         <label className="publish-confirmation">
           <input

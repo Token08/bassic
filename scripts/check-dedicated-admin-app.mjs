@@ -1061,6 +1061,8 @@ function checkAdminPreviewRequiresConfirmation() {
     [clientFile, clientText, "publish-confirmation"],
     [clientFile, clientText, "入力内容、画像、リンク先、公開後の確認項目を見ました。"],
     [clientFile, clientText, "確認するページを開く:"],
+    [clientFile, clientText, "公開後に見るところ"],
+    [clientFile, clientText, "getPostPublishSteps(section)"],
     [clientFile, clientText, "preview-public-link"],
     [clientFile, clientText, "sectionPublicUrl"],
     [clientFile, clientText, "disabled={!confirmed}"],
