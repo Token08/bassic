@@ -2120,7 +2120,8 @@ function checkTopImagesAreManagedByHeroSlides() {
   const seedFile = "scripts/microcms-seed-data.mjs";
   const fieldDocs = "docs/microcms-field-definitions-v1.md";
   const setupDocs = "docs/microcms-setup-checklist.md";
-  const files = [adminSchema, seedFile, fieldDocs, setupDocs];
+  const deliveryDocs = "docs/delivery-admin-manual.md";
+  const files = [adminSchema, seedFile, fieldDocs, setupDocs, deliveryDocs];
   const missingFiles = files.filter((file) => !existsSync(file));
   if (missingFiles.length) {
     add("TOP images are managed only through hero-slides", false, `${missingFiles.join(", ")} missing`);
@@ -2131,6 +2132,7 @@ function checkTopImagesAreManagedByHeroSlides() {
   const seedText = readFileSync(seedFile, "utf8");
   const fieldText = readFileSync(fieldDocs, "utf8");
   const setupText = readFileSync(setupDocs, "utf8");
+  const deliveryText = readFileSync(deliveryDocs, "utf8");
   const problems = [];
 
   if (adminText.includes('key: "heroImage"')) {
@@ -2144,6 +2146,12 @@ function checkTopImagesAreManagedByHeroSlides() {
   }
   if (!fieldText.includes("`hero-slides`") || !setupText.includes("`hero-slides` の `page = home`")) {
     problems.push("docs should direct TOP画像 to hero-slides page = home");
+  }
+  if (!adminText.includes("1600px以上の横長写真") || !adminText.includes("ロゴ・見出し・ボタンと被らないか確認")) {
+    problems.push("admin schema should explain safe hero image selection");
+  }
+  if (!deliveryText.includes("1600px以上の横長写真") || !deliveryText.includes("ロゴ・見出し・ボタンと写真が被っていないか確認")) {
+    problems.push("delivery manual should explain safe hero image checks");
   }
 
   add("TOP images are managed only through hero-slides", problems.length === 0, problems.join(", "));

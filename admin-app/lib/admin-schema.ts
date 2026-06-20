@@ -80,6 +80,8 @@ const sectionOptions: FieldOption[] = [
 ];
 
 const imageFieldHint = "画像を入れた後は「画像を開いて確認」で正しい写真が開くか確認してください。横長の写真がおすすめです。";
+const heroImageFieldHint =
+  "PCとスマホのメイン背景に使います。1600px以上の横長写真がおすすめです。ロゴや見出しが乗る左側に、重要な文字や顔が寄りすぎない画像を選んでください。入れた後は「画像を開いて確認」と公開ページで、ロゴ・見出し・ボタンと被らないか確認してください。";
 const displayOrderHint = "数字が小さいものから先に表示されます。0以上の半角整数で、迷ったら1、2、3の順に入れてください。";
 const publishFieldHint = "ONにするとサイトに表示されます。まだ見せたくない時はOFFのまま保存してください。";
 
@@ -190,7 +192,7 @@ export const sections: SectionDefinition[] = [
     fields: [
       { key: "page", label: "使うページ", type: "select", required: true, options: pageOptions },
       { key: "title", label: "画像名", type: "text", placeholder: "TOP 1枚目" },
-      { key: "image", label: "画像", type: "image", required: true, hint: imageFieldHint },
+      { key: "image", label: "画像", type: "image", required: true, hint: heroImageFieldHint },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
