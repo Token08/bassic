@@ -415,6 +415,11 @@ function NoticeBox({ notice }: { notice: Notice }) {
       <div>
         <span>{notice.message}</span>
         <small>{helper}</small>
+        {notice.tone === "error" ? (
+          <small className="support-note">
+            直らない場合は、どの画面で何を押したか、表示されたメッセージ、スクリーンショットを保守担当者へ送ってください。
+          </small>
+        ) : null}
         {notice.confirmationSteps?.length ? (
           <ul className="notice-checklist" aria-label="公開後の確認手順">
             {notice.confirmationSteps.map((step) => (

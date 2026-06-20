@@ -1652,6 +1652,16 @@ a {
   font-weight: 800;
 }
 
+.notice .support-note {
+  margin-top: 6px;
+  border: 1px solid rgba(159, 23, 32, 0.18);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: rgba(159, 23, 32, 0.05);
+  color: var(--accent);
+  line-height: 1.55;
+}
+
 .notice-checklist {
   display: grid;
   gap: 4px;

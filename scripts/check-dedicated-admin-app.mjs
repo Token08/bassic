@@ -1492,7 +1492,17 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = ["publicSiteUrl", "反映状況を見る", "公開サイトを開く", "再読み込み", "deploy-status-actions", "notice-actions"];
+  const required = [
+    "publicSiteUrl",
+    "反映状況を見る",
+    "公開サイトを開く",
+    "再読み込み",
+    "どの画面で何を押したか",
+    "スクリーンショットを保守担当者へ送ってください",
+    "support-note",
+    "deploy-status-actions",
+    "notice-actions"
+  ];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
