@@ -1763,9 +1763,9 @@ function checkAdminHealthShowsPublicSiteUrl() {
 
 function checkClientDocsMentionPublicCheckOrder() {
   const requiredByFile = {
-    "docs/delivery-admin-manual.md": ["公開前に見る順番", "TOP、EVENT、MENU、PARTY、ACCESS", "PCとスマホの両方"],
-    "docs/client-handoff-checklist.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ"],
-    "docs/client-handoff-sheet.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ"]
+    "docs/delivery-admin-manual.md": ["公開前に見る順番", "TOP、EVENT、MENU、PARTY、ACCESS", "PCとスマホの両方", "よくある更新から選ぶ", "イベントを追加", "メニューを変更", "SNS告知を追加", "TOP画像を変更"],
+    "docs/client-handoff-checklist.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ", "よくある更新から選ぶ", "イベントを追加", "メニューを変更", "SNS告知を追加", "TOP画像を変更"],
+    "docs/client-handoff-sheet.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ", "よくある更新から選ぶ", "よく使う更新"]
   };
   const missing = [];
 
