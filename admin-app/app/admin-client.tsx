@@ -136,7 +136,7 @@ function getPublicPageLabel(section: SectionDefinition) {
 function getPostPublishSteps(section: SectionDefinition) {
   const commonSteps = ["1〜3分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
   const sectionSteps: Partial<Record<SectionDefinition["id"], string[]>> = {
-    "site-settings": ["Accessページで住所・電話・Google Mapを確認", "電話・地図・SNSボタンが正しく開くか確認"],
+    "site-settings": ["TOP、Access、Menuで営業時間・喫煙・テーブル・チャージを確認", "Accessページで住所・電話・Google Mapを確認", "電話・地図・SNSボタンが正しく開くか確認"],
     home: ["TOPページの見出し・画像・案内カードを確認", "営業時間・喫煙・チャージの表示を確認"],
     "hero-slides": ["TOPページのメイン画像を確認", "スマホでロゴや見出しと画像が重なっていないか確認"],
     events: ["Event ScheduleページとGoogle Calendar欄を確認", "イベント日は日付・START・予約方法が読めるか確認"],
@@ -1257,7 +1257,7 @@ function getPublishChecklistItems(section: SectionDefinition) {
       "住所、電話、営業時間が最新になっている",
       "Google MapとSNSの確認リンクを開いた",
       "喫煙、テーブル・チャージの表記に間違いがない",
-      "公開後にスマホでTOPとAccessを確認する"
+      "公開後にスマホでTOP、Access、Menuを確認する"
     ];
   }
 
