@@ -1070,13 +1070,21 @@ function CurrentEditSummary({
   const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
   const itemLabel = section.kind === "list" ? (isNewListItem ? "新しく追加する項目" : getItemTitle(section, draft)) : section.shortTitle;
   const publicPageLabel = getPublicPageLabel(section);
+  const publicPageUrl = getPublicPageUrl(section);
 
   return (
     <div className="current-edit-summary" aria-label="現在編集中の内容">
       <div>
         <span>編集中</span>
         <strong>{itemLabel}</strong>
-        <small className="current-edit-page">反映先: {publicPageLabel}</small>
+        {publicPageUrl ? (
+          <a className="current-edit-page" href={publicPageUrl} target="_blank" rel="noreferrer">
+            反映先: {publicPageLabel}
+            <ExternalLink size={13} />
+          </a>
+        ) : (
+          <small className="current-edit-page">反映先: {publicPageLabel}</small>
+        )}
       </div>
       <div className="current-edit-badges">
         {dirty ? <small className="dirty-pill">未保存</small> : <small className="saved-pill">保存済み</small>}

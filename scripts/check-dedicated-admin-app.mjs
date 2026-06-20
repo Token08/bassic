@@ -1628,18 +1628,22 @@ function checkClientDocsMentionPublicCheckOrder() {
 
 function checkAdminEditorShowsSectionPublicPageLinks() {
   const file = "admin-app/app/admin-client.tsx";
-  if (!existsSync(file)) {
-    add("admin editor shows section public page links", false, `${file} missing`);
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(file) || !existsSync(cssFile)) {
+    add("admin editor shows section public page links", false, `${file} or ${cssFile} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
   const required = [
     "publicPagePaths",
     "publicPageLabels",
     "getPublicPageLabel(section)",
+    "publicPageUrl",
     "反映先:",
     "current-edit-page",
+    "href={publicPageUrl}",
     "getPublicPageUrl(section)",
     "確認するページ",
     "公開ページを開く",
@@ -1647,7 +1651,8 @@ function checkAdminEditorShowsSectionPublicPageLinks() {
     "\"drink-menu-sheets\": \"/menu/\"",
     "\"equipment-rental\": \"/party/\""
   ];
-  const missing = required.filter((item) => !text.includes(item));
+  const requiredCss = ["a.current-edit-page:hover", "width: fit-content"];
+  const missing = [...required.filter((item) => !text.includes(item)), ...requiredCss.filter((item) => !cssText.includes(item))];
 
   add("admin editor shows section public page links", missing.length === 0, missing.join(", "));
 }
