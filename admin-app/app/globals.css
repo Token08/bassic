@@ -972,6 +972,19 @@ a.current-edit-page:hover {
   gap: 6px;
 }
 
+.current-publish-state {
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+}
+
+.current-publish-state small:last-child {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .required-progress {
   display: flex;
   flex-wrap: wrap;

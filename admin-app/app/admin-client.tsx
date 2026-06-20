@@ -1190,9 +1190,12 @@ function CurrentEditSummary({
       <div className="current-edit-badges">
         {dirty ? <small className="dirty-pill">未保存</small> : <small className="saved-pill">保存済み</small>}
         {hasPublishToggle ? (
-          <small className={isPublished(draft) ? "status-public" : "status-draft"}>
-            {isPublished(draft) ? "公開するON" : "公開するOFF"}
-          </small>
+          <div className="current-publish-state">
+            <small className={isPublished(draft) ? "status-public" : "status-draft"}>
+              {isPublished(draft) ? "公開するON" : "公開するOFF"}
+            </small>
+            <small>{isPublished(draft) ? "公開後はサイトに表示されます" : "まだサイトには出ません"}</small>
+          </div>
         ) : null}
       </div>
     </div>

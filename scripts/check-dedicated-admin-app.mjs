@@ -1039,6 +1039,9 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "current-edit-summary",
     "現在編集中の内容",
     "公開するON",
+    "公開後はサイトに表示されます",
+    "まだサイトには出ません",
+    "current-publish-state",
     "window.addEventListener(\"beforeunload\"",
     "下書き保存またはプレビューして公開を押してください",
     "event.returnValue = \"\""
