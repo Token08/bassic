@@ -869,6 +869,7 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
       <DeployStatusCard notice={lastDeploy} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
       <SnsStatusCard onSelect={onSelect} />
+      <QuickEditStrip onSelect={onSelect} />
 
       <DashboardSectionGroup
         title="よく使う更新"
@@ -885,6 +886,35 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         compact
       />
     </div>
+  );
+}
+
+function QuickEditStrip({ onSelect }: { onSelect: (id: string) => void }) {
+  const actions = [
+    { label: "イベントを追加", description: "日付、START、画像、FacebookイベントURL", sectionId: "events" },
+    { label: "メニューを変更", description: "料理名、料金、写真、ドリンク表", sectionId: "menu" },
+    { label: "SNS告知を追加", description: "Instagram、Facebook、Xへのリンクカード", sectionId: "social-notices" },
+    { label: "TOP画像を変更", description: "最初に見えるスライド写真", sectionId: "hero-slides" }
+  ];
+
+  return (
+    <section className="quick-edit-strip" aria-label="よくある更新から選ぶ">
+      <div className="quick-edit-heading">
+        <strong>よくある更新から選ぶ</strong>
+        <span>何を直したいか分かっている時は、ここから始めると早いです。</span>
+      </div>
+      <div className="quick-edit-actions">
+        {actions.map((action) => (
+          <button key={action.sectionId} type="button" onClick={() => onSelect(action.sectionId)}>
+            <Plus size={16} />
+            <span>
+              <strong>{action.label}</strong>
+              <small>{action.description}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

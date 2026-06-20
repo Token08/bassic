@@ -1708,6 +1708,12 @@ function checkAdminDashboardShowsPublicCheckOrder() {
   const cssText = readFileSync(cssFile, "utf8");
   const required = [
     [clientFile, clientText, "function PublicCheckStrip()"],
+    [clientFile, clientText, "function QuickEditStrip({ onSelect }"],
+    [clientFile, clientText, "よくある更新から選ぶ"],
+    [clientFile, clientText, "イベントを追加"],
+    [clientFile, clientText, "メニューを変更"],
+    [clientFile, clientText, "SNS告知を追加"],
+    [clientFile, clientText, "TOP画像を変更"],
     [clientFile, clientText, "公開前に見る順番"],
     [clientFile, clientText, "PCとスマホの両方を確認"],
     [clientFile, clientText, "TOP"],
@@ -1717,7 +1723,9 @@ function checkAdminDashboardShowsPublicCheckOrder() {
     [clientFile, clientText, "ACCESS"],
     [clientFile, clientText, "new URL(page.path, publicSiteUrl).toString()"],
     [cssFile, cssText, ".public-check-strip"],
-    [cssFile, cssText, ".public-check-links"]
+    [cssFile, cssText, ".public-check-links"],
+    [cssFile, cssText, ".quick-edit-strip"],
+    [cssFile, cssText, ".quick-edit-actions"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
