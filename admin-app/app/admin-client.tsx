@@ -2304,7 +2304,7 @@ function SectionEditor({
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 プレビューして公開
               </button>
-              <small className="action-note">このボタンを押すと、まず確認画面が開きます。</small>
+              <small className="action-note">下書き保存は公開サイトに出ません。サイトへ出す時は「プレビューして公開」で確認画面へ進みます。</small>
             </div>
           </form>
         </div>
