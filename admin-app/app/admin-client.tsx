@@ -566,8 +566,11 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
     return null;
   }
 
-  const label = notice.tone === "success" ? "反映中" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
+  const label = notice.tone === "success" ? "公開済み・確認待ち" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
   const timeLabel = formatDeployTime(notice.requestedAt);
+  const statusMessage = notice.tone === "success"
+    ? "公開操作は完了しました。1〜3分後に公開サイトを再読み込みして確認してください。"
+    : "1〜3分後に公開サイトを再読み込みして確認してください。";
 
   return (
     <section className={`deploy-status ${notice.tone}`} aria-label="最後の反映状況">
@@ -577,7 +580,7 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
       </div>
       <div>
         <strong>{label}</strong>
-        <span>{timeLabel ? `${timeLabel} に実行。1〜3分後に公開サイトを再読み込みして確認してください。` : "時刻は未取得です。公開サイトを再読み込みして確認してください。"}</span>
+        <span>{timeLabel ? `${timeLabel} に実行。${statusMessage}` : `時刻は未取得です。${statusMessage}`}</span>
       </div>
       <div className="deploy-status-actions">
         {notice.actionsUrl ? (

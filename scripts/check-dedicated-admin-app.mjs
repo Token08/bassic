@@ -1653,6 +1653,8 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   const text = readFileSync(file, "utf8");
   const required = [
     "publicSiteUrl",
+    "公開済み・確認待ち",
+    "公開操作は完了しました。1〜3分後に公開サイトを再読み込みして確認してください。",
     "反映状況を見る",
     "公開サイトを開く",
     "再読み込み",
