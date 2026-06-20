@@ -448,10 +448,10 @@ function checkClientHandoffDocsLinked() {
 
   const checklistText = readFileSync(checklistFile, "utf8");
   const sheetText = readFileSync(sheetFile, "utf8");
-  const requiredSheetTerms = ["公開サイト", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット"];
+  const requiredSheetTerms = ["公開サイト（確認用URL）", "公開サイト（本番URL）", "本番URLがまだ決まっていない時は、確認用URLを使います", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
-  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット"];
+  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット", "公開サイトの確認用URLと本番URLのどちらを使うか", "公開サイト（本番URL）"];
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
