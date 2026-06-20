@@ -1824,6 +1824,7 @@ function SectionEditor({
   const userInteractedRef = useRef(false);
   const isMaintenanceSection = !dailySectionIds.has(section.id);
   const isNewListItem = section.kind === "list" && selectedId === "new";
+  const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
 
   const publishedCount = useMemo(() => items.filter((item) => isPublished(item)).length, [items]);
   const draftCount = items.length - publishedCount;
@@ -2321,7 +2322,7 @@ function SectionEditor({
         {section.kind === "list" ? (
           <button className="secondary-button" type="button" onClick={startNewItem}>
             <Plus size={18} />
-            {section.createLabel || "追加"}
+            {listCreateLabel}
           </button>
         ) : null}
       </div>
@@ -2351,7 +2352,7 @@ function SectionEditor({
             <aside className="item-list">
               <button className={selectedId === "new" ? "selected" : ""} type="button" onClick={startNewItem}>
                 <Plus size={18} />
-                新しく追加
+                {listCreateLabel}
               </button>
               <div className="item-list-tools" aria-label="一覧の絞り込み">
                 <div className="item-counts">
@@ -2418,7 +2419,7 @@ function SectionEditor({
                   <div className="empty-list">条件に合う項目がありません。検索文字か公開状態を変えてください。</div>
                 )
               ) : (
-                <div className="empty-list">まだ登録がありません。上の「新しく追加」から作れます。</div>
+                <div className="empty-list">まだ登録がありません。上の「{listCreateLabel}」から作れます。</div>
               )}
             </aside>
           ) : null}

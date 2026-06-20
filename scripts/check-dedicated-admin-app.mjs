@@ -1067,6 +1067,8 @@ function checkAdminItemListShowsUsefulMeta() {
     [clientFile, clientText, "名前・日付・料金などで検索"],
     [clientFile, clientText, "一覧に出ている補足情報も検索できます。"],
     [clientFile, clientText, "表示 {filteredItems.length}件 / 全{items.length}件"],
+    [clientFile, clientText, "const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`"],
+    [clientFile, clientText, "上の「{listCreateLabel}」から作れます。"],
     [clientFile, clientText, "item-list-meta"],
     [cssFile, cssText, ".item-list-title"],
     [cssFile, cssText, ".item-list-meta"],
