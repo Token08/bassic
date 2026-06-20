@@ -5,13 +5,21 @@ import { editableMedia } from "@/lib/editable-content";
 import { drinkMenuSheets } from "@/lib/menu-data";
 import type { DrinkMenuSheet, MenuItem } from "@/lib/types";
 
-function resolveMenuItem(item: MenuItem) {
-  const image = item.image?.url ? assetPath(item.image.url) : editableMedia.fallbackMenuImages[item.category];
-
+function normalizeMenuItem(item: MenuItem): MenuItem {
   return {
     ...item,
+    category: item.category === "drink" ? "drink" : "food"
+  };
+}
+
+function resolveMenuItem(item: MenuItem) {
+  const normalizedItem = normalizeMenuItem(item);
+  const image = normalizedItem.image?.url ? assetPath(normalizedItem.image.url) : editableMedia.fallbackMenuImages[normalizedItem.category];
+
+  return {
+    ...normalizedItem,
     resolvedImage: image,
-    imageAlt: item.image?.alt || `${item.name}の写真`
+    imageAlt: normalizedItem.image?.alt || `${normalizedItem.name}の写真`
   };
 }
 
@@ -65,7 +73,7 @@ export function MenuContent({
   drinkLead?: string;
   foodLead?: string;
 }) {
-  const foods = menu.filter((item) => item.category === "food").map(resolveMenuItem);
+  const foods = menu.map(normalizeMenuItem).filter((item) => item.category === "food").map(resolveMenuItem);
   const sheets = drinkSheets?.length ? drinkSheets : drinkMenuSheets.map((sheet) => ({ ...sheet, isPublished: true }));
 
   return (

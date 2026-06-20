@@ -87,6 +87,7 @@ checkMaintainerOnlyFieldsAreClear();
 checkSiteSettingsPlaceholdersUseCurrentCopy();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
+checkMenuContentNormalizesMissingCategory();
 checkDrinkMenuSheetsPublishRequiresImage();
 checkNumberFieldsUseWholeNumberValidation();
 checkCmsSmokeValidatesDisplayOrderNumbers();
@@ -2685,6 +2686,25 @@ function checkMenuPublishRequiresPriceAndImage() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("menu publish requires price and image", missing.length === 0, missing.join(", "));
+}
+
+function checkMenuContentNormalizesMissingCategory() {
+  const file = "components/menu-content.tsx";
+  if (!existsSync(file)) {
+    add("menu content treats missing categories as food", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function normalizeMenuItem(item: MenuItem): MenuItem",
+    "category: item.category === \"drink\" ? \"drink\" : \"food\"",
+    "const normalizedItem = normalizeMenuItem(item);",
+    "menu.map(normalizeMenuItem).filter((item) => item.category === \"food\")"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("menu content treats missing categories as food", missing.length === 0, missing.join(", "));
 }
 
 function checkDrinkMenuSheetsPublishRequiresImage() {
