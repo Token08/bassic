@@ -87,6 +87,7 @@ checkMaintainerOnlyFieldsAreClear();
 checkSiteSettingsPlaceholdersUseCurrentCopy();
 checkMenuDescriptionExplainsSupplementalUse();
 checkMenuPublishRequiresPriceAndImage();
+checkPartyPlanPublishRequiresPrice();
 checkMenuContentNormalizesMissingCategory();
 checkDrinkMenuSheetsPublishRequiresImage();
 checkNumberFieldsUseWholeNumberValidation();
@@ -2697,6 +2698,28 @@ function checkMenuPublishRequiresPriceAndImage() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("menu publish requires price and image", missing.length === 0, missing.join(", "));
+}
+
+function checkPartyPlanPublishRequiresPrice() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(adminFile) || !existsSync(schemaFile)) {
+    add("party plan publish requires price", false, `${adminFile} or ${schemaFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const required = [
+    [adminFile, adminText, 'section.id === "party-plans" && nextDraft.isPublished'],
+    [adminFile, adminText, "公開する前に、料金を入力してください。"],
+    [adminFile, adminText, "料金は 4,000円〜 / 1名、応相談、お問い合わせ のように意味が分かる表記にしてください。"],
+    [schemaFile, schemaText, 'id: "party-plans"'],
+    [schemaFile, schemaText, '{ key: "price", label: "料金", type: "text", required: true']
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("party plan publish requires price", missing.length === 0, missing.join(", "));
 }
 
 function checkMenuContentNormalizesMissingCategory() {

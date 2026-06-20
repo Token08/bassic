@@ -2027,7 +2027,9 @@ function SectionEditor({
     if (section.id === "party-plans" && nextDraft.isPublished) {
       const price = getString(nextDraft.price).trim();
 
-      if (price && !hasPriceOrInquirySignal(price)) {
+      if (!price) {
+        nextErrors.price = "公開する前に、料金を入力してください。";
+      } else if (!hasPriceOrInquirySignal(price)) {
         nextErrors.price = "料金は 4,000円〜 / 1名、応相談、お問い合わせ のように意味が分かる表記にしてください。";
       }
 
