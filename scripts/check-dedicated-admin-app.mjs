@@ -1006,9 +1006,15 @@ function checkAdminValidationSummaryLinksFields() {
     [clientFile, clientText, "項目名を押すと入力欄へ移動できます。"],
     [clientFile, clientText, "上から順番に直して、もう一度「プレビュー確認」を押してください。"],
     [clientFile, clientText, "href={`#${key}`}"],
+    [clientFile, clientText, "className=\"missing-required-links\""],
+    [clientFile, clientText, "href={`#${field.key}`}"],
     [clientFile, clientText, "<ValidationSummary errors={errors} section={section} />"],
     [cssFile, cssText, ".validation-summary"],
-    [cssFile, cssText, ".validation-summary a"]
+    [cssFile, cssText, ".validation-summary a"],
+    [cssFile, cssText, ".missing-required-links"],
+    [cssFile, cssText, ".missing-required-links a"],
+    [cssFile, cssText, ".required-progress.complete small"],
+    [cssFile, cssText, "color: var(--green);"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

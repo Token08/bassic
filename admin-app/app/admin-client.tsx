@@ -1145,13 +1145,22 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
 
   const completed = requiredFields.filter((field) => fieldHasValue(field, draft[field.key])).length;
   const remaining = requiredFields.length - completed;
-  const missingLabels = requiredFields.filter((field) => !fieldHasValue(field, draft[field.key])).map((field) => field.label);
+  const missingFields = requiredFields.filter((field) => !fieldHasValue(field, draft[field.key]));
 
   return (
     <div className={`required-progress ${remaining === 0 ? "complete" : ""}`}>
       <strong>必須 {completed}/{requiredFields.length} 入力済み</strong>
       <span>{remaining === 0 ? "必須項目はそろっています。公開前チェックへ進めます。" : `あと${remaining}件の必須項目を入れると、プレビュー確認へ進めます。`}</span>
-      {missingLabels.length ? <small>未入力: {missingLabels.join("、")}</small> : null}
+      {missingFields.length ? (
+        <small className="missing-required-links">
+          未入力:
+          {missingFields.map((field) => (
+            <a key={field.key} href={`#${field.key}`}>
+              {field.label}
+            </a>
+          ))}
+        </small>
+      ) : null}
       {remaining === 0 ? <small>次は画面下の「プレビュー確認」を押してください。</small> : null}
     </div>
   );

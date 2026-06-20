@@ -1018,8 +1018,27 @@ a.current-edit-page:hover {
   font-weight: 900;
 }
 
+.missing-required-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.missing-required-links a {
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: rgba(159, 23, 32, 0.09);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.missing-required-links a:hover {
+  text-decoration: underline;
+}
+
 .required-progress.complete small {
-  display: none;
+  color: var(--green);
 }
 
 .edit-focus-tips {
