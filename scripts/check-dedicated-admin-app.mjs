@@ -1741,7 +1741,7 @@ function checkAdminEditorShowsSectionPublicPageLinks() {
     "publicPageLabels",
     "getPublicPageLabel(section)",
     "publicPageUrl",
-    "反映先:",
+    "公開後に確認するページ:",
     "current-edit-page",
     "href={publicPageUrl}",
     "getPublicPageUrl(section)",

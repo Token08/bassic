@@ -1142,11 +1142,11 @@ function CurrentEditSummary({
         <strong>{itemLabel}</strong>
         {publicPageUrl ? (
           <a className="current-edit-page" href={publicPageUrl} target="_blank" rel="noreferrer">
-            反映先: {publicPageLabel}
+            公開後に確認するページ: {publicPageLabel}
             <ExternalLink size={13} />
           </a>
         ) : (
-          <small className="current-edit-page">反映先: {publicPageLabel}</small>
+          <small className="current-edit-page">公開後に確認するページ: {publicPageLabel}</small>
         )}
       </div>
       <div className="current-edit-badges">
