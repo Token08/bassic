@@ -1073,6 +1073,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
             onChange={(event) => onChange({ ...image, alt: event.target.value })}
             placeholder="例: ライヴ会場のステージ"
           />
+          <small className="field-hint">画面には大きく表示されません。検索や読み上げ用に、写真に写っている内容を短く書きます。</small>
         </label>
         <label className="upload-button">
           {uploading ? <Loader2 className="spin" size={17} /> : <Upload size={17} />}

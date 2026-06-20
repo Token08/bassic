@@ -582,6 +582,7 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
   const required = [
     "aria-label=\"この画像を外す\"",
     "画像を外す",
+    "検索や読み上げ用に、写真に写っている内容を短く書きます。",
     "画像をアップロードしました。まだ公開サイトには反映されていません。",
     "画像を開いて確認し、下書き保存またはプレビューして公開してください。"
   ];
