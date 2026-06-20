@@ -966,6 +966,7 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "現在編集中の内容",
     "公開するON",
     "window.addEventListener(\"beforeunload\"",
+    "下書き保存またはプレビューして公開を押してください",
     "event.returnValue = \"\""
   ];
   const missing = required.filter((term) => !text.includes(term));

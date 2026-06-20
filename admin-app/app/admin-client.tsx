@@ -1698,7 +1698,9 @@ function SectionEditor({
       return true;
     }
 
-    return window.confirm("保存していない変更があります。移動すると入力内容が消えます。続けますか？");
+    return window.confirm(
+      "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、下書き保存またはプレビューして公開を押してください。"
+    );
   }
 
   async function load() {
