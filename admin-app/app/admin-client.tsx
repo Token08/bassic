@@ -198,6 +198,23 @@ function isValidManagedUrl(value: string) {
   }
 }
 
+function isValidManagedImageUrl(value: string) {
+  if (!value) {
+    return true;
+  }
+
+  if (value.startsWith("/assets/")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function isFacebookEventUrl(value: string) {
   return Boolean(getFacebookEventId(value));
 }
@@ -940,7 +957,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   const image = isImageObject(value) ? value : { url: getString(value) };
   const url = image.url || "";
   const trimmedUrl = url.trim();
-  const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedUrl(trimmedUrl);
+  const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedImageUrl(trimmedUrl);
 
   function removeImage() {
     if (!window.confirm("この画像を外しますか？下書き保存または公開するまではサイトには反映されません。")) {
@@ -1867,8 +1884,8 @@ function SectionEditor({
         nextErrors[field.key] = `${field.label}は0以上の半角整数で入力してください。小数やマイナスは使えません。`;
       }
 
-      if (!emptyValue && field.type === "image" && !isValidManagedUrl(getImageUrl(value).trim())) {
-        nextErrors[field.key] = `${field.label}のURLは https:// または / から始まるURLを入力してください。`;
+      if (!emptyValue && field.type === "image" && !isValidManagedImageUrl(getImageUrl(value).trim())) {
+        nextErrors[field.key] = `${field.label}のURLは https:// または /assets/ から始まるURLを入力してください。`;
       }
     }
 

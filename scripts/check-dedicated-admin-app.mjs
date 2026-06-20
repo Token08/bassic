@@ -31,6 +31,7 @@ checkClientManualUsesPublishButtonForPublicUpdates();
 checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
+checkImageUrlValidationIsSpecific();
 checkSiteSettingsUrlValidation();
 checkSiteSettingsContactValidation();
 checkSocialNoticeUrlValidation();
@@ -603,6 +604,27 @@ function checkImageRemoveRequiresConfirmation() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin image remove requires confirmation", missing.length === 0, missing.join(", "));
+}
+
+function checkImageUrlValidationIsSpecific() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin image URL validation is specific", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function isValidManagedImageUrl",
+    "value.startsWith(\"/assets/\")",
+    "url.protocol === \"https:\"",
+    "isValidManagedImageUrl(trimmedUrl)",
+    "field.type === \"image\" && !isValidManagedImageUrl",
+    "https:// または /assets/"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin image URL validation is specific", missing.length === 0, missing.join(", "));
 }
 
 function checkSiteSettingsUrlValidation() {
