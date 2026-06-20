@@ -32,6 +32,7 @@ checkClientSupportRequestDetails();
 checkImageFieldUsesFriendlyRemoveCopy();
 checkImageRemoveRequiresConfirmation();
 checkImageUrlValidationIsSpecific();
+checkPdfUrlValidationIsSpecific();
 checkSiteSettingsUrlValidation();
 checkSiteSettingsContactValidation();
 checkSocialNoticeUrlValidation();
@@ -625,6 +626,28 @@ function checkImageUrlValidationIsSpecific() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin image URL validation is specific", missing.length === 0, missing.join(", "));
+}
+
+function checkPdfUrlValidationIsSpecific() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin PDF URL validation is specific", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const required = [
+    "function isValidManagedPdfUrl",
+    "value.startsWith(\"/assets/pdf/\")",
+    "url.protocol === \"https:\"",
+    "url.pathname.toLowerCase().endsWith(\".pdf\")",
+    "function isPreviewableManagedUrl",
+    "field.key === \"pdfUrl\"",
+    "https://...pdf または /assets/pdf/...pdf"
+  ];
+  const missing = required.filter((term) => !text.includes(term));
+
+  add("admin PDF URL validation is specific", missing.length === 0, missing.join(", "));
 }
 
 function checkSiteSettingsUrlValidation() {

@@ -215,6 +215,32 @@ function isValidManagedImageUrl(value: string) {
   }
 }
 
+function isValidManagedPdfUrl(value: string) {
+  if (!value) {
+    return true;
+  }
+
+  try {
+    const url = value.startsWith("/") ? new URL(value, publicSiteUrl) : new URL(value);
+    const isAllowedLocation = value.startsWith("/assets/pdf/") || url.protocol === "https:";
+    return isAllowedLocation && url.pathname.toLowerCase().endsWith(".pdf");
+  } catch {
+    return false;
+  }
+}
+
+function isPreviewableManagedUrl(field: FieldDefinition, value: string) {
+  if (!isValidManagedUrl(value)) {
+    return false;
+  }
+
+  if (field.key === "pdfUrl") {
+    return isValidManagedPdfUrl(value);
+  }
+
+  return true;
+}
+
 function isFacebookEventUrl(value: string) {
   return Boolean(getFacebookEventId(value));
 }
@@ -882,7 +908,7 @@ function Field({
     name: field.key
   };
   const urlValue = field.type === "url" ? getString(value).trim() : "";
-  const canPreviewUrl = Boolean(urlValue) && isValidManagedUrl(urlValue);
+  const canPreviewUrl = Boolean(urlValue) && isPreviewableManagedUrl(field, urlValue);
 
   if (field.type === "hidden") {
     return null;
@@ -1878,6 +1904,10 @@ function SectionEditor({
 
       if (!emptyValue && field.type === "url" && !isValidManagedUrl(getString(value).trim())) {
         nextErrors[field.key] = `${field.label}は https:// または / から始まるURLを入力してください。`;
+      }
+
+      if (!nextErrors[field.key] && !emptyValue && field.key === "pdfUrl" && !isValidManagedPdfUrl(getString(value).trim())) {
+        nextErrors[field.key] = `${field.label}は https://...pdf または /assets/pdf/...pdf のURLを入力してください。`;
       }
 
       if (!emptyValue && field.type === "number" && !isValidWholeNumber(getString(value))) {
