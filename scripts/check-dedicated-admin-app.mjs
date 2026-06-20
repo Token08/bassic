@@ -1002,7 +1002,8 @@ function checkAdminValidationSummaryLinksFields() {
   const required = [
     [clientFile, clientText, "function ValidationSummary"],
     [clientFile, clientText, "公開前に直す項目があります。"],
-    [clientFile, clientText, "項目名を押すと、入力欄へ移動できます。"],
+    [clientFile, clientText, "項目名を押すと入力欄へ移動できます。"],
+    [clientFile, clientText, "上から順番に直して、もう一度「プレビュー確認」を押してください。"],
     [clientFile, clientText, "href={`#${key}`}"],
     [clientFile, clientText, "<ValidationSummary errors={errors} section={section} />"],
     [cssFile, cssText, ".validation-summary"],

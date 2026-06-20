@@ -1439,7 +1439,7 @@ function ValidationSummary({ errors, section }: { errors: Record<string, string>
       <AlertCircle size={18} />
       <div>
         <strong>公開前に直す項目があります。</strong>
-        <span>項目名を押すと、入力欄へ移動できます。</span>
+        <span>項目名を押すと入力欄へ移動できます。上から順番に直して、もう一度「プレビュー確認」を押してください。</span>
         <ul>
           {entries.map(([key, message]) => {
             const label = section.fields.find((field) => field.key === key)?.label || key;
