@@ -1963,6 +1963,11 @@ function SectionEditor({
         nextErrors.startTime = "イベントを公開する前にSTARTを入力してください。";
       }
 
+      const reservationText = getString(nextDraft.reservation).trim();
+      if (nextDraft.isPublished && !reservationText && !sourceUrl) {
+        nextErrors.reservation = "イベントを公開する前に、予約方法か詳細URLを入力してください。";
+      }
+
       for (const key of ["openTime", "startTime", "endTime"]) {
         const value = getString(nextDraft[key]).trim();
         if (value && !isValidEventTime(value)) {

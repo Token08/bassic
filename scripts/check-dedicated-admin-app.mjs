@@ -59,6 +59,7 @@ checkFacebookEventImportPanel();
 checkFacebookEventHandoffDocs();
 checkFacebookEventUrlParserHandlesNestedPaths();
 checkAdminEventTimeValidation();
+checkAdminEventReservationGuidance();
 checkCalendarSyncPrefersManagedFacebookEvents();
 checkCalendarSyncBlocksWarnings();
 checkProductionHandoffCommands();
@@ -1369,6 +1370,28 @@ function checkAdminEventTimeValidation() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin event times use HH:mm guidance", missing.length === 0 && stale.length === 0, [...missing, ...stale].join(", "));
+}
+
+function checkAdminEventReservationGuidance() {
+  const adminFile = "admin-app/app/admin-client.tsx";
+  const schemaFile = "admin-app/lib/admin-schema.ts";
+  if (!existsSync(adminFile) || !existsSync(schemaFile)) {
+    add("admin published events require reservation or detail guidance", false, `${adminFile} or ${schemaFile} missing`);
+    return;
+  }
+
+  const adminText = readFileSync(adminFile, "utf8");
+  const schemaText = readFileSync(schemaFile, "utf8");
+  const required = [
+    [adminFile, adminText, "const reservationText = getString(nextDraft.reservation).trim();"],
+    [adminFile, adminText, "nextDraft.isPublished && !reservationText && !sourceUrl"],
+    [adminFile, adminText, "イベントを公開する前に、予約方法か詳細URLを入力してください。"],
+    [schemaFile, schemaText, "placeholder: \"予約不要 / メール予約 / DM予約など\""],
+    [schemaFile, schemaText, "公開する場合は、予約不要、メール予約、DM、詳細URLを見る"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin published events require reservation or detail guidance", missing.length === 0, missing.join(", "));
 }
 
 function checkCalendarSyncPrefersManagedFacebookEvents() {

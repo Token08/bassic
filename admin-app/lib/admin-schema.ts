@@ -214,7 +214,7 @@ export const sections: SectionDefinition[] = [
       { key: "endTime", label: "終了時間", type: "text", placeholder: "22:00", hint: "空欄の場合、Google Calendarには開始から2時間の予定として入ります。深夜2時終了なら 02:00 と入力します。" },
       { key: "performers", label: "出演者", type: "textarea", rows: 3, placeholder: "出演者名を改行で入力" },
       { key: "price", label: "料金", type: "text", placeholder: "前売 3,000円 / 当日 3,500円" },
-      { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "電話、DM、フォームなど" },
+      { key: "reservation", label: "予約方法", type: "textarea", rows: 3, placeholder: "予約不要 / メール予約 / DM予約など", hint: "公開する場合は、予約不要、メール予約、DM、詳細URLを見るなど、来店前に分かる案内を入れてください。詳細URLがある場合は空欄でも大丈夫です。" },
       { key: "sourceUrl", label: "FacebookイベントURL・詳細URL", type: "url", placeholder: "https://www.facebook.com/events/1234567890/", hint: "Facebookのイベント一覧ページではなく、個別イベントページのURLを入れます。Google Calendarへ反映する時も、このURLが説明欄に入ります。" },
       { key: "sourceId", label: "FacebookイベントID", type: "hidden" },
       { key: "sourceType", label: "取り込み元", type: "hidden" },
