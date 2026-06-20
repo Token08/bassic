@@ -1064,9 +1064,12 @@ function checkAdminItemListShowsUsefulMeta() {
     [clientFile, clientText, "PDFリンクあり"],
     [clientFile, clientText, "SNS種別:"],
     [clientFile, clientText, "searchableText.includes(query)"],
+    [clientFile, clientText, "名前・日付・料金などで検索"],
+    [clientFile, clientText, "一覧に出ている補足情報も検索できます。"],
     [clientFile, clientText, "item-list-meta"],
     [cssFile, cssText, ".item-list-title"],
-    [cssFile, cssText, ".item-list-meta"]
+    [cssFile, cssText, ".item-list-meta"],
+    [cssFile, cssText, ".item-search-hint"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

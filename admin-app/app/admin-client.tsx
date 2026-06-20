@@ -2365,8 +2365,9 @@ function SectionEditor({
                     type="search"
                     value={itemSearch}
                     onChange={(event) => setItemSearch(event.target.value)}
-                    placeholder={`${section.shortTitle}を検索`}
+                    placeholder="名前・日付・料金などで検索"
                   />
+                  <small className="item-search-hint">一覧に出ている補足情報も検索できます。</small>
                 </label>
                 <div className="status-filter" role="group" aria-label="公開状態で絞り込み">
                   <button className={itemStatusFilter === "all" ? "selected" : ""} type="button" onClick={() => setItemStatusFilter("all")}>

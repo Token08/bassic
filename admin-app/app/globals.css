@@ -838,6 +838,13 @@ a {
   color: var(--ink);
 }
 
+.item-search-hint {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .status-filter {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
