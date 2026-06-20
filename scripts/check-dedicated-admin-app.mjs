@@ -77,6 +77,7 @@ checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
+checkGitHubIssuePlanMarkedAsUnused();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkMicrocmsSchemaUsesManagedSiteSettings();
 checkAdminSchemaDocsMatch();
@@ -1882,6 +1883,7 @@ function checkDocsIndexBoundaries() {
     "docs/delivery-admin-manual.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
+    "docs/github-issue.md",
     "日常更新用と保守用の切り分け",
     "公開後24時間以内の確認",
     "3つだけを店舗側へ渡す",
@@ -1912,6 +1914,28 @@ function checkLegacyDeliveryManualMarkedAsOld() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("legacy delivery manual marked as old", missing.length === 0, missing.join(", "));
+}
+
+function checkGitHubIssuePlanMarkedAsUnused() {
+  const file = "docs/github-issue.md";
+  const indexFile = "docs/admin-docs-index.md";
+  if (!existsSync(file) || !existsSync(indexFile)) {
+    add("GitHub issue plan marked as unused", false, `${file} or ${indexFile} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const indexText = readFileSync(indexFile, "utf8");
+  const required = [
+    [file, text, "旧計画メモ"],
+    [file, text, "現在の運用ではGitHub Issueは使いません"],
+    [file, text, "納品先にはこの資料を渡さず"],
+    [indexFile, indexText, "docs/github-issue.md"],
+    [indexFile, indexText, "現在の運用ではGitHub Issueは使わず"]
+  ];
+  const missing = required.filter(([, body, term]) => !body.includes(term)).map(([path, , term]) => `${path}: ${term}`);
+
+  add("GitHub issue plan marked as unused", missing.length === 0, missing.join(", "));
 }
 
 function checkMicrocmsSetupChecklistUsesCurrentDocs() {

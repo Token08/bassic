@@ -68,6 +68,8 @@
 
 - `docs/delivery-admin-manual-v1.md`
   - 旧版の控えです。納品時は `docs/delivery-admin-manual.md` を渡します。
+- `docs/github-issue.md`
+  - 初期のIssue作成案です。現在の運用ではGitHub Issueは使わず、納品先にも渡しません。
 
 ## 確認コマンド
 
