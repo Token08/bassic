@@ -484,8 +484,8 @@ function checkClientHandoffDocsLinked() {
 
 function checkClientDocsMentionSectionPublicPageLinks() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "該当ページを開く", "イベントならイベントページ", "メニューならメニューページ", "「公開する」ONは、サイトへ出す準備ができた印です"] },
-    { path: "docs/client-handoff-checklist.md", terms: ["確認するページ", "該当ページを開き", "反映を確認する", "「公開する」ONは表示許可"] },
+    { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "該当ページを開く", "イベントならイベントページ", "メニューならメニューページ", "「公開する」ONは、サイトへ出す準備ができた印です", "公開後はサイトに表示されます", "まだサイトには出ません"] },
+    { path: "docs/client-handoff-checklist.md", terms: ["確認するページ", "該当ページを開き", "反映を確認する", "「公開する」ONは表示許可", "公開後はサイトに表示されます", "まだサイトには出ません"] },
     { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか", "ONだけでは公開されない"] }
   ];
   const missing = [];
