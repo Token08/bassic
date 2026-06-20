@@ -1255,6 +1255,8 @@ function checkFacebookEventImportPanel() {
     "公開状態",
     "公開するON",
     "Google Calendarへ依頼する前に、「公開する」をONにして公開してください。",
+    "公開するONになるまで「コピーする」は押せません。",
+    "!draft.isPublished ? \"公開するON\" : \"\"",
     "コピーする",
     "メモを選択",
     "calendarRequestRef",
@@ -1301,6 +1303,7 @@ function checkFacebookEventHandoffDocs() {
     "Google Calendar反映依頼メモ",
     "コピーする",
     "空欄の場合は「コピーする」が押せません",
+    "公開するONになるまで「コピーする」は押せません",
     "公開状態"
   ];
   const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "Google Calendar反映依頼メモ", "コピーする", "sync:calendar:check", "公開するON"];

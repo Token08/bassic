@@ -1550,6 +1550,7 @@ function FacebookEventImportPanel({
     : [];
   const calendarRequestBlockingLabels = preview
     ? [
+        !draft.isPublished ? "公開するON" : "",
         !currentTitle && !preview.title ? "イベント名" : "",
         !currentDate && !preview.date ? "日付" : "",
         !currentStartTime && !preview.startTime ? "START" : ""
@@ -1730,7 +1731,7 @@ function FacebookEventImportPanel({
                 </small>
               ) : null}
               {!draft.isPublished ? (
-                <small className="request-warning">Google Calendarへ依頼する前に、「公開する」をONにして公開してください。</small>
+                <small className="request-warning">Google Calendarへ依頼する前に、「公開する」をONにして公開してください。公開するONになるまで「コピーする」は押せません。</small>
               ) : null}
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
