@@ -35,6 +35,7 @@
 - URLや画像URLを変えた時は、管理画面の確認リンクを押す
 - SNSお知らせは、選んだSNSと同じURLを使う。Instagramは `instagram.com`、Facebookは `facebook.com`、Xは `x.com` または `twitter.com`
 - 「公開する」がONになっているか確認する
+- 「公開する」ONは表示許可、OFFは下書き。ONだけでは公開されない
 - サイトに出したい更新は「プレビューして公開」まで押す
 - Facebookイベントから追加した時は、日付、START、画像が正しいか見る
 - Facebookイベントから追加した時は、STARTが空欄のままになっていないか見る
