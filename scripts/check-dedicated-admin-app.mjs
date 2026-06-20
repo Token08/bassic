@@ -45,6 +45,7 @@ checkAdminUrlPreviewLabelsAreContextual();
 checkAdminValidationNoticeNamesFields();
 checkAdminValidationSummaryLinksFields();
 checkAdminSaveFlowExplainsPublishBehavior();
+checkAdminPreviewRequiresConfirmation();
 checkAdminDraftSaveDoesNotClaimPublicPublish();
 checkAdminErrorsExplainWhatToTellSupport();
 checkPublishWaitCopyIsSpecific();
@@ -968,6 +969,30 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const missing = required.filter((term) => !text.includes(term));
 
   add("admin save flow explains publish behavior", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminPreviewRequiresConfirmation() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin preview requires confirmation", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "const [confirmed, setConfirmed] = useState(false)"],
+    [clientFile, clientText, "publish-confirmation"],
+    [clientFile, clientText, "入力内容、画像、リンク先、公開後の確認項目を見ました。"],
+    [clientFile, clientText, "disabled={!confirmed}"],
+    [cssFile, cssText, ".publish-confirmation"]
+  ];
+  const missing = required
+    .filter(([, text, term]) => !text.includes(term))
+    .map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin preview requires confirmation", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminDraftSaveDoesNotClaimPublicPublish() {

@@ -1180,6 +1180,7 @@ function PreviewModal({
   onClose: () => void;
   onPublish: () => void;
 }) {
+  const [confirmed, setConfirmed] = useState(false);
   const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
   const publishToggleOff = hasPublishToggle && !Boolean(draft.isPublished);
 
@@ -1239,11 +1240,19 @@ function PreviewModal({
             ))}
           </ul>
         </div>
+        <label className="publish-confirmation">
+          <input
+            type="checkbox"
+            checked={confirmed}
+            onChange={(event) => setConfirmed(event.target.checked)}
+          />
+          <span>入力内容、画像、リンク先、公開後の確認項目を見ました。</span>
+        </label>
         <div className="modal-actions">
           <button className="secondary-button" type="button" onClick={onClose}>
             戻って直す
           </button>
-          <button className="primary-button" type="button" onClick={onPublish}>
+          <button className="primary-button" type="button" disabled={!confirmed} onClick={onPublish}>
             <CheckCircle2 size={18} />
             {publishToggleOff ? "保存して反映（この項目は非表示）" : "この内容で公開"}
           </button>

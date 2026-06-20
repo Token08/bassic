@@ -1809,6 +1809,29 @@ a {
   font-weight: 800;
 }
 
+.publish-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(159, 23, 32, 0.22);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(159, 23, 32, 0.06);
+  color: var(--ink);
+  font-weight: 900;
+  line-height: 1.6;
+}
+
+.publish-confirmation input {
+  flex: 0 0 auto;
+  margin-top: 5px;
+  transform: scale(1.12);
+}
+
+.publish-confirmation span {
+  display: block;
+}
+
 .spin {
   animation: spin 900ms linear infinite;
 }
