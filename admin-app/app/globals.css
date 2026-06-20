@@ -1240,7 +1240,14 @@ a {
   gap: 10px;
 }
 
-.facebook-calendar-request-heading button {
+.calendar-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.calendar-request-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1254,11 +1261,11 @@ a {
   cursor: pointer;
 }
 
-.facebook-calendar-request-heading button:hover {
+.calendar-request-actions button:hover {
   background: rgba(36, 93, 131, 0.08);
 }
 
-.facebook-calendar-request-heading button:disabled {
+.calendar-request-actions button:disabled {
   opacity: 0.48;
   cursor: not-allowed;
 }

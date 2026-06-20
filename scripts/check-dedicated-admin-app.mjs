@@ -1160,12 +1160,14 @@ function checkFacebookEventFetchParsingFallbacks() {
 
 function checkFacebookEventImportPanel() {
   const file = "admin-app/app/admin-client.tsx";
-  if (!existsSync(file)) {
-    add("admin event editor includes Facebook import panel", false, `${file} missing`);
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(file) || !existsSync(cssFile)) {
+    add("admin event editor includes Facebook import panel", false, `${file} or ${cssFile} missing`);
     return;
   }
 
   const text = readFileSync(file, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
   const requiredTerms = [
     "Facebookイベントを取り込む",
     "Facebookから読み取る",
@@ -1179,7 +1181,10 @@ function checkFacebookEventImportPanel() {
     "公開するON",
     "Google Calendarへ依頼する前に、「公開する」をONにして公開してください。",
     "コピーする",
+    "メモを選択",
+    "calendarRequestRef",
     "コピーしました。担当者へのメッセージに貼り付けてください。",
+    "メモを選択しました。コピーして担当者へのメッセージに貼り付けてください。",
     "calendarRequestMissingLabels",
     "calendarRequestBlockingLabels",
     "calendarRequestCannotCopy",
@@ -1193,7 +1198,11 @@ function checkFacebookEventImportPanel() {
     "Facebookイベントを公開する前に日付を入力してください。",
     "イベントを公開する前にSTARTを入力してください。"
   ];
-  const missing = requiredTerms.filter((term) => !text.includes(term));
+  const requiredCssTerms = [".calendar-request-actions", ".calendar-request-actions button"];
+  const missing = [
+    ...requiredTerms.filter((term) => !text.includes(term)),
+    ...requiredCssTerms.filter((term) => !cssText.includes(term))
+  ];
 
   add("admin event editor includes Facebook import panel", missing.length === 0, missing.join(", "));
 }

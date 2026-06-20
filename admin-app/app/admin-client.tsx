@@ -1432,6 +1432,7 @@ function FacebookEventImportPanel({
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
+  const calendarRequestRef = useRef<HTMLTextAreaElement | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
   const previewHasInvalidTime = Boolean(
@@ -1571,6 +1572,12 @@ function FacebookEventImportPanel({
     }
   }
 
+  function selectCalendarRequest() {
+    calendarRequestRef.current?.focus();
+    calendarRequestRef.current?.select();
+    setCopyMessage("メモを選択しました。コピーして担当者へのメッセージに貼り付けてください。");
+  }
+
   return (
     <section className="facebook-import-panel" aria-label="Facebookイベント取り込み">
       <div className="facebook-import-heading">
@@ -1626,10 +1633,15 @@ function FacebookEventImportPanel({
             <div className="facebook-calendar-request" aria-label="Google Calendar反映依頼メモ">
               <div className="facebook-calendar-request-heading">
                 <strong>Google Calendar反映依頼メモ</strong>
-                <button type="button" disabled={calendarRequestCannotCopy} onClick={() => void copyCalendarRequest()}>
-                  <Copy size={16} />
-                  コピーする
-                </button>
+                <div className="calendar-request-actions">
+                  <button type="button" disabled={calendarRequestCannotCopy} onClick={() => void copyCalendarRequest()}>
+                    <Copy size={16} />
+                    コピーする
+                  </button>
+                  <button type="button" disabled={!calendarRequestText} onClick={selectCalendarRequest}>
+                    メモを選択
+                  </button>
+                </div>
               </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
               {calendarRequestHasMissingFields ? (
@@ -1642,6 +1654,7 @@ function FacebookEventImportPanel({
               ) : null}
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
+                ref={calendarRequestRef}
                 readOnly
                 value={calendarRequestText}
                 rows={7}
