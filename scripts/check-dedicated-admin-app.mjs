@@ -122,6 +122,7 @@ checkPackageScript("check:admin-app");
 checkPackageScript("sync:calendar:dry");
 checkPackageScript("sync:calendar:check");
 checkPackageScript("smoke:content");
+checkPackageScript("check:handoff");
 checkContentSmokeCoversMenuRegression();
 checkLinkSmokeValidatesMapEmbeds();
 checkSeoSmokeRejectsTemporaryUrls();
@@ -1564,6 +1565,7 @@ function checkProductionHandoffCommands() {
 
   const text = readFileSync(file, "utf8");
   const requiredCommands = [
+    "npm run check:handoff",
     "npm run typecheck",
     "npm run typecheck:admin-app",
     "npm run check:admin-app",
@@ -1577,6 +1579,7 @@ function checkProductionHandoffCommands() {
   ];
   const requiredGuidance = [
     "毎回実行するもの",
+    "納品前の順番でまとめて実行します",
     "microCMS接続情報を設定した後だけ実行するもの",
     "本物のmicroCMS接続情報で一度通します",
     "FacebookイベントをGoogle Calendarへ反映する前に実行するもの",
@@ -1896,6 +1899,7 @@ function checkDocsIndexBoundaries() {
     "日常更新用と保守用の切り分け",
     "公開後24時間以内の確認",
     "3つだけを店舗側へ渡す",
+    "check:handoff",
     "typecheck:admin-app",
     "build:admin-app",
     "sync:calendar:check",

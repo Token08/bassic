@@ -73,6 +73,14 @@
 
 ## 確認コマンド
 
+納品前の通常チェックは、まず次を実行します。
+
+```bash
+npm run check:handoff
+```
+
+内訳を個別に確認したい場合は、次を順番に実行します。
+
 ```bash
 npm run typecheck
 npm run typecheck:admin-app

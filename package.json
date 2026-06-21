@@ -25,6 +25,7 @@
     "smoke:links": "node scripts/smoke-links.mjs",
     "smoke:content": "node scripts/smoke-content.mjs",
     "smoke:seo": "node scripts/smoke-seo.mjs",
+    "check:handoff": "node scripts/check-handoff.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:admin-app": "npm --prefix admin-app run typecheck"
   },
