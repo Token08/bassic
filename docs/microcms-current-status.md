@@ -7,6 +7,7 @@
 - The dedicated admin app exists in `admin-app/`.
 - GitHub Pages deploy already supports `repository_dispatch` with `microcms_publish`.
 - `npm run seed:cms` can preview the initial content that will be uploaded to microCMS.
+- `docs/cms-sample-content-v1.json` includes the current starting content: full food menu, 4 drink menu sheets, Party/Rental cards, and SNS notice fallbacks.
 
 ## APIs expected by the site
 
@@ -48,15 +49,18 @@ npm run seed:cms
 npm run smoke:cms
 npm run build
 npm run smoke:content
+npm run check:handoff
 ```
 
 When real microCMS credentials are ready:
 
 ```bash
 npm run setup:admin
+npm run seed:cms
 npm run seed:cms -- --apply
 npm run check:admin
 npm run smoke:cms
+npm run check:handoff
 ```
 
 ## Current known blocker

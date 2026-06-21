@@ -1964,6 +1964,10 @@ function checkMicrocmsSetupChecklistUsesCurrentDocs() {
   const required = [
     "docs/cms-sample-content-v1.json",
     "docs/microcms-field-definitions-v1.md",
+    "フードメニュー10品",
+    "ドリンク表4枚",
+    "`Rental`",
+    "npm run check:handoff",
     "`site-settings`",
     "`drink-menu-sheets`",
     "`equipment-rental`",

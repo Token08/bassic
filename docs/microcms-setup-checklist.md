@@ -4,6 +4,7 @@
 
 初期入力の参考値は `docs/cms-sample-content-v1.json`、公開前の確認順は `docs/production-handoff-checklist.md` を参照してください。
 各APIの細かい項目名、必須項目、入力形式は `docs/microcms-field-definitions-v1.md` を正とします。
+現在のサンプルには、フードメニュー10品、ドリンク表4枚、Party & Rentalの `Rental` カードまで入っています。最初はこの内容を流し込み、管理画面で店舗側の最新価格や画像へ差し替える運用にします。
 
 ## 1. 作成するAPI
 
@@ -206,6 +207,8 @@ npm run build
 npm run smoke:links
 npm run smoke:content
 npm run smoke:seo
+npm run check:handoff
 ```
 
 `smoke:cms` は環境変数が未設定の場合はスキップします。設定済みの場合は、API IDや必須項目が合っているか確認します。
+`check:handoff` は納品前の順番で主要チェックをまとめて実行します。microCMS作成後は、最後にこのコマンドまで通してから仮URLを確認します。
