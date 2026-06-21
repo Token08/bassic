@@ -46,6 +46,7 @@ checkPreviewChecklistIsSectionSpecific();
 checkAdminUrlPreviewLabelsAreContextual();
 checkAdminValidationNoticeNamesFields();
 checkAdminValidationSummaryLinksFields();
+checkAdminSingleEditorUsesFullWidth();
 checkAdminSaveFlowExplainsPublishBehavior();
 checkAdminItemListShowsUsefulMeta();
 checkAdminPreviewRequiresConfirmation();
@@ -1027,6 +1028,23 @@ function checkAdminValidationSummaryLinksFields() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin validation summary links fields", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSingleEditorUsesFullWidth() {
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(cssFile)) {
+    add("admin single editor uses full width", false, `${cssFile} missing`);
+    return;
+  }
+
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    ".editor-layout > .edit-form:only-child",
+    "grid-column: 1 / -1;"
+  ];
+  const missing = required.filter((term) => !cssText.includes(term));
+
+  add("admin single editor uses full width", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSaveFlowExplainsPublishBehavior() {

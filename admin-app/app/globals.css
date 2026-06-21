@@ -934,6 +934,10 @@ a {
   align-items: flex-start;
 }
 
+.editor-layout > .edit-form:only-child {
+  grid-column: 1 / -1;
+}
+
 .item-list {
   position: sticky;
   top: 92px;
