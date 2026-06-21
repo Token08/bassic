@@ -489,8 +489,22 @@ function getPreviewText(field: FieldDefinition, value: unknown) {
   return String(value ?? "");
 }
 
+async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: init?.signal || controller.signal
+    });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
 async function requestJson<T>(url: string, init?: RequestInit) {
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -2629,8 +2643,8 @@ export default function AdminClient() {
     setSessionError("");
     try {
       const [sessionResponse, healthResponse] = await Promise.all([
-        fetch("/api/session", { cache: "no-store" }),
-        fetch("/api/health", { cache: "no-store" })
+        fetchWithTimeout("/api/session", { cache: "no-store" }, 8000),
+        fetchWithTimeout("/api/health", { cache: "no-store" }, 8000)
       ]);
       const result = (await sessionResponse.json()) as { authenticated?: boolean };
       const healthResult = (await healthResponse.json()) as HealthState;

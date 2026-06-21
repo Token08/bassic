@@ -35,7 +35,10 @@ function getPublicSiteUrl() {
 
 async function hasStaticFeed() {
   try {
-    const response = await fetch(`${getPublicSiteUrl()}/data/social-feed.json`, { cache: "no-store" });
+    const response = await fetch(`${getPublicSiteUrl()}/data/social-feed.json`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(2000)
+    });
 
     if (!response.ok) {
       return false;
@@ -54,42 +57,36 @@ export async function GET(request: NextRequest) {
     return unauthorized();
   }
 
-  try {
-    const [siteSettings, home, socialNotices, staticFeedAvailable] = await Promise.all([
-      getContent("site-settings") as Promise<SiteSettings>,
-      getContent("home") as Promise<HomeContent>,
-      getContent("social-notices") as Promise<ListResponse<SocialNotice>>,
-      hasStaticFeed()
-    ]);
-    const notices = socialNotices.contents || [];
-    const publishedCount = notices.filter((notice) => notice.isPublished !== false).length;
-    const draftCount = notices.length - publishedCount;
-    const latestUpdatedAt = notices
-      .map((notice) => notice.updatedAt || notice.date || "")
-      .filter(Boolean)
-      .sort()
-      .at(-1);
+  const [siteSettingsResult, homeResult, socialNoticesResult, staticFeedResult] = await Promise.allSettled([
+    getContent("site-settings") as Promise<SiteSettings>,
+    getContent("home") as Promise<HomeContent>,
+    getContent("social-notices") as Promise<ListResponse<SocialNotice>>,
+    hasStaticFeed()
+  ]);
+  const siteSettings = siteSettingsResult.status === "fulfilled" ? siteSettingsResult.value : {};
+  const home = homeResult.status === "fulfilled" ? homeResult.value : {};
+  const socialNotices = socialNoticesResult.status === "fulfilled" ? socialNoticesResult.value : {};
+  const staticFeedAvailable = staticFeedResult.status === "fulfilled" ? staticFeedResult.value : false;
+  const notices = socialNotices.contents || [];
+  const publishedCount = notices.filter((notice) => notice.isPublished !== false).length;
+  const draftCount = notices.length - publishedCount;
+  const latestUpdatedAt = notices
+    .map((notice) => notice.updatedAt || notice.date || "")
+    .filter(Boolean)
+    .sort()
+    .at(-1);
 
-    return NextResponse.json({
-      ok: true,
-      data: {
-        instagramUrlSet: Boolean(siteSettings.instagramUrl),
-        facebookUrlSet: Boolean(siteSettings.facebookUrl),
-        xUrlSet: Boolean(siteSettings.xUrl),
-        instagramWidgetSet: Boolean(home.instagramWidgetSrc),
-        publishedCount,
-        draftCount,
-        latestUpdatedAt,
-        staticFeedAvailable
-      }
-    });
-  } catch {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "SNS状況を確認できませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。"
-      },
-      { status: 502 }
-    );
-  }
+  return NextResponse.json({
+    ok: true,
+    data: {
+      instagramUrlSet: Boolean(siteSettings.instagramUrl),
+      facebookUrlSet: Boolean(siteSettings.facebookUrl),
+      xUrlSet: Boolean(siteSettings.xUrl),
+      instagramWidgetSet: Boolean(home.instagramWidgetSrc),
+      publishedCount,
+      draftCount,
+      latestUpdatedAt,
+      staticFeedAvailable
+    }
+  });
 }
