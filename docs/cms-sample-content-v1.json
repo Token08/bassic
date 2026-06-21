@@ -112,6 +112,94 @@
       },
       "displayOrder": 2,
       "isPublished": true
+    },
+    {
+      "name": "チョリソーコンパパス",
+      "price": "¥900",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/chorizo-con-papas.jpg",
+        "alt": "チョリソーコンパパス"
+      },
+      "displayOrder": 3,
+      "isPublished": true
+    },
+    {
+      "name": "チーズ盛り合わせ",
+      "price": "¥900",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/cheese-assortment.jpg",
+        "alt": "チーズ盛り合わせ"
+      },
+      "displayOrder": 4,
+      "isPublished": true
+    },
+    {
+      "name": "ナチョス",
+      "price": "¥500",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/nachos.jpg",
+        "alt": "ナチョス"
+      },
+      "displayOrder": 5,
+      "isPublished": true
+    },
+    {
+      "name": "ピリ辛オイルサーディン",
+      "price": "¥750",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/spicy-oil-sardine.jpg",
+        "alt": "ピリ辛オイルサーディン"
+      },
+      "displayOrder": 6,
+      "isPublished": true
+    },
+    {
+      "name": "ポークソーセージ",
+      "price": "¥700",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/pork-sausage.jpg",
+        "alt": "ポークソーセージ"
+      },
+      "displayOrder": 7,
+      "isPublished": true
+    },
+    {
+      "name": "メキシカンプレーン",
+      "price": "¥900",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/mexican-plain.jpg",
+        "alt": "メキシカンプレーン"
+      },
+      "displayOrder": 8,
+      "isPublished": true
+    },
+    {
+      "name": "生ハム盛り合わせ",
+      "price": "¥900",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/prosciutto-assortment.jpg",
+        "alt": "生ハム盛り合わせ"
+      },
+      "displayOrder": 9,
+      "isPublished": true
+    },
+    {
+      "name": "本日のパスタ",
+      "price": "¥1,100~",
+      "category": "food",
+      "image": {
+        "url": "/assets/menu-refresh/daily-pasta.jpg",
+        "alt": "本日のパスタ"
+      },
+      "displayOrder": 10,
+      "isPublished": true
     }
   ],
   "drink-menu-sheets": [
@@ -132,6 +220,24 @@
       },
       "displayOrder": 2,
       "isPublished": true
+    },
+    {
+      "title": "Drink Menu 3",
+      "image": {
+        "url": "/assets/menu-refresh/drinks/drink-03.webp",
+        "alt": "Drink Menu 3"
+      },
+      "displayOrder": 3,
+      "isPublished": true
+    },
+    {
+      "title": "Drink Menu 4",
+      "image": {
+        "url": "/assets/menu-refresh/drinks/drink-04.webp",
+        "alt": "Drink Menu 4"
+      },
+      "displayOrder": 4,
+      "isPublished": true
     }
   ],
   "party-plans": [
@@ -147,6 +253,13 @@
       "price": "フード ¥1,500〜 / 1名",
       "body": "ライヴやイベント後の打ち上げに。キャッシュオンドリンクと人数に合わせた料理をご用意します。",
       "displayOrder": 2,
+      "isPublished": true
+    },
+    {
+      "title": "Rental",
+      "price": "平日 1H ¥10,000〜",
+      "body": "機材使用料込み。土日祝・祝前日は 1H ¥12,000〜。詳細はお問い合わせください。",
+      "displayOrder": 3,
       "isPublished": true
     }
   ],

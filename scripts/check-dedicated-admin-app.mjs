@@ -2688,6 +2688,22 @@ function checkSampleContentMatchesPublishRules() {
   const problems = [];
   validateSampleSiteSettingsUrls(data["site-settings"], problems);
 
+  const menuNames = new Set((data.menu || []).map((item) => item?.name));
+  for (const name of ["ファズ・カレー", "タコス＆ポテト", "チョリソーコンパパス", "ナチョス", "ピリ辛オイルサーディン", "本日のパスタ"]) {
+    if (!menuNames.has(name)) {
+      problems.push(`sample menu should include ${name}`);
+    }
+  }
+  if ((data.menu || []).filter((item) => item?.category === "food").length < 10) {
+    problems.push("sample menu should include the full food menu");
+  }
+  if ((data["drink-menu-sheets"] || []).length < 4) {
+    problems.push("sample drink-menu-sheets should include all 4 drink images");
+  }
+  if (!(data["party-plans"] || []).some((item) => item?.title === "Rental")) {
+    problems.push("sample party-plans should include Rental");
+  }
+
   for (const [index, item] of (data.menu || []).entries()) {
     if (item?.isPublished !== false && (!item?.price || !item?.image?.url)) {
       problems.push(`menu[${index}] published item needs price and image`);
