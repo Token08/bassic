@@ -75,7 +75,9 @@
 
 ```bash
 npm run typecheck
+npm run typecheck:admin-app
 npm run build
+npm run build:admin-app
 npm run smoke:links
 npm run smoke:content
 npm run smoke:seo

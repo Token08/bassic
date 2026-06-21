@@ -1896,6 +1896,8 @@ function checkDocsIndexBoundaries() {
     "日常更新用と保守用の切り分け",
     "公開後24時間以内の確認",
     "3つだけを店舗側へ渡す",
+    "typecheck:admin-app",
+    "build:admin-app",
     "sync:calendar:check",
     "smoke:content"
   ];

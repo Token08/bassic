@@ -145,7 +145,7 @@ GitHub、Actions、APIキー、環境変数は制作側で管理します。納�
 
 次をすべて確認できたら、納品可能と判断します。
 
-- `npm run typecheck`、`npm run build`、`npm run smoke:links`、`npm run smoke:content`、`npm run smoke:seo`、`npm run check:admin-app` が通る
+- `npm run typecheck`、`npm run typecheck:admin-app`、`npm run build`、`npm run build:admin-app`、`npm run smoke:links`、`npm run smoke:content`、`npm run smoke:seo`、`npm run check:admin-app` が通る
 - microCMS接続情報がある場合は、本物の接続情報で `npm run smoke:cms` が通る
 - 管理画面でイベント、メニュー、画像、SNSお知らせのうち最低1件ずつ保存と公開確認を行った
 - 管理画面の「公開前に見る順番」から、TOP / EVENT / MENU / PARTY / ACCESSをPCとスマホで確認した
