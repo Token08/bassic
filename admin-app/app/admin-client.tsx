@@ -928,7 +928,8 @@ function PracticeStrip({ onSelect }: { onSelect: (id: string) => void }) {
 function QuickEditStrip({ onSelect }: { onSelect: (id: string) => void }) {
   const actions = [
     { label: "イベントを追加", description: "日付、START、画像、FacebookイベントURL", sectionId: "events" },
-    { label: "メニューを変更", description: "料理名、料金、写真、ドリンク表", sectionId: "menu" },
+    { label: "フードを変更", description: "料理名、料金、写真", sectionId: "menu" },
+    { label: "ドリンク表を変更", description: "ドリンクメニュー画像", sectionId: "drink-menu-sheets" },
     { label: "SNS告知を追加", description: "Instagram、Facebook、Xへのリンクカード", sectionId: "social-notices" },
     { label: "TOP画像を変更", description: "最初に見えるスライド写真", sectionId: "hero-slides" }
   ];

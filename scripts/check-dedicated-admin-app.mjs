@@ -1728,7 +1728,9 @@ function checkAdminDashboardShowsPublicCheckOrder() {
     [clientFile, clientText, "SNSリンクを確認"],
     [clientFile, clientText, "よくある更新から選ぶ"],
     [clientFile, clientText, "イベントを追加"],
-    [clientFile, clientText, "メニューを変更"],
+    [clientFile, clientText, "フードを変更"],
+    [clientFile, clientText, "ドリンク表を変更"],
+    [clientFile, clientText, "drink-menu-sheets"],
     [clientFile, clientText, "SNS告知を追加"],
     [clientFile, clientText, "TOP画像を変更"],
     [clientFile, clientText, "公開前に見る順番"],
@@ -1782,8 +1784,8 @@ function checkAdminHealthShowsPublicSiteUrl() {
 
 function checkClientDocsMentionPublicCheckOrder() {
   const requiredByFile = {
-    "docs/delivery-admin-manual.md": ["公開前に見る順番", "TOP、EVENT、MENU、PARTY、ACCESS", "PCとスマホの両方", "よくある更新から選ぶ", "イベントを追加", "メニューを変更", "SNS告知を追加", "TOP画像を変更"],
-    "docs/client-handoff-checklist.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ", "よくある更新から選ぶ", "イベントを追加", "メニューを変更", "SNS告知を追加", "TOP画像を変更"],
+    "docs/delivery-admin-manual.md": ["公開前に見る順番", "TOP、EVENT、MENU、PARTY、ACCESS", "PCとスマホの両方", "よくある更新から選ぶ", "イベントを追加", "フードを変更", "ドリンク表を変更", "SNS告知を追加", "TOP画像を変更"],
+    "docs/client-handoff-checklist.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ", "よくある更新から選ぶ", "イベントを追加", "フードを変更", "ドリンク表を変更", "SNS告知を追加", "TOP画像を変更"],
     "docs/client-handoff-sheet.md": ["公開前に見る順番", "TOP / EVENT / MENU / PARTY / ACCESS", "PCとスマホ", "よくある更新から選ぶ", "よく使う更新"]
   };
   const missing = [];
