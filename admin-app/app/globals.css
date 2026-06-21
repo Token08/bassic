@@ -656,6 +656,91 @@ a {
   box-shadow: var(--shadow);
 }
 
+.practice-strip {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(134, 12, 22, 0.18);
+  border-radius: 10px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(33, 24, 19, 0.96), rgba(78, 14, 20, 0.9));
+  color: var(--ivory);
+  box-shadow: 0 18px 38px rgba(41, 9, 10, 0.16);
+}
+
+.practice-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.practice-heading strong {
+  color: var(--ivory);
+  font-size: 1rem;
+}
+
+.practice-heading span {
+  color: rgba(255, 250, 235, 0.78);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.practice-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.practice-steps button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(255, 250, 235, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 253, 248, 0.08);
+  color: var(--ivory);
+  text-align: left;
+  cursor: pointer;
+}
+
+.practice-steps button:hover,
+.practice-steps button:focus-visible {
+  border-color: rgba(255, 250, 235, 0.56);
+  box-shadow: 0 0 0 3px rgba(195, 154, 69, 0.16);
+  outline: none;
+}
+
+.practice-step-number {
+  display: inline-grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.practice-steps span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.practice-steps strong {
+  font-size: 0.94rem;
+}
+
+.practice-steps small {
+  color: rgba(255, 250, 235, 0.78);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .quick-edit-heading {
   display: flex;
   flex-wrap: wrap;
@@ -2097,6 +2182,10 @@ a.current-edit-page:hover {
 
   .quick-edit-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-steps {
+    grid-template-columns: 1fr;
   }
 
   .deploy-status {

@@ -1721,6 +1721,11 @@ function checkAdminDashboardShowsPublicCheckOrder() {
   const required = [
     [clientFile, clientText, "function PublicCheckStrip()"],
     [clientFile, clientText, "function QuickEditStrip({ onSelect }"],
+    [clientFile, clientText, "function PracticeStrip({ onSelect }"],
+    [clientFile, clientText, "最初に練習する3つ"],
+    [clientFile, clientText, "イベントを下書き保存"],
+    [clientFile, clientText, "メニュー料金をプレビュー"],
+    [clientFile, clientText, "SNSリンクを確認"],
     [clientFile, clientText, "よくある更新から選ぶ"],
     [clientFile, clientText, "イベントを追加"],
     [clientFile, clientText, "メニューを変更"],
@@ -1736,6 +1741,8 @@ function checkAdminDashboardShowsPublicCheckOrder() {
     [clientFile, clientText, "new URL(page.path, publicSiteUrl).toString()"],
     [cssFile, cssText, ".public-check-strip"],
     [cssFile, cssText, ".public-check-links"],
+    [cssFile, cssText, ".practice-strip"],
+    [cssFile, cssText, ".practice-steps"],
     [cssFile, cssText, ".quick-edit-strip"],
     [cssFile, cssText, ".quick-edit-actions"]
   ];

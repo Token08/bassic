@@ -851,6 +851,8 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
       </section>
 
+      <PracticeStrip onSelect={onSelect} />
+
       <section className="client-help-strip" aria-label="お店側向けの注意">
         <div>
           <Info size={18} />
@@ -892,6 +894,34 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         compact
       />
     </div>
+  );
+}
+
+function PracticeStrip({ onSelect }: { onSelect: (id: string) => void }) {
+  const steps = [
+    { label: "イベントを下書き保存", detail: "日付とSTARTだけ入れて練習", sectionId: "events" },
+    { label: "メニュー料金をプレビュー", detail: "1品だけ料金を変えて確認", sectionId: "menu" },
+    { label: "SNSリンクを確認", detail: "投稿URLを入れてリンク先を見る", sectionId: "social-notices" }
+  ];
+
+  return (
+    <section className="practice-strip" aria-label="最初に練習する3つ">
+      <div className="practice-heading">
+        <strong>最初に練習する3つ</strong>
+        <span>まずは下書き保存やプレビューで慣れます。公開は最後に確認してからで大丈夫です。</span>
+      </div>
+      <div className="practice-steps">
+        {steps.map((step, index) => (
+          <button key={step.sectionId} type="button" onClick={() => onSelect(step.sectionId)}>
+            <span className="practice-step-number">{index + 1}</span>
+            <span>
+              <strong>{step.label}</strong>
+              <small>{step.detail}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
