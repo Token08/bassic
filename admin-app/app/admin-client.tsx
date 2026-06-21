@@ -865,6 +865,8 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </div>
       </section>
 
+      <PageChangeMap onSelect={onSelect} />
+
       <PracticeStrip onSelect={onSelect} />
 
       <section className="client-help-strip" aria-label="お店側向けの注意">
@@ -933,6 +935,121 @@ function PracticeStrip({ onSelect }: { onSelect: (id: string) => void }) {
               <small>{step.detail}</small>
             </span>
           </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type PageChangeAction = {
+  label: string;
+  sectionId: SectionDefinition["id"];
+};
+
+type PageChangeItem = {
+  page: string;
+  title: string;
+  description: string;
+  publicPath: string;
+  publicLabel: string;
+  actions: PageChangeAction[];
+};
+
+function PageChangeMap({ onSelect }: { onSelect: (id: string) => void }) {
+  const pages: PageChangeItem[] = [
+    {
+      page: "TOP",
+      title: "最初に見える印象を変える",
+      description: "メイン画像、TOP文言、初回来店向けの文章、SNS告知が変わります。",
+      publicPath: "/",
+      publicLabel: "TOPページを確認",
+      actions: [
+        { label: "TOP文言", sectionId: "home" },
+        { label: "メイン画像", sectionId: "hero-slides" },
+        { label: "店舗情報", sectionId: "site-settings" },
+        { label: "SNS告知", sectionId: "social-notices" }
+      ]
+    },
+    {
+      page: "EVENT",
+      title: "イベント予定を変える",
+      description: "イベント名、日付、START、画像、FacebookイベントURLが変わります。",
+      publicPath: "/events/",
+      publicLabel: "イベントページを確認",
+      actions: [
+        { label: "イベント", sectionId: "events" },
+        { label: "ページ画像", sectionId: "hero-slides" }
+      ]
+    },
+    {
+      page: "MENU",
+      title: "料理とドリンク表を変える",
+      description: "フード名、料金、写真、ドリンクメニュー表の画像が変わります。",
+      publicPath: "/menu/",
+      publicLabel: "メニューページを確認",
+      actions: [
+        { label: "フード", sectionId: "menu" },
+        { label: "ドリンク表", sectionId: "drink-menu-sheets" },
+        { label: "ページ画像", sectionId: "hero-slides" }
+      ]
+    },
+    {
+      page: "PARTY",
+      title: "貸切と機材案内を変える",
+      description: "貸切プラン、料金、機材レンタル説明、PDFリンクが変わります。",
+      publicPath: "/party/",
+      publicLabel: "Partyページを確認",
+      actions: [
+        { label: "貸切", sectionId: "party-plans" },
+        { label: "機材", sectionId: "equipment-rental" },
+        { label: "ページ画像", sectionId: "hero-slides" }
+      ]
+    },
+    {
+      page: "ACCESS",
+      title: "来店前の基本情報を変える",
+      description: "住所、電話、営業時間、喫煙案内、Google Map導線が変わります。",
+      publicPath: "/access/",
+      publicLabel: "Accessページを確認",
+      actions: [
+        { label: "店舗情報", sectionId: "site-settings" },
+        { label: "ページ画像", sectionId: "hero-slides" }
+      ]
+    }
+  ];
+
+  return (
+    <section className="page-change-map" aria-label="公開サイトのページから更新場所を選ぶ">
+      <div className="page-change-heading">
+        <div>
+          <strong>公開サイトのどこを変えるかで選ぶ</strong>
+          <span>今見えている新HPのページ単位で、変更される場所を選べます。</span>
+        </div>
+        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
+          <ExternalLink size={15} />
+          公開サイトを開く
+        </a>
+      </div>
+      <div className="page-change-grid">
+        {pages.map((page) => (
+          <article className="page-change-card" key={page.page}>
+            <div>
+              <span className="page-change-page">{page.page}</span>
+              <h2>{page.title}</h2>
+              <p>{page.description}</p>
+            </div>
+            <div className="page-change-actions">
+              {page.actions.map((action) => (
+                <button key={`${page.page}-${action.sectionId}-${action.label}`} type="button" onClick={() => onSelect(action.sectionId)}>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+            <a className="page-change-link" href={new URL(page.publicPath, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
+              <ExternalLink size={14} />
+              {page.publicLabel}
+            </a>
+          </article>
         ))}
       </div>
     </section>

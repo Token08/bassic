@@ -72,6 +72,7 @@ checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminSnsStatusCardLinksToEditors();
 checkAdminDashboardShowsPublicCheckOrder();
+checkAdminDashboardShowsPageChangeMap();
 checkAdminHealthShowsPublicSiteUrl();
 checkClientDocsMentionPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
@@ -1769,6 +1770,46 @@ function checkAdminDashboardShowsPublicCheckOrder() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin dashboard shows public check order", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminDashboardShowsPageChangeMap() {
+  const clientFile = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(clientFile) || !existsSync(cssFile)) {
+    add("admin dashboard shows page change map", false, `${clientFile} or ${cssFile} missing`);
+    return;
+  }
+
+  const clientText = readFileSync(clientFile, "utf8");
+  const cssText = readFileSync(cssFile, "utf8");
+  const required = [
+    [clientFile, clientText, "function PageChangeMap({ onSelect }"],
+    [clientFile, clientText, "<PageChangeMap onSelect={onSelect} />"],
+    [clientFile, clientText, "PageChangeAction"],
+    [clientFile, clientText, "PageChangeItem"],
+    [clientFile, clientText, "TOP"],
+    [clientFile, clientText, "EVENT"],
+    [clientFile, clientText, "MENU"],
+    [clientFile, clientText, "PARTY"],
+    [clientFile, clientText, "ACCESS"],
+    [clientFile, clientText, 'sectionId: "home"'],
+    [clientFile, clientText, 'sectionId: "hero-slides"'],
+    [clientFile, clientText, 'sectionId: "events"'],
+    [clientFile, clientText, 'sectionId: "menu"'],
+    [clientFile, clientText, 'sectionId: "drink-menu-sheets"'],
+    [clientFile, clientText, 'sectionId: "party-plans"'],
+    [clientFile, clientText, 'sectionId: "equipment-rental"'],
+    [clientFile, clientText, 'sectionId: "site-settings"'],
+    [clientFile, clientText, 'sectionId: "social-notices"'],
+    [clientFile, clientText, "new URL(page.publicPath, publicSiteUrl).toString()"],
+    [cssFile, cssText, ".page-change-map"],
+    [cssFile, cssText, ".page-change-grid"],
+    [cssFile, cssText, ".page-change-card"],
+    [cssFile, cssText, ".page-change-actions"]
+  ];
+  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
+
+  add("admin dashboard shows page change map", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminHealthShowsPublicSiteUrl() {
