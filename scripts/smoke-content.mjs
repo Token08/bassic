@@ -7,10 +7,10 @@ const failures = [];
 const menuRegressionTerms = [
   "DRINK&FOOD MENU",
   "FOOD MENU",
-  "Drink Menu 1",
-  "Drink Menu 2",
-  "Drink Menu 3",
-  "Drink Menu 4",
+  "DRINK MENU 1",
+  "drink-menu-2026-01.webp",
+  "DRINK MENU 4",
+  "drink-menu-2026-04.webp",
   "fuzz-curry.jpg",
   "tacos-potato.jpg",
   "chorizo-con-papas.jpg",
@@ -44,7 +44,7 @@ const pages = [
   {
     label: "Menu",
     file: "menu/index.html",
-    terms: ["DRINK&FOOD MENU", "FOOD MENU", "Drink Menu 1", "ファズ・カレー", "本日のパスタ"]
+    terms: ["DRINK&FOOD MENU", "FOOD MENU", "DRINK MENU 1", "DRINK MENU 4", "ファズ・カレー", "本日のパスタ"]
   },
   {
     label: "Party",

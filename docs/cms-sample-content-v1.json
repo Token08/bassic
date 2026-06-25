@@ -204,37 +204,37 @@
   ],
   "drink-menu-sheets": [
     {
-      "title": "Drink Menu 1",
+      "title": "DRINK MENU 1",
       "image": {
-        "url": "/assets/menu-refresh/drinks/drink-01.webp",
-        "alt": "Drink Menu 1"
+        "url": "/assets/menu-refresh/drinks/drink-menu-2026-01.webp",
+        "alt": "DRINK MENU 1"
       },
       "displayOrder": 1,
       "isPublished": true
     },
     {
-      "title": "Drink Menu 2",
+      "title": "DRINK MENU 2",
       "image": {
-        "url": "/assets/menu-refresh/drinks/drink-02.webp",
-        "alt": "Drink Menu 2"
+        "url": "/assets/menu-refresh/drinks/drink-menu-2026-02.webp",
+        "alt": "DRINK MENU 2"
       },
       "displayOrder": 2,
       "isPublished": true
     },
     {
-      "title": "Drink Menu 3",
+      "title": "DRINK MENU 3",
       "image": {
-        "url": "/assets/menu-refresh/drinks/drink-03.webp",
-        "alt": "Drink Menu 3"
+        "url": "/assets/menu-refresh/drinks/drink-menu-2026-03.webp",
+        "alt": "DRINK MENU 3"
       },
       "displayOrder": 3,
       "isPublished": true
     },
     {
-      "title": "Drink Menu 4",
+      "title": "DRINK MENU 4",
       "image": {
-        "url": "/assets/menu-refresh/drinks/drink-04.webp",
-        "alt": "Drink Menu 4"
+        "url": "/assets/menu-refresh/drinks/drink-menu-2026-04.webp",
+        "alt": "DRINK MENU 4"
       },
       "displayOrder": 4,
       "isPublished": true

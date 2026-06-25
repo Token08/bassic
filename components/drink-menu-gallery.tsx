@@ -15,6 +15,7 @@ export function DrinkMenuGallery({ sheets }: { sheets: readonly DrinkMenuSheet[]
   const scrollerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const active = activeIndex === null ? null : sheets[activeIndex];
+  const hasMultipleSheets = sheets.length > 1;
 
   useEffect(() => {
     if (activeIndex === null) {
@@ -119,17 +120,19 @@ export function DrinkMenuGallery({ sheets }: { sheets: readonly DrinkMenuSheet[]
   return (
     <>
       <div className="drink-menu-slider" aria-label="ドリンクメニュー表">
-        <div className="drink-menu-slider-controls" aria-label="ドリンクメニュー切り替え">
-          <button type="button" onClick={() => scrollToSheet(currentIndex - 1)} aria-label="前のドリンクメニュー">
-            <ChevronLeft size={20} />
-          </button>
-          <span>
-            {currentIndex + 1} / {sheets.length}
-          </span>
-          <button type="button" onClick={() => scrollToSheet(currentIndex + 1)} aria-label="次のドリンクメニュー">
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        {hasMultipleSheets ? (
+          <div className="drink-menu-slider-controls" aria-label="ドリンクメニュー切り替え">
+            <button type="button" onClick={() => scrollToSheet(currentIndex - 1)} aria-label="前のドリンクメニュー">
+              <ChevronLeft size={20} />
+            </button>
+            <span>
+              {currentIndex + 1} / {sheets.length}
+            </span>
+            <button type="button" onClick={() => scrollToSheet(currentIndex + 1)} aria-label="次のドリンクメニュー">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        ) : null}
 
         <div className="drink-menu-sheet-grid" ref={scrollerRef} onScroll={updateCurrentIndex}>
           {sheets.map((sheet, index) => (
@@ -137,23 +140,25 @@ export function DrinkMenuGallery({ sheets }: { sheets: readonly DrinkMenuSheet[]
               <button type="button" onClick={() => openSheet(index)} aria-label={`${sheet.title}を拡大表示`}>
                 <Image src={sheet.src} alt={sheet.title} fill sizes="(max-width: 900px) 88vw, 620px" />
               </button>
-              <figcaption>Drink Menu {index + 1}</figcaption>
+              <figcaption>{sheet.title}</figcaption>
             </figure>
           ))}
         </div>
 
-        <div className="drink-menu-slider-dots" aria-label="ドリンクメニューのページ">
-          {sheets.map((sheet, index) => (
-            <button
-              type="button"
-              key={sheet.src}
-              className={index === currentIndex ? "active" : undefined}
-              onClick={() => scrollToSheet(index)}
-              aria-label={`Drink Menu ${index + 1}を表示`}
-              aria-current={index === currentIndex ? "true" : undefined}
-            />
-          ))}
-        </div>
+        {hasMultipleSheets ? (
+          <div className="drink-menu-slider-dots" aria-label="ドリンクメニューのページ">
+            {sheets.map((sheet, index) => (
+              <button
+                type="button"
+                key={sheet.src}
+                className={index === currentIndex ? "active" : undefined}
+                onClick={() => scrollToSheet(index)}
+                aria-label={`${sheet.title}を表示`}
+                aria-current={index === currentIndex ? "true" : undefined}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {active ? (
@@ -161,12 +166,16 @@ export function DrinkMenuGallery({ sheets }: { sheets: readonly DrinkMenuSheet[]
           <button className="image-modal-close" type="button" onClick={() => setActiveIndex(null)} aria-label="閉じる">
             <X size={22} />
           </button>
-          <button className="image-modal-nav image-modal-nav-prev" type="button" onClick={(event) => { event.stopPropagation(); moveModal(-1); }} aria-label="前のドリンクメニュー">
-            <ChevronLeft size={26} />
-          </button>
-          <button className="image-modal-nav image-modal-nav-next" type="button" onClick={(event) => { event.stopPropagation(); moveModal(1); }} aria-label="次のドリンクメニュー">
-            <ChevronRight size={26} />
-          </button>
+          {hasMultipleSheets ? (
+            <>
+              <button className="image-modal-nav image-modal-nav-prev" type="button" onClick={(event) => { event.stopPropagation(); moveModal(-1); }} aria-label="前のドリンクメニュー">
+                <ChevronLeft size={26} />
+              </button>
+              <button className="image-modal-nav image-modal-nav-next" type="button" onClick={(event) => { event.stopPropagation(); moveModal(1); }} aria-label="次のドリンクメニュー">
+                <ChevronRight size={26} />
+              </button>
+            </>
+          ) : null}
           <figure
             className="image-modal-content drink-menu-modal-content"
             onClick={(event) => event.stopPropagation()}
@@ -180,27 +189,31 @@ export function DrinkMenuGallery({ sheets }: { sheets: readonly DrinkMenuSheet[]
             <Image src={active.src} alt={active.title} fill sizes="96vw" />
             <figcaption>
               <strong>{active.title}</strong>
-              <span>
-                {(activeIndex ?? 0) + 1} / {sheets.length}
-              </span>
+              {hasMultipleSheets ? (
+                <span>
+                  {(activeIndex ?? 0) + 1} / {sheets.length}
+                </span>
+              ) : null}
             </figcaption>
           </figure>
-          <div className="image-modal-dots" aria-label="拡大画像のページ">
-            {sheets.map((sheet, index) => (
-              <button
-                type="button"
-                key={sheet.src}
-                className={index === activeIndex ? "active" : undefined}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setCurrentIndex(index);
-                  setActiveIndex(index);
-                }}
-                aria-label={`Drink Menu ${index + 1}を表示`}
-                aria-current={index === activeIndex ? "true" : undefined}
-              />
-            ))}
-          </div>
+          {hasMultipleSheets ? (
+            <div className="image-modal-dots" aria-label="拡大画像のページ">
+              {sheets.map((sheet, index) => (
+                <button
+                  type="button"
+                  key={sheet.src}
+                  className={index === activeIndex ? "active" : undefined}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setCurrentIndex(index);
+                    setActiveIndex(index);
+                  }}
+                  aria-label={`${sheet.title}を表示`}
+                  aria-current={index === activeIndex ? "true" : undefined}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </>

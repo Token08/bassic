@@ -221,7 +221,12 @@ function visibleDrinkMenuSheets(sheets?: DrinkMenuSheet[]) {
   }));
 
   const visibleSheets = sortByDisplayOrder(sheets || []).filter((sheet) => sheet.isPublished !== false && (sheet.image?.url || sheet.src));
-  return visibleSheets.length ? visibleSheets : fallbackSheets;
+  const legacyDrinkSheets = visibleSheets.length > 1 && visibleSheets.every((sheet) => {
+    const src = sheet.image?.url || sheet.src || "";
+    return /\/assets\/menu-refresh\/drinks\/drink-0[1-4]\.webp$/.test(src);
+  });
+
+  return visibleSheets.length && !legacyDrinkSheets ? visibleSheets : fallbackSheets;
 }
 
 function visibleSocialNotices(notices?: SocialNotice[]) {

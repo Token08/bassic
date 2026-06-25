@@ -1488,7 +1488,7 @@ h3 {
 }
 
 .menu-block {
-  margin-top: clamp(42px, 6vw, 72px);
+  margin-top: clamp(36px, 5vw, 60px);
 }
 
 .menu-block-heading {
@@ -1508,9 +1508,9 @@ h3 {
 
 .menu-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(20px, 2.4vw, 30px);
-  margin-top: 32px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(10px, 1.05vw, 16px);
+  margin-top: clamp(16px, 2vw, 22px);
 }
 
 .menu-card {
@@ -1530,7 +1530,7 @@ h3 {
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   min-height: 0;
   border: 0;
   padding: 0;
@@ -1540,14 +1540,14 @@ h3 {
 
 .menu-image-button::after {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  right: 10px;
+  bottom: 10px;
   border-radius: 999px;
-  padding: 5px 10px;
+  padding: 4px 9px;
   background: rgba(21, 18, 15, 0.72);
   color: #fffaf2;
   content: "拡大";
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 800;
   opacity: 0;
   transition: opacity 160ms ease;
@@ -1570,22 +1570,22 @@ h3 {
 
 .menu-card-copy {
   display: grid;
-  gap: 10px;
-  min-height: 112px;
+  gap: 6px;
+  min-height: 62px;
   align-content: center;
-  padding: 20px 22px 22px;
+  padding: 10px 12px 12px;
 }
 
 .menu-card-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 8px;
 }
 
 .menu-card-heading h3 {
   margin: 0;
-  font-size: clamp(1.24rem, 1.7vw, 1.52rem);
+  font-size: clamp(0.84rem, 0.88vw, 1rem);
   line-height: 1.35;
   text-wrap: pretty;
 }
@@ -1605,16 +1605,28 @@ h3 {
   min-width: max-content;
   border: 1px solid rgba(111, 15, 21, 0.2);
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 5px 8px;
   background: rgba(111, 15, 21, 0.08);
   color: var(--red);
-  font-size: 1.14rem;
+  font-size: 0.84rem;
   line-height: 1;
+}
+
+@media (max-width: 1720px) {
+  .menu-card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1500px) {
+  .menu-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1180px) {
   .menu-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

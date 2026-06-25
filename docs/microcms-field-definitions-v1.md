@@ -162,6 +162,16 @@ PDFを差し替えた時は `pdfUrl` も新しいURLへ変更し、管理画面�
 | 投稿URL | `url` | テキスト | yes |
 | 表示日 | `date` | 日時 | no |
 | 説明 | `description` | テキストエリア | no |
+| SNS投稿文 | `postText` | テキストエリア | no |
+| SNS予約投稿日時 | `scheduledAt` | テキスト | no |
+| SNS配信状態 | `deliveryStatus` | セレクト | yes |
+| 投稿済みID | `externalPostId` | テキスト | no |
+| 投稿エラー | `lastPublishError` | テキストエリア | no |
+| 元イベントID | `sourceEventId` | テキスト | no |
+| 元イベントURL | `sourceEventUrl` | テキスト | no |
+| 元イベント名 | `sourceEventTitle` | テキスト | no |
+| 承認日時 | `approvedAt` | テキスト | no |
+| 投稿日時 | `postedAt` | テキスト | no |
 | 公開する | `isPublished` | 真偽値 | yes |
 
 公開するSNSお知らせは、表示タイトルを6文字以上、説明を10文字以上で入力します。
@@ -176,6 +186,7 @@ PDFを差し替えた時は `pdfUrl` も新しいURLへ変更し、管理画面�
 | X | `x` |
 
 管理画面では、選んだSNSと `url` の種類が合っているか入力中に確認できます。Instagramには `instagram.com`、Facebookには `facebook.com`、Xには `x.com` または `twitter.com` のURLを入れます。
+SNSへ投稿する運用では、`deliveryStatus` を `draft` から `approved` に変えたものだけが投稿対象です。`scheduledAt` が空欄なら承認後すぐ投稿対象になり、日時が入っている場合はその時刻以降に投稿対象になります。`externalPostId` が入った投稿は重複防止のため再投稿しません。
 
 ## `page-copy`
 

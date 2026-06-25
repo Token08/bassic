@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "12 * * * *"
   workflow_dispatch:
   repository_dispatch:
     types:
@@ -88,6 +90,25 @@ jobs:
             echo "Skipping Google Calendar sync because write credentials are not configured."
           fi
 
+      - name: Publish approved social notices
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          META_GRAPH_VERSION: v23.0
+        run: npm run publish:social
+
+      - name: Archive old published events
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+          AUTO_ARCHIVE_PAST_EVENTS: ${{ vars.AUTO_ARCHIVE_PAST_EVENTS }}
+        run: npm run archive:events
+
       - name: Build static site
         env:
           NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
@@ -97,6 +118,15 @@ jobs:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
           MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
         run: npm run build
+
+      - name: Smoke check published output
+        env:
+          NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
+          NEXT_PUBLIC_BASE_PATH: /bassic
+        run: |
+          npm run smoke:links
+          npm run smoke:content
+          npm run smoke:seo
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5

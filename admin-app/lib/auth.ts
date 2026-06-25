@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 
 const cookieName = "bassic_admin_session";
 const maxAgeSeconds = 60 * 60 * 12;
+const useSecureCookie = process.env.ADMIN_COOKIE_SECURE === "true";
 
 type SessionPayload = {
   exp: number;
@@ -78,7 +79,7 @@ export async function setSessionCookie(token: string) {
 
   cookieStore.set(cookieName, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecureCookie,
     sameSite: "lax",
     path: "/",
     maxAge: maxAgeSeconds

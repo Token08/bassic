@@ -43,7 +43,7 @@ function resolveDrinkSheet(sheet: DrinkMenuSheet) {
 
   return {
     title: sheet.title,
-    src: assetPath(src || "/assets/menu-refresh/drinks/drink-01.webp")
+    src: assetPath(src || "/assets/menu-refresh/drinks/drink-menu-2026-01.webp")
   };
 }
 

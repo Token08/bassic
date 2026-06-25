@@ -9,6 +9,8 @@
     "dev:admin-app": "npm --prefix admin-app run dev",
     "clean:admin-app": "node scripts/clean-admin-app.mjs",
     "fetch:social": "node scripts/fetch-social-feeds.mjs",
+    "publish:social": "node scripts/publish-social-notices.mjs",
+    "archive:events": "node scripts/archive-past-events.mjs",
     "fetch:events": "node scripts/fetch-facebook-events.mjs",
     "sync:calendar": "node scripts/sync-google-calendar.mjs",
     "sync:calendar:dry": "node scripts/sync-google-calendar-dry-run.mjs",

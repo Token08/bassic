@@ -85,6 +85,13 @@ const heroImageFieldHint =
 const displayOrderHint = "数字が小さいものから先に表示されます。0以上の半角整数で、迷ったら1、2、3の順に入れてください。";
 const publishFieldHint = "ONにするとサイトに表示されます。まだ見せたくない時はOFFのまま保存してください。";
 
+const socialDeliveryStatusOptions: FieldOption[] = [
+  { value: "draft", label: "下書き" },
+  { value: "approved", label: "投稿承認済み" },
+  { value: "posted", label: "投稿済み" },
+  { value: "failed", label: "投稿失敗" }
+];
+
 export const sections: SectionDefinition[] = [
   {
     id: "site-settings",
@@ -264,7 +271,7 @@ export const sections: SectionDefinition[] = [
     icon: FileText,
     titleKey: "title",
     fields: [
-      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "Drink Menu 1" },
+      { key: "title", label: "タイトル", type: "text", required: true, placeholder: "DRINK MENU 1" },
       { key: "image", label: "画像", type: "image", required: true, hint: "公開する場合は必ず入れます。文字が切れていないメニュー表画像を入れてください。入れた後は「画像を開いて確認」で確認してください。" },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
@@ -317,6 +324,17 @@ export const sections: SectionDefinition[] = [
     icon: Megaphone,
     titleKey: "title",
     fields: [
+      { key: "postText", label: "SNS投稿文", type: "textarea", rows: 5, placeholder: "SNSへ投稿する本文", hint: "承認後投稿で使う本文です。イベント名、日付、START、詳細URLが分かる文面にします。" },
+      { key: "scheduledAt", label: "SNS予約投稿日時", type: "text", placeholder: "2026-07-01T18:00", hint: "空欄なら承認後すぐ投稿対象です。日時を入れる場合は 2026-07-01T18:00 のように入力します。" },
+      { key: "image", label: "SNS投稿画像", type: "image", hint: "InstagramへAPI投稿する場合は画像URLが必要です。イベント画像がある場合は自動で入ります。" },
+      { key: "deliveryStatus", label: "SNS配信状態", type: "select", required: true, options: socialDeliveryStatusOptions, hint: "SNSへ自動投稿する時は、本文確認後に「投稿承認済み」を選びます。投稿済みIDがあるものは再投稿されません。" },
+      { key: "externalPostId", label: "投稿済みID", type: "text", placeholder: "SNS API投稿後に自動で入ります", hint: "投稿済みの重複防止に使います。通常は触りません。" },
+      { key: "lastPublishError", label: "投稿エラー", type: "textarea", rows: 2, placeholder: "SNS API投稿に失敗した時の理由", hint: "APIトークン未設定や審査未完了など、投稿できなかった理由が入ります。" },
+      { key: "sourceEventId", label: "元イベントID", type: "hidden" },
+      { key: "sourceEventUrl", label: "元イベントURL", type: "hidden" },
+      { key: "sourceEventTitle", label: "元イベント名", type: "hidden" },
+      { key: "approvedAt", label: "承認日時", type: "hidden" },
+      { key: "postedAt", label: "投稿日時", type: "hidden" },
       {
         key: "platform",
         label: "SNS",
@@ -334,7 +352,7 @@ export const sections: SectionDefinition[] = [
       { key: "date", label: "日付", type: "date" },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
-    defaults: { platform: "instagram", isPublished: false }
+    defaults: { platform: "instagram", deliveryStatus: "draft", isPublished: false }
   },
   {
     id: "page-copy",

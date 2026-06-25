@@ -142,10 +142,10 @@ const menu = [
 }));
 
 const drinkMenuSheets = [
-  ["drink-sheet-01", "Drink Menu 1", "/assets/menu-refresh/drinks/drink-01.webp"],
-  ["drink-sheet-02", "Drink Menu 2", "/assets/menu-refresh/drinks/drink-02.webp"],
-  ["drink-sheet-03", "Drink Menu 3", "/assets/menu-refresh/drinks/drink-03.webp"],
-  ["drink-sheet-04", "Drink Menu 4", "/assets/menu-refresh/drinks/drink-04.webp"]
+  ["drink-menu-2026-01", "DRINK MENU 1", "/assets/menu-refresh/drinks/drink-menu-2026-01.webp"],
+  ["drink-menu-2026-02", "DRINK MENU 2", "/assets/menu-refresh/drinks/drink-menu-2026-02.webp"],
+  ["drink-menu-2026-03", "DRINK MENU 3", "/assets/menu-refresh/drinks/drink-menu-2026-03.webp"],
+  ["drink-menu-2026-04", "DRINK MENU 4", "/assets/menu-refresh/drinks/drink-menu-2026-04.webp"]
 ].map(([id, title, url], index) => ({
   id,
   title,

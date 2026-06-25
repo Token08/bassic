@@ -156,7 +156,7 @@ GitHub、Actions、APIキー、環境変数は制作側で管理します。納�
 - `npm run check:handoff` が通る。個別に確認する場合は、`npm run typecheck`、`npm run typecheck:admin-app`、`npm run build`、`npm run build:admin-app`、`npm run smoke:links`、`npm run smoke:content`、`npm run smoke:seo`、`npm run check:admin-app` が通る
 - microCMS接続情報がある場合は、本物の接続情報で `npm run smoke:cms` が通る
 - 管理画面でイベント、メニュー、画像、SNSお知らせのうち最低1件ずつ保存と公開確認を行った
-- 管理画面の「公開前に見る順番」から、TOP / EVENT / MENU / PARTY / ACCESSをPCとスマホで確認した
+- 管理画面トップのページカード、または編集画面の「確認するページ」から、TOP / EVENT / MENU / PARTY / ACCESSをPCとスマホで確認した
 - Google Map、電話、メール予約、Instagram、Online Store、PDF、Google Calendarの主要リンクが開く
 - FacebookイベントをGoogle Calendarへ載せる運用担当と連絡先が引き渡しメモに書かれている
 - 本番URLが未確定の場合は、確認用URLで納品し、本番URL確定後にURL設定を最終調整する前提を説明した

@@ -3,10 +3,10 @@ import type { MenuItem } from "./types";
 const foodImageBase = "/assets/menu-refresh";
 
 export const drinkMenuSheets = [
-  { title: "Drink Menu 1", src: "/assets/menu-refresh/drinks/drink-01.webp" },
-  { title: "Drink Menu 2", src: "/assets/menu-refresh/drinks/drink-02.webp" },
-  { title: "Drink Menu 3", src: "/assets/menu-refresh/drinks/drink-03.webp" },
-  { title: "Drink Menu 4", src: "/assets/menu-refresh/drinks/drink-04.webp" }
+  { title: "DRINK MENU 1", src: "/assets/menu-refresh/drinks/drink-menu-2026-01.webp" },
+  { title: "DRINK MENU 2", src: "/assets/menu-refresh/drinks/drink-menu-2026-02.webp" },
+  { title: "DRINK MENU 3", src: "/assets/menu-refresh/drinks/drink-menu-2026-03.webp" },
+  { title: "DRINK MENU 4", src: "/assets/menu-refresh/drinks/drink-menu-2026-04.webp" }
 ] as const;
 
 export const defaultMenuItems: MenuItem[] = [

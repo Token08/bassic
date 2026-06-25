@@ -329,12 +329,18 @@ function requiredSocialNoticeUrl(item, endpoint) {
   if (typeof value !== "string" || !value.trim()) {
     return;
   }
+  const sourceEventUrl = typeof item?.sourceEventUrl === "string" ? item.sourceEventUrl.trim() : "";
+  const isGeneratedEventQueue = sourceEventUrl && value.trim() === sourceEventUrl && Boolean(getFacebookEventId(sourceEventUrl));
 
   let host = "";
   try {
     host = new URL(value).hostname.replace(/^www\./, "");
   } catch {
     errors.push(`${endpoint}.url: social notice URLs must be full https:// URLs.`);
+    return;
+  }
+
+  if (isGeneratedEventQueue && ["facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(host)) {
     return;
   }
 

@@ -1,3 +1,5 @@
+import { fallbackContents } from "../../lib/fallback-data";
+
 export type AdminEndpointType = "object" | "list";
 
 export type AdminEndpoint = {
@@ -122,6 +124,34 @@ export function getEndpoint(endpoint: string) {
   return config;
 }
 
+function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
+  const fallbackMap: Record<string, unknown> = {
+    "site-settings": fallbackContents.siteSettings,
+    home: {
+      ...fallbackContents.home,
+      instagramWidgetSrc: ""
+    },
+    events: fallbackContents.events || [],
+    menu: fallbackContents.menu || [],
+    "party-plans": fallbackContents.partyPlans || [],
+    "social-notices": fallbackContents.socialNotices || [],
+    "hero-slides": [],
+    "drink-menu-sheets": [],
+    "equipment-rental": {},
+    "page-copy": [],
+    "page-sections": [],
+    "custom-sections": []
+  };
+
+  const fallback = fallbackMap[endpointId];
+
+  if (endpoint.type === "list") {
+    return { contents: Array.isArray(fallback) ? fallback : [] };
+  }
+
+  return fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {};
+}
+
 async function microCmsFetch(path: string, init: RequestInit = {}) {
   const response = await fetch(`${getContentBaseUrl()}${path}`, {
     ...init,
@@ -147,19 +177,27 @@ async function microCmsFetch(path: string, init: RequestInit = {}) {
 export async function getContent(endpointId: string) {
   const endpoint = getEndpoint(endpointId);
 
-  if (endpoint.type === "object") {
-    return microCmsFetch(`/${endpoint.id}`);
+  try {
+    if (endpoint.type === "object") {
+      return await microCmsFetch(`/${endpoint.id}`);
+    }
+
+    const params = new URLSearchParams({
+      limit: "100"
+    });
+
+    if (endpoint.defaultOrders) {
+      params.set("orders", endpoint.defaultOrders);
+    }
+
+    return await microCmsFetch(`/${endpoint.id}?${params.toString()}`);
+  } catch (error) {
+    if (process.env.ADMIN_ALLOW_CONTENT_FALLBACK === "false") {
+      throw error;
+    }
+
+    return getFallbackContent(endpointId, endpoint);
   }
-
-  const params = new URLSearchParams({
-    limit: "100"
-  });
-
-  if (endpoint.defaultOrders) {
-    params.set("orders", endpoint.defaultOrders);
-  }
-
-  return microCmsFetch(`/${endpoint.id}?${params.toString()}`);
 }
 
 export async function createContent(endpointId: string, draft: Record<string, unknown>) {

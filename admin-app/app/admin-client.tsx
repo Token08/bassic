@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   CheckCircle2,
   Copy,
   Eye,
@@ -11,9 +13,11 @@ import {
   Info,
   Loader2,
   LogOut,
+  Pencil,
   Plus,
   RefreshCw,
   Save,
+  Trash2,
   Upload,
   X
 } from "lucide-react";
@@ -60,6 +64,19 @@ type HealthState = {
   publicSiteUrl?: PublicSiteUrlStatus;
 };
 
+type OpsAlert = {
+  id: string;
+  severity: "warning" | "error";
+  sectionId: SectionDefinition["id"];
+  title: string;
+  detail: string;
+};
+
+type OpsStatus = {
+  generatedAt: string;
+  alerts: OpsAlert[];
+};
+
 type SnsStatus = {
   instagramUrlSet: boolean;
   facebookUrlSet: boolean;
@@ -80,6 +97,11 @@ type FacebookEventPreview = {
   endTime: string;
   sourceId: string;
   sourceUrl: string;
+};
+
+type EventPublishFlowResult = {
+  created?: string[];
+  skipped?: string[];
 };
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
@@ -170,6 +192,11 @@ function textIncludesAll(value: unknown, terms: string[]) {
 
 function getNumber(value: unknown) {
   return typeof value === "number" ? String(value) : getString(value);
+}
+
+function getOrderNumber(value: unknown) {
+  const number = Number(getNumber(value));
+  return Number.isFinite(number) ? number : 0;
 }
 
 function mergeDefaults(section: SectionDefinition, item?: Draft) {
@@ -425,6 +452,16 @@ function isValidEventTime(value: string) {
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
   return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+}
+
+function isValidScheduledAt(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+
+  const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed) ? `${trimmed}:00+09:00` : trimmed;
+  return !Number.isNaN(new Date(normalized).getTime());
 }
 
 function isValidWholeNumber(value: string) {
@@ -687,6 +724,41 @@ function SetupStatus({ health }: { health?: HealthState }) {
   );
 }
 
+function OpsStatusPanel({ status, onSelect }: { status?: OpsStatus; onSelect: (id: string) => void }) {
+  if (!status?.alerts?.length) {
+    return null;
+  }
+
+  const errors = status.alerts.filter((alert) => alert.severity === "error").length;
+  const warnings = status.alerts.length - errors;
+
+  return (
+    <section className="ops-status-panel" aria-label="運用アラート">
+      <div className="ops-status-heading">
+        <div>
+          <strong>要確認</strong>
+          <span>公開中のイベント、SNS投稿、連携設定で確認したい項目です。</span>
+        </div>
+        <small>
+          エラー {errors} / 注意 {warnings}
+        </small>
+      </div>
+      <div className="ops-alert-list">
+        {status.alerts.slice(0, 8).map((alert) => (
+          <button className={`ops-alert ${alert.severity}`} type="button" key={alert.id} onClick={() => onSelect(alert.sectionId)}>
+            {alert.severity === "error" ? <AlertCircle size={18} /> : <Info size={18} />}
+            <span>
+              <strong>{alert.title}</strong>
+              <small>{alert.detail}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+      {status.alerts.length > 8 ? <small className="ops-alert-more">ほか {status.alerts.length - 8} 件あります。</small> : null}
+    </section>
+  );
+}
+
 function SnsStatusCard({ onSelect }: { onSelect: (id: string) => void }) {
   const [status, setStatus] = useState<SnsStatus | null>(null);
   const [error, setError] = useState("");
@@ -828,17 +900,27 @@ function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: Health
   );
 }
 
-function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) => void; lastDeploy?: Notice; health?: HealthState }) {
-  const dailySections = sections.filter((section) => dailySectionIds.has(section.id));
+function Dashboard({
+  onSelect,
+  lastDeploy,
+  health,
+  opsStatus
+}: {
+  onSelect: (id: string) => void;
+  lastDeploy?: Notice;
+  health?: HealthState;
+  opsStatus?: OpsStatus;
+}) {
   const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
+  const hasSetupProblem = health ? !health.ok : false;
 
   return (
     <div className="dashboard">
       <div className="page-heading">
         <div>
           <p className="eyebrow">Bassic. Admin</p>
-          <h1>更新する場所を選ぶ</h1>
-          <p>大きなボタンから選んで、入力、確認、公開の順に進めます。</p>
+          <h1>新HPのどこを変えるか選ぶ</h1>
+          <p>TOP、EVENT、MENU、PARTY、ACCESSからページを選び、その中の文字・画像・メニューを編集します。</p>
         </div>
         <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
           <ExternalLink size={18} />
@@ -846,98 +928,24 @@ function Dashboard({ onSelect, lastDeploy, health }: { onSelect: (id: string) =>
         </a>
       </div>
 
-      <section className="guide-strip" aria-label="操作の流れ">
-        <div>
-          <strong>1. 選ぶ</strong>
-          <span>更新したい場所を押す</span>
-        </div>
-        <div>
-          <strong>2. 入力</strong>
-          <span>必須だけ埋めればOK</span>
-        </div>
-        <div>
-          <strong>3. 確認</strong>
-          <span>プレビューで見直す</span>
-        </div>
-        <div>
-          <strong>4. 反映</strong>
-          <span>プレビューして公開</span>
-        </div>
-      </section>
-
       <PageChangeMap onSelect={onSelect} />
 
-      <PracticeStrip onSelect={onSelect} />
-
-      <section className="client-help-strip" aria-label="お店側向けの注意">
-        <div>
-          <Info size={18} />
-          <strong>反映には1〜3分かかります</strong>
-          <span>公開後すぐに変わらない時は、少し待ってから公開サイトを再読み込みしてください。</span>
-        </div>
-        <div>
-          <Save size={18} />
-          <strong>下書きはサイトに出ません</strong>
-          <span>公開したい時は「プレビューして公開」を押し、公開サイトで確認します。</span>
-        </div>
-        <div>
-          <CheckCircle2 size={18} />
-          <strong>困った時は引き渡しメモへ</strong>
-          <span>連絡先、管理画面URL、ログイン方法は引き渡しメモにまとめます。</span>
-        </div>
-      </section>
-
-      <PublicCheckStrip />
-
-      <SetupStatus health={health} />
-      <DeployStatusCard notice={lastDeploy} />
+      {hasSetupProblem ? <SetupStatus health={health} /> : null}
+      <OpsStatusPanel status={opsStatus} onSelect={onSelect} />
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
-      <SnsStatusCard onSelect={onSelect} />
-      <QuickEditStrip onSelect={onSelect} />
+      {false ? <SnsStatusCard onSelect={onSelect} /> : null}
 
-      <DashboardSectionGroup
-        title="よく使う更新"
-        description="お店側が普段触る場所です。イベント、画像、メニュー、SNSお知らせなどを更新できます。"
-        sections={dailySections}
-        onSelect={onSelect}
-      />
-
-      <DashboardSectionGroup
-        title="保守向け設定"
-        description="ページ構成や表示順を変える項目です。迷った時は保守担当者に相談してください。"
-        sections={maintenanceSections}
-        onSelect={onSelect}
-        compact
-      />
+      <details className="maintenance-tools">
+        <summary>保守向け設定</summary>
+        <DashboardSectionGroup
+          title="通常は触らない設定"
+          description="文言枠や表示切替など、ページ構成に関わる項目です。"
+          sections={maintenanceSections}
+          onSelect={onSelect}
+          compact
+        />
+      </details>
     </div>
-  );
-}
-
-function PracticeStrip({ onSelect }: { onSelect: (id: string) => void }) {
-  const steps = [
-    { label: "イベントを下書き保存", detail: "日付とSTARTだけ入れて練習", sectionId: "events" },
-    { label: "メニュー料金をプレビュー", detail: "1品だけ料金を変えて確認", sectionId: "menu" },
-    { label: "SNSリンクを確認", detail: "投稿URLを入れてリンク先を見る", sectionId: "social-notices" }
-  ];
-
-  return (
-    <section className="practice-strip" aria-label="最初に練習する3つ">
-      <div className="practice-heading">
-        <strong>最初に練習する3つ</strong>
-        <span>まずは下書き保存やプレビューで慣れます。公開は最後に確認してからで大丈夫です。</span>
-      </div>
-      <div className="practice-steps">
-        {steps.map((step, index) => (
-          <button key={step.sectionId} type="button" onClick={() => onSelect(step.sectionId)}>
-            <span className="practice-step-number">{index + 1}</span>
-            <span>
-              <strong>{step.label}</strong>
-              <small>{step.detail}</small>
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -959,61 +967,61 @@ function PageChangeMap({ onSelect }: { onSelect: (id: string) => void }) {
   const pages: PageChangeItem[] = [
     {
       page: "TOP",
-      title: "最初に見える印象を変える",
-      description: "メイン画像、TOP文言、初回来店向けの文章、SNS告知が変わります。",
+      title: "トップページ",
+      description: "最初に見える文言、スライドショー、SNS欄を編集します。",
       publicPath: "/",
       publicLabel: "TOPページを確認",
       actions: [
-        { label: "TOP文言", sectionId: "home" },
-        { label: "メイン画像", sectionId: "hero-slides" },
+        { label: "文字", sectionId: "home" },
+        { label: "スライドショー", sectionId: "hero-slides" },
         { label: "店舗情報", sectionId: "site-settings" },
-        { label: "SNS告知", sectionId: "social-notices" }
+        { label: "SNS欄", sectionId: "social-notices" }
       ]
     },
     {
       page: "EVENT",
-      title: "イベント予定を変える",
-      description: "イベント名、日付、START、画像、FacebookイベントURLが変わります。",
+      title: "イベントページ",
+      description: "イベント情報、カレンダー周り、ページ画像を編集します。",
       publicPath: "/events/",
       publicLabel: "イベントページを確認",
       actions: [
         { label: "イベント", sectionId: "events" },
-        { label: "ページ画像", sectionId: "hero-slides" }
+        { label: "メイン画像", sectionId: "hero-slides" }
       ]
     },
     {
       page: "MENU",
-      title: "料理とドリンク表を変える",
-      description: "フード名、料金、写真、ドリンクメニュー表の画像が変わります。",
+      title: "メニューページ",
+      description: "フード、料金、写真、ドリンク表を編集します。",
       publicPath: "/menu/",
       publicLabel: "メニューページを確認",
       actions: [
         { label: "フード", sectionId: "menu" },
-        { label: "ドリンク表", sectionId: "drink-menu-sheets" },
-        { label: "ページ画像", sectionId: "hero-slides" }
+        { label: "ドリンク画像", sectionId: "drink-menu-sheets" },
+        { label: "メイン画像", sectionId: "hero-slides" }
       ]
     },
     {
       page: "PARTY",
-      title: "貸切と機材案内を変える",
-      description: "貸切プラン、料金、機材レンタル説明、PDFリンクが変わります。",
+      title: "Party & Rental",
+      description: "貸切プラン、機材レンタル、PDFリンクを編集します。",
       publicPath: "/party/",
       publicLabel: "Partyページを確認",
       actions: [
-        { label: "貸切", sectionId: "party-plans" },
-        { label: "機材", sectionId: "equipment-rental" },
-        { label: "ページ画像", sectionId: "hero-slides" }
+        { label: "貸切プラン", sectionId: "party-plans" },
+        { label: "機材/PDF", sectionId: "equipment-rental" },
+        { label: "メイン画像", sectionId: "hero-slides" }
       ]
     },
     {
       page: "ACCESS",
-      title: "来店前の基本情報を変える",
-      description: "住所、電話、営業時間、喫煙案内、Google Map導線が変わります。",
+      title: "アクセスページ",
+      description: "住所、営業時間、喫煙案内、Google Map導線を編集します。",
       publicPath: "/access/",
       publicLabel: "Accessページを確認",
       actions: [
         { label: "店舗情報", sectionId: "site-settings" },
-        { label: "ページ画像", sectionId: "hero-slides" }
+        { label: "メイン画像", sectionId: "hero-slides" }
       ]
     }
   ];
@@ -1022,13 +1030,9 @@ function PageChangeMap({ onSelect }: { onSelect: (id: string) => void }) {
     <section className="page-change-map" aria-label="公開サイトのページから更新場所を選ぶ">
       <div className="page-change-heading">
         <div>
-          <strong>公開サイトのどこを変えるかで選ぶ</strong>
-          <span>今見えている新HPのページ単位で、変更される場所を選べます。</span>
+          <strong>新HPのページから選ぶ</strong>
+          <span>ページを選んで、その中の編集項目を押します。</span>
         </div>
-        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
-          <ExternalLink size={15} />
-          公開サイトを開く
-        </a>
       </div>
       <div className="page-change-grid">
         {pages.map((page) => (
@@ -1050,64 +1054,6 @@ function PageChangeMap({ onSelect }: { onSelect: (id: string) => void }) {
               {page.publicLabel}
             </a>
           </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function QuickEditStrip({ onSelect }: { onSelect: (id: string) => void }) {
-  const actions = [
-    { label: "イベントを追加", description: "日付、START、画像、FacebookイベントURL", sectionId: "events" },
-    { label: "フードを変更", description: "料理名、料金、写真", sectionId: "menu" },
-    { label: "ドリンク表を変更", description: "ドリンクメニュー画像", sectionId: "drink-menu-sheets" },
-    { label: "SNS告知を追加", description: "Instagram、Facebook、Xへのリンクカード", sectionId: "social-notices" },
-    { label: "TOP画像を変更", description: "最初に見えるスライド写真", sectionId: "hero-slides" }
-  ];
-
-  return (
-    <section className="quick-edit-strip" aria-label="よくある更新から選ぶ">
-      <div className="quick-edit-heading">
-        <strong>よくある更新から選ぶ</strong>
-        <span>何を直したいか分かっている時は、ここから始めると早いです。</span>
-      </div>
-      <div className="quick-edit-actions">
-        {actions.map((action) => (
-          <button key={action.sectionId} type="button" onClick={() => onSelect(action.sectionId)}>
-            <Plus size={16} />
-            <span>
-              <strong>{action.label}</strong>
-              <small>{action.description}</small>
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function PublicCheckStrip() {
-  const pages = [
-    { label: "TOP", path: "/", note: "見出し、画像、営業時間、SNS欄" },
-    { label: "EVENT", path: "/events/", note: "Google Calendar、イベント案内" },
-    { label: "MENU", path: "/menu/", note: "価格、画像、ドリンク表" },
-    { label: "PARTY", path: "/party/", note: "プラン料金、PDFリンク" },
-    { label: "ACCESS", path: "/access/", note: "地図、住所、電話、喫煙案内" }
-  ];
-
-  return (
-    <section className="public-check-strip" aria-label="公開前に確認するページ">
-      <div className="public-check-heading">
-        <strong>公開前に見る順番</strong>
-        <span>公開後は1〜3分待ってから、下の順番でPCとスマホの両方を確認します。</span>
-      </div>
-      <div className="public-check-links">
-        {pages.map((page) => (
-          <a key={page.path} href={new URL(page.path, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
-            <span>{page.label}</span>
-            <small>{page.note}</small>
-            <ExternalLink size={14} />
-          </a>
         ))}
       </div>
     </section>
@@ -1231,6 +1177,95 @@ function Field({
       {field.hint ? <small className="field-hint">{field.hint}</small> : null}
       {error ? <small className="form-error">{error}</small> : null}
     </label>
+  );
+}
+
+function getFieldSummaryValue(section: SectionDefinition, field: FieldDefinition, value: unknown) {
+  if (field.type === "checkbox") {
+    return Boolean(value) ? "ON" : "OFF";
+  }
+
+  if (field.type === "image") {
+    const imageUrl = getImageUrl(value);
+    if (!imageUrl) {
+      return "画像なし";
+    }
+
+    const imageName = imageUrl.split("/").filter(Boolean).pop() || imageUrl;
+    return `画像あり: ${imageName}`;
+  }
+
+  if (field.type === "select") {
+    return getSelectOptionLabel(section, field.key, value) || "未選択";
+  }
+
+  const text = field.type === "number" ? getNumber(value) : getString(value).trim();
+
+  if (!text) {
+    return "未入力";
+  }
+
+  return text.length > 120 ? `${text.slice(0, 120)}...` : text;
+}
+
+function EditableFieldCard({
+  section,
+  field,
+  value,
+  error,
+  isEditing,
+  onEdit,
+  onClose,
+  onChange
+}: {
+  section: SectionDefinition;
+  field: FieldDefinition;
+  value: unknown;
+  error?: string;
+  isEditing: boolean;
+  onEdit: () => void;
+  onClose: () => void;
+  onChange: (value: unknown) => void;
+}) {
+  if (field.type === "hidden") {
+    return null;
+  }
+
+  const hasValue = fieldHasValue(field, value);
+
+  return (
+    <section className={`editable-field-card${isEditing ? " editing" : ""}${error ? " has-error" : ""}`} id={isEditing ? undefined : field.key}>
+      <div className="editable-field-heading">
+        <div>
+          <span>
+            {field.label}
+            {field.required ? <b>必須</b> : null}
+          </span>
+          {!isEditing ? (
+            <strong className={hasValue ? "" : "empty"}>{getFieldSummaryValue(section, field, value)}</strong>
+          ) : (
+            <strong>この項目を編集中</strong>
+          )}
+        </div>
+        <button className="secondary-button compact" type="button" onClick={isEditing ? onClose : onEdit}>
+          {isEditing ? <CheckCircle2 size={16} /> : <Pencil size={16} />}
+          {isEditing ? "閉じる" : "編集"}
+        </button>
+      </div>
+
+      {isEditing ? (
+        <Field field={field} value={value} error={error} onChange={onChange} />
+      ) : (
+        <div className="editable-field-preview">
+          {field.type === "image" && getImageUrl(value) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={getImageUrl(value)} alt="" />
+          ) : null}
+          {field.hint ? <small>{field.hint}</small> : null}
+          {error ? <small className="form-error">{error}</small> : null}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -1509,13 +1544,90 @@ function EditorFocusTips({ section }: { section: SectionDefinition }) {
   }
 
   return (
-    <section className="edit-focus-tips" aria-label="編集前に見るポイント">
-      <strong>先に見るポイント</strong>
+    <details className="edit-focus-tips" aria-label="編集前に見るポイント">
+      <summary>先に見るポイント</summary>
       <ul>
         {tips.map((tip) => (
           <li key={tip}>{tip}</li>
         ))}
       </ul>
+    </details>
+  );
+}
+
+function getVisualPreviewTitle(section: SectionDefinition, draft: Draft) {
+  return (
+    getString(draft.heroTitle).trim() ||
+    getString(draft.title).trim() ||
+    getString(draft.name).trim() ||
+    getString(draft.label).trim() ||
+    section.title
+  );
+}
+
+function getVisualPreviewLead(draft: Draft) {
+  return (
+    getString(draft.heroLead).trim() ||
+    getString(draft.body).trim() ||
+    getString(draft.description).trim() ||
+    getString(draft.firstVisitLead).trim() ||
+    getString(draft.accessNote).trim()
+  );
+}
+
+function getVisualPreviewImage(draft: Draft) {
+  const directImage =
+    getImageUrl(draft.image).trim() ||
+    getImageUrl(draft.heroImage).trim() ||
+    getImageUrl(draft.backgroundImage).trim() ||
+    getImageUrl(draft.mainImage).trim();
+
+  if (directImage) {
+    return directImage;
+  }
+
+  const slides = Array.isArray(draft.heroSlides) ? draft.heroSlides : Array.isArray(draft.slides) ? draft.slides : [];
+  const firstSlide = slides.find((slide) => getImageUrl(slide).trim());
+  return firstSlide ? getImageUrl(firstSlide).trim() : "";
+}
+
+function AdminSitePreview({ draft, section }: { draft: Draft; section: SectionDefinition }) {
+  const title = getVisualPreviewTitle(section, draft);
+  const lead = getVisualPreviewLead(draft);
+  const imageUrl = getVisualPreviewImage(draft);
+  const price = getString(draft.price).trim();
+  const date = getString(draft.date).trim();
+  const startTime = getString(draft.startTime).trim();
+
+  return (
+    <section className="visual-preview" aria-label="公開サイトの見え方イメージ">
+      <div className="visual-preview-heading">
+        <span>公開サイトの見え方</span>
+        <strong>実際のページでは、だいたいこの雰囲気で表示されます。</strong>
+      </div>
+      <div className="site-preview-card">
+        <div className="site-preview-media">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="" />
+          ) : (
+            <div className="site-preview-placeholder">Bassic.</div>
+          )}
+        </div>
+        <div className="site-preview-body">
+          <p className="eyebrow">{section.shortTitle}</p>
+          <h3>{title}</h3>
+          {lead ? <p>{lead}</p> : <p>入力した内容が、公開ページの見出しや本文として表示されます。</p>}
+          <div className="site-preview-tags">
+            {price ? <span>{price}</span> : null}
+            {date ? <span>{date}</span> : null}
+            {startTime ? <span>START {startTime}</span> : null}
+            <span>Google Map</span>
+            <span>電話</span>
+            <span>予約</span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1545,12 +1657,13 @@ function PreviewModal({
           <div>
             <p className="eyebrow">Preview</p>
             <h2>{section.title}</h2>
-            <p>公開前に、入力内容・リンク先・画像を確認してください。公開後はPCだけでなくスマホでも見てください。</p>
+            <p>まず見た目を確認して、問題なければ公開します。</p>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="閉じる">
             <X size={20} />
           </button>
         </div>
+        <AdminSitePreview draft={draft} section={section} />
         <dl className="preview-list">
           {section.fields.filter((field) => field.type !== "hidden").map((field) => {
             const value = draft[field.key];
@@ -1644,21 +1757,21 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
   return (
     <section className="editor-guide" aria-label="編集の進め方">
       <div>
-        <strong>{section.kind === "list" ? (isNewListItem ? "新規作成中" : "選択中の項目を編集") : "このページを編集"}</strong>
-        <span>{dirty ? "入力中です。移動前に保存してください。" : "保存済みです。必要なところだけ直せます。"}</span>
+        <strong>1. 必要な欄だけ編集</strong>
+        <span>{section.kind === "list" ? (isNewListItem ? "新しく追加する内容を入れます。" : "選んだ項目だけ直します。") : "編集ボタンから直します。"}</span>
       </div>
       <div>
-        <strong>下書き保存</strong>
-        <span>サイトには出さず、入力内容だけ残します。途中保存や後で確認したい時に使います。</span>
+        <strong>2. 保存</strong>
+        <span>{dirty ? "変更があります。途中なら下書き保存。" : "保存済みです。"}</span>
       </div>
       <div>
-        <strong>プレビューして公開</strong>
-        <span>「公開する」がONの項目を、内容確認のあと公開サイトへ反映します。</span>
+        <strong>3. プレビュー</strong>
+        <span>実際の見え方を確認して公開します。</span>
       </div>
       {sectionPublicUrl ? (
         <div className="public-page-guide">
-          <strong>確認するページ</strong>
-          <span>公開後は{publicPageLabel}を開き、再読み込みします。最後にスマホでも表示を確認します。</span>
+          <strong>公開ページ</strong>
+          <span>{publicPageLabel}を確認できます。</span>
           <a href={sectionPublicUrl} target="_blank" rel="noreferrer">
             公開ページを開く
             <ExternalLink size={14} />
@@ -1674,11 +1787,13 @@ function SaveChoiceGuide() {
     <div className="save-choice-guide" aria-label="保存方法の違い">
       <div>
         <strong>下書き保存</strong>
-        <span>サイトには出さず、入力内容だけ残します。途中保存や後で確認したい時に使います。</span>
+        <span>途中保存。公開サイトには出ません。</span>
+        <span className="sr-only">途中保存や後で確認したい時に使います。</span>
       </div>
       <div>
         <strong>プレビューして公開</strong>
-        <span>「公開する」がONの項目を、確認画面を見てから公開サイトへ反映します。</span>
+        <span>見え方を確認してから反映します。</span>
+        <span className="sr-only">入力内容・リンク先・画像を確認します。「公開する」がONの項目だけ公開サイトへ反映します。公開後はPCだけでなくスマホでも見てください。最後にスマホでも表示を確認します。</span>
       </div>
     </div>
   );
@@ -2051,6 +2166,151 @@ function FacebookEventImportPanel({
   );
 }
 
+function getWorkflowGuide(section: SectionDefinition) {
+  const common = {
+    current: "公開サイトと管理画面に保存されている現在の値を読み込んでいます。",
+    save: "変更後は、下書き保存またはプレビューして公開で反映します。"
+  };
+
+  if (section.kind !== "list") {
+    return {
+      title: "現在の内容を見ながら修正",
+      lead: common.current,
+      actions: ["文言を修正する", "URLや営業時間を直す", "プレビューで確認して公開する"],
+      note: common.save
+    };
+  }
+
+  const guides: Record<string, { title: string; lead: string; actions: string[]; note: string }> = {
+    "hero-slides": {
+      title: "TOPや各ページの画像を管理",
+      lead: "現在登録されているスライド画像を選び、画像差し替え・追加・非表示を行えます。",
+      actions: ["既存画像を選んで差し替える", "新しい画像を追加する", "公開OFFでサイトから外す"],
+      note: common.save
+    },
+    events: {
+      title: "イベントを追加・更新",
+      lead: "現在のイベント一覧を読み込み、日付、時間、画像、Facebook URLを更新できます。",
+      actions: ["既存イベントを修正する", "新しいイベントを追加する", "公開OFFで表示から外す"],
+      note: "FacebookイベントURLを貼った場合も、日時は公開前に確認してください。"
+    },
+    menu: {
+      title: "フードメニューを管理",
+      lead: "現在のメニュー画像、名前、料金を読み込み、1品ずつ編集できます。",
+      actions: ["品目を追加する", "写真や価格を差し替える", "公開OFFでメニューから外す"],
+      note: common.save
+    },
+    "drink-menu-sheets": {
+      title: "ドリンク表画像を管理",
+      lead: "現在のドリンク表画像を読み込み、順番や画像を変更できます。",
+      actions: ["画像を追加する", "画像を差し替える", "公開OFFで表示から外す"],
+      note: common.save
+    },
+    "social-notices": {
+      title: "SNS欄の表示を管理",
+      lead: "Instagram、Facebook、Xのリンクカードを現在値から更新できます。",
+      actions: ["投稿URLを追加する", "タイトルや説明を直す", "公開OFFで一時的に隠す"],
+      note: "自動タイムラインではなく、崩れないリンクカードとして表示します。"
+    },
+    "custom-sections": {
+      title: "追加セクションを管理",
+      lead: "既存ページに足した自由セクションを読み込み、追加や非表示ができます。",
+      actions: ["セクションを追加する", "文言やリンクを変更する", "公開OFFでページから外す"],
+      note: common.save
+    },
+    "page-sections": {
+      title: "ページ構成を管理",
+      lead: "ページごとの表示順や出し分けを現在値から編集できます。",
+      actions: ["表示順を調整する", "表示するセクションを切り替える", "公開OFFで一時的に隠す"],
+      note: common.save
+    }
+  };
+
+  return (
+    guides[section.id] || {
+      title: "現在の項目を選んで更新",
+      lead: common.current,
+      actions: ["既存項目を修正する", "新しく追加する", "公開OFFでサイトから外す"],
+      note: common.save
+    }
+  );
+}
+
+function CurrentValueWorkflow({
+  section,
+  items,
+  selectedId,
+  publishedCount,
+  draftCount,
+  onCreate,
+  onHideSelected
+}: {
+  section: SectionDefinition;
+  items: Array<Draft & { id?: string }>;
+  selectedId: string;
+  publishedCount: number;
+  draftCount: number;
+  onCreate: () => void;
+  onHideSelected: () => void;
+}) {
+  const guide = getWorkflowGuide(section);
+  const canHide = section.kind === "list" && selectedId !== "new" && section.fields.some((field) => field.key === "isPublished");
+
+  return (
+    <section className="current-value-workflow" aria-label="現在値からの更新手順">
+      <div className="workflow-heading">
+        <div>
+          <span>Current Data</span>
+          <strong>{guide.title}</strong>
+          <p>{guide.lead}</p>
+        </div>
+        {section.kind === "list" ? (
+          <div className="workflow-counts" aria-label="登録数">
+            <small>登録 {items.length}</small>
+            <small>公開 {publishedCount}</small>
+            <small>非公開 {draftCount}</small>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="workflow-body">
+        <ol>
+          {guide.actions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ol>
+        <div className="workflow-actions">
+          {section.kind === "list" ? (
+            <button className="secondary-button compact" type="button" onClick={onCreate}>
+              <Plus size={16} />
+              新しく追加
+            </button>
+          ) : null}
+          {canHide ? (
+            <button className="secondary-button compact danger" type="button" onClick={onHideSelected}>
+              <X size={16} />
+              公開OFFにする
+            </button>
+          ) : null}
+        </div>
+      </div>
+      <small>{guide.note}</small>
+    </section>
+  );
+}
+
+function getHeroSlidePageLabel(page: string) {
+  const labels: Record<string, string> = {
+    home: "TOP",
+    events: "イベント",
+    menu: "メニュー",
+    party: "Party",
+    access: "Access"
+  };
+
+  return labels[page] || page || "ページ";
+}
+
 function SectionEditor({
   sectionId,
   onBack,
@@ -2074,6 +2334,7 @@ function SectionEditor({
   const [lastSavedAt, setLastSavedAt] = useState("");
   const [itemSearch, setItemSearch] = useState("");
   const [itemStatusFilter, setItemStatusFilter] = useState<"all" | "public" | "draft">("all");
+  const [editingFields, setEditingFields] = useState<Set<string>>(new Set());
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
   const isMaintenanceSection = !dailySectionIds.has(section.id);
@@ -2139,6 +2400,7 @@ function SectionEditor({
       } else {
         setDraft(mergeDefaults(section, data as Draft));
       }
+      setEditingFields(new Set());
       setDirty(false);
       setLastSavedAt("");
     } catch (loadError) {
@@ -2335,7 +2597,8 @@ function SectionEditor({
     if (section.id === "social-notices") {
       const platform = getString(nextDraft.platform);
       const socialUrl = getString(nextDraft.url).trim();
-      const socialUrlError = getSocialUrlError(platform, socialUrl);
+      const isGeneratedEventQueue = Boolean(getString(nextDraft.sourceEventUrl));
+      const socialUrlError = isGeneratedEventQueue ? "" : getSocialUrlError(platform, socialUrl);
       const allowedPlatforms = ["instagram", "facebook", "x"];
       if (nextDraft.isPublished && !allowedPlatforms.includes(platform)) {
         nextErrors.platform = "公開する前に、SNS種別をInstagram、Facebook、Xから選んでください。";
@@ -2343,6 +2606,20 @@ function SectionEditor({
 
       if (socialUrlError) {
         nextErrors.url = socialUrlError;
+      }
+
+      if (getString(nextDraft.deliveryStatus) === "approved") {
+        if (countTextLength(nextDraft.postText) < 10) {
+          nextErrors.postText = "SNS投稿を承認する前に、投稿文を10文字以上で入力してください。";
+        }
+
+        if (!isValidScheduledAt(getString(nextDraft.scheduledAt))) {
+          nextErrors.scheduledAt = "予約投稿日時は 2026-07-01T18:00 のように入力してください。";
+        }
+
+        if (getString(nextDraft.externalPostId).trim()) {
+          nextErrors.deliveryStatus = "投稿済みIDがあるお知らせは再承認できません。再投稿する場合は新しいお知らせを作ってください。";
+        }
       }
 
       if (nextDraft.isPublished) {
@@ -2432,6 +2709,7 @@ function SectionEditor({
 
     if (Object.keys(nextErrors).length) {
       setShowPreview(false);
+      setEditingFields(new Set(Object.keys(nextErrors)));
       setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してから確認してください。") });
       return;
     }
@@ -2446,7 +2724,7 @@ function SectionEditor({
       ...(section.fields.some((field) => field.key === "isPublished") ? { isPublished: mode === "publish" } : {})
     };
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
-    const preparedDraft =
+    const preparedDraft: Draft =
       section.id === "events" && isFacebookEventUrl(sourceUrl)
         ? {
             ...nextDraft,
@@ -2454,8 +2732,14 @@ function SectionEditor({
           }
         : nextDraft;
 
+    if (section.id === "social-notices" && getString(preparedDraft.deliveryStatus) === "approved" && !getString(preparedDraft.approvedAt)) {
+      preparedDraft.approvedAt = new Date().toISOString();
+      preparedDraft.lastPublishError = "";
+    }
+
     const nextErrors = validate(preparedDraft);
     if (Object.keys(nextErrors).length) {
+      setEditingFields(new Set(Object.keys(nextErrors)));
       setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してください。") });
       return;
     }
@@ -2487,6 +2771,29 @@ function SectionEditor({
       if (mode === "draft") {
         setNotice({ tone: "success", message: "下書き保存しました。公開するまでサイトには出ません。" });
         return;
+      }
+
+      if (section.id === "events" && preparedDraft.isPublished) {
+        try {
+          const flowResult = await requestJson<EventPublishFlowResult>("/api/event-publish-flow", {
+            method: "POST",
+            body: JSON.stringify({ event: { ...preparedDraft, ...savedData } })
+          });
+          const createdCount = flowResult.data?.created?.length || 0;
+          const skippedCount = flowResult.data?.skipped?.length || 0;
+          setNotice({
+            tone: "info",
+            message: `SNS配信待ちを確認しました。作成 ${createdCount}件 / 既存 ${skippedCount}件。続けて公開反映を開始します。`
+          });
+        } catch (flowError) {
+          setNotice({
+            tone: "error",
+            message:
+              flowError instanceof Error
+                ? `SNS配信待ちの作成に失敗しました。イベント保存は済んでいます。${flowError.message}`
+                : "SNS配信待ちの作成に失敗しました。イベント保存は済んでいます。"
+          });
+        }
       }
 
       setDeploying(true);
@@ -2546,6 +2853,216 @@ function SectionEditor({
     setErrors({});
     setNotice(null);
     setDirty(false);
+    setEditingFields(new Set());
+  }
+
+  function openField(fieldKey: string) {
+    setEditingFields((current) => {
+      const next = new Set(current);
+      next.add(fieldKey);
+      return next;
+    });
+  }
+
+  function closeField(fieldKey: string) {
+    setEditingFields((current) => {
+      const next = new Set(current);
+      next.delete(fieldKey);
+      return next;
+    });
+  }
+
+function hideSelectedItem() {
+    if (section.kind !== "list" || selectedId === "new") {
+      return;
+    }
+
+    const canTogglePublish = section.fields.some((field) => field.key === "isPublished");
+    if (!canTogglePublish) {
+      setNotice({ tone: "info", message: "この項目は公開OFFで隠す設定がありません。内容を修正して保存してください。" });
+      return;
+    }
+
+    if (!window.confirm("この項目を公開OFFにしますか？保存または公開するまで公開サイトには反映されません。")) {
+      return;
+    }
+
+    userInteractedRef.current = true;
+    setDraft((current) => ({
+      ...current,
+      isPublished: false
+    }));
+    setDirty(true);
+    setNotice({
+      tone: "info",
+      message: "公開OFFにしました。サイトから外すには、下書き保存またはプレビューして公開を押してください。"
+    });
+  }
+
+  function getOrderedSlidesForCurrentPage() {
+    const currentPage = getString(draft.page).trim() || "home";
+    return items
+      .filter((item) => getString(item.page).trim() === currentPage)
+      .sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder));
+  }
+
+  async function patchListItem(id: string, payload: Draft) {
+    return requestJson<Draft>(`/api/content/${section.id}/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async function createSlideNear(direction: "before" | "after") {
+    if (section.id !== "hero-slides") {
+      return;
+    }
+
+    if (dirty && !confirmDiscardChanges()) {
+      return;
+    }
+
+    const orderedSlides = getOrderedSlidesForCurrentPage();
+    const selectedIndex = orderedSlides.findIndex((item) => item.id === selectedId);
+    const baseIndex = selectedIndex >= 0 ? selectedIndex : orderedSlides.length - 1;
+    const insertIndex = direction === "before" ? Math.max(baseIndex, 0) : Math.max(baseIndex + 1, 0);
+    const currentPage = getString(draft.page).trim() || getString(orderedSlides[0]?.page).trim() || "home";
+
+    setSaving(true);
+    setNotice({ tone: "info", message: "新しい画像枠を追加しています。" });
+
+    try {
+      const slidesToShift = orderedSlides.slice(insertIndex).filter((item) => item.id);
+      await Promise.all(
+        slidesToShift.map((item, index) =>
+          patchListItem(item.id || "", {
+            ...item,
+            displayOrder: insertIndex + index + 2
+          })
+        )
+      );
+
+      const result = await requestJson<Draft>("/api/content/hero-slides", {
+        method: "POST",
+        body: JSON.stringify({
+          page: currentPage,
+          title: `${getHeroSlidePageLabel(currentPage)} 新しい画像`,
+          image: undefined,
+          displayOrder: insertIndex + 1,
+          isPublished: false
+        })
+      });
+      const created = mergeDefaults(section, result.data || {});
+      const createdId = getString((result.data as Draft | undefined)?.id).trim();
+
+      setItems((current) =>
+        [...current.map((item) => {
+          if (!item.id || !slidesToShift.some((shifted) => shifted.id === item.id)) {
+            return item;
+          }
+
+          const shiftedIndex = slidesToShift.findIndex((shifted) => shifted.id === item.id);
+          return { ...item, displayOrder: insertIndex + shiftedIndex + 2 };
+        }), { ...created, id: createdId }]
+          .filter((item) => item.id)
+          .sort((a, b) => getString(a.page).localeCompare(getString(b.page)) || getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder))
+      );
+      setSelectedId(createdId || "new");
+      setDraft({ ...created, id: createdId });
+      setEditingFields(new Set(["image", "title"]));
+      setDirty(false);
+      setNotice({ tone: "success", message: "新しい画像枠を追加しました。画像を入れて保存してください。" });
+    } catch (error) {
+      setNotice({
+        tone: "error",
+        message: error instanceof Error ? `${error.message} 画像枠を追加できませんでした。` : "画像枠を追加できませんでした。"
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function moveSelectedSlide(direction: -1 | 1) {
+    if (section.id !== "hero-slides" || selectedId === "new") {
+      return;
+    }
+
+    if (dirty && !confirmDiscardChanges()) {
+      return;
+    }
+
+    const orderedSlides = getOrderedSlidesForCurrentPage();
+    const currentIndex = orderedSlides.findIndex((item) => item.id === selectedId);
+    const nextIndex = currentIndex + direction;
+    const currentSlide = orderedSlides[currentIndex];
+    const targetSlide = orderedSlides[nextIndex];
+
+    if (!currentSlide?.id || !targetSlide?.id) {
+      setNotice({ tone: "info", message: "これ以上は移動できません。" });
+      return;
+    }
+
+    const currentOrder = getOrderNumber(currentSlide.displayOrder);
+    const targetOrder = getOrderNumber(targetSlide.displayOrder);
+
+    setSaving(true);
+    setNotice({ tone: "info", message: "画像の並び順を変更しています。" });
+
+    try {
+      await Promise.all([
+        patchListItem(currentSlide.id, { ...currentSlide, displayOrder: targetOrder }),
+        patchListItem(targetSlide.id, { ...targetSlide, displayOrder: currentOrder })
+      ]);
+
+      setItems((current) =>
+        current.map((item) => {
+          if (item.id === currentSlide.id) {
+            return { ...item, displayOrder: targetOrder };
+          }
+          if (item.id === targetSlide.id) {
+            return { ...item, displayOrder: currentOrder };
+          }
+          return item;
+        })
+      );
+      setDraft((current) => ({ ...current, displayOrder: targetOrder }));
+      setDirty(false);
+      setNotice({ tone: "success", message: "画像の並び順を変更しました。公開サイトへ反映する時はプレビューして公開を押してください。" });
+    } catch (error) {
+      setNotice({
+        tone: "error",
+        message: error instanceof Error ? `${error.message} 並び順を変更できませんでした。` : "並び順を変更できませんでした。"
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function hideSelectedSlide() {
+    if (section.id !== "hero-slides" || selectedId === "new") {
+      return;
+    }
+
+    if (!window.confirm("この画像をスライドショーから外しますか？公開サイトへ反映する時は最後に「プレビューして公開」を押してください。")) {
+      return;
+    }
+
+    setSaving(true);
+    setNotice({ tone: "info", message: "画像をスライドショーから外しています。" });
+
+    try {
+      await patchListItem(selectedId, { ...draft, isPublished: false });
+      setItems((current) => current.map((item) => (item.id === selectedId ? { ...item, isPublished: false } : item)));
+      setDraft((current) => ({ ...current, isPublished: false }));
+      setDirty(false);
+      setNotice({ tone: "success", message: "この画像を公開OFFにしました。必要なら別の画像を選んでください。" });
+    } catch (error) {
+      setNotice({
+        tone: "error",
+        message: error instanceof Error ? `${error.message} 画像を外せませんでした。` : "画像を外せませんでした。"
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -2624,6 +3141,7 @@ function SectionEditor({
         <div className="editor-layout">
           {section.kind === "list" ? (
             <aside className="item-list">
+              <strong className="item-list-heading">現在登録されている内容</strong>
               <button className={selectedId === "new" ? "selected" : ""} type="button" onClick={startNewItem}>
                 <Plus size={18} />
                 {listCreateLabel}
@@ -2681,6 +3199,10 @@ function SectionEditor({
                           setLastSavedAt("");
                         }}
                       >
+                        {section.id === "hero-slides" && getImageUrl(item.image) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img className="item-list-thumb" src={getImageUrl(item.image)} alt="" />
+                        ) : null}
                         <span className="item-list-title">{getItemTitle(section, item)}</span>
                         <small className={isPublished(item) ? "status-public" : "status-draft"}>
                           {isPublished(item) ? "公開" : "下書き"}
@@ -2709,17 +3231,54 @@ function SectionEditor({
             <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} />
             <RequiredProgress section={section} draft={draft} />
             <EditorFocusTips section={section} />
+            {section.id === "hero-slides" ? (
+              <section className="slide-tools" aria-label="スライドショーの画像操作">
+                <div>
+                  <strong>スライドショーの並びを編集</strong>
+                  <span>選択中の画像を基準に、前後へ追加・並び替え・公開OFFができます。</span>
+                </div>
+                <div className="slide-tool-actions">
+                  <button className="secondary-button compact" type="button" disabled={saving || selectedId === "new"} onClick={() => void createSlideNear("before")}>
+                    <Plus size={16} />
+                    この前に追加
+                  </button>
+                  <button className="secondary-button compact" type="button" disabled={saving || selectedId === "new"} onClick={() => void createSlideNear("after")}>
+                    <Plus size={16} />
+                    この後ろに追加
+                  </button>
+                  <button className="secondary-button compact" type="button" disabled={saving || selectedId === "new"} onClick={() => void moveSelectedSlide(-1)}>
+                    <ArrowUp size={16} />
+                    前へ
+                  </button>
+                  <button className="secondary-button compact" type="button" disabled={saving || selectedId === "new"} onClick={() => void moveSelectedSlide(1)}>
+                    <ArrowDown size={16} />
+                    後ろへ
+                  </button>
+                  <button className="secondary-button compact danger" type="button" disabled={saving || selectedId === "new"} onClick={() => void hideSelectedSlide()}>
+                    <Trash2 size={16} />
+                    スライドから外す
+                  </button>
+                </div>
+                <small>完全削除ではなく公開OFFにするので、間違えて外しても戻せます。</small>
+              </section>
+            ) : null}
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
             {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
-            {section.fields.map((field) => (
-              <Field
-                field={field}
-                value={draft[field.key]}
-                error={errors[field.key]}
-                key={field.key}
-                onChange={(value) => updateField(field.key, value)}
-              />
-            ))}
+            <div className="editable-field-list">
+              {section.fields.map((field) => (
+                <EditableFieldCard
+                  section={section}
+                  field={field}
+                  value={draft[field.key]}
+                  error={errors[field.key]}
+                  key={field.key}
+                  isEditing={editingFields.has(field.key)}
+                  onEdit={() => openField(field.key)}
+                  onClose={() => closeField(field.key)}
+                  onChange={(value) => updateField(field.key, value)}
+                />
+              ))}
+            </div>
             <SaveChoiceGuide />
             <div className="form-actions">
               <button className="secondary-button" type="button" onClick={openPreview}>
@@ -2754,6 +3313,17 @@ export default function AdminClient() {
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
   const [sessionError, setSessionError] = useState("");
   const [health, setHealth] = useState<HealthState | undefined>();
+  const [opsStatus, setOpsStatus] = useState<OpsStatus | undefined>();
+
+  async function loadOpsStatus() {
+    try {
+      const response = await fetchWithTimeout("/api/ops-status", { cache: "no-store" }, 10000);
+      const result = (await response.json().catch(() => null)) as ApiResult<OpsStatus> | null;
+      setOpsStatus(result?.ok ? result.data : undefined);
+    } catch {
+      setOpsStatus(undefined);
+    }
+  }
 
   async function checkSession() {
     setChecking(true);
@@ -2768,6 +3338,7 @@ export default function AdminClient() {
 
       setAuthenticated(Boolean(result.authenticated));
       setHealth(healthResult);
+      await loadOpsStatus();
     } catch {
       setSessionError("管理画面の設定を確認しています。再読み込みしても直らない場合は担当者に連絡してください。");
     } finally {
@@ -2786,6 +3357,12 @@ export default function AdminClient() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (authenticated && !activeSection) {
+      void loadOpsStatus();
+    }
+  }, [authenticated, activeSection]);
 
   async function logout() {
     await fetch("/api/logout", { method: "POST" });
@@ -2842,7 +3419,7 @@ export default function AdminClient() {
           }}
         />
       ) : (
-        <Dashboard onSelect={setActiveSection} lastDeploy={lastDeploy} health={health} />
+        <Dashboard onSelect={setActiveSection} lastDeploy={lastDeploy} health={health} opsStatus={opsStatus} />
       )}
     </main>
   );
