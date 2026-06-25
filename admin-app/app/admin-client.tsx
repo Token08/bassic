@@ -2748,7 +2748,8 @@ function SectionEditor({
     setNotice(null);
 
     try {
-      const isExistingListItem = section.kind === "list" && selectedId && selectedId !== "new";
+      const isFallbackListItem = section.kind === "list" && preparedDraft.__isFallback === true;
+      const isExistingListItem = section.kind === "list" && selectedId && selectedId !== "new" && !isFallbackListItem;
       const url = isExistingListItem ? `/api/content/${section.id}/${selectedId}` : `/api/content/${section.id}`;
       const result = await requestJson<Draft>(url, {
         method: isExistingListItem ? "PATCH" : "POST",

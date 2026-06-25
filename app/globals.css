@@ -2896,9 +2896,12 @@ main > section.visit-info-strip .visit-info-grid article p {
   }
 
   .menu-photos figure,
-  .menu-image-button,
   .event-poster {
     min-height: 260px;
+  }
+
+  .menu-image-button {
+    min-height: 0;
   }
 
   .intro .feature-grid {

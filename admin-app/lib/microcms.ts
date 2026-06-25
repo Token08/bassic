@@ -1,4 +1,5 @@
 import { fallbackContents } from "../../lib/fallback-data";
+import { defaultMenuItems, drinkMenuSheets } from "../../lib/menu-data";
 
 export type AdminEndpointType = "object" | "list";
 
@@ -111,7 +112,7 @@ function headers() {
 function sanitizeDraft(draft: Record<string, unknown>) {
   const blockedKeys = new Set(["id", "createdAt", "updatedAt", "publishedAt", "revisedAt"]);
 
-  return Object.fromEntries(Object.entries(draft).filter(([key, value]) => !blockedKeys.has(key) && value !== undefined));
+  return Object.fromEntries(Object.entries(draft).filter(([key, value]) => !blockedKeys.has(key) && !key.startsWith("__") && value !== undefined));
 }
 
 export function getEndpoint(endpoint: string) {
@@ -125,6 +126,14 @@ export function getEndpoint(endpoint: string) {
 }
 
 function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
+  const withFallbackMeta = <T extends Record<string, unknown>>(items: T[], prefix: string) =>
+    items.map((item, index) => ({
+      ...item,
+      isPublished: item.isPublished ?? true,
+      id: `fallback-${prefix}-${index + 1}`,
+      __isFallback: true
+    }));
+
   const fallbackMap: Record<string, unknown> = {
     "site-settings": fallbackContents.siteSettings,
     home: {
@@ -132,11 +141,19 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
       instagramWidgetSrc: ""
     },
     events: fallbackContents.events || [],
-    menu: fallbackContents.menu || [],
+    menu: withFallbackMeta(defaultMenuItems.filter((item) => item.category === "food"), "menu"),
     "party-plans": fallbackContents.partyPlans || [],
     "social-notices": fallbackContents.socialNotices || [],
     "hero-slides": [],
-    "drink-menu-sheets": [],
+    "drink-menu-sheets": withFallbackMeta(
+      drinkMenuSheets.map((sheet, index) => ({
+        title: sheet.title,
+        image: { url: sheet.src, alt: sheet.title },
+        displayOrder: index + 1,
+        isPublished: true
+      })),
+      "drink-menu-sheet"
+    ),
     "equipment-rental": {},
     "page-copy": [],
     "page-sections": [],
@@ -190,7 +207,14 @@ export async function getContent(endpointId: string) {
       params.set("orders", endpoint.defaultOrders);
     }
 
-    return await microCmsFetch(`/${endpoint.id}?${params.toString()}`);
+    const data = await microCmsFetch(`/${endpoint.id}?${params.toString()}`);
+    const contents = Array.isArray(data?.contents) ? data.contents : [];
+
+    if (!contents.length && (endpointId === "menu" || endpointId === "drink-menu-sheets")) {
+      return getFallbackContent(endpointId, endpoint);
+    }
+
+    return data;
   } catch (error) {
     if (process.env.ADMIN_ALLOW_CONTENT_FALLBACK === "false") {
       throw error;
