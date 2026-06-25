@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, CheckCircle2, LockKeyhole, MonitorCog, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, LockKeyhole } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Bassic. 管理入口",
@@ -14,20 +14,21 @@ const dedicatedAdminUrl = process.env.NEXT_PUBLIC_DEDICATED_ADMIN_URL;
 export default function AdminPortalPage() {
   return (
     <main className="admin-portal">
+      {dedicatedAdminUrl ? <meta httpEquiv="refresh" content={`0;url=${dedicatedAdminUrl}`} /> : null}
       <section className="admin-hero">
         <div>
           <p className="admin-kicker">Bassic. Admin</p>
-          <h1>管理入口</h1>
+          <h1>管理画面ログイン</h1>
           <p>
-            納品先は専用管理画面から、イベント、メニュー、画像、料金、SNS告知を更新します。
-            GitHubやAPIキーを触らずに運用できる入口です。
+            管理画面を開くにはパスワード入力が必要です。
+            編集画面はログイン後に表示されます。
           </p>
         </div>
         <div className="admin-actions">
           {dedicatedAdminUrl ? (
             <a className="admin-button primary" href={dedicatedAdminUrl} target="_blank" rel="noreferrer">
-              <MonitorCog size={18} />
-              専用管理画面を開く
+              <LockKeyhole size={18} />
+              パスワード入力へ進む
               <ArrowUpRight size={16} />
             </a>
           ) : (
@@ -39,65 +40,13 @@ export default function AdminPortalPage() {
         </div>
       </section>
 
-      <section className="admin-section admin-split">
-        <article className="admin-panel">
-          <div className="admin-section-heading">
-            <p className="admin-kicker">Client Flow</p>
-            <h2>納品先が使うもの</h2>
-          </div>
-          <div className="admin-command-list">
-            <div>
-              <CheckCircle2 size={17} />
-              <span>サイトURL</span>
-            </div>
-            <div>
-              <CheckCircle2 size={17} />
-              <span>専用管理画面URL</span>
-            </div>
-            <div>
-              <CheckCircle2 size={17} />
-              <span>共有パスワード</span>
-            </div>
-            <div>
-              <CheckCircle2 size={17} />
-              <span>操作マニュアル</span>
-            </div>
-          </div>
-        </article>
-
-        <article className="admin-panel">
-          <div className="admin-section-heading">
-            <p className="admin-kicker">Safety</p>
-            <h2>ログインが必要です</h2>
-          </div>
-          <div className="admin-command-list">
-            <div>
-              <ShieldCheck size={17} />
-              <span>共有パスワード</span>
-            </div>
-            <div>
-              <ShieldCheck size={17} />
-              <span>ログイン保持は12時間</span>
-            </div>
-            <div>
-              <ShieldCheck size={17} />
-              <span>ログアウト可能</span>
-            </div>
-            <div>
-              <ShieldCheck size={17} />
-              <span>未ログインでは編集不可</span>
-            </div>
-          </div>
-        </article>
-      </section>
-
       <section className="admin-section admin-note">
-        <MonitorCog size={24} />
+        <LockKeyhole size={24} />
         <div>
-          <h2>専用管理画面について</h2>
+          <h2>未ログインでは編集できません</h2>
           <p>
-            この入口から移動できるのは、パスワード付きの専用管理画面だけです。
-            管理画面URLが未設定の間は、編集画面へ進めません。
+            このページには編集機能を置いていません。
+            実際の更新は、パスワード保護された専用管理画面で行います。
           </p>
         </div>
       </section>
