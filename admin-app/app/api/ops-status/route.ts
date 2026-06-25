@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { isAuthenticatedRequest } from "@/lib/auth";
 import { getContent } from "@/lib/microcms";
 
 export const runtime = "nodejs";
@@ -231,7 +232,15 @@ function addSiteSettingAlerts(alerts: OpsAlert[], settings: SiteSettings) {
   }
 }
 
-export async function GET() {
+function unauthorized() {
+  return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
+}
+
+export async function GET(request: NextRequest) {
+  if (!isAuthenticatedRequest(request)) {
+    return unauthorized();
+  }
+
   try {
     const [eventsResponse, noticesResponse, siteSettings] = await Promise.all([
       getContent("events") as Promise<ListResponse<EventItem>>,

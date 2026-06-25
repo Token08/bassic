@@ -3341,10 +3341,15 @@ export default function AdminClient() {
       ]);
       const result = (await sessionResponse.json()) as { authenticated?: boolean };
       const healthResult = (await healthResponse.json()) as HealthState;
+      const isAuthenticated = Boolean(result.authenticated);
 
-      setAuthenticated(Boolean(result.authenticated));
+      setAuthenticated(isAuthenticated);
       setHealth(healthResult);
-      await loadOpsStatus();
+      if (isAuthenticated) {
+        await loadOpsStatus();
+      } else {
+        setOpsStatus(undefined);
+      }
     } catch {
       setSessionError("管理画面の設定を確認しています。再読み込みしても直らない場合は担当者に連絡してください。");
     } finally {

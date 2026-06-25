@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, BookOpen, CheckCircle2, KeyRound, MonitorCog, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, LockKeyhole, MonitorCog, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Bassic. 管理入口",
@@ -10,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 const dedicatedAdminUrl = process.env.NEXT_PUBLIC_DEDICATED_ADMIN_URL;
-const microCmsAdminUrl = process.env.NEXT_PUBLIC_MICROCMS_ADMIN_URL || "https://app.microcms.io/";
-const repoDocsBase = "https://github.com/Token08/bassic/blob/main/docs";
 
 export default function AdminPortalPage() {
   return (
@@ -34,20 +32,10 @@ export default function AdminPortalPage() {
             </a>
           ) : (
             <span className="admin-button muted">
-              <MonitorCog size={18} />
-              Vercel URL設定待ち
+              <LockKeyhole size={18} />
+              管理画面URL設定待ち
             </span>
           )}
-          <a className="admin-button" href={microCmsAdminUrl} target="_blank" rel="noreferrer">
-            <KeyRound size={18} />
-            microCMSを開く
-            <ArrowUpRight size={16} />
-          </a>
-          <a className="admin-button" href={`${repoDocsBase}/admin-docs-index.md`} target="_blank" rel="noreferrer">
-            <BookOpen size={18} />
-            操作資料を見る
-            <ArrowUpRight size={16} />
-          </a>
         </div>
       </section>
 
@@ -80,24 +68,24 @@ export default function AdminPortalPage() {
         <article className="admin-panel">
           <div className="admin-section-heading">
             <p className="admin-kicker">Safety</p>
-            <h2>触らせないもの</h2>
+            <h2>ログインが必要です</h2>
           </div>
           <div className="admin-command-list">
             <div>
               <ShieldCheck size={17} />
-              <span>GitHub</span>
+              <span>共有パスワード</span>
             </div>
             <div>
               <ShieldCheck size={17} />
-              <span>APIキー</span>
+              <span>ログイン保持は12時間</span>
             </div>
             <div>
               <ShieldCheck size={17} />
-              <span>GitHub Actions</span>
+              <span>ログアウト可能</span>
             </div>
             <div>
               <ShieldCheck size={17} />
-              <span>Vercel環境変数</span>
+              <span>未ログインでは編集不可</span>
             </div>
           </div>
         </article>
@@ -108,9 +96,8 @@ export default function AdminPortalPage() {
         <div>
           <h2>専用管理画面について</h2>
           <p>
-            専用管理画面は <code>admin-app/</code> をVercelにデプロイして使います。
-            このページは公開サイト側に残す案内用の入口です。Vercelで発行されたURLを
-            <code>NEXT_PUBLIC_DEDICATED_ADMIN_URL</code> に設定すると、上のボタンからログイン画面へ移動できます。
+            この入口から移動できるのは、パスワード付きの専用管理画面だけです。
+            管理画面URLが未設定の間は、編集画面へ進めません。
           </p>
         </div>
       </section>

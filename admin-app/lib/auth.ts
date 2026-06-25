@@ -91,7 +91,7 @@ export async function clearSessionCookie() {
 
   cookieStore.set(cookieName, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecureCookie,
     sameSite: "lax",
     path: "/",
     maxAge: 0
