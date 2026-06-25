@@ -543,6 +543,15 @@ a {
   box-shadow: none;
 }
 
+.ops-tools .ops-status-panel {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 10px 10px;
+  background: transparent;
+  box-shadow: none;
+}
+
 .page-change-actions button:hover,
 .page-change-actions button:focus-visible,
 .page-change-link:hover,

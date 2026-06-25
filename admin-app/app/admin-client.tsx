@@ -931,7 +931,12 @@ function Dashboard({
       <PageChangeMap onSelect={onSelect} />
 
       {hasSetupProblem ? <SetupStatus health={health} /> : null}
-      <OpsStatusPanel status={opsStatus} onSelect={onSelect} />
+      {opsStatus?.alerts.length ? (
+        <details className="maintenance-tools ops-tools">
+          <summary>公開前に確認したい項目</summary>
+          <OpsStatusPanel status={opsStatus} onSelect={onSelect} />
+        </details>
+      ) : null}
       {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
       {false ? <SnsStatusCard onSelect={onSelect} /> : null}
 
