@@ -2441,6 +2441,88 @@ main > section.visit-info-strip .visit-info-grid article p {
   color: rgba(255, 247, 217, 0.72);
 }
 
+.admin-login-portal {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding-top: clamp(32px, 6vw, 72px);
+  padding-bottom: clamp(32px, 6vw, 72px);
+}
+
+.admin-gate-panel {
+  display: grid;
+  gap: 22px;
+  width: min(560px, 100%);
+  border: 1px solid rgba(255, 247, 217, 0.18);
+  border-radius: 8px;
+  padding: clamp(28px, 5vw, 46px);
+  background: linear-gradient(145deg, rgba(255, 247, 217, 0.11), rgba(255, 247, 217, 0.04));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.admin-gate-icon {
+  display: inline-grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid rgba(255, 247, 217, 0.18);
+  border-radius: 999px;
+  color: var(--gold);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.admin-gate-panel h1 {
+  color: var(--ivory);
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 1.05;
+}
+
+.admin-gate-copy,
+.admin-gate-note {
+  color: rgba(255, 247, 217, 0.82);
+  font-weight: 800;
+}
+
+.admin-gate-form {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-gate-form label {
+  color: var(--gold);
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-gate-form input {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid rgba(255, 247, 217, 0.22);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 253, 245, 0.92);
+  color: var(--black);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-gate-form .admin-button {
+  width: 100%;
+}
+
+.admin-gate-form .admin-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.admin-gate-error {
+  margin: 0;
+  color: #ffd7d7;
+  font-weight: 900;
+}
+
 .admin-section {
   padding: clamp(30px, 5vw, 56px) 0 0;
 }
