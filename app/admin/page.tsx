@@ -32,7 +32,12 @@ export default function AdminPortalPage() {
               専用管理画面を開く
               <ArrowUpRight size={16} />
             </a>
-          ) : null}
+          ) : (
+            <span className="admin-button muted">
+              <MonitorCog size={18} />
+              Vercel URL設定待ち
+            </span>
+          )}
           <a className="admin-button" href={microCmsAdminUrl} target="_blank" rel="noreferrer">
             <KeyRound size={18} />
             microCMSを開く
@@ -104,7 +109,8 @@ export default function AdminPortalPage() {
           <h2>専用管理画面について</h2>
           <p>
             専用管理画面は <code>admin-app/</code> をVercelにデプロイして使います。
-            このページは公開サイト側に残す案内用の入口です。
+            このページは公開サイト側に残す案内用の入口です。Vercelで発行されたURLを
+            <code>NEXT_PUBLIC_DEDICATED_ADMIN_URL</code> に設定すると、上のボタンからログイン画面へ移動できます。
           </p>
         </div>
       </section>

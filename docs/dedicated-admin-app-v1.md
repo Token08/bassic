@@ -34,6 +34,36 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 
 `NEXT_PUBLIC_PUBLIC_SITE_URL` は本番URLが確定するまでは仮URLでも構いません。後で差し替えられるように環境変数で管理します。
 
+## 管理画面URLの作り方
+
+公開サイト側には、管理画面への入口として次のURLを用意します。
+
+```text
+確認用: https://token08.github.io/bassic/admin/
+本番用: https://www.bassic.jp/admin/
+```
+
+この入口ページから、Vercelにデプロイした専用管理画面へ移動します。
+Vercelの専用管理画面URLは、デプロイ後に次のような形で発行されます。
+
+```text
+https://bassic-admin.vercel.app/
+```
+
+発行されたURLを公開サイト側の環境変数へ設定します。
+
+```env
+NEXT_PUBLIC_DEDICATED_ADMIN_URL=https://bassic-admin.vercel.app/
+```
+
+ローカルからVercelへ出す場合は、Vercelへログイン済みの状態で次を実行します。
+
+```bash
+npm run deploy:admin:prod
+```
+
+Vercel未ログインの環境ではURLを発行できません。その場合はVercelにログインするか、Vercel側で新規プロジェクトを作成して `admin-app` をRoot Directoryに指定してください。
+
 ## セキュリティ方針
 
 - `MICROCMS_API_KEY` はブラウザへ出しません。

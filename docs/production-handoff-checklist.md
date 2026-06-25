@@ -49,9 +49,25 @@ NEXT_PUBLIC_GOOGLE_MAPS_URL=
 
 ```env
 NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
+NEXT_PUBLIC_DEDICATED_ADMIN_URL=https://bassic-admin.vercel.app/
 ```
 
 `NEXT_PUBLIC_PUBLIC_SITE_URL` は管理画面の「公開サイトを開く」導線とSNS状態確認で使います。公開サイトの本番URLと揃えてください。
+`NEXT_PUBLIC_DEDICATED_ADMIN_URL` は公開サイト側の `/admin/` 入口から、Vercelで動く専用管理画面へ移動するために使います。Vercelで発行されたURLに差し替えてください。
+
+管理画面URL:
+
+```text
+確認用入口: https://token08.github.io/bassic/admin/
+本番用入口: https://www.bassic.jp/admin/
+専用管理画面: https://bassic-admin.vercel.app/ （Vercelで発行後に記入）
+```
+
+制作側が直接Vercelへデプロイする場合は、Vercelへログイン済みの状態で次を実行します。
+
+```bash
+npm run deploy:admin:prod
+```
 
 ## 4. 公開前チェック
 

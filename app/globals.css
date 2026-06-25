@@ -2434,6 +2434,13 @@ main > section.visit-info-strip .visit-info-grid article p {
   background: var(--red-bright);
 }
 
+.admin-button.muted {
+  cursor: default;
+  border-color: rgba(255, 247, 217, 0.16);
+  background: rgba(255, 247, 217, 0.04);
+  color: rgba(255, 247, 217, 0.72);
+}
+
 .admin-section {
   padding: clamp(30px, 5vw, 56px) 0 0;
 }

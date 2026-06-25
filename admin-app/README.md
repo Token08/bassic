@@ -39,6 +39,22 @@ NEXT_PUBLIC_PUBLIC_SITE_URL=https://www.bassic.jp/
 
 `MICROCMS_API_KEY` はGET、POST、PATCH、Media Uploadを許可したキーを使います。ブラウザには出さず、Vercel API Routesだけが利用します。
 
+## 管理画面URL
+
+このアプリをVercelへデプロイすると、次のような専用管理画面URLが発行されます。
+
+```text
+https://bassic-admin.vercel.app/
+```
+
+ローカルからデプロイする場合は、Vercelへログイン済みの状態でリポジトリルートから実行します。
+
+```bash
+npm run deploy:admin:prod
+```
+
+発行されたURLは、公開サイト側の環境変数 `NEXT_PUBLIC_DEDICATED_ADMIN_URL` に設定します。設定後、公開サイトの `/admin/` 入口から専用管理画面へ移動できます。
+
 ## 反映の流れ
 
 1. 管理画面で下書きを保存、またはプレビューして公開を押す。

@@ -17,6 +17,8 @@
     "sync:calendar:check": "node scripts/sync-google-calendar-check.mjs",
     "build": "next build && node scripts/postbuild-html.mjs",
     "build:admin-app": "npm --prefix admin-app run build",
+    "deploy:admin:preview": "npm --prefix admin-app exec vercel -- --yes",
+    "deploy:admin:prod": "npm --prefix admin-app exec vercel -- --prod --yes",
     "start": "next start",
     "setup:admin": "node scripts/setup-microcms-admin.mjs",
     "seed:cms": "node scripts/seed-microcms.mjs",
