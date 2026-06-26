@@ -73,6 +73,10 @@ checkAdminPublishFlowShowsPublicSiteLink();
 checkAdminSnsStatusCardLinksToEditors();
 checkAdminDashboardShowsPublicCheckOrder();
 checkAdminDashboardShowsPageChangeMap();
+checkAdminSupportsListItemDeletion();
+checkAdminSupportsPageScopedCustomCopy();
+checkPublicSiteRendersCustomSections();
+checkAdminDeleteApiRoute();
 checkAdminHealthShowsPublicSiteUrl();
 checkClientDocsMentionPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
@@ -1809,6 +1813,106 @@ function checkAdminDashboardShowsPageChangeMap() {
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 
   add("admin dashboard shows page change map", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSupportsListItemDeletion() {
+  const file = "admin-app/app/admin-client.tsx";
+  const cssFile = "admin-app/app/globals.css";
+  if (!existsSync(file) || !existsSync(cssFile)) {
+    add("admin supports list item deletion", false, "admin client or CSS missing");
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const css = readFileSync(cssFile, "utf8");
+  const requiredTerms = [
+    "async function deleteSelectedItem",
+    'method: "DELETE"',
+    "この項目を削除",
+    'section.kind === "list"',
+    'selectedId !== "new"',
+    "destructive-actions"
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  if (!css.includes(".destructive-actions")) {
+    missing.push(".destructive-actions CSS");
+  }
+
+  add("admin supports list item deletion", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminSupportsPageScopedCustomCopy() {
+  const file = "admin-app/app/admin-client.tsx";
+  if (!existsSync(file)) {
+    add("admin supports page-scoped custom copy", false, `${file} missing`);
+    return;
+  }
+
+  const text = readFileSync(file, "utf8");
+  const requiredTerms = [
+    "pageDraftMap",
+    "文言追加・削除",
+    'sectionId: "custom-sections"',
+    "initialDraft: { page: pageDraftMap[activePage.page] }",
+    "scopedListPage",
+    "custom-sections",
+    'section.fields.filter((field) => field.key !== "page")'
+  ];
+  const missing = requiredTerms.filter((term) => !text.includes(term));
+
+  add("admin supports page-scoped custom copy", missing.length === 0, missing.join(", "));
+}
+
+function checkPublicSiteRendersCustomSections() {
+  const files = ["app/page.tsx", "app/events/page.tsx", "app/menu/page.tsx", "app/party/page.tsx", "app/access/page.tsx"];
+  const missingFiles = files.filter((file) => !existsSync(file));
+  if (missingFiles.length) {
+    add("public site renders custom sections", false, missingFiles.join(", "));
+    return;
+  }
+
+  const missing = [];
+  for (const file of files) {
+    const text = readFileSync(file, "utf8");
+    if (!text.includes("CustomSectionBlock") || !text.includes("contents.customSections.")) {
+      missing.push(file);
+    }
+  }
+
+  const contentFile = "components/content.tsx";
+  const contentText = existsSync(contentFile) ? readFileSync(contentFile, "utf8") : "";
+  for (const term of ["export function CustomSectionBlock", "section.image?.url", "section.linkLabel", "section.body"]) {
+    if (!contentText.includes(term)) {
+      missing.push(`${contentFile}: ${term}`);
+    }
+  }
+
+  add("public site renders custom sections", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminDeleteApiRoute() {
+  const routeFile = "admin-app/app/api/content/[endpoint]/[id]/route.ts";
+  const microcmsFile = "admin-app/lib/microcms.ts";
+  if (!existsSync(routeFile) || !existsSync(microcmsFile)) {
+    add("admin delete API route", false, "route or microCMS helper missing");
+    return;
+  }
+
+  const route = readFileSync(routeFile, "utf8");
+  const microcms = readFileSync(microcmsFile, "utf8");
+  const combined = `${route}\n${microcms}`;
+  const requiredTerms = [
+    "export async function DELETE",
+    "isAuthenticatedRequest",
+    "deleteContent(endpoint, id)",
+    "export async function deleteContent",
+    "Object endpoint cannot be deleted.",
+    'method: "DELETE"'
+  ];
+  const missing = requiredTerms.filter((term) => !combined.includes(term));
+
+  add("admin delete API route", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminHealthShowsPublicSiteUrl() {
