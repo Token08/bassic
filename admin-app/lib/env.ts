@@ -13,10 +13,26 @@ const envDefinitions: Array<Omit<AdminEnvCheck, "present">> = [
   { key: "GITHUB_DISPATCH_TOKEN", label: "公開反映設定", requiredFor: "publish" }
 ];
 
+const placeholderValues = new Set(["", "example", "your-service-domain", "your-api-key", "changeme", "dummy"]);
+
+function hasUsableEnvValue(key: string) {
+  const value = process.env[key]?.trim() || "";
+
+  if (!value) {
+    return false;
+  }
+
+  if (placeholderValues.has(value.toLowerCase())) {
+    return false;
+  }
+
+  return true;
+}
+
 export function getAdminEnvChecks(): AdminEnvCheck[] {
   return envDefinitions.map((definition) => ({
     ...definition,
-    present: Boolean(process.env[definition.key])
+    present: hasUsableEnvValue(definition.key)
   }));
 }
 
