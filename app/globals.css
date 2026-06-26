@@ -2503,9 +2503,16 @@ main > section.visit-info-strip .visit-info-grid article p {
   border-radius: 8px;
   padding: 12px 14px;
   background: rgba(255, 253, 245, 0.92);
-  color: var(--black);
+  color: #120d0b;
+  -webkit-text-fill-color: #120d0b;
+  caret-color: #120d0b;
   font-size: 1rem;
   font-weight: 800;
+}
+
+.admin-gate-form input::placeholder {
+  color: rgba(18, 13, 11, 0.48);
+  -webkit-text-fill-color: rgba(18, 13, 11, 0.48);
 }
 
 .admin-gate-form .admin-button {
