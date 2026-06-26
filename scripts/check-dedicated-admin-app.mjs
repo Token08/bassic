@@ -77,6 +77,7 @@ checkAdminSupportsListItemDeletion();
 checkAdminSupportsPageScopedCustomCopy();
 checkPublicSiteRendersCustomSections();
 checkAdminDeleteApiRoute();
+checkAdminAppProductionSmokeScript();
 checkAdminHealthShowsPublicSiteUrl();
 checkClientDocsMentionPublicCheckOrder();
 checkAdminEditorShowsSectionPublicPageLinks();
@@ -1913,6 +1914,34 @@ function checkAdminDeleteApiRoute() {
   const missing = requiredTerms.filter((term) => !combined.includes(term));
 
   add("admin delete API route", missing.length === 0, missing.join(", "));
+}
+
+function checkAdminAppProductionSmokeScript() {
+  const scriptFile = "scripts/smoke-admin-app-production.mjs";
+  const packageFile = "package.json";
+  if (!existsSync(scriptFile) || !existsSync(packageFile)) {
+    add("admin app production smoke script", false, `${scriptFile} or ${packageFile} missing`);
+    return;
+  }
+
+  const script = readFileSync(scriptFile, "utf8");
+  const packageJson = JSON.parse(readFileSync(packageFile, "utf8"));
+  const requiredTerms = [
+    "ADMIN_APP_URL",
+    "ADMIN_PASSWORD",
+    "/api/login",
+    "/api/health",
+    "/api/content/custom-sections",
+    'method: "DELETE"',
+    "Created and deleted custom-sections item"
+  ];
+  const missing = requiredTerms.filter((term) => !script.includes(term));
+
+  if (packageJson.scripts?.["smoke:admin-app"] !== "node scripts/smoke-admin-app-production.mjs") {
+    missing.push("package script smoke:admin-app");
+  }
+
+  add("admin app production smoke script", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminHealthShowsPublicSiteUrl() {

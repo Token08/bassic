@@ -24,6 +24,7 @@
     "seed:cms": "node scripts/seed-microcms.mjs",
     "deploy:cms": "node scripts/trigger-cms-rebuild.mjs",
     "smoke:cms": "node scripts/smoke-cms.mjs",
+    "smoke:admin-app": "node scripts/smoke-admin-app-production.mjs",
     "check:admin": "node scripts/check-admin-readiness.mjs",
     "check:admin-app": "node scripts/check-dedicated-admin-app.mjs",
     "smoke:links": "node scripts/smoke-links.mjs",
