@@ -2297,6 +2297,26 @@ a.current-edit-page:hover {
   padding-top: 18px;
 }
 
+.destructive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+  border: 1px solid rgba(159, 23, 32, 0.22);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(159, 23, 32, 0.05);
+}
+
+.destructive-actions small {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .action-note {
   flex-basis: 100%;
   color: var(--muted);

@@ -259,6 +259,18 @@ export async function updateContent(endpointId: string, contentId: string, draft
   });
 }
 
+export async function deleteContent(endpointId: string, contentId: string) {
+  const endpoint = getEndpoint(endpointId);
+
+  if (endpoint.type === "object") {
+    throw new Error("Object endpoint cannot be deleted.");
+  }
+
+  return microCmsFetch(`/${endpoint.id}/${encodeURIComponent(contentId)}`, {
+    method: "DELETE"
+  });
+}
+
 export async function uploadMedia(file: File) {
   const formData = new FormData();
   formData.set("file", file);

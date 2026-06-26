@@ -2499,6 +2499,10 @@ function SectionEditor({
   const section = useMemo(() => getSection(sectionId), [sectionId]);
   const initialDraftKey = useMemo(() => JSON.stringify(initialDraft || {}), [initialDraft]);
   const scopedHeroPage = section.id === "hero-slides" ? getString(initialDraft?.page).trim() : "";
+  const scopedListPage =
+    section.kind === "list" && ["hero-slides", "custom-sections", "page-copy", "page-sections"].includes(section.id)
+      ? getString(initialDraft?.page).trim()
+      : "";
   const initialMergedDraft = useMemo(() => mergeDefaults(section, initialDraft), [section, initialDraftKey]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2521,12 +2525,12 @@ function SectionEditor({
   const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
 
   const visibleItems = useMemo(() => {
-    if (!scopedHeroPage) {
+    if (!scopedListPage) {
       return items;
     }
 
-    return items.filter((item) => getString(item.page).trim() === scopedHeroPage);
-  }, [items, scopedHeroPage]);
+    return items.filter((item) => getString(item.page).trim() === scopedListPage);
+  }, [items, scopedListPage]);
   const publishedCount = useMemo(() => visibleItems.filter((item) => isPublished(item)).length, [visibleItems]);
   const draftCount = visibleItems.length - publishedCount;
   const filteredItems = useMemo(() => {
@@ -2542,12 +2546,12 @@ function SectionEditor({
     });
   }, [itemSearch, itemStatusFilter, visibleItems, section]);
   const editableFields = useMemo(() => {
-    if (scopedHeroPage && section.id === "hero-slides") {
+    if (scopedListPage) {
       return section.fields.filter((field) => field.key !== "page");
     }
 
     return section.fields;
-  }, [section, scopedHeroPage]);
+  }, [section, scopedListPage]);
 
   function confirmDiscardChanges() {
     if (!dirty) {
@@ -2583,8 +2587,8 @@ function SectionEditor({
         setItems(contents);
         setItemSearch("");
         setItemStatusFilter("all");
-        const scopedContents = scopedHeroPage
-          ? contents.filter((item) => getString(item.page).trim() === scopedHeroPage)
+        const scopedContents = scopedListPage
+          ? contents.filter((item) => getString(item.page).trim() === scopedListPage)
           : contents;
         const sortedScopedContents = [...scopedContents].sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder));
         const firstItem = sortedScopedContents[0];
@@ -2919,7 +2923,7 @@ function SectionEditor({
   async function save(mode: "draft" | "publish") {
     const nextDraft: Draft = {
       ...draft,
-      ...(scopedHeroPage && section.id === "hero-slides" ? { page: scopedHeroPage } : {}),
+      ...(scopedListPage ? { page: scopedListPage } : {}),
       ...(section.fields.some((field) => field.key === "isPublished") ? { isPublished: mode === "publish" } : {})
     };
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
@@ -3111,6 +3115,66 @@ function hideSelectedItem() {
       method: "PATCH",
       body: JSON.stringify(payload)
     });
+  }
+
+  async function deleteSelectedItem() {
+    if (section.kind !== "list" || selectedId === "new") {
+      return;
+    }
+
+    if (draft.__isFallback === true) {
+      setNotice({
+        tone: "info",
+        message: "初期表示用の仮データは削除できません。新しく保存した項目から削除できます。"
+      });
+      return;
+    }
+
+    const itemTitle = getItemTitle(section, draft);
+    const confirmed = window.confirm(
+      `「${itemTitle}」を完全に削除します。元に戻せません。表示だけ止めたい場合は「公開OFF」で保存してください。削除しますか？`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSaving(true);
+    setNotice({ tone: "info", message: "項目を削除しています。" });
+
+    try {
+      await requestJson<{ id: string }>(`/api/content/${section.id}/${selectedId}`, {
+        method: "DELETE"
+      });
+      const remainingItems = items.filter((item) => item.id !== selectedId);
+      const remainingVisibleItems = scopedListPage
+        ? remainingItems.filter((item) => getString(item.page).trim() === scopedListPage)
+        : remainingItems;
+      const nextItem = remainingVisibleItems[0];
+
+      setItems(remainingItems);
+      setErrors({});
+      setEditingFields(new Set());
+      setDirty(false);
+      setLastSavedAt("");
+
+      if (nextItem?.id) {
+        setSelectedId(nextItem.id);
+        setDraft(mergeDefaults(section, nextItem));
+      } else {
+        setSelectedId("new");
+        setDraft(initialMergedDraft);
+      }
+
+      setNotice({ tone: "success", message: "項目を削除しました。公開サイトへ反映する場合は、必要に応じて「プレビューして公開」を押してください。" });
+    } catch (error) {
+      setNotice({
+        tone: "error",
+        message: error instanceof Error ? error.message : "削除できませんでした。"
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function createSlideNear(direction: "before" | "after") {
@@ -3480,6 +3544,15 @@ function hideSelectedItem() {
               ))}
             </div>
             <SaveChoiceGuide />
+            {section.kind === "list" && selectedId !== "new" ? (
+              <div className="destructive-actions">
+                <button className="secondary-button danger" type="button" disabled={saving || deploying} onClick={() => void deleteSelectedItem()}>
+                  <Trash2 size={18} />
+                  この項目を削除
+                </button>
+                <small>表示だけ止めたい場合は削除せず、「公開OFF」で下書き保存してください。</small>
+              </div>
+            ) : null}
             <div className="form-actions">
               <button className="secondary-button" type="button" onClick={openPreview}>
                 <Eye size={18} />
@@ -3626,6 +3699,24 @@ function PageBasedDashboard({
   const activePage = adminPages.find((page) => page.page === selectedPage) || adminPages[0];
   const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
   const hasSetupProblem = health ? !health.ok : false;
+  const pageDraftMap: Record<string, string> = {
+    TOP: "home",
+    "EVENT SCHEDULE": "events",
+    MENU: "menu",
+    "PARTY & RENTAL": "party",
+    ACCESS: "access"
+  };
+  const activeActions = pageDraftMap[activePage.page]
+    ? [
+        ...activePage.actions,
+        {
+          label: "文言追加・削除",
+          description: `${activePage.page}ページに追加したい案内文や告知枠を作成・削除します。`,
+          sectionId: "custom-sections" as const,
+          initialDraft: { page: pageDraftMap[activePage.page] }
+        }
+      ]
+    : activePage.actions;
 
   return (
     <div className="dashboard">
@@ -3676,7 +3767,7 @@ function PageBasedDashboard({
             </a>
           </div>
           <div className="page-section-list">
-            {activePage.actions.map((action) => (
+            {activeActions.map((action) => (
               <article className="page-section-row" key={`${activePage.page}-${action.sectionId}-${action.label}`}>
                 <div>
                   <strong>{action.label}</strong>
