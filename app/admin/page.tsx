@@ -9,13 +9,14 @@ export const metadata: Metadata = {
   }
 };
 
+const adminEntryUrl = "https://token08.github.io/bassic/admin/";
 const dedicatedAdminUrl = process.env.NEXT_PUBLIC_DEDICATED_ADMIN_URL;
 const passwordHash = process.env.NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH;
 
 export default function AdminPortalPage() {
   return (
     <main className="admin-portal admin-login-portal">
-      <AdminLoginGate dedicatedAdminUrl={dedicatedAdminUrl} passwordHash={passwordHash} />
+      <AdminLoginGate adminEntryUrl={adminEntryUrl} dedicatedAdminUrl={dedicatedAdminUrl} passwordHash={passwordHash} />
     </main>
   );
 }

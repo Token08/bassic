@@ -79,7 +79,7 @@ checkAdminEditorShowsSectionPublicPageLinks();
 checkAdminPublishNoticeShowsConfirmationSteps();
 checkDocsIndexBoundaries();
 checkLegacyDeliveryManualMarkedAsOld();
-checkGitHubIssuePlanMarkedAsUnused();
+checkGitHubIssuePlanRemoved();
 checkMicrocmsSetupChecklistUsesCurrentDocs();
 checkMicrocmsBuildOrderExplainsProductionUrl();
 checkMicrocmsSchemaUsesManagedSiteSettings();
@@ -1106,7 +1106,7 @@ function checkAdminItemListShowsUsefulMeta() {
     [clientFile, clientText, "searchableText.includes(query)"],
     [clientFile, clientText, "名前・日付・料金などで検索"],
     [clientFile, clientText, "一覧に出ている補足情報も検索できます。"],
-    [clientFile, clientText, "表示 {filteredItems.length}件 / 全{items.length}件"],
+    [clientFile, clientText, "表示 {filteredItems.length}件 / 全{visibleItems.length}件"],
     [clientFile, clientText, "const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`"],
     [clientFile, clientText, "上の「{listCreateLabel}」から作れます。"],
     [clientFile, clientText, "item-list-meta"],
@@ -1193,7 +1193,6 @@ function checkPublishWaitCopyIsSpecific() {
     "admin-app/README.md",
     "docs/delivery-admin-manual.md",
     "docs/dedicated-admin-app-v1.md",
-    "docs/delivery-admin-manual-v1.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md"
   ];
@@ -1960,7 +1959,6 @@ function checkDocsIndexBoundaries() {
     "## 初回セットアップで見る順番",
     "## 納品先へ渡す資料",
     "## 制作者・保守担当だけが見る資料",
-    "## 旧版・控え",
     "docs/microcms-current-status.md",
     "docs/microcms-field-definitions-v1.md",
     "docs/cms-sample-content-v1.json",
@@ -1970,7 +1968,6 @@ function checkDocsIndexBoundaries() {
     "docs/delivery-admin-manual.md",
     "docs/client-handoff-checklist.md",
     "docs/client-handoff-sheet.md",
-    "docs/github-issue.md",
     "日常更新用と保守用の切り分け",
     "公開後24時間以内の確認",
     "3つだけを店舗側へ渡す",
@@ -2006,26 +2003,24 @@ function checkLegacyDeliveryManualMarkedAsOld() {
   add("legacy delivery manual marked as old", missing.length === 0, missing.join(", "));
 }
 
-function checkGitHubIssuePlanMarkedAsUnused() {
+function checkGitHubIssuePlanRemoved() {
   const file = "docs/github-issue.md";
   const indexFile = "docs/admin-docs-index.md";
-  if (!existsSync(file) || !existsSync(indexFile)) {
-    add("GitHub issue plan marked as unused", false, `${file} or ${indexFile} missing`);
+  if (!existsSync(indexFile)) {
+    add("GitHub issue plan removed", false, `${indexFile} missing`);
     return;
   }
 
-  const text = readFileSync(file, "utf8");
   const indexText = readFileSync(indexFile, "utf8");
-  const required = [
-    [file, text, "旧計画メモ"],
-    [file, text, "現在の運用ではGitHub Issueは使いません"],
-    [file, text, "納品先にはこの資料を渡さず"],
-    [indexFile, indexText, "docs/github-issue.md"],
-    [indexFile, indexText, "現在の運用ではGitHub Issueは使わず"]
-  ];
-  const missing = required.filter(([, body, term]) => !body.includes(term)).map(([path, , term]) => `${path}: ${term}`);
+  const problems = [];
+  if (existsSync(file)) {
+    problems.push(`${file} should be removed`);
+  }
+  if (indexText.includes("docs/github-issue.md") || indexText.includes("GitHub Issue")) {
+    problems.push(`${indexFile} still references GitHub Issue docs`);
+  }
 
-  add("GitHub issue plan marked as unused", missing.length === 0, missing.join(", "));
+  add("GitHub issue plan removed", problems.length === 0, problems.join(", "));
 }
 
 function checkMicrocmsSetupChecklistUsesCurrentDocs() {

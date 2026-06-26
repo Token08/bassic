@@ -11,6 +11,7 @@ type ListResponse = {
 };
 
 const targetPlatforms = ["facebook", "instagram", "x"] as const;
+type TargetPlatform = (typeof targetPlatforms)[number];
 
 function unauthorized() {
   return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
@@ -33,51 +34,64 @@ function getEventKey(event: Draft) {
 }
 
 function buildBaseEventLines(event: Draft) {
-  const title = getString(event.title);
-  const date = getString(event.date);
-  const startTime = getString(event.startTime);
-  const performers = getString(event.performers);
-  const reservation = getString(event.reservation);
-  const sourceUrl = getString(event.sourceUrl);
-
   return {
-    title,
-    date,
-    startTime,
-    performers,
-    reservation,
-    sourceUrl
+    title: getString(event.title),
+    date: getString(event.date),
+    startTime: getString(event.startTime),
+    performers: getString(event.performers),
+    reservation: getString(event.reservation),
+    sourceUrl: getString(event.sourceUrl)
   };
 }
 
-function buildPostText(event: Draft, platform: (typeof targetPlatforms)[number]) {
+function buildPostText(event: Draft, platform: TargetPlatform) {
   const { title, date, startTime, performers, reservation, sourceUrl } = buildBaseEventLines(event);
-  const lines = [
-    platform === "x" ? "【Bassic. Event】" : "public bar Bassic. event information",
+  const dateLine = date || startTime ? `${date}${startTime ? ` START ${startTime}` : ""}` : "";
+
+  if (platform === "x") {
+    return ["Bassic. Event", title, dateLine, performers, sourceUrl, "#Bassic #福岡 #天神 #親不孝通り"]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (platform === "instagram") {
+    return [
+      "public bar Bassic. event information",
+      title,
+      dateLine,
+      performers,
+      reservation,
+      sourceUrl ? `詳細: ${sourceUrl}` : "",
+      "#Bassic #福岡 #天神 #親不孝通り"
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  return [
+    "public bar Bassic. event information",
     title,
-    date || startTime ? `${date}${startTime ? ` START ${startTime}` : ""}` : "",
+    dateLine,
     performers,
     reservation,
     sourceUrl ? `詳細: ${sourceUrl}` : ""
-  ].filter(Boolean);
-
-  const hashtags = platform === "x" ? "\n#Bassic #福岡 #天神 #親不孝通り" : "";
-  return `${lines.join("\n")}${hashtags}`;
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
-function buildNotice(event: Draft, platform: (typeof targetPlatforms)[number]) {
+function buildNotice(event: Draft, platform: TargetPlatform) {
   const title = getString(event.title);
   const sourceUrl = getString(event.sourceUrl);
   const date = getString(event.date);
   const startTime = getString(event.startTime);
-  const postText = buildPostText(event, platform);
   const description = [date, startTime ? `START ${startTime}` : "", getString(event.performers)].filter(Boolean).join(" / ");
 
   return {
     platform,
     title: title ? `${title} (${platform.toUpperCase()})` : `Event announcement (${platform.toUpperCase()})`,
     description: description || title,
-    postText,
+    postText: buildPostText(event, platform),
     url: sourceUrl,
     date,
     deliveryStatus: "draft",
@@ -102,21 +116,38 @@ function alreadyQueued(notice: Draft, event: Draft, platform: string) {
   );
 }
 
+function getPlatforms(values?: string[]) {
+  if (!Array.isArray(values)) {
+    return [...targetPlatforms];
+  }
+
+  const platforms = values.filter((platform): platform is TargetPlatform =>
+    targetPlatforms.includes(platform as TargetPlatform)
+  );
+
+  return platforms.length ? platforms : [...targetPlatforms];
+}
+
 export async function POST(request: NextRequest) {
   if (!isAuthenticatedRequest(request)) {
     return unauthorized();
   }
 
-  const payload = (await request.json().catch(() => ({}))) as { event?: Draft };
+  const payload = (await request.json().catch(() => ({}))) as {
+    event?: Draft;
+    platforms?: string[];
+    allowDraftCreation?: boolean;
+  };
   const event = payload.event || {};
+  const platforms = getPlatforms(payload.platforms);
 
-  if (!event.isPublished) {
+  if (!payload.allowDraftCreation && !event.isPublished) {
     return NextResponse.json({ ok: true, data: { created: [], skipped: ["event is not published"] } });
   }
 
   if (!getString(event.title) || !getString(event.date) || !getString(event.startTime)) {
     return NextResponse.json(
-      { ok: false, message: "SNS配信待ちを作るには、イベント名・日付・STARTが必要です。" },
+      { ok: false, message: "SNS下書きを作るには、イベント名・日付・STARTが必要です。" },
       { status: 400 }
     );
   }
@@ -127,7 +158,7 @@ export async function POST(request: NextRequest) {
     const created: string[] = [];
     const skipped: string[] = [];
 
-    for (const platform of targetPlatforms) {
+    for (const platform of platforms) {
       if (notices.some((notice) => alreadyQueued(notice, event, platform))) {
         skipped.push(platform);
         continue;
@@ -142,7 +173,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        message: error instanceof Error ? error.message : "SNS配信待ちの作成に失敗しました。"
+        message: error instanceof Error ? error.message : "SNS下書きの作成に失敗しました。"
       },
       { status: 502 }
     );

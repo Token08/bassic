@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
 
 type AdminLoginGateProps = {
+  adminEntryUrl: string;
   dedicatedAdminUrl?: string;
   passwordHash?: string;
 };
@@ -17,7 +18,7 @@ async function sha256(value: string) {
     .join("");
 }
 
-export default function AdminLoginGate({ dedicatedAdminUrl, passwordHash }: AdminLoginGateProps) {
+export default function AdminLoginGate({ adminEntryUrl, dedicatedAdminUrl, passwordHash }: AdminLoginGateProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
@@ -57,7 +58,10 @@ export default function AdminLoginGate({ dedicatedAdminUrl, passwordHash }: Admi
       <div>
         <p className="admin-kicker">Bassic. Admin</p>
         <h1>管理画面ログイン</h1>
-        <p className="admin-gate-copy">パスワードを入力すると、専用管理画面へ進みます。</p>
+        <p className="admin-gate-copy">管理画面入口は次のURLです。</p>
+        <p className="admin-gate-copy">
+          <a href={adminEntryUrl}>{adminEntryUrl}</a>
+        </p>
       </div>
 
       <form className="admin-gate-form" onSubmit={submit}>
@@ -72,7 +76,9 @@ export default function AdminLoginGate({ dedicatedAdminUrl, passwordHash }: Admi
         />
         {error ? <p className="admin-gate-error">{error}</p> : null}
         {unlocked && !dedicatedAdminUrl ? (
-          <p className="admin-gate-error">専用管理画面URLが未設定です。担当者に連絡してください。</p>
+          <p className="admin-gate-error">
+            管理画面入口は有効ですが、専用管理画面URLが未設定です。担当者に連絡してください。
+          </p>
         ) : null}
         <button className="admin-button primary" type="submit" disabled={loading || !password}>
           <LockKeyhole size={18} />
@@ -81,7 +87,9 @@ export default function AdminLoginGate({ dedicatedAdminUrl, passwordHash }: Admi
         </button>
       </form>
 
-      <p className="admin-gate-note">編集画面はログイン後に表示されます。</p>
+      <p className="admin-gate-note">
+        ログイン後、専用管理画面へ移動します。このURLを店舗側の管理画面入口として使います。
+      </p>
     </section>
   );
 }

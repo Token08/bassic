@@ -2171,6 +2171,173 @@ function FacebookEventImportPanel({
   );
 }
 
+function buildSocialDraftPreview(preview: FacebookEventPreview, platform: "instagram" | "x") {
+  const dateLine = preview.date || preview.startTime ? `${preview.date}${preview.startTime ? ` START ${preview.startTime}` : ""}` : "";
+
+  if (platform === "x") {
+    return ["Bassic. Event", preview.title, dateLine, preview.sourceUrl, "#Bassic #福岡 #天神 #親不孝通り"]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  return [
+    "public bar Bassic. event information",
+    preview.title,
+    dateLine,
+    preview.description,
+    preview.sourceUrl ? `詳細: ${preview.sourceUrl}` : "",
+    "#Bassic #福岡 #天神 #親不孝通り"
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function FacebookEventSocialDraftPanel() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [preview, setPreview] = useState<FacebookEventPreview | null>(null);
+  const [message, setMessage] = useState("");
+  const trimmedUrl = url.trim();
+  const isValidFacebookEvent = isFacebookEventUrl(trimmedUrl);
+  const canCreateDrafts = Boolean(preview?.title && preview.date && preview.startTime && preview.sourceUrl);
+  const instagramNeedsImage = Boolean(preview && !preview.imageUrl);
+
+  async function loadPreview() {
+    setLoading(true);
+    setMessage("");
+    setPreview(null);
+
+    try {
+      const result = await requestJson<FacebookEventPreview>("/api/facebook-event-preview", {
+        method: "POST",
+        body: JSON.stringify({ url: trimmedUrl })
+      });
+
+      if (!result.data) {
+        throw new Error("Facebookイベントを読み取れませんでした。");
+      }
+
+      setPreview(result.data);
+      setMessage("Facebookイベントを読み取りました。内容を確認して、X / Instagramの下書きを作成できます。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Facebookイベントを読み取れませんでした。");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function createDrafts() {
+    if (!preview) {
+      return;
+    }
+
+    setCreating(true);
+    setMessage("");
+
+    try {
+      const result = await requestJson<EventPublishFlowResult>("/api/event-publish-flow", {
+        method: "POST",
+        body: JSON.stringify({
+          allowDraftCreation: true,
+          platforms: ["instagram", "x"],
+          event: {
+            title: preview.title,
+            date: preview.date,
+            startTime: preview.startTime,
+            endTime: preview.endTime,
+            sourceUrl: preview.sourceUrl,
+            sourceId: preview.sourceId,
+            sourceType: "facebook",
+            image: preview.imageUrl ? { url: preview.imageUrl, alt: preview.title || "Facebook event image" } : undefined,
+            performers: preview.description
+          }
+        })
+      });
+      const created = result.data?.created || [];
+      const skipped = result.data?.skipped || [];
+      const createdLabel = created.length ? `作成: ${created.join(", ")}` : "新しく作成された下書きはありません";
+      const skippedLabel = skipped.length ? ` / 既存: ${skipped.join(", ")}` : "";
+      setMessage(`${createdLabel}${skippedLabel}。SNS欄で内容を確認してから公開・承認してください。`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "SNS下書きの作成に失敗しました。");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <section className="sns-draft-panel" aria-label="FacebookイベントからSNS下書きを作る">
+      <div className="sns-draft-heading">
+        <div>
+          <span>SNS Draft</span>
+          <strong>FacebookイベントからX / Instagram下書きを作る</strong>
+          <p>Facebookイベントページを読み取り、SNS投稿用の文章と画像リンクを下書きとして保存します。投稿前にSNS欄で確認できます。</p>
+        </div>
+      </div>
+      <div className="sns-draft-form">
+        <label>
+          FacebookイベントURL
+          <input
+            type="url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="https://www.facebook.com/events/1234567890/"
+          />
+        </label>
+        <button className="secondary-button" type="button" disabled={!isValidFacebookEvent || loading} onClick={() => void loadPreview()}>
+          {loading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}
+          読み取る
+        </button>
+      </div>
+      {trimmedUrl && !isValidFacebookEvent ? (
+        <small className="form-error">個別のFacebookイベントURLを入力してください。</small>
+      ) : null}
+      {message ? <small className={preview ? "form-success" : "form-error"}>{message}</small> : null}
+      {preview ? (
+        <div className="sns-draft-preview">
+          <div className="sns-draft-event">
+            {preview.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview.imageUrl} alt={preview.title || "Facebook event image"} />
+            ) : (
+              <div className="sns-draft-image-missing">画像なし</div>
+            )}
+            <div>
+              <strong>{preview.title || "タイトル未取得"}</strong>
+              <span>{preview.date ? `${preview.date}${preview.startTime ? ` START ${preview.startTime}` : ""}` : "日付・STARTを確認してください"}</span>
+              <small>{preview.sourceUrl}</small>
+            </div>
+          </div>
+          {instagramNeedsImage ? (
+            <div className="facebook-import-date-warning" role="status">
+              <AlertCircle size={16} />
+              <span>Instagram下書きは作成できますが、投稿には画像URLが必要です。SNS欄で画像を追加してください。</span>
+            </div>
+          ) : null}
+          <div className="sns-draft-copy-grid">
+            <div>
+              <strong>X下書き</strong>
+              <pre>{buildSocialDraftPreview(preview, "x")}</pre>
+            </div>
+            <div>
+              <strong>Instagram下書き</strong>
+              <pre>{buildSocialDraftPreview(preview, "instagram")}</pre>
+            </div>
+          </div>
+          <div className="sns-draft-actions">
+            <button className="primary-button" type="button" disabled={!canCreateDrafts || creating} onClick={() => void createDrafts()}>
+              {creating ? <Loader2 className="spin" size={18} /> : <Plus size={18} />}
+              X / Instagram下書きを作成
+            </button>
+            {!canCreateDrafts ? <small>下書き作成にはタイトル・日付・STARTが必要です。</small> : null}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function getWorkflowGuide(section: SectionDefinition) {
   const common = {
     current: "公開サイトと管理画面に保存されている現在の値を読み込んでいます。",
@@ -2318,20 +2485,27 @@ function getHeroSlidePageLabel(page: string) {
 
 function SectionEditor({
   sectionId,
+  initialDraft,
+  sourcePage,
   onBack,
   onDeployNotice
 }: {
   sectionId: string;
+  initialDraft?: Draft;
+  sourcePage?: string;
   onBack: () => void;
   onDeployNotice: (notice: Notice) => void;
 }) {
   const section = useMemo(() => getSection(sectionId), [sectionId]);
+  const initialDraftKey = useMemo(() => JSON.stringify(initialDraft || {}), [initialDraft]);
+  const scopedHeroPage = section.id === "hero-slides" ? getString(initialDraft?.page).trim() : "";
+  const initialMergedDraft = useMemo(() => mergeDefaults(section, initialDraft), [section, initialDraftKey]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [items, setItems] = useState<Array<Draft & { id?: string }>>([]);
   const [selectedId, setSelectedId] = useState<string>("object");
-  const [draft, setDraft] = useState<Draft>(mergeDefaults(section));
+  const [draft, setDraft] = useState<Draft>(initialMergedDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -2346,12 +2520,19 @@ function SectionEditor({
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
 
-  const publishedCount = useMemo(() => items.filter((item) => isPublished(item)).length, [items]);
-  const draftCount = items.length - publishedCount;
+  const visibleItems = useMemo(() => {
+    if (!scopedHeroPage) {
+      return items;
+    }
+
+    return items.filter((item) => getString(item.page).trim() === scopedHeroPage);
+  }, [items, scopedHeroPage]);
+  const publishedCount = useMemo(() => visibleItems.filter((item) => isPublished(item)).length, [visibleItems]);
+  const draftCount = visibleItems.length - publishedCount;
   const filteredItems = useMemo(() => {
     const query = itemSearch.trim().toLowerCase();
 
-    return items.filter((item) => {
+    return visibleItems.filter((item) => {
       const statusMatches =
         itemStatusFilter === "all" || (itemStatusFilter === "public" ? isPublished(item) : !isPublished(item));
       const searchableText = [getItemTitle(section, item), getItemMeta(section, item)].join(" ").toLowerCase();
@@ -2359,7 +2540,14 @@ function SectionEditor({
 
       return statusMatches && textMatches;
     });
-  }, [itemSearch, itemStatusFilter, items, section]);
+  }, [itemSearch, itemStatusFilter, visibleItems, section]);
+  const editableFields = useMemo(() => {
+    if (scopedHeroPage && section.id === "hero-slides") {
+      return section.fields.filter((field) => field.key !== "page");
+    }
+
+    return section.fields;
+  }, [section, scopedHeroPage]);
 
   function confirmDiscardChanges() {
     if (!dirty) {
@@ -2379,7 +2567,7 @@ function SectionEditor({
     setNotice(null);
     if (section.kind === "list") {
       setSelectedId("new");
-      setDraft(mergeDefaults(section));
+      setDraft(initialMergedDraft);
     }
 
     try {
@@ -2395,15 +2583,20 @@ function SectionEditor({
         setItems(contents);
         setItemSearch("");
         setItemStatusFilter("all");
-        if (contents.length) {
-          setSelectedId(contents[0].id || "");
-          setDraft(mergeDefaults(section, contents[0]));
+        const scopedContents = scopedHeroPage
+          ? contents.filter((item) => getString(item.page).trim() === scopedHeroPage)
+          : contents;
+        const sortedScopedContents = [...scopedContents].sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder));
+        const firstItem = sortedScopedContents[0];
+        if (firstItem) {
+          setSelectedId(firstItem.id || "");
+          setDraft(mergeDefaults(section, firstItem));
         } else {
           setSelectedId("new");
-          setDraft(mergeDefaults(section));
+          setDraft(initialMergedDraft);
         }
       } else {
-        setDraft(mergeDefaults(section, data as Draft));
+        setDraft(mergeDefaults(section, { ...(data as Draft), ...(initialDraft || {}) }));
       }
       setEditingFields(new Set());
       setDirty(false);
@@ -2425,7 +2618,7 @@ function SectionEditor({
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [section.id]);
+  }, [section.id, initialDraftKey]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -2726,6 +2919,7 @@ function SectionEditor({
   async function save(mode: "draft" | "publish") {
     const nextDraft: Draft = {
       ...draft,
+      ...(scopedHeroPage && section.id === "hero-slides" ? { page: scopedHeroPage } : {}),
       ...(section.fields.some((field) => field.key === "isPublished") ? { isPublished: mode === "publish" } : {})
     };
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
@@ -2855,7 +3049,7 @@ function SectionEditor({
 
     userInteractedRef.current = true;
     setSelectedId("new");
-    setDraft(mergeDefaults(section));
+    setDraft(initialMergedDraft);
     setErrors({});
     setNotice(null);
     setDirty(false);
@@ -3084,7 +3278,7 @@ function hideSelectedItem() {
           }}
         >
           <ArrowLeft size={18} />
-          戻る
+          {sourcePage ? `${sourcePage}へ戻る` : "戻る"}
         </button>
         <div className="topbar-actions">
           {dirty ? (
@@ -3154,7 +3348,7 @@ function hideSelectedItem() {
               </button>
               <div className="item-list-tools" aria-label="一覧の絞り込み">
                 <div className="item-counts">
-                  <span>全部 {items.length}</span>
+                  <span>全部 {visibleItems.length}</span>
                   <span>公開 {publishedCount}</span>
                   <span>下書き {draftCount}</span>
                 </div>
@@ -3179,9 +3373,9 @@ function hideSelectedItem() {
                     下書き
                   </button>
                 </div>
-                <small className="item-filter-result">表示 {filteredItems.length}件 / 全{items.length}件</small>
+                <small className="item-filter-result">表示 {filteredItems.length}件 / 全{visibleItems.length}件</small>
               </div>
-              {items.length ? (
+              {visibleItems.length ? (
                 filteredItems.length ? (
                   filteredItems.map((item) => {
                     const itemMeta = getItemMeta(section, item);
@@ -3271,7 +3465,7 @@ function hideSelectedItem() {
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
             {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
             <div className="editable-field-list">
-              {section.fields.map((field) => (
+              {editableFields.map((field) => (
                 <EditableFieldCard
                   section={section}
                   field={field}
@@ -3312,10 +3506,226 @@ function hideSelectedItem() {
   );
 }
 
+type ActiveSectionState = {
+  id: string;
+  initialDraft?: Draft;
+  sourcePage?: string;
+};
+
+type PageAdminAction = {
+  label: string;
+  description: string;
+  sectionId: SectionDefinition["id"];
+  initialDraft?: Draft;
+};
+
+type PageAdminItem = {
+  page: string;
+  title: string;
+  description: string;
+  publicPath: string;
+  publicLabel: string;
+  summaryItems: string[];
+  actions: PageAdminAction[];
+};
+
+const adminPages: PageAdminItem[] = [
+  {
+    page: "TOP",
+    title: "TOP",
+    description: "最初に見える画像、見出し、初めての方向け文章、SNS欄を変更します。",
+    publicPath: "/",
+    publicLabel: "TOPページを確認",
+    summaryItems: ["メイン画像", "見出し", "初めての方向け", "SNS"],
+    actions: [
+      { label: "メイン画像", description: "TOPのスライドショー画像を追加・削除・並び替えます。", sectionId: "hero-slides", initialDraft: { page: "home" } },
+      { label: "見出し・初めての方向け文章", description: "TOPの見出し、説明文、初めての方向け文章を編集します。", sectionId: "home" },
+      { label: "SNS欄", description: "TOPに出すSNSお知らせカードを編集します。", sectionId: "social-notices" }
+    ]
+  },
+  {
+    page: "EVENT SCHEDULE",
+    title: "EVENT SCHEDULE",
+    description: "Google Calendarに出すイベント情報と、イベント案内文を変更します。",
+    publicPath: "/events/",
+    publicLabel: "EVENT SCHEDULEを確認",
+    summaryItems: ["Google Calendar", "イベント案内文", "Facebookイベント"],
+    actions: [
+      { label: "Google Calendar・イベント案内", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
+      { label: "Facebookイベント取り込み", description: "FacebookイベントURLから下書き作成に使う情報を取り込みます。", sectionId: "events" },
+      { label: "SNS投稿準備", description: "FacebookイベントからX / Instagram向けの投稿下書きを作ります。", sectionId: "social-notices" },
+      { label: "メイン画像", description: "EVENT SCHEDULEページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "events" } }
+    ]
+  },
+  {
+    page: "MENU",
+    title: "MENU",
+    description: "メイン画像、ドリンク表、フードメニュー、料金を変更します。",
+    publicPath: "/menu/",
+    publicLabel: "MENUページを確認",
+    summaryItems: ["メイン画像", "ドリンク表", "フードメニュー", "料金"],
+    actions: [
+      { label: "メイン画像", description: "MENUページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "menu" } },
+      { label: "ドリンク表", description: "ドリンクメニュー画像を追加・削除・並び替えます。", sectionId: "drink-menu-sheets" },
+      { label: "フードメニュー・料金", description: "フード名、料金、写真、表示順を編集します。", sectionId: "menu" }
+    ]
+  },
+  {
+    page: "ONLINE STORE",
+    title: "ONLINE STORE",
+    description: "オンラインストアへのリンクを変更します。",
+    publicPath: "/",
+    publicLabel: "公開サイトを確認",
+    summaryItems: ["ストアリンク"],
+    actions: [
+      { label: "オンラインストアURL", description: "公開サイトから移動するオンラインストアのリンクを編集します。", sectionId: "site-settings" }
+    ]
+  },
+  {
+    page: "PARTY & RENTAL",
+    title: "PARTY & RENTAL",
+    description: "メイン画像、貸切プラン、機材レンタル、PDFリンクを変更します。",
+    publicPath: "/party/",
+    publicLabel: "PARTY & RENTALを確認",
+    summaryItems: ["メイン画像", "貸切プラン", "機材レンタル", "PDF"],
+    actions: [
+      { label: "メイン画像", description: "PARTY & RENTALページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "party" } },
+      { label: "貸切プラン", description: "貸切やパーティープランの料金・説明を編集します。", sectionId: "party-plans" },
+      { label: "機材レンタル・PDF", description: "機材レンタル説明とPDFリンクを編集します。", sectionId: "equipment-rental" }
+    ]
+  },
+  {
+    page: "ACCESS",
+    title: "ACCESS",
+    description: "メイン画像、住所、電話番号、Google Map、営業時間を変更します。",
+    publicPath: "/access/",
+    publicLabel: "ACCESSページを確認",
+    summaryItems: ["メイン画像", "住所", "電話", "Google Map", "営業時間"],
+    actions: [
+      { label: "メイン画像", description: "ACCESSページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "access" } },
+      { label: "住所・電話・Google Map・営業時間", description: "店舗基本情報と地図リンクを編集します。", sectionId: "site-settings" }
+    ]
+  }
+];
+
+function PageBasedDashboard({
+  onSelect,
+  selectedPage,
+  onPageChange,
+  lastDeploy,
+  health,
+  opsStatus
+}: {
+  onSelect: (nextSection: ActiveSectionState) => void;
+  selectedPage: string;
+  onPageChange: (page: string) => void;
+  lastDeploy?: Notice;
+  health?: HealthState;
+  opsStatus?: OpsStatus;
+}) {
+  const activePage = adminPages.find((page) => page.page === selectedPage) || adminPages[0];
+  const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
+  const hasSetupProblem = health ? !health.ok : false;
+
+  return (
+    <div className="dashboard">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Bassic. 管理画面</p>
+          <h1>公開サイトのどこを変更しますか？</h1>
+          <p>公開中の新HPと同じページ構造から選び、必要なセクションだけを編集します。</p>
+        </div>
+        <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
+          <ExternalLink size={18} />
+          公開サイトを開く
+        </a>
+      </div>
+
+      <section className="page-change-map page-dashboard" aria-label="公開サイトのページから更新場所を選ぶ">
+        <div className="page-change-heading">
+          <div>
+            <strong>ページを選ぶ</strong>
+            <span>カードには、そのページで変更できる項目だけを短く表示しています。</span>
+          </div>
+        </div>
+        <div className="page-change-grid">
+          {adminPages.map((page) => (
+            <button
+              className={`page-change-card page-select-card${activePage.page === page.page ? " selected" : ""}`}
+              key={page.page}
+              type="button"
+              onClick={() => onPageChange(page.page)}
+            >
+              <span className="page-change-page">{page.page}</span>
+              <h2>{page.title}</h2>
+              <p>{page.description}</p>
+              <span className="page-change-summary">{page.summaryItems.join(" / ")}</span>
+            </button>
+          ))}
+        </div>
+
+        <section className="page-section-picker" aria-label={`${activePage.page}の編集セクション`}>
+          <div className="page-section-heading">
+            <div>
+              <span>{activePage.page}</span>
+              <strong>このページで編集できる項目</strong>
+            </div>
+            <a className="page-change-link" href={new URL(activePage.publicPath, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
+              <ExternalLink size={14} />
+              {activePage.publicLabel}
+            </a>
+          </div>
+          <div className="page-section-list">
+            {activePage.actions.map((action) => (
+              <article className="page-section-row" key={`${activePage.page}-${action.sectionId}-${action.label}`}>
+                <div>
+                  <strong>{action.label}</strong>
+                  <span>{action.description}</span>
+                </div>
+                <button
+                  className="secondary-button compact"
+                  type="button"
+                  onClick={() => onSelect({ id: action.sectionId, initialDraft: action.initialDraft, sourcePage: activePage.page })}
+                >
+                  <Pencil size={16} />
+                  編集
+                </button>
+              </article>
+            ))}
+          </div>
+          {activePage.page === "EVENT SCHEDULE" ? <FacebookEventSocialDraftPanel /> : null}
+        </section>
+      </section>
+
+      {hasSetupProblem ? <SetupStatus health={health} /> : null}
+      {opsStatus?.alerts.length ? (
+        <details className="maintenance-tools ops-tools">
+          <summary>公開前に確認したい項目</summary>
+          <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
+        </details>
+      ) : null}
+      {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
+      {false ? <SnsStatusCard onSelect={(id) => onSelect({ id })} /> : null}
+
+      <details className="maintenance-tools">
+        <summary>保守担当向け設定</summary>
+        <DashboardSectionGroup
+          title="通常は触らない設定"
+          description="ページ文言枠や表示制御など、ページ構造に関わる項目です。"
+          sections={maintenanceSections}
+          onSelect={(id) => onSelect({ id })}
+          compact
+        />
+      </details>
+    </div>
+  );
+}
+
 export default function AdminClient() {
   const [checking, setChecking] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<ActiveSectionState | null>(null);
+  const [dashboardPage, setDashboardPage] = useState(adminPages[0].page);
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
   const [sessionError, setSessionError] = useState("");
   const [health, setHealth] = useState<HealthState | undefined>();
@@ -3422,7 +3832,9 @@ export default function AdminClient() {
       </header>
       {activeSection ? (
         <SectionEditor
-          sectionId={activeSection}
+          sectionId={activeSection.id}
+          initialDraft={activeSection.initialDraft}
+          sourcePage={activeSection.sourcePage}
           onBack={() => setActiveSection(null)}
           onDeployNotice={(notice) => {
             setLastDeploy(notice);
@@ -3430,7 +3842,14 @@ export default function AdminClient() {
           }}
         />
       ) : (
-        <Dashboard onSelect={setActiveSection} lastDeploy={lastDeploy} health={health} opsStatus={opsStatus} />
+        <PageBasedDashboard
+          onSelect={setActiveSection}
+          selectedPage={dashboardPage}
+          onPageChange={setDashboardPage}
+          lastDeploy={lastDeploy}
+          health={health}
+          opsStatus={opsStatus}
+        />
       )}
     </main>
   );
