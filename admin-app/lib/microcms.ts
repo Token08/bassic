@@ -1,6 +1,3 @@
-import { fallbackContents } from "../../lib/fallback-data";
-import { defaultMenuItems, drinkMenuSheets } from "../../lib/menu-data";
-
 export type AdminEndpointType = "object" | "list";
 
 export type AdminEndpoint = {
@@ -82,6 +79,54 @@ export const endpointMap = {
   }
 } satisfies Record<string, AdminEndpoint>;
 
+const adminFallbackContents = {
+  siteSettings: {
+    address: "福岡市中央区天神3丁目4-19 WITH天神ビル5F",
+    phone: "092-713-1040",
+    hoursLabel: "20:00-2:00",
+    eventHoursNote: "イベント日は営業時間が変わる場合があります。",
+    smokingLabel: "喫煙可",
+    chargeLabel: "チャージあり",
+    googleMapsUrl: "https://maps.google.com/?q=public+bar+Bassic.",
+    directionsUrl: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    xUrl: "",
+    onlineStoreUrl: ""
+  },
+  home: {
+    heroTitle: "public bar Bassic.",
+    heroLead: "福岡・天神のミュージックバーです。",
+    firstVisitLead: "初めての方も、ライブ後の一杯も、お気軽にお越しください。",
+    accessNote: "天神駅から徒歩圏内、WITH天神ビル5Fです。"
+  },
+  events: [],
+  partyPlans: [],
+  socialNotices: []
+};
+
+const adminDefaultMenuItems = [
+  {
+    category: "food",
+    name: "Fuzz Curry",
+    price: "¥1,200",
+    image: { url: "/assets/menu-refresh/fuzz-curry.jpg", alt: "Fuzz Curry" }
+  },
+  {
+    category: "food",
+    name: "Tacos & Potato",
+    price: "¥900",
+    image: { url: "/assets/menu-refresh/tacos-potato.jpg", alt: "Tacos & Potato" }
+  }
+];
+
+const adminDrinkMenuSheets = [
+  { title: "DRINK MENU 1", src: "/assets/menu-refresh/drinks/drink-menu-2026-01.webp" },
+  { title: "DRINK MENU 2", src: "/assets/menu-refresh/drinks/drink-menu-2026-02.webp" },
+  { title: "DRINK MENU 3", src: "/assets/menu-refresh/drinks/drink-menu-2026-03.webp" },
+  { title: "DRINK MENU 4", src: "/assets/menu-refresh/drinks/drink-menu-2026-04.webp" }
+];
+
 export type EndpointId = keyof typeof endpointMap;
 
 function getRequiredEnv(name: string) {
@@ -135,18 +180,18 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
     }));
 
   const fallbackMap: Record<string, unknown> = {
-    "site-settings": fallbackContents.siteSettings,
+    "site-settings": adminFallbackContents.siteSettings,
     home: {
-      ...fallbackContents.home,
+      ...adminFallbackContents.home,
       instagramWidgetSrc: ""
     },
-    events: fallbackContents.events || [],
-    menu: withFallbackMeta(defaultMenuItems.filter((item) => item.category === "food"), "menu"),
-    "party-plans": fallbackContents.partyPlans || [],
-    "social-notices": fallbackContents.socialNotices || [],
+    events: adminFallbackContents.events || [],
+    menu: withFallbackMeta(adminDefaultMenuItems.filter((item) => item.category === "food"), "menu"),
+    "party-plans": adminFallbackContents.partyPlans || [],
+    "social-notices": adminFallbackContents.socialNotices || [],
     "hero-slides": [],
     "drink-menu-sheets": withFallbackMeta(
-      drinkMenuSheets.map((sheet, index) => ({
+      adminDrinkMenuSheets.map((sheet, index) => ({
         title: sheet.title,
         image: { url: sheet.src, alt: sheet.title },
         displayOrder: index + 1,
