@@ -60,9 +60,13 @@ const endpointChecks = [
     path: "/menu?limit=100",
     orderGroupFields: ["category"],
     validateItem: (item) => {
+      if (item.kind && item.kind !== "menu") {
+        return;
+      }
+
       requiredString(item, "name", "menu");
       if (item.category) {
-        requiredEnum(item, "category", ["food", "drink"], "menu");
+        requiredEnum(item, "category", ["food", "drink", "cms"], "menu");
       }
       optionalWholeNumber(item, "displayOrder", "menu");
       if (item.isPublished !== false) {
@@ -72,11 +76,12 @@ const endpointChecks = [
         optionalImage(item, "image", "menu");
       }
     }
-  },
+  }
+];
+
+const compactChecks = [
   {
     label: "drink-menu-sheets",
-    path: "/drink-menu-sheets?limit=1",
-    orderGroupFields: [],
     validateItem: (item) => {
       requiredString(item, "title", "drink-menu-sheets");
       requiredImage(item, "image", "drink-menu-sheets");
@@ -85,8 +90,6 @@ const endpointChecks = [
   },
   {
     label: "party-plans",
-    path: "/party-plans?limit=1",
-    orderGroupFields: [],
     validateItem: (item) => {
       requiredText(item, "title", "party-plans", 4);
       requiredString(item, "price", "party-plans");
@@ -95,9 +98,15 @@ const endpointChecks = [
     }
   },
   {
+    label: "equipment-rental",
+    validateItem: (item) => {
+      requiredString(item, "title", "equipment-rental");
+      requiredString(item, "body", "equipment-rental");
+      requiredUrl(item, "pdfUrl", "equipment-rental");
+    }
+  },
+  {
     label: "social-notices",
-    path: "/social-notices?limit=1",
-    orderGroupFields: ["platform"],
     validateItem: (item) => {
       requiredEnum(item, "platform", ["instagram", "facebook", "x"], "social-notices");
       requiredText(item, "title", "social-notices", 6);
@@ -113,8 +122,6 @@ const endpointChecks = [
   },
   {
     label: "page-copy",
-    path: "/page-copy?limit=1",
-    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-copy");
       requiredBoolean(item, "isPublished", "page-copy");
@@ -123,8 +130,6 @@ const endpointChecks = [
   },
   {
     label: "page-sections",
-    path: "/page-sections?limit=1",
-    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "page-sections");
       requiredString(item, "sectionKey", "page-sections");
@@ -134,8 +139,6 @@ const endpointChecks = [
   },
   {
     label: "custom-sections",
-    path: "/custom-sections?limit=1",
-    orderGroupFields: ["page"],
     validateItem: (item) => {
       requiredEnum(item, "page", ["home", "events", "menu", "party", "access"], "custom-sections");
       requiredText(item, "title", "custom-sections", 6);
@@ -158,32 +161,6 @@ const baseUrl = `https://${serviceDomain}.microcms.io/api/v1`;
 const errors = [];
 
 try {
-  const home = await fetchJson("/home");
-  for (const field of requiredHomeFields) {
-    requiredString(home, field, "home");
-  }
-  if (home.instagramWidgetSrc) {
-    requiredExternalUrl(home, "instagramWidgetSrc", "home");
-  }
-  console.log("OK home");
-
-  const siteSettings = await fetchJson("/site-settings");
-  for (const field of requiredSiteSettingsFields) {
-    if (field.endsWith("Url")) {
-      requiredExternalUrl(siteSettings, field, "site-settings");
-      requiredSiteSettingsUrl(siteSettings, field, "site-settings");
-    } else {
-      requiredString(siteSettings, field, "site-settings");
-    }
-  }
-  console.log("OK site-settings");
-
-  const equipmentRental = await fetchJson("/equipment-rental");
-  requiredString(equipmentRental, "title", "equipment-rental");
-  requiredString(equipmentRental, "body", "equipment-rental");
-  requiredUrl(equipmentRental, "pdfUrl", "equipment-rental");
-  console.log("OK equipment-rental");
-
   for (const check of endpointChecks) {
     const list = await fetchJson(check.path);
     if (!Array.isArray(list.contents)) {
@@ -199,6 +176,45 @@ try {
     }
 
     console.log(`OK ${check.label} (${list.contents.length} checked)`);
+  }
+
+  const compactStore = await fetchJson("/menu?limit=100");
+  const compactContents = Array.isArray(compactStore.contents) ? compactStore.contents : [];
+  const compactHome = readCompactJsonObject(compactContents, "home");
+  const compactSiteSettings = readCompactJsonObject(compactContents, "site-settings");
+
+  if (compactHome) {
+    for (const field of requiredHomeFields) {
+      requiredString(compactHome, field, "home");
+    }
+    if (compactHome.instagramWidgetSrc) {
+      requiredExternalUrl(compactHome, "instagramWidgetSrc", "home");
+    }
+  }
+  console.log(`OK home (${compactHome ? "compact item checked" : "fallback content active"})`);
+
+  if (compactSiteSettings) {
+    for (const field of requiredSiteSettingsFields) {
+      if (field.endsWith("Url")) {
+        requiredExternalUrl(compactSiteSettings, field, "site-settings");
+        requiredSiteSettingsUrl(compactSiteSettings, field, "site-settings");
+      } else {
+        requiredString(compactSiteSettings, field, "site-settings");
+      }
+    }
+  }
+  console.log(`OK site-settings (${compactSiteSettings ? "compact item checked" : "fallback content active"})`);
+
+  for (const check of compactChecks) {
+    const contents = compactContents
+      .filter((item) => item.kind === check.label)
+      .map((item) => (check.label === "page-sections" && !item.sectionKey ? { ...item, sectionKey: item.section } : item));
+
+    for (const item of contents) {
+      check.validateItem(item);
+    }
+
+    console.log(`OK ${check.label} (${contents.length} compact items checked)`);
   }
 } catch (error) {
   errors.push(error instanceof Error ? error.message : String(error));
@@ -226,6 +242,23 @@ async function fetchJson(path) {
   }
 
   return response.json();
+}
+
+function readCompactJsonObject(contents, kind) {
+  const item = contents.find((item) => item.kind === kind);
+  const body = typeof item?.body === "string" ? item.body : "";
+
+  if (!body) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(body);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    errors.push(`${kind}: compact JSON body is invalid.`);
+    return null;
+  }
 }
 
 function requiredString(item, field, endpoint) {

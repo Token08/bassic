@@ -35,6 +35,21 @@ type MicroCmsList<T> = {
   contents: T[];
 };
 
+type CompactCmsItem = Partial<
+  MenuItem &
+    DrinkMenuSheet &
+    PartyPlan &
+    EquipmentRental &
+    SocialNotice &
+    PageCopy &
+    PageSection &
+    CustomSection
+> & {
+  id?: string;
+  kind?: string;
+  section?: string;
+};
+
 const heroPages: HeroSlide["page"][] = ["home", "events", "party", "menu", "access"];
 const managedPages: ManagedPage[] = ["home", "events", "menu", "party", "access"];
 
@@ -185,6 +200,43 @@ function normalizeMenuItem(item: MenuItem): MenuItem {
     ...item,
     category: item.category === "drink" ? "drink" : "food"
   };
+}
+
+function compactItemsFor<T>(items: CompactCmsItem[], kind: string) {
+  return items.filter((item) => item.kind === kind) as T[];
+}
+
+function compactMenuItems(items: CompactCmsItem[]) {
+  return items.filter((item) => !item.kind || item.kind === "menu") as MenuItem[];
+}
+
+function compactEquipmentRental(items: CompactCmsItem[]) {
+  return (items.find((item) => item.kind === "equipment-rental") as EquipmentRental | undefined) || fallbackEquipmentRental;
+}
+
+function compactJsonObject<T>(items: CompactCmsItem[], kind: string, fallback: T): T {
+  const item = items.find((item) => item.kind === kind);
+  const body = typeof item?.body === "string" ? item.body : "";
+
+  if (!body) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(body);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? ({ ...fallback, ...parsed } as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function compactPageSections(items: CompactCmsItem[]) {
+  return items
+    .filter((item) => item.kind === "page-sections")
+    .map((item) => ({
+      ...item,
+      sectionKey: item.sectionKey || item.section || ""
+    })) as PageSection[];
 }
 
 function visibleMenu(menu?: MenuItem[]) {
@@ -423,51 +475,30 @@ export async function getCmsContents(): Promise<CmsContents> {
     }
   };
 
-  const [siteSettings, home, heroSlides, events, menu, drinkSheets, partyPlans, equipmentRental, socialNotices, pageCopy, pageSections, customSections] =
-    await Promise.all([
-      getObject<SiteSettings>("site-settings", fallbackSiteSettings),
-      getObject<HomeContent>("home", fallbackContents.home!),
-      getList<HeroSlide>("hero-slides", Object.values(fallbackHeroSlides).flat(), {
-        orders: "displayOrder",
-        filters: "isPublished[equals]true",
-        limit: 100
-      }),
-      getList<EventItem>("events", fallbackContents.events!, {
-        orders: "date",
-        filters: "isPublished[equals]true",
-        limit: 20
-      }),
-      getList<MenuItem>("menu", defaultMenuItems, { orders: "displayOrder", limit: 100 }),
-      getList<DrinkMenuSheet>("drink-menu-sheets", [], {
-        orders: "displayOrder",
-        filters: "isPublished[equals]true",
-        limit: 20
-      }),
-      getList<PartyPlan>("party-plans", fallbackContents.partyPlans as PartyPlan[], {
-        orders: "displayOrder",
-        filters: "isPublished[equals]true",
-        limit: 20
-      }),
-      getObject<EquipmentRental>("equipment-rental", fallbackEquipmentRental),
-      getList<SocialNotice>("social-notices", fallbackContents.socialNotices as SocialNotice[], {
-        orders: "-date",
-        filters: "isPublished[equals]true",
-        limit: 12
-      }),
-      getList<PageCopy>("page-copy", Object.values(fallbackPageCopy), {
-        orders: "page,displayOrder",
-        limit: 100
-      }),
-      getList<PageSection>("page-sections", Object.values(fallbackPageSections).flat(), {
-        orders: "page,displayOrder",
-        limit: 100
-      }),
-      getList<CustomSection>("custom-sections", [], {
-        orders: "page,displayOrder",
-        filters: "isPublished[equals]true",
-        limit: 100
-      })
-    ]);
+  const [heroSlides, events, compactStore] = await Promise.all([
+    getList<HeroSlide>("hero-slides", Object.values(fallbackHeroSlides).flat(), {
+      orders: "displayOrder",
+      filters: "isPublished[equals]true",
+      limit: 100
+    }),
+    getList<EventItem>("events", fallbackContents.events!, {
+      orders: "date",
+      filters: "isPublished[equals]true",
+      limit: 20
+    }),
+    getList<CompactCmsItem>("menu", defaultMenuItems as CompactCmsItem[], { orders: "displayOrder", limit: 100 })
+  ]);
+
+  const siteSettings = compactJsonObject<SiteSettings>(compactStore, "site-settings", fallbackSiteSettings);
+  const home = compactJsonObject<HomeContent>(compactStore, "home", fallbackContents.home!);
+  const menu = compactMenuItems(compactStore);
+  const drinkSheets = compactItemsFor<DrinkMenuSheet>(compactStore, "drink-menu-sheets");
+  const partyPlans = compactItemsFor<PartyPlan>(compactStore, "party-plans");
+  const equipmentRental = compactEquipmentRental(compactStore);
+  const socialNotices = compactItemsFor<SocialNotice>(compactStore, "social-notices");
+  const pageCopy = compactItemsFor<PageCopy>(compactStore, "page-copy");
+  const pageSections = compactPageSections(compactStore);
+  const customSections = compactItemsFor<CustomSection>(compactStore, "custom-sections");
 
   return normalizeContents({
     siteSettings,

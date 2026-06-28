@@ -129,6 +129,30 @@ const adminDrinkMenuSheets = [
 
 export type EndpointId = keyof typeof endpointMap;
 
+const compactStoreEndpointId = "menu";
+const compactListEndpointIds = new Set([
+  "drink-menu-sheets",
+  "party-plans",
+  "social-notices",
+  "page-copy",
+  "page-sections",
+  "custom-sections"
+]);
+const compactObjectEndpointIds = new Set(["site-settings", "home", "equipment-rental"]);
+const compactJsonObjectEndpointIds = new Set(["site-settings", "home"]);
+
+function isCompactListEndpoint(endpointId: string) {
+  return compactListEndpointIds.has(endpointId);
+}
+
+function isCompactObjectEndpoint(endpointId: string) {
+  return compactObjectEndpointIds.has(endpointId);
+}
+
+function isCompactEndpoint(endpointId: string) {
+  return isCompactListEndpoint(endpointId) || isCompactObjectEndpoint(endpointId);
+}
+
 function getRequiredEnv(name: string) {
   const value = process.env[name];
 
@@ -158,6 +182,80 @@ function sanitizeDraft(draft: Record<string, unknown>) {
   const blockedKeys = new Set(["id", "createdAt", "updatedAt", "publishedAt", "revisedAt"]);
 
   return Object.fromEntries(Object.entries(draft).filter(([key, value]) => !blockedKeys.has(key) && !key.startsWith("__") && value !== undefined));
+}
+
+function compactDraft(endpointId: string, draft: Record<string, unknown>) {
+  const sanitized = sanitizeDraft(draft);
+
+  if (endpointId === "menu") {
+    return {
+      ...sanitized,
+      kind: sanitized.kind || "menu",
+      category: sanitized.category || "food"
+    };
+  }
+
+  if (!isCompactEndpoint(endpointId)) {
+    return sanitized;
+  }
+
+  if (compactJsonObjectEndpointIds.has(endpointId)) {
+    return {
+      kind: endpointId,
+      category: "cms",
+      title: endpointId,
+      body: JSON.stringify(sanitized)
+    };
+  }
+
+  return {
+    ...sanitized,
+    kind: endpointId,
+    category: "cms"
+  };
+}
+
+function compactItemMatches(endpointId: string, item: Record<string, unknown>) {
+  const kind = typeof item.kind === "string" ? item.kind : "";
+
+  if (endpointId === "menu") {
+    return !kind || kind === "menu";
+  }
+
+  return kind === endpointId;
+}
+
+async function getCompactItems() {
+  const params = new URLSearchParams({
+    limit: "100",
+    orders: "displayOrder"
+  });
+  const data = await microCmsFetch(`/${compactStoreEndpointId}?${params.toString()}`);
+  return Array.isArray(data?.contents) ? (data.contents as Record<string, unknown>[]) : [];
+}
+
+async function findCompactObject(endpointId: string) {
+  const items = await getCompactItems();
+  return items.find((item) => compactItemMatches(endpointId, item));
+}
+
+function expandCompactObject(endpointId: string, item: Record<string, unknown> | undefined) {
+  if (!item) {
+    return undefined;
+  }
+
+  if (!compactJsonObjectEndpointIds.has(endpointId)) {
+    return item;
+  }
+
+  const body = typeof item.body === "string" ? item.body : "";
+
+  try {
+    const parsed = JSON.parse(body);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? { ...parsed, id: item.id } : item;
+  } catch {
+    return item;
+  }
 }
 
 export function getEndpoint(endpoint: string) {
@@ -240,6 +338,20 @@ export async function getContent(endpointId: string) {
   const endpoint = getEndpoint(endpointId);
 
   try {
+    if (isCompactListEndpoint(endpointId)) {
+      const contents = (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
+
+      if (!contents.length && endpointId === "drink-menu-sheets") {
+        return getFallbackContent(endpointId, endpoint);
+      }
+
+      return { contents };
+    }
+
+    if (isCompactObjectEndpoint(endpointId)) {
+      return expandCompactObject(endpointId, await findCompactObject(endpointId)) || getFallbackContent(endpointId, endpoint);
+    }
+
     if (endpoint.type === "object") {
       return await microCmsFetch(`/${endpoint.id}`);
     }
@@ -272,18 +384,42 @@ export async function getContent(endpointId: string) {
 export async function createContent(endpointId: string, draft: Record<string, unknown>) {
   const endpoint = getEndpoint(endpointId);
 
+  if (isCompactEndpoint(endpointId)) {
+    return microCmsFetch(`/${compactStoreEndpointId}`, {
+      method: "POST",
+      body: JSON.stringify(compactDraft(endpointId, draft))
+    });
+  }
+
   if (endpoint.type !== "list") {
     return updateObjectContent(endpointId, draft);
   }
 
   return microCmsFetch(`/${endpoint.id}`, {
     method: "POST",
-    body: JSON.stringify(sanitizeDraft(draft))
+    body: JSON.stringify(compactDraft(endpointId, draft))
   });
 }
 
 export async function updateObjectContent(endpointId: string, draft: Record<string, unknown>) {
   const endpoint = getEndpoint(endpointId);
+
+  if (isCompactObjectEndpoint(endpointId)) {
+    const existing = await findCompactObject(endpointId);
+    const body = JSON.stringify(compactDraft(endpointId, draft));
+
+    if (existing?.id) {
+      return microCmsFetch(`/${compactStoreEndpointId}/${encodeURIComponent(String(existing.id))}`, {
+        method: "PATCH",
+        body
+      });
+    }
+
+    return microCmsFetch(`/${compactStoreEndpointId}`, {
+      method: "POST",
+      body
+    });
+  }
 
   return microCmsFetch(`/${endpoint.id}`, {
     method: "PATCH",
@@ -298,9 +434,11 @@ export async function updateContent(endpointId: string, contentId: string, draft
     return updateObjectContent(endpointId, draft);
   }
 
-  return microCmsFetch(`/${endpoint.id}/${encodeURIComponent(contentId)}`, {
+  const storedEndpointId = isCompactEndpoint(endpointId) ? compactStoreEndpointId : endpoint.id;
+
+  return microCmsFetch(`/${storedEndpointId}/${encodeURIComponent(contentId)}`, {
     method: "PATCH",
-    body: JSON.stringify(sanitizeDraft(draft))
+    body: JSON.stringify(compactDraft(endpointId, draft))
   });
 }
 
@@ -311,7 +449,9 @@ export async function deleteContent(endpointId: string, contentId: string) {
     throw new Error("Object endpoint cannot be deleted.");
   }
 
-  return microCmsFetch(`/${endpoint.id}/${encodeURIComponent(contentId)}`, {
+  const storedEndpointId = isCompactEndpoint(endpointId) ? compactStoreEndpointId : endpoint.id;
+
+  return microCmsFetch(`/${storedEndpointId}/${encodeURIComponent(contentId)}`, {
     method: "DELETE"
   });
 }
