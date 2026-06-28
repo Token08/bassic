@@ -12,6 +12,7 @@ checkFile("dedicated admin README", "admin-app/README.md");
 checkFile("client handoff manual", "docs/delivery-admin-manual.md");
 checkFile("client handoff checklist", "docs/client-handoff-checklist.md");
 checkFile("client handoff sheet", "docs/client-handoff-sheet.md");
+checkFile("delivery readiness report", "docs/delivery-readiness-report.md");
 checkFile("login API route", "admin-app/app/api/login/route.ts");
 checkFile("content API route", "admin-app/app/api/content/[endpoint]/route.ts");
 checkFile("media upload API route", "admin-app/app/api/media/route.ts");
@@ -851,8 +852,8 @@ function checkCmsSmokeExternalUrlValidation() {
     "function isValidExternalUrl",
     "external URL must start with https://",
     "social notice URLs must be full https:// URLs",
-    'requiredExternalUrl(siteSettings, field, "site-settings")',
-    'requiredExternalUrl(home, "instagramWidgetSrc", "home")'
+    'requiredExternalUrl(compactSiteSettings, field, "site-settings")',
+    'requiredExternalUrl(compactHome, "instagramWidgetSrc", "home")'
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
@@ -2531,7 +2532,7 @@ function checkAdminSchemaEndpointsMatch() {
   const schemaText = readFileSync(schemaFile, "utf8");
   const endpointText = readFileSync(endpointFile, "utf8");
   const sectionIds = [...schemaText.matchAll(/id:\s*"([^"]+)"/g)].map((match) => match[1]);
-  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
+  const endpointIds = getAdminEndpointIds(endpointText);
   const missingEndpoints = [...new Set(sectionIds)].filter((id) => !endpointIds.includes(id));
   const missingSections = [...new Set(endpointIds)].filter((id) => !sectionIds.includes(id));
   const problems = [
@@ -2565,8 +2566,8 @@ function checkCmsSmokeCoversAdminEndpoints() {
 
   const endpointText = readFileSync(endpointFile, "utf8");
   const smokeText = readFileSync(smokeFile, "utf8");
-  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
-  const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`));
+  const endpointIds = getAdminEndpointIds(endpointText);
+  const missing = [...new Set(endpointIds)].filter((id) => !smokeText.includes(`/${id}`) && !smokeText.includes(`"${id}"`));
 
   add("CMS smoke test covers admin endpoints", missing.length === 0, missing.join(", "));
 }
@@ -2715,10 +2716,15 @@ function checkSeedDataCoversAdminEndpoints() {
 
   const endpointText = readFileSync(endpointFile, "utf8");
   const seedText = readFileSync(seedFile, "utf8");
-  const endpointIds = [...endpointText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
+  const endpointIds = getAdminEndpointIds(endpointText);
   const missing = [...new Set(endpointIds)].filter((id) => !seedText.includes(`"${id}"`) && !seedText.includes(`\n    ${id},`));
 
   add("microCMS seed data covers admin endpoints", missing.length === 0, missing.join(", "));
+}
+
+function getAdminEndpointIds(endpointText) {
+  const endpointMapText = endpointText.split("const adminFallbackContents")[0] || endpointText;
+  return [...endpointMapText.matchAll(/\n\s{2}(?:"([^"]+)"|([A-Za-z][\w-]*)):\s*\{/g)].map((match) => match[1] || match[2]);
 }
 
 function checkSeedDataKeepsEventsCalendarFocused() {
