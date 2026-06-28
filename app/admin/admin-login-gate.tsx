@@ -58,7 +58,7 @@ export default function AdminLoginGate({ adminEntryUrl, dedicatedAdminUrl, passw
       <div>
         <p className="admin-kicker">Bassic. Admin</p>
         <h1>管理画面ログイン</h1>
-        <p className="admin-gate-copy">管理画面入口は次のURLです。</p>
+        <p className="admin-gate-copy">この入口から、実際に編集する管理画面へ移動します。</p>
         <p className="admin-gate-copy">
           <a href={adminEntryUrl}>{adminEntryUrl}</a>
         </p>
@@ -77,7 +77,7 @@ export default function AdminLoginGate({ adminEntryUrl, dedicatedAdminUrl, passw
         {error ? <p className="admin-gate-error">{error}</p> : null}
         {unlocked && !dedicatedAdminUrl ? (
           <p className="admin-gate-error">
-            管理画面入口は有効ですが、専用管理画面URLが未設定です。担当者に連絡してください。
+            管理画面入口は有効ですが、移動先が未設定です。担当者に連絡してください。
           </p>
         ) : null}
         <button className="admin-button primary" type="submit" disabled={loading || !password}>
@@ -88,7 +88,7 @@ export default function AdminLoginGate({ adminEntryUrl, dedicatedAdminUrl, passw
       </form>
 
       <p className="admin-gate-note">
-        ログイン後、専用管理画面へ移動します。このURLを店舗側の管理画面入口として使います。
+        店舗側にはこのURLだけを渡します。ログイン後は編集画面へ自動で移動します。
       </p>
     </section>
   );
