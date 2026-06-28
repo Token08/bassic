@@ -34,12 +34,13 @@ async function main() {
 
 async function fetchApprovedNotices() {
   const params = new URLSearchParams({
-    limit: "100",
-    filters: 'deliveryStatus[equals]approved'
+    limit: "100"
   });
-  const data = await microCmsRequest(`/social-notices?${params.toString()}`);
+  const data = await microCmsRequest(`/menu?${params.toString()}`);
 
-  return (data.contents || []).filter((notice) => !notice.externalPostId && notice.isPublished !== false);
+  return (data.contents || []).filter(
+    (notice) => notice.kind === "social-notices" && notice.deliveryStatus === "approved" && !notice.externalPostId && notice.isPublished !== false
+  );
 }
 
 async function publishNotice(notice) {
@@ -202,7 +203,7 @@ async function patchNotice(id, patch) {
     return;
   }
 
-  await microCmsRequest(`/social-notices/${encodeURIComponent(id)}`, {
+  await microCmsRequest(`/menu/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(patch)
   });
