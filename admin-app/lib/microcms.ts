@@ -331,7 +331,13 @@ async function microCmsFetch(path: string, init: RequestInit = {}) {
     return null;
   }
 
-  return response.json();
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  return { message: await response.text() };
 }
 
 export async function getContent(endpointId: string) {
