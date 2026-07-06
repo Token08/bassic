@@ -1,6 +1,6 @@
 # Bassic. 納品前ステータス
 
-作成日: 2026-06-28
+作成日: 2026-07-06
 
 ## 現在使えるURL
 
@@ -36,7 +36,7 @@
 - SNS下書きは `deliveryStatus = draft` から始まり、承認するまでAPI投稿対象になりません。
 - 管理画面で入力・画像追加・削除を行うと、保存先への記録は自動で行われます。店舗側が保存先サービスを直接開く必要はありません。
 
-## 2026-06-28 確認済みチェック
+## 2026-07-06 確認済みチェック
 
 以下はこの作業時点で通過済みです。
 
@@ -51,11 +51,19 @@ npm run smoke:links
 npm run smoke:content
 npm run smoke:seo
 npm run smoke:admin-app
+npm run smoke:handoff-rehearsal
 npm run check:handoff
 ```
 
 `npm run smoke:cms` と `npm run publish:social` は、ローカルにmicroCMS本番キーが無い場合は安全にスキップされます。
 Vercel本番環境とGitHub Secretsには接続情報を設定済みです。
+
+`npm run smoke:handoff-rehearsal` は、TOP保存、EVENT下書き、MENU下書き、画像追加・並び替え・削除、X / Instagram下書き作成、SNS下書き重複防止をまとめて確認します。
+作成した確認用データは最後に削除します。
+公開再ビルドまで確認する場合は、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` を付けて実行します。
+
+2026-07-06時点で、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` 付きの実運用リハーサルは通過済みです。
+GitHub Pagesの `repository_dispatch` デプロイも成功しています。
 
 ## 納品前に最後に見ること
 
@@ -66,6 +74,32 @@ Vercel本番環境とGitHub Secretsには接続情報を設定済みです。
 - FacebookイベントURLを貼った時、日付、START、画像、URLを確認できる
 - SNS下書きがX / Instagramに重複作成されない
 - スマホでTOP、MENU、EVENT、ACCESSを確認できる
+
+## 実運用リハーサル
+
+制作側は納品前に次を実行します。
+
+```powershell
+$env:ADMIN_PASSWORD="別送の管理画面パスワード"
+npm run smoke:handoff-rehearsal
+Remove-Item Env:\ADMIN_PASSWORD
+```
+
+公開再ビルドの起動まで含める場合:
+
+```powershell
+$env:ADMIN_PASSWORD="別送の管理画面パスワード"
+$env:RUN_PUBLIC_DEPLOY_REHEARSAL="true"
+npm run smoke:handoff-rehearsal
+Remove-Item Env:\ADMIN_PASSWORD
+Remove-Item Env:\RUN_PUBLIC_DEPLOY_REHEARSAL
+```
+
+この確認は店舗側に実施してもらうものではありません。
+制作側が、管理画面保存、下書き作成、削除、公開反映依頼が壊れていないことを事前に見るためのものです。
+
+リハーサルでは画像アップロードも行います。
+作成した確認用コンテンツは削除されますが、アップロード済み画像ファイルは保存先のメディア一覧に残る場合があります。
 
 ## 残タスク
 
