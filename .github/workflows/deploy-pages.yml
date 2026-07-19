@@ -111,8 +111,7 @@ jobs:
 
       - name: Build static site
         env:
-          NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
-          NEXT_PUBLIC_BASE_PATH: /bassic
+          NEXT_PUBLIC_SITE_URL: https://www.bassic.jp
           NEXT_PUBLIC_DEDICATED_ADMIN_URL: ${{ vars.NEXT_PUBLIC_DEDICATED_ADMIN_URL }}
           NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH: ${{ vars.NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH || secrets.ADMIN_ENTRY_PASSWORD_HASH }}
           NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC: ${{ vars.NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC }}
@@ -123,8 +122,7 @@ jobs:
 
       - name: Smoke check published output
         env:
-          NEXT_PUBLIC_SITE_URL: https://token08.github.io/bassic
-          NEXT_PUBLIC_BASE_PATH: /bassic
+          NEXT_PUBLIC_SITE_URL: https://www.bassic.jp
         run: |
           npm run smoke:links
           npm run smoke:content

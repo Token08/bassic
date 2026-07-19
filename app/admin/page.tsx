@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   }
 };
 
-const adminEntryUrl = "https://token08.github.io/bassic/admin/";
+const adminEntryUrl = "https://www.bassic.jp/admin/";
 const dedicatedAdminUrl = process.env.NEXT_PUBLIC_DEDICATED_ADMIN_URL;
 const passwordHash = process.env.NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH;
 
