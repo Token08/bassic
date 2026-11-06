@@ -3836,19 +3836,20 @@ export default function AdminClient() {
     setChecking(true);
     setSessionError("");
     try {
-      const [sessionResponse, healthResponse] = await Promise.all([
-        fetchWithTimeout("/api/session", { cache: "no-store" }, 8000),
-        fetchWithTimeout("/api/health", { cache: "no-store" }, 8000)
-      ]);
+      const sessionResponse = await fetchWithTimeout("/api/session", { cache: "no-store" }, 8000);
       const result = (await sessionResponse.json()) as { authenticated?: boolean };
-      const healthResult = (await healthResponse.json()) as HealthState;
       const isAuthenticated = Boolean(result.authenticated);
 
       setAuthenticated(isAuthenticated);
-      setHealth(healthResult);
       if (isAuthenticated) {
+        const healthResponse = await fetchWithTimeout("/api/health", { cache: "no-store" }, 8000);
+        if (!healthResponse.ok) {
+          throw new Error("Could not load authenticated health status.");
+        }
+        setHealth((await healthResponse.json()) as HealthState);
         await loadOpsStatus();
       } else {
+        setHealth(undefined);
         setOpsStatus(undefined);
       }
     } catch {
@@ -3880,6 +3881,8 @@ export default function AdminClient() {
     await fetch("/api/logout", { method: "POST" });
     setAuthenticated(false);
     setActiveSection(null);
+    setHealth(undefined);
+    setOpsStatus(undefined);
   }
 
   if (checking) {
@@ -3907,7 +3910,7 @@ export default function AdminClient() {
   }
 
   if (!authenticated) {
-    return <LoginScreen onLogin={() => setAuthenticated(true)} health={health} />;
+    return <LoginScreen onLogin={() => void checkSession()} health={health} />;
   }
 
   return (

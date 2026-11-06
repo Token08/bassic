@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 
 const cookieName = "bassic_admin_session";
 const maxAgeSeconds = 60 * 60 * 12;
-const useSecureCookie = process.env.ADMIN_COOKIE_SECURE === "true";
+const useSecureCookie = process.env.NODE_ENV === "production" || process.env.ADMIN_COOKIE_SECURE === "true";
 
 type SessionPayload = {
   exp: number;

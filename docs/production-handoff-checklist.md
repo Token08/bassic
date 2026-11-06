@@ -112,9 +112,11 @@ npm run sync:calendar:check
 `sync:calendar:check` はGoogle Calendarへ書き込まず、同期予定のタイトル、日時、FacebookイベントURL、画像URLを確認します。警告が出た場合は同期せず、管理画面のイベント内容を直してから再実行します。
 
 本番URLへ切り替える時は、`NEXT_PUBLIC_BASE_PATH` を空にしてからビルドします。仮URLの `https://token08.github.io/bassic/` で使う `/bassic` の設定が残っていると、本番URLのリンクや画像パスがずれます。
+確認用公開では `NEXT_PUBLIC_NOINDEX=true` を使います。本番切り替え時は `false` に戻し、検索除外が残っていないことを確認します。Actions側でも同名Variablesを設定し、ビルドと検証で共通利用します。
 
 ```powershell
 $env:NEXT_PUBLIC_SITE_URL="https://www.bassic.jp"
+$env:NEXT_PUBLIC_NOINDEX="false"
 Remove-Item Env:\NEXT_PUBLIC_BASE_PATH -ErrorAction SilentlyContinue
 npm run build
 npm run smoke:seo

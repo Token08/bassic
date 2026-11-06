@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/"
+      ...(process.env.NEXT_PUBLIC_NOINDEX === "true" ? { disallow: "/" } : { allow: "/" })
     },
     sitemap: absoluteUrl("/sitemap.xml")
   };

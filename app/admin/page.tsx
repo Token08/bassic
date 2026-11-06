@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AdminLoginGate from "./admin-login-gate";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Bassic. 管理画面ログイン",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   }
 };
 
-const adminEntryUrl = "https://www.bassic.jp/admin/";
+const adminEntryUrl = absoluteUrl("/admin/");
 const dedicatedAdminUrl = process.env.NEXT_PUBLIC_DEDICATED_ADMIN_URL;
 const passwordHash = process.env.NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH;
 

@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { isAuthenticatedRequest } from "@/lib/auth";
 import { getAdminEnvChecks } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -32,7 +33,11 @@ function getPublicSiteUrlStatus() {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAuthenticatedRequest(request)) {
+    return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
+  }
+
   const checks = getAdminEnvChecks();
   const missing = checks.filter((check) => !check.present);
 

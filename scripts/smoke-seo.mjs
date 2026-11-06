@@ -30,6 +30,10 @@ const forbiddenSeoUrlFragments = [
   `${siteUrl}/index.html`
 ].filter((fragment) => !siteUrl.startsWith(fragment));
 const failures = [];
+const expectNoindex = process.env.NEXT_PUBLIC_NOINDEX === "true";
+if (expectNoindex && new URL(siteUrl).hostname === "www.bassic.jp") {
+  failures.push("Production domain must not be published with NEXT_PUBLIC_NOINDEX=true");
+}
 
 function readOutFile(file) {
   const path = join(outDir, file);
@@ -48,6 +52,9 @@ for (const page of pages) {
   }
 
   const canonical = `${siteUrl}${page.path}`;
+  if (/<meta name="robots" content="[^"]*\bnoindex\b/.test(html) !== expectNoindex) {
+    failures.push(`Unexpected search indexing setting on ${page.path}`);
+  }
   if (!html.includes(`rel="canonical" href="${canonical}"`)) {
     failures.push(`Missing canonical for ${page.path}: ${canonical}`);
   }

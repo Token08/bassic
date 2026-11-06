@@ -1,5 +1,7 @@
 # Bassic. microCMS current status
 
+> 2026-11-06更新: GitHubの `MICROCMS_SERVICE_DOMAIN` / `MICROCMS_API_KEY` の登録と、稼働中管理画面の接続設定の存在を確認済みです。ローカルの接続情報はダミーのため、ローカルsmokeのスキップは本番CMS未設定を意味しません。現在の公開・運用の判定は `docs/delivery-readiness-report.md` を参照してください。以下のセットアップ説明は未接続環境を用意する場合の参考です。
+
 ## Current implementation
 
 - The public site already has a microCMS adapter in `lib/microcms.ts`.

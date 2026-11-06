@@ -13,8 +13,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -22,6 +20,9 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
+  NEXT_PUBLIC_BASE_PATH: ${{ vars.NEXT_PUBLIC_BASE_PATH }}
+  NEXT_PUBLIC_NOINDEX: ${{ vars.NEXT_PUBLIC_NOINDEX || 'false' }}
 
 jobs:
   build:
@@ -39,6 +40,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check operation failure handling
+        if: github.event_name != 'schedule'
+        run: node --test scripts/ops-failure.test.mjs
+
       - name: Check microCMS schema
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
@@ -46,6 +51,7 @@ jobs:
         run: npm run smoke:cms
 
       - name: Fetch social feeds
+        continue-on-error: true
         env:
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
           INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
@@ -64,6 +70,7 @@ jobs:
           npx playwright install chromium
 
       - name: Fetch Facebook events
+        continue-on-error: true
         env:
           FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
           FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
@@ -76,42 +83,8 @@ jobs:
           META_GRAPH_VERSION: v23.0
         run: npm run fetch:events
 
-      - name: Sync Google Calendar
-        env:
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
-          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}
-          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
-          GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC: ${{ vars.GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC }}
-        run: |
-          if [ -n "$GOOGLE_SERVICE_ACCOUNT_JSON" ] || { [ -n "$GOOGLE_SERVICE_ACCOUNT_EMAIL" ] && [ -n "$GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY" ]; }; then
-            npm run sync:calendar
-          else
-            echo "Skipping Google Calendar sync because write credentials are not configured."
-          fi
-
-      - name: Publish approved social notices
-        env:
-          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
-          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
-          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
-          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          META_GRAPH_VERSION: v23.0
-        run: npm run publish:social
-
-      - name: Archive old published events
-        env:
-          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
-          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
-          AUTO_ARCHIVE_PAST_EVENTS: ${{ vars.AUTO_ARCHIVE_PAST_EVENTS }}
-        run: npm run archive:events
-
       - name: Build static site
         env:
-          NEXT_PUBLIC_SITE_URL: https://www.bassic.jp
           NEXT_PUBLIC_DEDICATED_ADMIN_URL: ${{ vars.NEXT_PUBLIC_DEDICATED_ADMIN_URL }}
           NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH: ${{ vars.NEXT_PUBLIC_ADMIN_ENTRY_PASSWORD_HASH || secrets.ADMIN_ENTRY_PASSWORD_HASH }}
           NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC: ${{ vars.NEXT_PUBLIC_INSTAGRAM_WIDGET_SRC }}
@@ -121,8 +94,6 @@ jobs:
         run: npm run build
 
       - name: Smoke check published output
-        env:
-          NEXT_PUBLIC_SITE_URL: https://www.bassic.jp
         run: |
           npm run smoke:links
           npm run smoke:content
@@ -134,6 +105,9 @@ jobs:
           path: out
 
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -30,6 +30,9 @@ async function main() {
   const posted = results.filter((result) => result.status === "posted").length;
   const skipped = results.filter((result) => result.status === "skipped").length;
   console.log(`SNS publish complete. posted=${posted} skipped=${skipped} failed=${failed}`);
+  if (failed) {
+    process.exitCode = 1;
+  }
 }
 
 async function fetchApprovedNotices() {

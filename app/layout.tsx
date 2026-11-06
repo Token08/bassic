@@ -3,6 +3,7 @@ import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { absoluteUrl, site } from "@/lib/site";
 import { languageAlternates } from "@/lib/seo";
+import { assetPath } from "@/lib/assets";
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ["latin"],
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     template: "%s | public bar Bassic."
   },
   description: site.description,
+  robots: process.env.NEXT_PUBLIC_NOINDEX === "true" ? { index: false, follow: false } : undefined,
   keywords: [...site.keywords, "Bassic", "渡辺圭一"],
   alternates: {
     canonical: absoluteUrl("/"),
@@ -47,8 +49,8 @@ export const metadata: Metadata = {
     images: [absoluteUrl("/ogp.png")]
   },
   icons: {
-    icon: "/favicon.svg",
-    apple: "/apple-touch-icon.png"
+    icon: assetPath("/favicon.svg"),
+    apple: assetPath("/apple-touch-icon.png")
   }
 };
 

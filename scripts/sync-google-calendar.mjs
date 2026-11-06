@@ -141,25 +141,25 @@ async function readManagedFacebookEvents() {
     return [];
   }
 
-  try {
-    const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date`, {
-      headers: {
-        "X-MICROCMS-API-KEY": apiKey
-      },
-      cache: "no-store"
-    });
+  const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date`, {
+    headers: {
+      "X-MICROCMS-API-KEY": apiKey
+    },
+    cache: "no-store",
+    signal: AbortSignal.timeout(15000)
+  });
 
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    return (data.contents || [])
-      .map(normalizeEvent)
-      .filter((event) => event && event.isPublished && isFacebookEvent(event));
-  } catch {
-    return [];
+  if (!response.ok) {
+    throw new Error(`CMSイベントを取得できないため、カレンダー同期を停止しました (${response.status})。`);
   }
+
+  const data = await response.json();
+  if (!Array.isArray(data.contents)) {
+    throw new Error("CMSイベントの応答形式が不正なため、カレンダー同期を停止しました。");
+  }
+  return data.contents
+    .map(normalizeEvent)
+    .filter((event) => event && event.isPublished && isFacebookEvent(event));
 }
 
 function normalizeEvent(event) {
