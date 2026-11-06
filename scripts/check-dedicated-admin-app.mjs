@@ -1757,7 +1757,7 @@ function checkAdminDashboardShowsPublicCheckOrder() {
     [clientFile, clientText, "PARTY"],
     [clientFile, clientText, "ACCESS"],
     [clientFile, clientText, "drink-menu-sheets"],
-    [clientFile, clientText, "new URL(page.publicPath, publicSiteUrl).toString()"],
+    [clientFile, clientText, "resolvePublicUrl(page.publicPath, publicSiteUrl)"],
     [cssFile, cssText, ".page-change-map"],
     [cssFile, cssText, ".page-change-grid"],
     [cssFile, cssText, ".page-change-actions"]
@@ -1808,7 +1808,7 @@ function checkAdminDashboardShowsPageChangeMap() {
     [clientFile, clientText, 'sectionId: "equipment-rental"'],
     [clientFile, clientText, 'sectionId: "site-settings"'],
     [clientFile, clientText, 'sectionId: "social-notices"'],
-    [clientFile, clientText, "new URL(page.publicPath, publicSiteUrl).toString()"],
+    [clientFile, clientText, "resolvePublicUrl(page.publicPath, publicSiteUrl)"],
     [cssFile, cssText, ".page-change-map"],
     [cssFile, cssText, ".page-change-grid"],
     [cssFile, cssText, ".page-change-card"],

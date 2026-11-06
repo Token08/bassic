@@ -53,6 +53,7 @@ NEXT_PUBLIC_DEDICATED_ADMIN_URL=https://bassic-admin.vercel.app/
 ```
 
 `NEXT_PUBLIC_PUBLIC_SITE_URL` は管理画面の「公開サイトを開く」導線とSNS状態確認で使います。公開サイトの本番URLと揃えてください。
+先行公開中は `admin-app/vercel.json` の `env` と `build.env` に確認用URLを明示しています。独自ドメイン切替時は両方を `https://www.bassic.jp/` に変更して管理画面を再配備します。この設定には公開URLだけを置き、認証情報は置きません。
 `NEXT_PUBLIC_DEDICATED_ADMIN_URL` は公開サイト側の `/admin/` 入口から、Vercelで動く専用管理画面へ移動するために使います。Vercelで発行されたURLに差し替えてください。
 
 管理画面URL:

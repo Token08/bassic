@@ -22,6 +22,7 @@ import {
   X
 } from "lucide-react";
 import { getSection, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
+import { resolvePublicUrl } from "@/lib/public-site-url";
 
 type Draft = Record<string, unknown>;
 type ApiResult<T = unknown> = {
@@ -148,7 +149,7 @@ function getPublicPageUrl(section: SectionDefinition) {
     return "";
   }
 
-  return new URL(path, publicSiteUrl).toString();
+  return resolvePublicUrl(path, publicSiteUrl);
 }
 
 function getPublicPageLabel(section: SectionDefinition) {
@@ -291,7 +292,7 @@ function isValidManagedPdfUrl(value: string) {
   }
 
   try {
-    const url = value.startsWith("/") ? new URL(value, publicSiteUrl) : new URL(value);
+    const url = new URL(resolvePublicUrl(value, publicSiteUrl));
     const isAllowedLocation = value.startsWith("/assets/pdf/") || url.protocol === "https:";
     return isAllowedLocation && url.pathname.toLowerCase().endsWith(".pdf");
   } catch {
@@ -1054,7 +1055,7 @@ function PageChangeMap({ onSelect }: { onSelect: (id: string) => void }) {
                 </button>
               ))}
             </div>
-            <a className="page-change-link" href={new URL(page.publicPath, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
+            <a className="page-change-link" href={resolvePublicUrl(page.publicPath, publicSiteUrl)} target="_blank" rel="noreferrer">
               <ExternalLink size={14} />
               {page.publicLabel}
             </a>
@@ -3761,7 +3762,7 @@ function PageBasedDashboard({
               <span>{activePage.page}</span>
               <strong>このページで編集できる項目</strong>
             </div>
-            <a className="page-change-link" href={new URL(activePage.publicPath, publicSiteUrl).toString()} target="_blank" rel="noreferrer">
+            <a className="page-change-link" href={resolvePublicUrl(activePage.publicPath, publicSiteUrl)} target="_blank" rel="noreferrer">
               <ExternalLink size={14} />
               {activePage.publicLabel}
             </a>
