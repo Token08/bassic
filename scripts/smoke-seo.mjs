@@ -75,8 +75,22 @@ for (const page of pages) {
     }
   }
 
-  if (page.path === "/events/" && (!html.includes('"@type":"Event"') || !html.includes('"endDate"'))) {
-    failures.push("Missing Event structured data with endDate on /events/");
+  if (page.path === "/events/") {
+    const scripts = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)];
+    for (const [, json] of scripts) {
+      try {
+        const value = JSON.parse(json);
+        for (const event of Array.isArray(value) ? value : [value]) {
+          const start = Date.parse(event.startDate);
+          const end = Date.parse(event.endDate);
+          if (event["@type"] === "Event" && (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)) {
+            failures.push("Event structured data must include a valid startDate and later endDate");
+          }
+        }
+      } catch {
+        failures.push("Invalid structured data JSON on /events/");
+      }
+    }
   }
 }
 

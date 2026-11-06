@@ -116,6 +116,10 @@ for (const page of localizedPages) {
   requireTerms(page);
 }
 
+if (readPage("events/index.html").includes("https://www.facebook.com/events/1234567890123456/")) {
+  failures.push("Events page contains a demonstration Facebook event URL");
+}
+
 if (failures.length) {
   console.error("Content smoke check failed:");
   for (const failure of failures) {

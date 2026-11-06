@@ -25,30 +25,7 @@ export const fallbackContents = {
     accessNote:
       "天神駅から徒歩約4分。WITH天神ビル5Fまで上がってください。イベント日は通常営業開始時間が変わる場合があります。"
   },
-  events: [
-    {
-      id: "sample-1",
-      title: "Bassic. Music Night",
-      date: "2026-07-12",
-      openTime: "19:00",
-      startTime: "20:00",
-      endTime: "22:00",
-      performers: "出演者は決まり次第更新",
-      price: "予約・料金はイベントごとに告知",
-      reservation: "mail@bassic.jp まで日付、枚数、氏名、電話番号をお送りください。",
-      isPublished: true
-    },
-    {
-      id: "sample-2",
-      title: "After Party / DJ Bar Time",
-      date: "2026-07-19",
-      openTime: "20:00",
-      performers: "DJ / Guest Musician",
-      price: "キャッシュオン",
-      reservation: "予約不要。貸切状況は事前にSNSをご確認ください。",
-      isPublished: true
-    }
-  ],
+  events: [],
   menu: [
     {
       category: "food",
@@ -155,7 +132,7 @@ export const fallbackContents = {
       platform: "x",
       title: "Xでイベント告知・営業情報を確認",
       url: "https://x.com/bar_Bassic",
-      description: "管理画面にXの投稿URLを貼ると、この欄にお知らせカードとして表示できます。",
+      description: "イベントの告知や営業のお知らせは、公式Xでご確認ください。",
       isPublished: true
     }
   ]

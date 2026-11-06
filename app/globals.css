@@ -1385,7 +1385,7 @@ h3 {
   padding: 12px 14px;
   background: rgba(255, 253, 245, 0.82);
   box-shadow: 0 12px 28px rgba(65, 45, 20, 0.08);
-  color: var(--brown);
+  color: var(--ink);
   font-weight: 800;
   line-height: 1.55;
 }

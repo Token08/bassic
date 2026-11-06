@@ -92,33 +92,7 @@ const heroSlides = [
   }
 ];
 
-const events = [
-  {
-    id: "sample-1",
-    title: "Bassic. Music Night",
-    date: "2026-07-12",
-    openTime: "19:00",
-    startTime: "20:00",
-    endTime: "22:00",
-    sourceUrl: "https://www.facebook.com/events/1234567890123456/",
-    sourceId: "1234567890123456",
-    sourceType: "facebook",
-    performers: "出演者は決まり次第更新",
-    price: "予約・料金はイベントごとに告知",
-    reservation: "mail@bassic.jp まで日付、枚数、氏名、電話番号をお送りください。",
-    isPublished: true
-  },
-  {
-    id: "sample-2",
-    title: "After Party / DJ Bar Time",
-    date: "2026-07-19",
-    openTime: "20:00",
-    performers: "DJ / Guest Musician",
-    price: "キャッシュオン",
-    reservation: "予約不要。貸切状況は事前にSNSをご確認ください。",
-    isPublished: true
-  }
-];
+const events = [];
 
 const menu = [
   ["menu-fuzz-curry", "ファズ・カレー", "¥1,200", "/assets/menu-refresh/fuzz-curry.jpg"],

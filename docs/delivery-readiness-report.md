@@ -2,9 +2,20 @@
 
 ## 2026-11-06 公開移行の再点検
 
-判定: **本番切替は未完了。ソース修正と公開経路の復旧を進行中。** 下記の7月時点の実績は過去の記録であり、現在の稼働保証ではありません。
+判定: **GitHub Pagesで新サイトの先行公開が完了。独自ドメイン切替と管理更新の実運用検証は未完了。** 下記の7月時点の実績は過去の記録であり、現在の稼働保証ではありません。
 
-### 確認した現在の外部状態
+### 先行公開の実績
+
+- 新サイト: https://token08.github.io/bassic/index.html （HTTPS、確認用のnoindex）。ルートURLには旧ドメインへの転送キャッシュが残るため、当面はindex.htmlを案内する。
+- 確認用管理画面入口: https://token08.github.io/bassic/admin/
+- Pagesの独自ドメイン紐付けを一時解除し、HTTPS強制が有効であることを確認。旧サイトのDNS・メール設定は変更していない。
+- 実CMS接続・ビルド・公開が成功: https://github.com/Token08/bassic/actions/runs/42177123845
+- 実CMSの検証件数はhero-slides 0、events 0、menu 1、homeはcompact item。多くの表示はローカル初期データを使っているため、実運用データが揃った証拠とは扱わない。
+- 公開したTOP／MENUのPC表示と、390px幅でTOP／MENU／EVENT／ACCESS／PARTYの導線・表示を確認。ドリンク表切替と拡大を確認。ACCESS／PARTYに横はみ出しなし。
+- Google Calendar埋め込みは実際に読み込めており、2026年11月の23件の予定表示を確認。これは書き込み同期の検証とは別。
+- 公開確認で見つけたカレンダー案内カードの文字色、来店者向けSNS文言、架空イベントのフォールバック／初期投入データを修正。
+
+### 移行開始時に確認した外部状態
 
 - 本番 `https://www.bassic.jp/` は旧サイトを返す。新サイトの `/admin/` と `/menu/` は404。
 - `www.bassic.jp` のAレコードは `157.7.107.41`。NSは `uns01.lolipop.jp` / `uns02.lolipop.jp`。メールのMXは `mx01.lolipop.jp`。Web移行時にメール関連設定を変えない。
