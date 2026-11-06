@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+import { writeFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 
-function run(script, mock) {
+function run(script, mock, env = {}) {
   return spawnSync(process.execPath, ["--input-type=module", "--eval", `${mock}\nawait import('./scripts/${script}');`], {
     cwd: new URL("../", import.meta.url),
     encoding: "utf8",
@@ -12,7 +16,9 @@ function run(script, mock) {
       MICROCMS_SERVICE_DOMAIN: "test",
       MICROCMS_API_KEY: "test",
       GOOGLE_CALENDAR_SYNC_DRY_RUN: "true",
-      X_ACCESS_TOKEN: "test"
+      GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC: "false",
+      X_ACCESS_TOKEN: "test",
+      ...env
     }
   });
 }
@@ -36,6 +42,25 @@ test("calendar accepts a valid empty CMS list without writes", () => {
   };`);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /同期対象イベントがありません/);
+});
+
+test("calendar does not feed imported Google Calendar events back into the same calendar", () => {
+  const input = join(tmpdir(), `bassic-calendar-${randomUUID()}.json`);
+  writeFileSync(input, JSON.stringify({ events: [{ title: "Existing Calendar event", date: "2026-12-01", startTime: "19:00", sourceType: "google_calendar", isPublished: true }] }));
+  try {
+    const result = run("sync-google-calendar.mjs", `globalThis.fetch = async () => Response.json({ contents: [] });`, { GOOGLE_CALENDAR_SYNC_INPUT: input });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /同期対象イベントがありません/);
+    assert.ok(!result.stdout.includes("Existing Calendar event"));
+  } finally {
+    unlinkSync(input);
+  }
+});
+
+test("bulk deletion is rejected before fetching data or authenticating", () => {
+  const result = run("sync-google-calendar.mjs", `globalThis.fetch = async () => { throw Error('Unexpected fetch'); };`, { GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC: "true" });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /カレンダーの一括削除は無効/);
 });
 
 test("SNS delivery failure records the failure and fails the job", () => {

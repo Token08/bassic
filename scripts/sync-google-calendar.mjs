@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { google } from "googleapis";
+import { upsertCalendarEvents } from "./calendar-upsert.mjs";
 
 const root = process.cwd();
 const inputPath = process.env.GOOGLE_CALENDAR_SYNC_INPUT || path.join(root, "public", "data", "facebook-events.json");
@@ -19,6 +20,9 @@ let skippedSyncEvents = [];
 let inputFileWarning = "";
 
 async function main() {
+  if (clearBeforeSync) {
+    throw new Error("カレンダーの一括削除は無効です。GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC=false にしてください。");
+  }
   const events = await readEvents();
   if (inputFileWarning && dryRun) {
     console.log(`警告: ${inputFileWarning}`);
@@ -99,20 +103,15 @@ async function main() {
     );
   }
 
-  if (clearBeforeSync) {
-    await clearCalendar(calendar);
-  } else {
-    await clearSyncedEvents(calendar);
-  }
-
-  for (const event of events) {
-    await calendar.events.insert({
-      calendarId,
-      requestBody: toGoogleCalendarEvent(event)
-    });
-  }
-
-  console.log(`${events.length} 件のイベントを Google Calendar ${calendarId} へ同期しました。`);
+  const result = await upsertCalendarEvents({
+    calendar, calendarId, syncTag,
+    entries: events.map(event => ({
+      key: getEventDedupeKey(event),
+      sourceId: event.sourceId || event.id || getEventDedupeKey(event),
+      body: toGoogleCalendarEvent(event)
+    }))
+  });
+  console.log(`Google Calendar ${calendarId} へ追加 ${result.inserted} 件、更新 ${result.updated} 件、変更なし ${result.unchanged} 件。既存予定は削除していません。`);
 }
 
 async function readEvents() {
@@ -163,7 +162,7 @@ async function readManagedFacebookEvents() {
 }
 
 function normalizeEvent(event) {
-  if (!event) {
+  if (!event || event.sourceType === "google_calendar") {
     return null;
   }
 
@@ -332,38 +331,6 @@ function getCredentials() {
   throw new Error(
     "Google Calendarへ書き込むための認証情報がありません。GOOGLE_SERVICE_ACCOUNT_JSON、または GOOGLE_SERVICE_ACCOUNT_EMAIL と GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY を設定してください。"
   );
-}
-
-async function clearCalendar(calendar) {
-  console.log(`Google Calendar ${calendarId} の全イベントを削除してから同期します。`);
-  await deleteEvents(calendar, {});
-}
-
-async function clearSyncedEvents(calendar) {
-  await deleteEvents(calendar, { privateExtendedProperty: `syncTag=${syncTag}` });
-}
-
-async function deleteEvents(calendar, extraParams) {
-  let pageToken;
-
-  do {
-    const response = await calendar.events.list({
-      calendarId,
-      maxResults: 2500,
-      showDeleted: false,
-      singleEvents: false,
-      pageToken,
-      ...extraParams
-    });
-
-    for (const event of response.data.items || []) {
-      if (event.id) {
-        await calendar.events.delete({ calendarId, eventId: event.id });
-      }
-    }
-
-    pageToken = response.data.nextPageToken;
-  } while (pageToken);
 }
 
 function toGoogleCalendarEvent(event) {
