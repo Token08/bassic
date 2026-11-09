@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 import re
 import ssl
 import sys
+import traceback
 from uuid import uuid4
 
 
@@ -142,5 +143,7 @@ if __name__ == "__main__":
     except Exception as error:
         # Provider errors can echo account identifiers. Do not print those replies.
         if isinstance(error, ftplib.Error):
-            sys.exit(f"FTPS operation failed ({type(error).__name__}). Check server access and permissions.")
+            code = re.match(r"[1-5][0-9]{2}\b", str(error))
+            frame = next(frame for frame in reversed(traceback.extract_tb(error.__traceback__)) if frame.filename == __file__)
+            sys.exit(f"FTPS operation failed at line {frame.lineno} ({code.group() if code else type(error).__name__}). Check server access and permissions.")
         sys.exit(str(error))
