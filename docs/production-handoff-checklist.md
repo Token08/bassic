@@ -1,5 +1,13 @@
 # Production Handoff Checklist
 
+## ロリポップの既存ドメインで公開する場合
+
+- 公開ワークフローの手動実行で `package-lolipop` を選ぶと、本番URL用の成果物をCMS接続と各ページの検査付きで生成する。公開先への転送は行わない。
+- GitHubの `lolipop` 環境に `LOLIPOP_FTPS` を登録する。値は `{"host":"FTPSサーバー","user":"FTP・WebDAVアカウント","password":"FTP・WebDAVパスワード"}` の形式。利用できるブランチは `main` に限定する。
+- `stage-lolipop` で専用フォルダ `bassic-site-v2` に転送する。転送は証明書を検証するFTPSを使用し、新規・変更ファイルは読み戻して一致を確認する。旧サイトのルートやメール設定を切り替える操作とは別工程。
+- 転送成功後、ロリポップの独自ドメイン設定で公開フォルダを `bassic-site-v2` に変更する。主要ページ、画像、管理画面入口、旧URL、HTTPSを確認する。切り戻しは公開フォルダ欄を元の値（今回の旧サイトは空欄）に戻す。
+- 本番確認後、GitHubの `LOLIPOP_PUBLISH_ENABLED` を `true` にし、`admin-app/vercel.json` 内の公開先URLと外部連携に使うGitHubの `NEXT_PUBLIC_SITE_URL` を本番URLへ変更する。管理画面の公開操作から転送・本番表示まで確認する。転送は更新ファイルを順に置く方式で、リリース全体を一瞬で切り替える仕組みではない。
+
 公開前から納品後までの確認リストです。納品先にはGitHubではなく、サイトURLと管理画面URLを渡す前提で整理しています。
 
 ## 1. 公開前に決めること

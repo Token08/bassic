@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Publish website
 
 on:
   push:
@@ -7,6 +7,15 @@ on:
   schedule:
     - cron: "12 * * * *"
   workflow_dispatch:
+    inputs:
+      target:
+        description: "通常の公開 / ロリポップ用の出力のみ / ロリポップの公開候補へ転送"
+        type: choice
+        default: current
+        options:
+          - current
+          - package-lolipop
+          - stage-lolipop
   repository_dispatch:
     types:
       - microcms_publish
@@ -20,9 +29,9 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
-  NEXT_PUBLIC_BASE_PATH: ${{ vars.NEXT_PUBLIC_BASE_PATH }}
-  NEXT_PUBLIC_NOINDEX: ${{ vars.NEXT_PUBLIC_NOINDEX || 'false' }}
+  NEXT_PUBLIC_SITE_URL: ${{ (vars.LOLIPOP_PUBLISH_ENABLED == 'true' || inputs.target == 'package-lolipop' || inputs.target == 'stage-lolipop') && 'https://www.bassic.jp' || vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
+  NEXT_PUBLIC_BASE_PATH: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop') && vars.NEXT_PUBLIC_BASE_PATH || '' }}
+  NEXT_PUBLIC_NOINDEX: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop') && vars.NEXT_PUBLIC_NOINDEX || 'false' }}
 
 jobs:
   build:
@@ -104,7 +113,12 @@ jobs:
         with:
           path: out
 
+      - name: Validate Lolipop package
+        if: vars.LOLIPOP_PUBLISH_ENABLED == 'true' || inputs.target == 'package-lolipop' || inputs.target == 'stage-lolipop'
+        run: python3 scripts/deploy-lolipop.py out --check
+
   deploy:
+    if: vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop'
     permissions:
       pages: write
       id-token: write
@@ -117,3 +131,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  deploy-lolipop:
+    if: github.ref == 'refs/heads/main' && (inputs.target == 'stage-lolipop' || (vars.LOLIPOP_PUBLISH_ENABLED == 'true' && inputs.target != 'package-lolipop'))
+    environment: lolipop
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v5
+        with:
+          name: github-pages
+          path: package
+      - name: Extract verified static output
+        run: mkdir out && tar -xf package/artifact.tar -C out
+      - name: Deploy to the dedicated folder over FTPS
+        env:
+          LOLIPOP_FTPS: ${{ secrets.LOLIPOP_FTPS }}
+        run: python3 scripts/deploy-lolipop.py out
