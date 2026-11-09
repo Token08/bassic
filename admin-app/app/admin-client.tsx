@@ -157,7 +157,7 @@ function getPublicPageLabel(section: SectionDefinition) {
 }
 
 function getPostPublishSteps(section: SectionDefinition) {
-  const commonSteps = ["1〜3分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
+  const commonSteps = ["数分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
   const sectionSteps: Partial<Record<SectionDefinition["id"], string[]>> = {
     "site-settings": ["TOP、Access、Menuで営業時間・喫煙・テーブル・チャージを確認", "Accessページで住所・電話・Google Mapを確認", "電話・地図・SNSボタンが正しく開くか確認"],
     home: ["TOPページの見出し・画像・案内カードを確認", "営業時間・喫煙・チャージの表示を確認"],
@@ -565,7 +565,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
       ? "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
       : notice.tone === "info"
         ? "このまま画面を閉じずに、少し待ってください。"
-        : "反映には1〜3分ほどかかることがあります。少し待ってから公開サイトを開き、再読み込みして確認してください。";
+        : "反映には数分かかります。少し待ってから公開サイトを開き、再読み込みして確認してください。";
 
   return (
     <div className={`notice ${notice.tone}`}>
@@ -624,11 +624,11 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
     return null;
   }
 
-  const label = notice.tone === "success" ? "公開済み・確認待ち" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
+  const label = notice.tone === "success" ? "反映を受け付けました" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
   const timeLabel = formatDeployTime(notice.requestedAt);
   const statusMessage = notice.tone === "success"
-    ? "公開操作は完了しました。1〜3分後に公開サイトを再読み込みして確認してください。"
-    : "1〜3分後に公開サイトを再読み込みして確認してください。";
+    ? "公開サイトへの反映を受け付けました。数分後に公開サイトを再読み込みして確認してください。"
+    : "数分後に公開サイトを再読み込みして確認してください。";
 
   return (
     <section className={`deploy-status ${notice.tone}`} aria-label="最後の反映状況">
@@ -3002,7 +3002,7 @@ function SectionEditor({
       }
 
       setDeploying(true);
-      setNotice({ tone: "info", message: "保存しました。サイトへ反映しています。1〜3分ほどお待ちください。" });
+      setNotice({ tone: "info", message: "保存しました。サイトへの反映を依頼しています。" });
 
       try {
         const deployResult = await requestJson<{ actionsUrl: string; requestedAt: string }>("/api/deploy", {
@@ -3011,7 +3011,7 @@ function SectionEditor({
         });
         const deployNotice = {
           tone: "success" as const,
-          message: "公開しました。1〜3分ほど待ってから公開サイトを再読み込みして確認してください。",
+          message: "保存し、公開サイトへの反映を受け付けました。数分後に公開サイトを再読み込みしてください。",
           actionsUrl: deployResult.data?.actionsUrl,
           requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
           sourceLabel: `${section.shortTitle}を公開`,
