@@ -5,8 +5,14 @@
 - 公開ワークフローの手動実行で `package-lolipop` を選ぶと、本番URL用の成果物をCMS接続と各ページの検査付きで生成する。公開先への転送は行わない。
 - GitHubの `lolipop` 環境に `LOLIPOP_FTPS` を登録する。値は `{"host":"FTPSサーバー","user":"FTP・WebDAVアカウント","password":"FTP・WebDAVパスワード"}` の形式。利用できるブランチは `main` に限定する。
 - `stage-lolipop` で専用フォルダ `bassic-site-v2` に転送する。転送は証明書を検証するFTPSを使用し、新規・変更ファイルは読み戻して一致を確認する。旧サイトのルートやメール設定を切り替える操作とは別工程。
-- 転送成功後、ロリポップの独自ドメイン設定で公開フォルダを `bassic-site-v2` に変更する。主要ページ、画像、管理画面入口、旧URL、HTTPSを確認する。切り戻しは公開フォルダ欄を元の値（今回の旧サイトは空欄）に戻す。
+- 転送成功後、ロリポップの独自ドメイン設定 (`bassic.jp`) とサブドメイン設定 (`www.bassic.jp`) で公開フォルダを `bassic-site-v2` に変更する。主要ページ、画像、管理画面入口、旧URL、HTTPSを確認する。切り戻しは両方の公開フォルダ欄を元の値（今回の旧サイトは空欄）に戻す。DNSとメール設定は変更しない。
 - 本番確認後、GitHubの `LOLIPOP_PUBLISH_ENABLED` を `true` にし、`admin-app/vercel.json` 内の公開先URLと外部連携に使うGitHubの `NEXT_PUBLIC_SITE_URL` を本番URLへ変更する。管理画面の公開操作から転送・本番表示まで確認する。転送は更新ファイルを順に置く方式で、リリース全体を一瞬で切り替える仕組みではない。
+
+FTP接続元の制限を維持したまま初回公開する場合は、検査済みの成果物をロリポップ！FTPの管理画面から転送できる。`package-lolipop` の `github-pages` 成果物から `artifact.tar` を展開し、`CNAME` と `.nojekyll` を除いて専用フォルダへバイナリモードで置く。管理画面は1回の選択につき最大20ファイル。転送後はHTTP経由で実データを読み直し、成果物と照合してから公開フォルダを切り替える。
+
+2026-11-10 の初回転送では、GitHubからのFTPS接続はログイン時に `530` で拒否された。既存のFTP接続元制限とSSHの無効設定を維持し、ロリポップ！FTPの管理画面から278ファイルを転送した。HTTPSで全件のSHA-256一致を確認した。自動転送が正常に実行できるまで `LOLIPOP_PUBLISH_ENABLED` は有効にしない。CMSでの保存と、本番サーバーへの反映を区別して確認する。
+
+接続元制限を維持する自動更新では、`pull-lolipop` が検査済みの静的サイトを署名してGitHub Releasesに配置し、ロリポップのcronが取得する。署名の秘密鍵は `lolipop` 環境の `LOLIPOP_RELEASE_SIGNING_KEY` に置く。公開鍵と取得スクリプトはHTTPアクセスを拒否した `bassic-site-v2/.bassic-ops` に置く。cronと公開ドメインの `/_bassic-build.json` を確認してから `LOLIPOP_PULL_ENABLED=true` にする。通常実行では、このファイルが該当するGitHubの実行番号とコミットを返した時点で反映完了とする。
 
 公開前から納品後までの確認リストです。納品先にはGitHubではなく、サイトURLと管理画面URLを渡す前提で整理しています。
 
@@ -61,7 +67,7 @@ NEXT_PUBLIC_DEDICATED_ADMIN_URL=https://bassic-admin.vercel.app/
 ```
 
 `NEXT_PUBLIC_PUBLIC_SITE_URL` は管理画面の「公開サイトを開く」導線とSNS状態確認で使います。公開サイトの本番URLと揃えてください。
-先行公開中は `admin-app/vercel.json` の `env` と `build.env` に確認用URLを明示しています。独自ドメイン切替時は両方を `https://www.bassic.jp/` に変更して管理画面を再配備します。この設定には公開URLだけを置き、認証情報は置きません。
+`admin-app/vercel.json` の `env` と `build.env` に `https://www.bassic.jp/` を指定します。この設定には公開URLだけを置き、認証情報は置きません。
 `NEXT_PUBLIC_DEDICATED_ADMIN_URL` は公開サイト側の `/admin/` 入口から、Vercelで動く専用管理画面へ移動するために使います。Vercelで発行されたURLに差し替えてください。
 
 管理画面URL:

@@ -16,6 +16,7 @@ on:
           - current
           - package-lolipop
           - stage-lolipop
+          - pull-lolipop
   repository_dispatch:
     types:
       - microcms_publish
@@ -29,13 +30,15 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NEXT_PUBLIC_SITE_URL: ${{ (vars.LOLIPOP_PUBLISH_ENABLED == 'true' || inputs.target == 'package-lolipop' || inputs.target == 'stage-lolipop') && 'https://www.bassic.jp' || vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
-  NEXT_PUBLIC_BASE_PATH: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop') && vars.NEXT_PUBLIC_BASE_PATH || '' }}
-  NEXT_PUBLIC_NOINDEX: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop') && vars.NEXT_PUBLIC_NOINDEX || 'false' }}
+  BASSIC_LOLIPOP_BUILD: ${{ vars.LOLIPOP_PUBLISH_ENABLED == 'true' || vars.LOLIPOP_PULL_ENABLED == 'true' || contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '') }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: ${{ (vars.LOLIPOP_PUBLISH_ENABLED == 'true' || vars.LOLIPOP_PULL_ENABLED == 'true' || contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && 'https://www.bassic.jp' || vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
+      NEXT_PUBLIC_BASE_PATH: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && !contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && vars.NEXT_PUBLIC_BASE_PATH || '' }}
+      NEXT_PUBLIC_NOINDEX: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && !contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && vars.NEXT_PUBLIC_NOINDEX || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -114,11 +117,11 @@ jobs:
           path: out
 
       - name: Validate Lolipop package
-        if: vars.LOLIPOP_PUBLISH_ENABLED == 'true' || inputs.target == 'package-lolipop' || inputs.target == 'stage-lolipop'
+        if: env.BASSIC_LOLIPOP_BUILD == 'true'
         run: python3 scripts/deploy-lolipop.py out --check
 
   deploy:
-    if: vars.LOLIPOP_PUBLISH_ENABLED != 'true' && inputs.target != 'package-lolipop' && inputs.target != 'stage-lolipop'
+    if: vars.LOLIPOP_PUBLISH_ENABLED != 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && !contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')
     permissions:
       pages: write
       id-token: write
@@ -133,7 +136,7 @@ jobs:
         uses: actions/deploy-pages@v5
 
   deploy-lolipop:
-    if: github.ref == 'refs/heads/main' && (inputs.target == 'stage-lolipop' || (vars.LOLIPOP_PUBLISH_ENABLED == 'true' && inputs.target != 'package-lolipop'))
+    if: github.ref == 'refs/heads/main' && (inputs.target == 'stage-lolipop' || (vars.LOLIPOP_PUBLISH_ENABLED == 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && (inputs.target == 'current' || !inputs.target)))
     environment: lolipop
     runs-on: ubuntu-latest
     needs: build
@@ -149,3 +152,44 @@ jobs:
         env:
           LOLIPOP_FTPS: ${{ secrets.LOLIPOP_FTPS }}
         run: python3 scripts/deploy-lolipop.py out
+
+  publish-lolipop-release:
+    if: github.ref == 'refs/heads/main' && (inputs.target == 'pull-lolipop' || (vars.LOLIPOP_PULL_ENABLED == 'true' && (inputs.target == 'current' || !inputs.target)))
+    environment: lolipop
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v5
+        with:
+          name: github-pages
+          path: package
+      - name: Sign verified static output
+        env:
+          LOLIPOP_RELEASE_SIGNING_KEY: ${{ secrets.LOLIPOP_RELEASE_SIGNING_KEY }}
+        run: |
+          mkdir out
+          tar -xf package/artifact.tar -C out
+          php -l scripts/pull-lolipop-release.php
+          python3 scripts/package-lolipop-release.py out bassic-site.release
+      - name: Publish signed package for Lolipop
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view bassic-production >/dev/null 2>&1; then
+            gh release create bassic-production --target "$GITHUB_SHA" --latest=false --title "Bassic production site package" --notes "Signed static files for the Bassic website."
+          fi
+          gh release upload bassic-production bassic-site.release --clobber
+      - name: Confirm release served by the production site
+        if: vars.LOLIPOP_PULL_ENABLED == 'true'
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fsS --max-time 10 "https://www.bassic.jp/_bassic-build.json?run=$GITHUB_RUN_NUMBER" | jq -e --argjson run "$GITHUB_RUN_NUMBER" --arg commit "$GITHUB_SHA" '.run == $run and .commit == $commit' >/dev/null; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "The signed build has not been confirmed on the production domain." >&2
+          exit 1
