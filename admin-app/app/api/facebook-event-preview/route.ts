@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
+import { findFacebookEvents } from "@/lib/microcms";
+import { parseDateFromText, parseDateTimeValue } from "@/lib/facebook-event-time";
 
 export const runtime = "nodejs";
 
@@ -12,6 +14,7 @@ type Preview = {
   endTime: string;
   sourceId: string;
   sourceUrl: string;
+  existingEvents: Array<Record<string, unknown>>;
 };
 
 function unauthorized() {
@@ -77,7 +80,8 @@ function decodeHtml(value: string) {
 }
 
 function cleanTitle(value: string) {
-  return value.replace(/\s*\|\s*Facebook\s*$/i, "").replace(/\s+/g, " ").trim();
+  const title = value.replace(/\s*\|\s*Facebook\s*$/i, "").replace(/\s+/g, " ").trim();
+  return /^(?:Facebook|log\s*in|ログイン)(?:\s|$)/i.test(title) ? "" : title;
 }
 
 function readJsonLdEvents(html: string) {
@@ -86,7 +90,7 @@ function readJsonLdEvents(html: string) {
 
   for (const block of blocks) {
     try {
-      const parsed = JSON.parse(decodeHtml(block[1]));
+      const parsed = JSON.parse(block[1]);
       collectJsonLdEvents(parsed, events);
     } catch {
       // Facebook markup changes often. Ignore malformed JSON-LD and fall back to meta text.
@@ -123,24 +127,14 @@ function readString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function parseDateTimeValue(value: string) {
-  if (!value) {
-    return { date: "", time: "" };
-  }
-
-  const match = value.match(/(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}))?/);
-  if (!match) {
-    return { date: "", time: "" };
-  }
-
-  return {
-    date: `${match[1]}-${match[2]}-${match[3]}`,
-    time: match[4] ? `${match[4]}:${match[5]}` : ""
+function parseJsonLdEvent(html: string, sourceId: string) {
+  const events = readJsonLdEvents(html);
+  const identify = (event: Record<string, unknown>) => {
+    const url = readString(event.url) || readString(event["@id"]);
+    return normalizeFacebookEventUrl(url) ? getFacebookEventIdFromPath(new URL(url).pathname) : "";
   };
-}
-
-function parseJsonLdEvent(html: string) {
-  const event = readJsonLdEvents(html)[0];
+  const matches = events.filter((event) => identify(event) === sourceId);
+  const event = matches.length === 1 ? matches[0] : events.length === 1 && !identify(events[0]) ? events[0] : undefined;
   if (!event) {
     return { title: "", imageUrl: "", description: "", date: "", startTime: "", endTime: "" };
   }
@@ -163,85 +157,8 @@ function parseJsonLdEvent(html: string) {
   };
 }
 
-function parseDateFromText(text: string) {
-  const normalized = text.replace(/\s+/g, " ");
-  const jp = normalized.match(/(\d{4})[\/年.-](\d{1,2})[\/月.-](\d{1,2})日?.*?(午前|午後)?\s*(\d{1,2})(?::|：|時)?(\d{2})?/);
-  if (jp) {
-    const hour = normalizeJapaneseHour(jp[5], jp[4]);
-    return {
-      date: `${jp[1]}-${pad(jp[2])}-${pad(jp[3])}`,
-      startTime: `${pad(hour)}:${pad(jp[6] || "00")}`
-    };
-  }
-
-  const jpWithoutYear = normalized.match(/(?:^|[^\d])(\d{1,2})月(\d{1,2})日?.*?(午前|午後)?\s*(\d{1,2})(?::|：|時)?(\d{2})?/);
-  if (jpWithoutYear) {
-    const year = inferEventYear(jpWithoutYear[1], jpWithoutYear[2]);
-    const hour = normalizeJapaneseHour(jpWithoutYear[4], jpWithoutYear[3]);
-    return {
-      date: `${year}-${pad(jpWithoutYear[1])}-${pad(jpWithoutYear[2])}`,
-      startTime: `${pad(hour)}:${pad(jpWithoutYear[5] || "00")}`
-    };
-  }
-
-  const iso = normalized.match(/(\d{4})-(\d{2})-(\d{2})(?:.*?(\d{2}):(\d{2}))?/);
-  if (iso) {
-    return {
-      date: `${iso[1]}-${iso[2]}-${iso[3]}`,
-      startTime: iso[4] ? `${iso[4]}:${iso[5]}` : ""
-    };
-  }
-
-  return { date: "", startTime: "" };
-}
-
-function inferEventYear(monthValue: string, dayValue: string) {
-  const now = new Date();
-  let year = now.getFullYear();
-  const month = Number.parseInt(monthValue, 10);
-  const day = Number.parseInt(dayValue, 10);
-  const candidate = new Date(year, month - 1, day);
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-  if (candidate < sixMonthsAgo) {
-    year += 1;
-  }
-
-  return String(year);
-}
-
-function normalizeJapaneseHour(value: string, period?: string) {
-  const hour = Number.parseInt(value, 10);
-  if (Number.isNaN(hour)) {
-    return value;
-  }
-
-  if (period === "午後" && hour < 12) {
-    return String(hour + 12);
-  }
-
-  if (period === "午前" && hour === 12) {
-    return "0";
-  }
-
-  return String(hour);
-}
-
-function readDatetimeAttributes(html: string) {
-  const candidates = [...html.matchAll(/datetime=["']([^"']+)["']/gi)]
-    .map((match) => parseDateTimeValue(match[1]))
-    .filter((value) => value.date);
-
-  return candidates[0] || { date: "", time: "" };
-}
-
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function pad(value: string) {
-  return value.padStart(2, "0");
 }
 
 export async function POST(request: NextRequest) {
@@ -261,12 +178,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const existingEvents = await findFacebookEvents(sourceId).catch(() => null);
+  if (!existingEvents) {
+    return NextResponse.json({ ok: false, message: "登録済みイベントを確認できません。時間をおいて読み直してください。" }, { status: 502 });
+  }
   try {
     const response = await fetch(normalizedUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; BassicAdmin/1.0)"
       },
-      cache: "no-store"
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(8000)
     });
     const html = await response.text();
 
@@ -274,7 +197,7 @@ export async function POST(request: NextRequest) {
       throw new Error("Facebookを読み取れませんでした。");
     }
 
-    const jsonLd = parseJsonLdEvent(html);
+    const jsonLd = parseJsonLdEvent(html, sourceId);
     const title = cleanTitle(jsonLd.title || readMeta(html, "og:title") || readMeta(html, "twitter:title"));
     const imageUrl =
       jsonLd.imageUrl ||
@@ -283,23 +206,23 @@ export async function POST(request: NextRequest) {
       readMeta(html, "twitter:image:src");
     const description = jsonLd.description || readMeta(html, "og:description") || readMeta(html, "description");
     const parsed = parseDateFromText(`${title} ${description}`);
-    const datetime = readDatetimeAttributes(html);
     const preview: Preview = {
       title,
-      imageUrl,
+      imageUrl: title && /^https:\/\//i.test(imageUrl) ? imageUrl : "",
       description,
-      date: jsonLd.date || parsed.date || datetime.date,
-      startTime: jsonLd.startTime || parsed.startTime || datetime.time,
+      date: jsonLd.date || parsed.date,
+      startTime: jsonLd.startTime || (!jsonLd.date || !parsed.date || jsonLd.date === parsed.date ? parsed.startTime : ""),
       endTime: jsonLd.endTime,
       sourceId,
-      sourceUrl: normalizedUrl
+      sourceUrl: normalizedUrl,
+      existingEvents
     };
 
     return NextResponse.json({ ok: true, data: preview });
   } catch {
-    return NextResponse.json(
-      { ok: false, message: "Facebookから読み取れませんでした。タイトル、日付、START、画像は手入力できます。" },
-      { status: 502 }
-    );
+    return NextResponse.json({ ok: true, data: {
+      title: "", imageUrl: "", description: "", date: "", startTime: "", endTime: "",
+      sourceId, sourceUrl: normalizedUrl, existingEvents
+    } satisfies Preview });
   }
 }

@@ -40,6 +40,7 @@ type Notice = {
   actionsUrl?: string;
   requestId?: string;
   retryPublish?: boolean;
+  eventDelivery?: { calendar: string; social: string; event?: { id: string; title: string; date: string; startTime: string } };
   sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
@@ -100,11 +101,13 @@ type FacebookEventPreview = {
   endTime: string;
   sourceId: string;
   sourceUrl: string;
+  existingEvents?: Draft[];
 };
 
 type EventPublishFlowResult = {
   created?: string[];
   skipped?: string[];
+  review?: string[];
 };
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
@@ -638,6 +641,8 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
   const [status, setStatus] = useState<PublishStatus>({ state: notice.requestId ? "pending" : "failed" });
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState(false);
+  const [calendarCheck, setCalendarCheck] = useState("");
+  const [checkingCalendar, setCheckingCalendar] = useState(false);
   const { requestId, requestedAt } = notice;
 
   useEffect(() => {
@@ -696,6 +701,25 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
     }
   }
 
+  async function checkCalendar() {
+    setCheckingCalendar(true);
+    try {
+      const { data } = await requestJson<{ state: "matched" | "review" | "not-found" | "unconfigured" }>("/api/calendar-status", {
+        method: "POST", body: JSON.stringify(notice.eventDelivery?.event)
+      });
+      setCalendarCheck({
+        matched: "掲載済みです。イベント名・日付・開始時刻が一致しました。",
+        review: "カレンダーの予定に差分または重複があります。保守担当に確認してください。",
+        "not-found": "このイベントに対応する同期済みの予定はまだ見つかりません。",
+        unconfigured: "この画面から掲載結果を確認する設定がありません。反映依頼メモを使ってください。"
+      }[data?.state || "unconfigured"]);
+    } catch {
+      setCalendarCheck("カレンダーの掲載結果を確認できませんでした。");
+    } finally {
+      setCheckingCalendar(false);
+    }
+  }
+
   return (
     <section className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
       <div>
@@ -706,7 +730,18 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
         <strong>{presentation.label}</strong>
         <span>{timeLabel ? `${timeLabel} に依頼。` : ""}{presentation.message}</span>
       </div>
+      {notice.eventDelivery ? (
+        <dl>
+          <dt>Googleカレンダー</dt><dd role="status">{calendarCheck || notice.eventDelivery.calendar}</dd>
+          <dt>SNS下書き</dt><dd>{notice.eventDelivery.social}</dd>
+        </dl>
+      ) : null}
       <div className="deploy-status-actions">
+        {notice.eventDelivery?.event ? (
+          <button className="secondary-button" type="button" disabled={checkingCalendar} onClick={() => void checkCalendar()}>
+            {checkingCalendar ? "確認中…" : "カレンダーの掲載を確認"}
+          </button>
+        ) : null}
         {status.state === "failed" ? (
           <button className="secondary-button" type="button" disabled={retrying} onClick={() => void retry()}>
             {retrying ? "反映を依頼中…" : "反映だけをやり直す"}
@@ -1974,7 +2009,7 @@ function FacebookEventImportPanel({
   onApply
 }: {
   draft: Draft;
-  onApply: (values: Draft) => void;
+  onApply: (values: Draft, existing?: Draft) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -2077,25 +2112,22 @@ function FacebookEventImportPanel({
         nextValues.date = data.date;
       }
 
-      if (data.startTime) {
-        nextValues.startTime = isValidEventTime(data.startTime) ? data.startTime : "";
-      }
+      if (data.startTime && isValidEventTime(data.startTime)) nextValues.startTime = data.startTime;
 
-      if (data.endTime) {
-        nextValues.endTime = isValidEventTime(data.endTime) ? data.endTime : "";
-      }
+      if (data.endTime && isValidEventTime(data.endTime)) nextValues.endTime = data.endTime;
 
       if (data.imageUrl) {
         nextValues.image = { url: data.imageUrl, alt: data.title || "Facebookイベント画像" };
       }
 
-      onApply(nextValues);
       setPreview(data);
-      setMessage(
-        data.date && data.startTime
-          ? "読み取りました。タイトル、日付、START、画像を確認してください。"
-          : "タイトルと画像を読み取りました。日付とSTARTは手入力で確認してください。"
-      );
+      const existing = data.existingEvents || [];
+      if (!existing.length) onApply(nextValues);
+      const missing = [["イベント名", data.title], ["日付", data.date], ["START", data.startTime], ["画像", data.imageUrl]]
+        .filter(([, value]) => !value).map(([label]) => label);
+      setMessage(existing.length > 1 ? "同じFacebookイベントが複数登録されています。保守担当者に確認してください。"
+        : missing.length ? `取得できなかった項目は ${missing.join("・")} です。入力欄で確認してください。`
+        : "読み取りました。公開前にイベント名・日付・START・画像を確認してください。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
     } finally {
@@ -2156,6 +2188,20 @@ function FacebookEventImportPanel({
             <img src={preview.imageUrl} alt={preview.title || "Facebookイベント画像"} />
           ) : null}
           <div>
+            {preview.existingEvents?.length === 1 ? (
+              <div>
+                <p>登録済みのイベントです。変更する項目を公開前に確認してください。</p>
+                <p>現在の登録内容 {getString(preview.existingEvents[0].title)} / {getString(preview.existingEvents[0].date)} / {getString(preview.existingEvents[0].startTime)}</p>
+                <button type="button" className="secondary-button" onClick={() => onApply({
+                  sourceId: preview.sourceId, sourceType: "facebook", sourceUrl: preview.sourceUrl,
+                  ...(preview.title ? { title: preview.title } : {}),
+                  ...(preview.date ? { date: preview.date } : {}),
+                  ...(preview.startTime ? { startTime: preview.startTime } : {}),
+                  ...(preview.endTime ? { endTime: preview.endTime } : {}),
+                  ...(preview.imageUrl ? { image: { url: preview.imageUrl, alt: preview.title || "Facebookイベント画像" } } : {})
+                }, preview.existingEvents![0])}>登録済みのイベントを編集</button>
+              </div>
+            ) : null}
             <strong>{preview.title || "タイトル未取得"}</strong>
             <span>
               {preview.date
@@ -2193,6 +2239,7 @@ function FacebookEventImportPanel({
                 </div>
               </div>
               <span>下の内容を担当者へ送ると、カレンダー反映の確認がスムーズです。</span>
+              <small>中止や掲載取り下げのときは、カレンダーに予定が残っていないか担当者に確認してください。</small>
               {calendarRequestHasMissingFields ? (
                 <small className="request-warning">
                   未入力があります。コピーする前に、{calendarRequestMissingLabels.join("、")} を確認してください。
@@ -2339,7 +2386,8 @@ function FacebookEventSocialDraftPanel() {
       const skipped = result.data?.skipped || [];
       const createdLabel = created.length ? `作成: ${created.join(", ")}` : "新しく作成された下書きはありません";
       const skippedLabel = skipped.length ? ` / 既存: ${skipped.join(", ")}` : "";
-      setMessage(`${createdLabel}${skippedLabel}。SNS欄で内容を確認してから公開・承認してください。`);
+      const review = result.data?.review?.length ? " 既存の文面や画像に差分があります。SNS欄で確認してください。" : "";
+      setMessage(`${createdLabel}${skippedLabel}。SNS欄で内容を確認してから投稿してください。${review}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "SNS下書きの作成に失敗しました。");
     } finally {
@@ -2603,6 +2651,7 @@ function SectionEditor({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [socialCopyMessage, setSocialCopyMessage] = useState("");
   const [dirty, setDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState("");
   const [itemSearch, setItemSearch] = useState("");
@@ -2784,7 +2833,22 @@ function SectionEditor({
     });
   }
 
-  function applyImportedFacebookEvent(values: Draft) {
+  function applyImportedFacebookEvent(values: Draft, existing?: Draft) {
+    if (existing) {
+      const id = getString(existing.id);
+      if (!id || (selectedId !== id && !confirmDiscardChanges())) return;
+      if (selectedId !== id) {
+        setSelectedId(id);
+        setItems((current) => current.some((item) => item.id === id) ? current : [...current, { ...existing, id }]);
+        showStoredDraft(id, mergeDefaults(section, existing));
+      }
+    } else if (selectedId !== "new") {
+      if (!confirmDiscardChanges()) return;
+      setSelectedId("new");
+      setDraft(initialMergedDraft);
+      setLastSavedAt("");
+      draftBaseRef.current = draftBase(initialMergedDraft);
+    }
     userInteractedRef.current = true;
     setDraft((current) => ({
       ...current,
@@ -3113,29 +3177,16 @@ function SectionEditor({
         // The CMS write succeeded even if the browser cannot clear its copy.
       }
 
-      if (section.id === "events" && preparedDraft.isPublished) {
-        try {
-          const flowResult = await requestJson<EventPublishFlowResult>("/api/event-publish-flow", {
-            method: "POST",
-            body: JSON.stringify({ event: { ...preparedDraft, ...savedData } })
-          });
-          const createdCount = flowResult.data?.created?.length || 0;
-          const skippedCount = flowResult.data?.skipped?.length || 0;
-          setNotice({
-            tone: "info",
-            message: `SNS配信待ちを確認しました。作成 ${createdCount}件 / 既存 ${skippedCount}件。続けて公開反映を開始します。`
-          });
-        } catch (flowError) {
-          setNotice({
-            tone: "error",
-            message:
-              flowError instanceof Error
-                ? `SNS配信待ちの作成に失敗しました。イベント保存は済んでいます。${flowError.message}`
-                : "SNS配信待ちの作成に失敗しました。イベント保存は済んでいます。"
-          });
-        }
-      }
-
+      const facebookId = getFacebookEventId(getString(savedData.sourceUrl));
+      const eventDelivery: Notice["eventDelivery"] = section.id === "events" ? {
+        calendar: preparedDraft.isPublished
+          ? "同期結果は未確認です。掲載が必要な場合は反映依頼メモを使ってください。"
+          : "サイトを非公開にしても、カレンダーの予定は残ります。変更は保守担当へ依頼してください。",
+        social: preparedDraft.isPublished ? "下書きの作成結果は未確認です。" : "非公開のため投稿下書きの作成対象外です。",
+        event: preparedDraft.isPublished && facebookId ? {
+          id: facebookId, title: getString(savedData.title), date: getString(savedData.date).slice(0, 10), startTime: getString(savedData.startTime)
+        } : undefined
+      } : undefined;
       setDeploying(true);
       setNotice({ tone: "info", message: "保存しました。サイトへの反映を依頼しています。" });
 
@@ -3143,19 +3194,30 @@ function SectionEditor({
         tone: "error",
         message: "内容は保存済みです。公開サイトへの反映だけをやり直せます。",
         retryPublish: true,
+        eventDelivery,
         sectionId: section.id,
         requestedAt: new Date().toISOString(),
         sourceLabel: `${section.shortTitle}を公開`,
         confirmationSteps: getPostPublishSteps(section)
       };
-      try {
-        const deployNotice = await requestPublication(publishNotice);
-        setNotice(deployNotice);
-        onDeployNotice(deployNotice);
-      } catch {
-        setNotice(publishNotice);
-        onDeployNotice(publishNotice);
+      const publishing = requestPublication(publishNotice).catch(() => publishNotice);
+      if (eventDelivery && preparedDraft.isPublished) {
+        try {
+          const flowResult = await requestJson<EventPublishFlowResult>("/api/event-publish-flow", {
+            method: "POST",
+            body: JSON.stringify({ event: { ...preparedDraft, ...savedData }, platforms: ["x", "instagram"] })
+          });
+          const createdCount = flowResult.data?.created?.length || 0;
+          const skippedCount = flowResult.data?.skipped?.length || 0;
+          eventDelivery.social = `作成 ${createdCount}件・既存 ${skippedCount}件。${flowResult.data?.review?.length ? "既存の文面・画像に差分があります。" : ""} SNS欄で確認できます。`;
+        } catch {
+          eventDelivery.social = "下書きの作成結果を確認できませんでした。SNS欄で確認してください。";
+        }
       }
+
+      const deployNotice = await publishing;
+      setNotice(deployNotice);
+      onDeployNotice(deployNotice);
     } catch (saveError) {
       setNotice({
         tone: "error",
@@ -3657,6 +3719,27 @@ function hideSelectedItem() {
             ) : null}
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
             {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
+            {section.id === "social-notices" && ["x", "instagram"].includes(getString(draft.platform)) ? (
+              <section className="sns-draft-panel" aria-label="SNSへの投稿準備">
+                <div className="deploy-status-actions">
+                  <button className="secondary-button" type="button" disabled={!getString(draft.postText)} onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(getString(draft.postText));
+                      setSocialCopyMessage("投稿文をコピーしました。");
+                    } catch {
+                      setSocialCopyMessage("コピーできませんでした。投稿文の入力欄からコピーしてください。");
+                    }
+                  }}>投稿文をコピー</button>
+                  <a href={getString(draft.platform) === "x" ? "https://x.com/compose/post" : "https://www.instagram.com/"} target="_blank" rel="noreferrer">
+                    {getString(draft.platform) === "x" ? "Xの投稿画面を開く" : "Instagramを開く"}
+                  </a>
+                  {getImageUrl(draft.image) && isValidManagedImageUrl(getImageUrl(draft.image)) ? (
+                    <a href={resolvePublicUrl(getImageUrl(draft.image), publicSiteUrl)} target="_blank" rel="noreferrer">画像を確認</a>
+                  ) : null}
+                </div>
+                <small role="status">{socialCopyMessage}</small>
+              </section>
+            ) : null}
             <div className="editable-field-list">
               {editableFields.map((field) => (
                 <EditableFieldCard

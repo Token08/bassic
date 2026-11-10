@@ -1282,11 +1282,8 @@ function checkFacebookEventPreviewParsingFallbacks() {
     "&#x([0-9a-f]+);",
     "&#(\\d+);",
     "twitter:image:src",
-    "jpWithoutYear",
-    "inferEventYear",
-    "normalizeJapaneseHour",
-    "午後",
-    "午前"
+    "parseDateFromText",
+    "parseDateTimeValue"
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 

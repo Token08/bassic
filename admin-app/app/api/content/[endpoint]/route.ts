@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
-import { createContent, getContent, updateObjectContent } from "@/lib/microcms";
+import { createContent, facebookEventIdentity, findFacebookEvents, getContent, updateObjectContent } from "@/lib/microcms";
 
 export const runtime = "nodejs";
 
@@ -51,10 +51,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { endpoint } = await context.params;
     const payload = (await request.json()) as Record<string, unknown>;
-    const data = payload.id ? await updateObjectContent(endpoint, payload) : await createContent(endpoint, payload);
+    const sourceId = endpoint === "events" ? facebookEventIdentity(payload) : "";
+    if (sourceId && (await findFacebookEvents(sourceId)).length) {
+      return NextResponse.json({ ok: false, message: "このFacebookイベントは登録済みです。「Facebookから読み取る」で既存のイベントを開いてください。" }, { status: 409 });
+    }
+    const data = payload.id ? await updateObjectContent(endpoint, payload) : await createContent(endpoint, payload, sourceId ? `fb-${sourceId}` : undefined);
 
     return NextResponse.json({ ok: true, data });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Content is already exists")) {
+      return NextResponse.json({ ok: false, message: "このイベントは登録済みです。読み直して既存のイベントを開いてください。" }, { status: 409 });
+    }
     return saveFailed();
   }
 }

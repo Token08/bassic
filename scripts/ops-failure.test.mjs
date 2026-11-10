@@ -63,6 +63,16 @@ test("bulk deletion is rejected before fetching data or authenticating", () => {
   assert.match(result.stderr, /カレンダーの一括削除は無効/);
 });
 
+test("calendar writes require an explicit target even when a public calendar ID is configured", () => {
+  const result = run("sync-google-calendar.mjs", `globalThis.fetch = async () => { throw Error('Unexpected fetch'); };`, {
+    GOOGLE_CALENDAR_SYNC_DRY_RUN: "false",
+    GOOGLE_CALENDAR_ID: "",
+    NEXT_PUBLIC_GOOGLE_CALENDAR_ID: "public@example.invalid"
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /書き込み先の GOOGLE_CALENDAR_ID を明示/);
+});
+
 test("SNS delivery failure records the failure and fails the job", () => {
   const result = run("publish-social-notices.mjs", `globalThis.fetch = async (url, init = {}) => {
     if (String(url).includes('api.x.com')) return Response.json({ detail: 'Test delivery failed' }, { status: 503 });

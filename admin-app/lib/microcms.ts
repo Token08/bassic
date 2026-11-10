@@ -315,6 +315,7 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
 async function microCmsFetch(path: string, init: RequestInit = {}) {
   const response = await fetch(`${getContentBaseUrl()}${path}`, {
     ...init,
+    signal: init.signal ?? AbortSignal.timeout(8000),
     headers: {
       ...headers(),
       ...(init.headers || {})
@@ -344,6 +345,10 @@ export async function getContent(endpointId: string) {
   const endpoint = getEndpoint(endpointId);
 
   try {
+    if (endpointId === "social-notices") {
+      return { contents: await getStoredItems("social-notices") };
+    }
+
     if (isCompactListEndpoint(endpointId)) {
       const contents = (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
 
@@ -387,8 +392,48 @@ export async function getContent(endpointId: string) {
   }
 }
 
-export async function createContent(endpointId: string, draft: Record<string, unknown>) {
+export async function getStoredItems(endpointId: "events" | "social-notices") {
+  const items: Record<string, unknown>[] = [];
+  const endpoint = endpointId === "events" ? "events" : compactStoreEndpointId;
+  for (let offset = 0; ; offset += 100) {
+    const data = await microCmsFetch(`/${endpoint}?limit=100&orders=createdAt&offset=${offset}`);
+    if (!Array.isArray(data?.contents)) throw new Error("CMS一覧を取得できませんでした。");
+    items.push(...data.contents);
+    if (data.contents.length < 100 || items.length >= data.totalCount) break;
+  }
+  return endpointId === "events" ? items : items.filter((item) => compactItemMatches(endpointId, item));
+}
+
+export function facebookEventIdentity(event: Record<string, unknown>) {
+  try {
+    const url = new URL(String(event.sourceUrl || ""));
+    if (["facebook.com", "www.facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(url.hostname)) {
+      const parts = url.pathname.split("/");
+      const index = parts.indexOf("events");
+      const id = index >= 0 ? parts.slice(index + 1).reverse().find((part) => /^\d{6,}$/.test(part)) : undefined;
+      if (id) return id;
+    }
+  } catch {
+    // Older records may contain only the source ID.
+  }
+  const sourceId = String(event.sourceId || "");
+  return event.sourceType === "facebook" && /^\d{6,}$/.test(sourceId) ? sourceId : "";
+}
+
+export async function findFacebookEvents(sourceId: string) {
+  return (await getStoredItems("events")).filter((event) => facebookEventIdentity(event) === sourceId);
+}
+
+export async function createContent(endpointId: string, draft: Record<string, unknown>, contentId?: string) {
   const endpoint = getEndpoint(endpointId);
+
+  if (contentId && (endpointId === "events" || endpointId === "social-notices")) {
+    const storedEndpoint = endpointId === "events" ? endpoint.id : compactStoreEndpointId;
+    return microCmsFetch(`/${storedEndpoint}/${encodeURIComponent(contentId)}`, {
+      method: "PUT",
+      body: JSON.stringify(compactDraft(endpointId, draft))
+    });
+  }
 
   if (isCompactEndpoint(endpointId)) {
     return microCmsFetch(`/${compactStoreEndpointId}`, {
