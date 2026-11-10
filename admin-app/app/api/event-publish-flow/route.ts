@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "node:crypto";
 import { isAuthenticatedRequest } from "@/lib/auth";
 import { createContent, facebookEventIdentity, getStoredItems } from "@/lib/microcms";
 
@@ -168,15 +167,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const id = `sns-${createHash("sha256").update(`${platform}:${getEventKey(event)}`).digest("hex").slice(0, 32)}`;
-      try {
-        await createContent("social-notices", candidate, id);
-        created.push(platform);
-      } catch (error) {
-        if (!(error instanceof Error) || !error.message.includes("Content is already exists")) throw error;
-        skipped.push(platform);
-        review.push(platform);
-      }
+      await createContent("social-notices", candidate);
+      created.push(platform);
     }
 
     return NextResponse.json({ ok: true, data: { created, skipped, review } });

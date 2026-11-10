@@ -427,16 +427,8 @@ export async function findFacebookEvents(sourceId: string) {
   return (await getStoredItems("events")).filter((event) => facebookEventIdentity(event) === sourceId);
 }
 
-export async function createContent(endpointId: string, draft: Record<string, unknown>, contentId?: string) {
+export async function createContent(endpointId: string, draft: Record<string, unknown>) {
   const endpoint = getEndpoint(endpointId);
-
-  if (contentId && (endpointId === "events" || endpointId === "social-notices")) {
-    const storedEndpoint = endpointId === "events" ? endpoint.id : compactStoreEndpointId;
-    return microCmsFetch(`/${storedEndpoint}/${encodeURIComponent(contentId)}`, {
-      method: "PUT",
-      body: JSON.stringify(compactDraft(endpointId, draft))
-    });
-  }
 
   if (isCompactEndpoint(endpointId)) {
     return microCmsFetch(`/${compactStoreEndpointId}`, {

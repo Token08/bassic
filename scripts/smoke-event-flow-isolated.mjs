@@ -66,14 +66,15 @@ globalThis.fetch = async (input, init) => {
       return Response.json({ contents: [...collection.values()], totalCount: collection.size });
     }
     const body = init?.body ?? await input.text();
-    if (method === "PUT") {
-      if (collection.has(id)) return Response.json({ message: "Content is already exists." }, { status: 400 });
-      collection.set(id, { ...JSON.parse(body), id });
-    } else {
-      assert.equal(method, "PATCH");
-      assert.ok(collection.has(id));
-      collection.set(id, { ...collection.get(id), ...JSON.parse(body), id });
+    if (method === "POST") {
+      assert.equal(id, undefined);
+      const generatedId = `fixture-${endpoint}-${collection.size + 1}`;
+      collection.set(generatedId, { ...JSON.parse(body), id: generatedId });
+      return Response.json({ id: generatedId });
     }
+    assert.equal(method, "PATCH");
+    assert.ok(collection.has(id));
+    collection.set(id, { ...collection.get(id), ...JSON.parse(body), id });
     return Response.json({ id });
   }
 
@@ -139,7 +140,7 @@ try {
   const event = { title: "Isolated live", date: "2027-05-05", startTime: "19:00", image, sourceUrl: newUrl, isPublished: true };
   await post("content/events", { ...event, sourceUrl: legacyUrl }, 409);
   const saved = (await post("content/events", event)).result.data;
-  assert.equal(saved.id, "fb-87654321");
+  assert.equal(events.get(saved.id)?.sourceUrl, newUrl);
   await post("content/events", event, 409);
   assert.equal(events.size, 2);
 
