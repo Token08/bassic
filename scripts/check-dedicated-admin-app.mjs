@@ -462,14 +462,14 @@ function checkClientHandoffDocsLinked() {
 
   const checklistText = readFileSync(checklistFile, "utf8");
   const sheetText = readFileSync(sheetFile, "utf8");
-  const requiredSheetTerms = ["お客様向けの公開サイト", "https://www.bassic.jp/", "スタッフ用の管理画面", "https://bassic-admin.vercel.app/", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット", "TOP / EVENT / MENU / PARTY / ACCESS", "変更するページを選ぶ", "確認するページ"];
+  const requiredSheetTerms = ["お客様向けの公開サイト", "https://www.bassic.jp/", "スタッフ用の管理画面", "https://bassic-admin.vercel.app/", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット", "左からページを選び", "編集箇所一覧", "確認するページ"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
-  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット", "公開サイトの確認用URLと本番URLのどちらを使うか", "公開サイト（本番URL）", "納品OKの目安", "納品先が管理画面へログインできる", "イベント、メニュー、画像、SNSお知らせ", "ページカード", "TOP / EVENT / MENU / PARTY / ACCESS", "確認するページ"];
+  const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット", "公開サイトの確認用URLと本番URLのどちらを使うか", "公開サイト（本番URL）", "納品OKの目安", "納品先が管理画面へログインできる", "イベント、メニュー、画像、SNSお知らせ", "ページ一覧", "TOP / EVENT / MENU / PARTY / ACCESS", "確認するページ"];
   const missingChecklistTerms = requiredChecklistTerms.filter((term) => !checklistText.includes(term));
   const manualFile = "docs/delivery-admin-manual.md";
   const manualText = existsSync(manualFile) ? readFileSync(manualFile, "utf8") : "";
-  const missingManualTerms = ["画像を外す", "画像の説明", "検索や読み上げ用", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例", "1〜2箇所ずつ変更", "スクリーンショット", "TOP / EVENT / MENU / PARTY / ACCESS", "ページカード", "SNSを開いて確認"].filter((term) => !manualText.includes(term));
+  const missingManualTerms = ["画像を外す", "画像の説明", "検索や読み上げ用", "編集している内容に合わせて確認項目が変わります", "画面に出るURL例", "1〜2箇所ずつ変更", "スクリーンショット", "TOP / EVENT / MENU / PARTY / ACCESS", "ページ一覧", "SNSを開いて確認"].filter((term) => !manualText.includes(term));
   const manualUpdateMapTerms = [
     "更新したい内容",
     "管理画面で選ぶ項目",
@@ -1968,9 +1968,9 @@ function checkAdminHealthShowsPublicSiteUrl() {
 
 function checkClientDocsMentionPublicCheckOrder() {
   const requiredByFile = {
-    "docs/delivery-admin-manual.md": ["TOP / EVENT / MENU / PARTY / ACCESS", "ページカード", "確認するページ", "PCとスマホの両方"],
-    "docs/client-handoff-checklist.md": ["TOP / EVENT / MENU / PARTY / ACCESS", "ページカード", "確認するページ", "PCとスマホ"],
-    "docs/client-handoff-sheet.md": ["TOP / EVENT / MENU / PARTY / ACCESS", "ページカード", "確認するページ", "PCとスマホ"]
+    "docs/delivery-admin-manual.md": ["TOP / EVENT / MENU / PARTY / ACCESS", "ページ一覧", "確認するページ", "PCとスマホの両方"],
+    "docs/client-handoff-checklist.md": ["TOP / EVENT / MENU / PARTY / ACCESS", "ページ一覧", "確認するページ", "PCとスマホ"],
+    "docs/client-handoff-sheet.md": ["左からページを選び", "編集箇所一覧", "確認するページ", "PCとスマホ"]
   };
   const staleTerms = ["公開前に見る順番", "よくある更新から選ぶ", "よく使う更新"];
   const missing = [];
