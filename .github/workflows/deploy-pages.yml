@@ -36,7 +36,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SITE_URL: ${{ (vars.LOLIPOP_PUBLISH_ENABLED == 'true' || vars.LOLIPOP_PULL_ENABLED == 'true' || contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && 'https://www.bassic.jp' || vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
+      NEXT_PUBLIC_SITE_URL: ${{ (vars.LOLIPOP_PUBLISH_ENABLED == 'true' || vars.LOLIPOP_PULL_ENABLED == 'true' || contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && 'https://www.bassic.jp' || vars.NEXT_PUBLIC_PREVIEW_URL || 'https://token08.github.io/bassic' }}
       NEXT_PUBLIC_BASE_PATH: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && !contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && vars.NEXT_PUBLIC_BASE_PATH || '' }}
       NEXT_PUBLIC_NOINDEX: ${{ (vars.LOLIPOP_PUBLISH_ENABLED != 'true' && vars.LOLIPOP_PULL_ENABLED != 'true' && !contains(fromJSON('["package-lolipop","stage-lolipop","pull-lolipop"]'), inputs.target || '')) && vars.NEXT_PUBLIC_NOINDEX || 'false' }}
     steps:
