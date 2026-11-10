@@ -2,6 +2,11 @@ name: External operations
 
 on:
   workflow_dispatch:
+    inputs:
+      check_only:
+        type: boolean
+        default: false
+        description: Verify the calendar input without writing to external services
   schedule:
     - cron: "42 * * * *"
 
@@ -17,8 +22,31 @@ env:
   NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
 
 jobs:
+  check-calendar:
+    if: inputs.check_only == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate current CMS events without updating the calendar
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+        run: |
+          if npm run sync:calendar:check > "$RUNNER_TEMP/bassic-calendar-check.log" 2>&1; then
+            grep -E '確認のみ: [0-9]+ 件|同期対象イベントがありません' "$RUNNER_TEMP/bassic-calendar-check.log" | sed -E 's/(確認のみ: [0-9]+ 件).*/\1/; s/(同期対象イベントがありません).*/\1/'
+          else
+            echo '::error::Calendar validation did not pass. Check CMS read access and required event fields.'
+            exit 1
+          fi
+
   operations:
-    if: vars.ENABLE_CALENDAR_SYNC == 'true' || vars.ENABLE_SOCIAL_PUBLISHING == 'true' || vars.AUTO_ARCHIVE_PAST_EVENTS == 'true'
+    if: inputs.check_only != true && (vars.ENABLE_CALENDAR_SYNC == 'true' || vars.ENABLE_SOCIAL_PUBLISHING == 'true' || vars.AUTO_ARCHIVE_PAST_EVENTS == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
