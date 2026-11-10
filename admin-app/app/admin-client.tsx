@@ -8,7 +8,6 @@ import {
   ArrowUp,
   CheckCircle2,
   Copy,
-  Eye,
   ExternalLink,
   Info,
   Loader2,
@@ -1453,7 +1452,7 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
           ))}
         </small>
       ) : null}
-      {remaining === 0 ? <small>次は画面下の「プレビュー確認」を押してください。</small> : null}
+      {remaining === 0 ? <small>次は画面下の「プレビューして公開」を押してください。</small> : null}
     </div>
   );
 }
@@ -1867,7 +1866,7 @@ function ValidationSummary({ errors, section }: { errors: Record<string, string>
       <AlertCircle size={18} />
       <div>
         <strong>公開前に直す項目があります。</strong>
-        <span>項目名を押すと入力欄へ移動できます。上から順番に直して、もう一度「プレビュー確認」を押してください。</span>
+        <span>項目名を押すと入力欄へ移動できます。入力を直してから、もう一度「プレビューして公開」を押してください。</span>
         <ul>
           {entries.map(([key, message]) => {
             const label = section.fields.find((field) => field.key === key)?.label || key;
@@ -2571,6 +2570,7 @@ function SectionEditor({
   const [editingFields, setEditingFields] = useState<Set<string>>(new Set());
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
+  const draftBaseRef = useRef("");
   const isMaintenanceSection = !dailySectionIds.has(section.id);
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
@@ -2614,6 +2614,35 @@ function SectionEditor({
     );
   }
 
+  function draftStorageKey(id: string) {
+    return `bassic-admin-draft-v1:${section.id}:${scopedListPage}:${id}`;
+  }
+
+  function draftBase(original: Draft) {
+    return JSON.stringify(section.fields.map(({ key }) => original[key] ?? null));
+  }
+
+  function showStoredDraft(id: string, original: Draft) {
+    setDraft(original);
+    setLastSavedAt("");
+    draftBaseRef.current = draftBase(original);
+    try {
+      const raw = window.localStorage.getItem(draftStorageKey(id));
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { content: Draft; savedAt: string; base: string };
+      if (!saved.content || typeof saved.content !== "object" || typeof saved.savedAt !== "string") return;
+      if (saved.base !== draftBaseRef.current) {
+        setNotice({ tone: "error", message: "下書き保存の後に公開データが更新されました。最新の内容を表示しています。" });
+        return;
+      }
+      setDraft(mergeDefaults(section, saved.content));
+      setLastSavedAt(saved.savedAt);
+      setNotice({ tone: "info", message: "このブラウザに保存した下書きを開きました。" });
+    } catch {
+      setNotice({ tone: "error", message: "このブラウザの下書きを読み込めませんでした。" });
+    }
+  }
+
   async function load() {
     const loadToken = loadTokenRef.current + 1;
     loadTokenRef.current = loadToken;
@@ -2645,17 +2674,16 @@ function SectionEditor({
         const firstItem = sortedScopedContents[0];
         if (firstItem) {
           setSelectedId(firstItem.id || "");
-          setDraft(mergeDefaults(section, firstItem));
+          showStoredDraft(firstItem.id || "", mergeDefaults(section, firstItem));
         } else {
           setSelectedId("new");
-          setDraft(initialMergedDraft);
+          showStoredDraft("new", initialMergedDraft);
         }
       } else {
-        setDraft(mergeDefaults(section, { ...(data as Draft), ...(initialDraft || {}) }));
+        showStoredDraft("object", mergeDefaults(section, { ...(data as Draft), ...(initialDraft || {}) }));
       }
       setEditingFields(new Set());
       setDirty(false);
-      setLastSavedAt("");
     } catch (loadError) {
       if (loadToken !== loadTokenRef.current || userInteractedRef.current) {
         return;
@@ -2972,10 +3000,26 @@ function SectionEditor({
   }
 
   async function save(mode: "draft" | "publish") {
+    if (mode === "draft") {
+      try {
+        const savedAt = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+        window.localStorage.setItem(draftStorageKey(selectedId), JSON.stringify({
+          content: draft,
+          savedAt,
+          base: draftBaseRef.current || draftBase(initialMergedDraft)
+        }));
+        setLastSavedAt(savedAt);
+        setDirty(false);
+        setErrors({});
+        setNotice({ tone: "info", message: "このブラウザに下書きを保存しました。同じ端末・ブラウザで続きを編集できます。" });
+      } catch {
+        setNotice({ tone: "error", message: "下書きを保存できませんでした。この画面を開いたまま、入力した内容を控えてください。" });
+      }
+      return;
+    }
     const nextDraft: Draft = {
       ...draft,
-      ...(scopedListPage ? { page: scopedListPage } : {}),
-      ...(section.fields.some((field) => field.key === "isPublished") ? { isPublished: mode === "publish" } : {})
+      ...(scopedListPage ? { page: scopedListPage } : {})
     };
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
     const preparedDraft: Draft =
@@ -3009,8 +3053,10 @@ function SectionEditor({
         method: isExistingListItem ? "PATCH" : "POST",
         body: JSON.stringify(preparedDraft)
       });
-      const savedData = (result.data || preparedDraft) as Draft & { id?: string };
-      setDraft(mergeDefaults(section, savedData));
+      const savedData = { ...preparedDraft, ...result.data } as Draft & { id?: string };
+      const savedDraft = mergeDefaults(section, savedData);
+      setDraft(savedDraft);
+      draftBaseRef.current = draftBase(savedDraft);
       setDirty(false);
       setLastSavedAt(new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }));
 
@@ -3023,9 +3069,10 @@ function SectionEditor({
         });
       }
 
-      if (mode === "draft") {
-        setNotice({ tone: "success", message: "下書き保存しました。公開するまでサイトには出ません。" });
-        return;
+      try {
+        window.localStorage.removeItem(draftStorageKey(selectedId));
+      } catch {
+        // The CMS write succeeded even if the browser cannot clear its copy.
       }
 
       if (section.id === "events" && preparedDraft.isPublished) {
@@ -3106,9 +3153,9 @@ function SectionEditor({
 
     userInteractedRef.current = true;
     setSelectedId("new");
-    setDraft(initialMergedDraft);
     setErrors({});
     setNotice(null);
+    showStoredDraft("new", initialMergedDraft);
     setDirty(false);
     setEditingFields(new Set());
   }
@@ -3140,7 +3187,7 @@ function hideSelectedItem() {
       return;
     }
 
-    if (!window.confirm("この項目を公開OFFにしますか？保存または公開するまで公開サイトには反映されません。")) {
+    if (!window.confirm("この項目を公開OFFにしますか？公開サイトに反映するには、プレビューで確認して確定してください。")) {
       return;
     }
 
@@ -3152,7 +3199,7 @@ function hideSelectedItem() {
     setDirty(true);
     setNotice({
       tone: "info",
-      message: "公開OFFにしました。サイトから外すには、下書き保存またはプレビューして公開を押してください。"
+      message: "公開OFFにしました。サイトから外すには「プレビューして公開」で確認し、確定してください。"
     });
   }
 
@@ -3509,11 +3556,10 @@ function hideSelectedItem() {
 
                           userInteractedRef.current = true;
                           setSelectedId(item.id || "");
-                          setDraft(mergeDefaults(section, item));
                           setErrors({});
                           setNotice(null);
+                          showStoredDraft(item.id || "", mergeDefaults(section, item));
                           setDirty(false);
-                          setLastSavedAt("");
                         }}
                       >
                         {section.id === "hero-slides" && getImageUrl(item.image) ? (
@@ -3603,14 +3649,10 @@ function hideSelectedItem() {
                   <Trash2 size={18} />
                   この項目を削除
                 </button>
-                <small>表示だけ止めたい場合は削除せず、「公開OFF」で下書き保存してください。</small>
+                <small>表示だけ止めたい場合は、公開をOFFにして「プレビューして公開」へ進んでください。</small>
               </div>
             ) : null}
             <div className="form-actions">
-              <button className="secondary-button" type="button" onClick={openPreview}>
-                <Eye size={18} />
-                プレビュー確認
-              </button>
               <button className="secondary-button" type="button" disabled={saving || deploying} onClick={() => void save("draft")}>
                 {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
                 下書き保存
@@ -3619,7 +3661,7 @@ function hideSelectedItem() {
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 プレビューして公開
               </button>
-              <small className="action-note">下書き保存は公開サイトに出ません。サイトへ出す時は「プレビューして公開」で確認画面へ進みます。</small>
+              <small className="action-note">下書きはこのブラウザに保存します。サイトへ反映する時は「プレビューして公開」で確認画面へ進みます。</small>
             </div>
           </form>
         </div>
