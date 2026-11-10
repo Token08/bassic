@@ -39,6 +39,8 @@ type Notice = {
   tone: "success" | "error" | "info";
   message: string;
   actionsUrl?: string;
+  requestId?: string;
+  sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
   confirmationSteps?: string[];
@@ -157,7 +159,7 @@ function getPublicPageLabel(section: SectionDefinition) {
 }
 
 function getPostPublishSteps(section: SectionDefinition) {
-  const commonSteps = ["数分待ってから公開ページを再読み込み", "スマホでも同じページを確認"];
+  const commonSteps = ["スマホでも同じページを確認"];
   const sectionSteps: Partial<Record<SectionDefinition["id"], string[]>> = {
     "site-settings": ["TOP、Access、Menuで営業時間・喫煙・テーブル・チャージを確認", "Accessページで住所・電話・Google Mapを確認", "電話・地図・SNSボタンが正しく開くか確認"],
     home: ["TOPページの見出し・画像・案内カードを確認", "営業時間・喫煙・チャージの表示を確認"],
@@ -621,37 +623,83 @@ function formatDeployTime(value?: string) {
   });
 }
 
-function DeployStatusCard({ notice }: { notice?: Notice }) {
-  if (!notice) {
-    return null;
-  }
+type PublishStatus = { state: "pending" | "published" | "failed" | "unconfirmed"; actionsUrl?: string };
 
-  const label = notice.tone === "success" ? "反映を受け付けました" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
+function DeployStatusCard({ notice }: { notice: Notice }) {
+  const [status, setStatus] = useState<PublishStatus>({ state: "pending" });
+  const { requestId, requestedAt } = notice;
+
+  useEffect(() => {
+    if (!requestId || !requestedAt) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    const query = new URLSearchParams({ id: requestId, requestedAt });
+    const deadline = Date.now() + 15 * 60_000;
+
+    async function poll() {
+      try {
+        const result = await requestJson<PublishStatus>(`/api/deploy?${query}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        if (result.data) {
+          setStatus(result.data);
+          if (result.data.state !== "pending") return;
+        }
+      } catch {
+        if (controller.signal.aborted) return;
+      }
+      if (Date.now() >= deadline) {
+        setStatus((current) => ({ ...current, state: "unconfirmed" }));
+        return;
+      }
+      timer = setTimeout(poll, 30_000);
+    }
+
+    void poll();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [requestId, requestedAt]);
+
+  const presentation = {
+    pending: { label: "公開サイトに反映中", message: "内容は保存済みです。反映まで数分かかります。この画面は閉じても大丈夫です。", tone: "info" },
+    published: { label: "公開サイトに反映されました", message: "公開サイトを開き、変更したページを確認してください。", tone: "success" },
+    failed: { label: "公開サイトへの反映に失敗しました", message: "内容は保存済みです。この表示を担当者に伝えてください。", tone: "error" },
+    unconfirmed: { label: "公開サイトへの反映を確認できませんでした", message: "内容は保存済みです。公開サイトを確認し、反映されていなければ担当者へ連絡してください。", tone: "info" }
+  }[status.state];
   const timeLabel = formatDeployTime(notice.requestedAt);
-  const statusMessage = notice.tone === "error"
-    ? "内容は保存済みです。この表示を担当者に伝えてください。"
-    : "数分後に公開サイトを開き、変更したページを確認してください。";
+  const actionsUrl = status.actionsUrl || notice.actionsUrl;
+  const section = sections.find((item) => item.id === notice.sectionId);
+  const pageUrl = section && getPublicPageUrl(section);
 
   return (
-    <section className={`deploy-status ${notice.tone}`} aria-label="最後の反映状況">
+    <section className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
       <div>
         <strong>最後の公開操作</strong>
         <span>{notice.sourceLabel || "管理画面から公開"}</span>
       </div>
-      <div>
-        <strong>{label}</strong>
-        <span>{timeLabel ? `${timeLabel} に実行。${statusMessage}` : `時刻は未取得です。${statusMessage}`}</span>
+      <div role="status">
+        <strong>{presentation.label}</strong>
+        <span>{timeLabel ? `${timeLabel} に依頼。` : ""}{presentation.message}</span>
       </div>
       <div className="deploy-status-actions">
-        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
-          公開サイトを開く
+        <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
+          {pageUrl ? "変更したページを開く" : "公開サイトを開く"}
         </a>
-        {notice.actionsUrl ? (
-          <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+        {actionsUrl ? (
+          <a href={actionsUrl} target="_blank" rel="noreferrer">
             担当者向けの実行ログ
           </a>
         ) : null}
       </div>
+      {status.state === "published" && notice.confirmationSteps?.length ? (
+        <details>
+          <summary>表示の確認ポイント</summary>
+          <ul className="notice-checklist">
+            {notice.confirmationSteps.map((step) => <li key={step}>{step}</li>)}
+          </ul>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -3007,7 +3055,7 @@ function SectionEditor({
       setNotice({ tone: "info", message: "保存しました。サイトへの反映を依頼しています。" });
 
       try {
-        const deployResult = await requestJson<{ actionsUrl: string; requestedAt: string }>("/api/deploy", {
+        const deployResult = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/deploy", {
           method: "POST",
           body: JSON.stringify({})
         });
@@ -3015,6 +3063,8 @@ function SectionEditor({
           tone: "success" as const,
           message: "保存し、公開サイトへの反映を受け付けました。数分後に公開サイトを再読み込みしてください。",
           actionsUrl: deployResult.data?.actionsUrl,
+          requestId: deployResult.data?.requestId,
+          sectionId: section.id,
           requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
           sourceLabel: `${section.shortTitle}を公開`,
           confirmationSteps: getPostPublishSteps(section)
@@ -3396,7 +3446,7 @@ function hideSelectedItem() {
         </div>
       ) : null}
 
-      {notice ? <NoticeBox notice={notice} /> : null}
+      {notice ? notice.requestId ? <DeployStatusCard key={notice.requestId} notice={notice} /> : <NoticeBox notice={notice} /> : null}
       <EditorGuide section={section} dirty={dirty} selectedId={selectedId} />
 
       {loading ? (
@@ -3798,7 +3848,7 @@ function PageBasedDashboard({
           <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
         </details>
       ) : null}
-      {lastDeploy ? <NoticeBox notice={lastDeploy} /> : null}
+      {lastDeploy ? lastDeploy.requestId ? <DeployStatusCard key={lastDeploy.requestId} notice={lastDeploy} /> : <NoticeBox notice={lastDeploy} /> : null}
       {false ? <SnsStatusCard onSelect={(id) => onSelect({ id })} /> : null}
 
       <details className="maintenance-tools">

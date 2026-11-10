@@ -1,4 +1,5 @@
 name: Publish website
+run-name: ${{ github.event.client_payload.requestId && format('Bassic publish {0}', github.event.client_payload.requestId) || 'Publish website' }}
 
 on:
   push:
