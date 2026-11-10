@@ -24,6 +24,12 @@ export function parseDateFromText(text: string) {
     const date = `${year}-${pad(month)}-${pad(day)}`;
     if (validDate(date)) dates.add(date);
   }
+  const englishMonths = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+  for (const [, monthName, day, year] of normalized.matchAll(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})(?!\d)/gi)) {
+    const month = englishMonths.indexOf(monthName.toLowerCase()) + 1;
+    const date = `${year}-${pad(String(month))}-${pad(day)}`;
+    if (validDate(date)) dates.add(date);
+  }
   const times = new Set<string>();
   const patterns = [
     /(?<![\d:])(午前|午後)?\s*([01]?\d|2[0-3]):([0-5]\d)\s*(?:\bSTART\b|開演|開始)/gi,

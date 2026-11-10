@@ -24,3 +24,9 @@ test("Japanese Facebook metadata with a trailing year supplies the date without 
   assert.deepEqual(parseDateFromText("福岡市で金曜日, 8月 26 2022に開催する音楽イベント"), { date: "2022-08-26", startTime: "" });
   assert.deepEqual(parseDateFromText("福岡市で 2月 30 2026に開催"), { date: "", startTime: "" });
 });
+
+test("English Facebook metadata supplies the date without guessing START", () => {
+  assert.deepEqual(parseDateFromText("Music event in Fukuoka, Japan on Friday, August 26 2022"), { date: "2022-08-26", startTime: "" });
+  assert.deepEqual(parseDateFromText("April 31, 2027"), { date: "", startTime: "" });
+  assert.deepEqual(parseDateFromText("August 26 2022 / 2022年8月27日 19:00 START"), { date: "", startTime: "" });
+});
