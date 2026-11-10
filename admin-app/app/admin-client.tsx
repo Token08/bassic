@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { PublicPageCanvas } from "./public-page-canvas";
+import { currentFieldDefaults } from "../lib/current-field-values";
 import {
   AlertCircle,
   ArrowDown,
@@ -20,7 +22,11 @@ import {
   Upload,
   X
 } from "lucide-react";
-import { getSection, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
+import { editableMedia } from "../../lib/editable-content";
+import { fallbackContents } from "../../lib/fallback-data";
+import { firstVisitSection, localSearchSection, pageHeroes, socialUpdatesCopy, visitInfoItems, type PageHeroContent } from "../../lib/page-content";
+import { mobileCrop } from "../../lib/responsive-media";
+import { getSection, homeFieldGroups, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
 import { resolvePublicUrl } from "@/lib/public-site-url";
 
 type Draft = Record<string, unknown>;
@@ -1323,16 +1329,17 @@ function getFieldSummaryValue(section: SectionDefinition, field: FieldDefinition
   const text = field.type === "number" ? getNumber(value) : getString(value).trim();
 
   if (!text) {
-    return "未入力";
+    return "表示内容なし";
   }
 
-  return text.length > 120 ? `${text.slice(0, 120)}...` : text;
+  return field.type !== "textarea" && text.length > 120 ? `${text.slice(0, 120)}...` : text;
 }
 
 function EditableFieldCard({
   section,
   field,
   value,
+  fallbackValue,
   error,
   isEditing,
   onEdit,
@@ -1342,17 +1349,20 @@ function EditableFieldCard({
   section: SectionDefinition;
   field: FieldDefinition;
   value: unknown;
+  fallbackValue?: unknown;
   error?: string;
   isEditing: boolean;
   onEdit: () => void;
   onClose: () => void;
   onChange: (value: unknown) => void;
 }) {
+  const [changedWhileOpen, setChangedWhileOpen] = useState(false);
   if (field.type === "hidden") {
     return null;
   }
 
-  const hasValue = fieldHasValue(field, value);
+  const displayValue = fieldHasValue(field, value) ? value : fallbackValue ?? value;
+  const hasValue = fieldHasValue(field, displayValue);
 
   return (
     <section className={`editable-field-card${isEditing ? " editing" : ""}${error ? " has-error" : ""}`} id={isEditing ? undefined : field.key}>
@@ -1363,24 +1373,31 @@ function EditableFieldCard({
             {field.required ? <b>必須</b> : null}
           </span>
           {!isEditing ? (
-            <strong className={hasValue ? "" : "empty"}>{getFieldSummaryValue(section, field, value)}</strong>
+            <strong className={hasValue ? "" : "empty"}>{getFieldSummaryValue(section, field, displayValue)}</strong>
           ) : (
             <strong>この項目を編集中</strong>
           )}
         </div>
-        <button className="secondary-button compact" type="button" onClick={isEditing ? onClose : onEdit}>
+        <button className="secondary-button compact" type="button" onClick={() => {
+          setChangedWhileOpen(false);
+          if (isEditing) onClose();
+          else onEdit();
+        }}>
           {isEditing ? <CheckCircle2 size={16} /> : <Pencil size={16} />}
           {isEditing ? "閉じる" : "編集"}
         </button>
       </div>
 
       {isEditing ? (
-        <Field field={field} value={value} error={error} onChange={onChange} />
+        <Field field={field} value={changedWhileOpen ? value : displayValue} error={error} onChange={(next) => {
+          setChangedWhileOpen(true);
+          onChange(next);
+        }} />
       ) : (
         <div className="editable-field-preview">
-          {field.type === "image" && getImageUrl(value) ? (
+          {field.type === "image" && getImageUrl(displayValue) ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={getImageUrl(value)} alt="" />
+            <img src={getImageUrl(displayValue)} alt="" />
           ) : null}
           {field.hint ? <small>{field.hint}</small> : null}
           {error ? <small className="form-error">{error}</small> : null}
@@ -1712,10 +1729,40 @@ function getVisualPreviewImage(draft: Draft) {
   return firstSlide ? getImageUrl(firstSlide).trim() : "";
 }
 
-function AdminSitePreview({ draft, section }: { draft: Draft; section: SectionDefinition }) {
-  const title = getVisualPreviewTitle(section, draft);
-  const lead = getVisualPreviewLead(draft);
-  const imageUrl = getVisualPreviewImage(draft);
+function isMobileAppearanceField(key: string) {
+  return key === "mobileImage" || key === "mobilePosition" || key === "heroMobileTitle" || key.endsWith("MobilePosition");
+}
+
+function AdminSitePreview({ draft, section, previewContext }: { draft: Draft; section: SectionDefinition; previewContext?: Draft }) {
+  const [mobile, setMobile] = useState(false);
+  const keys = section.fields.map((field) => field.key);
+  const card = keys.map((key) => /^firstVisitCard([123])Image$/.exec(key)?.[1]).find(Boolean);
+  const cardIndex = card ? Number(card) - 1 : -1;
+  const cardPrefix = card ? "firstVisitCard" + card : "";
+  const homeSlide = section.id === "hero-slides" && draft.page === "home";
+  const homeHero = section.id === "home" && keys.some((key) => /^(homeHero|hero)/.test(key));
+  const fixedButtons = section.id === "home" && keys.some((key) => key.startsWith("mobileHide"));
+  const isHero = homeSlide || homeHero;
+  const home = homeSlide ? previewContext || {} : draft;
+  const copy = (previewContext?.copy || {}) as Draft;
+  const slide = homeSlide ? draft : (previewContext?.slide || {}) as Draft;
+  const slideIndex = Math.max(0, getOrderNumber(slide.displayOrder) - 1);
+  const desktopPositions = ["44% center", "50% center", "50% 58%", "50% 48%", "50% 52%", "50% 54%", "50% 46%", "50% 52%", "50% 52%", "50% 52%"];
+  const defaultSlidePosition = (mobile ? ["34% center", "58% center", "center"][slideIndex] : undefined) || desktopPositions[slideIndex];
+  const crop = mobile ? mobileCrop(isHero ? slide.mobilePosition : draft[cardPrefix + "MobilePosition"]) : undefined;
+  const position = crop || (isHero ? defaultSlidePosition : undefined);
+  const heroTitle = (mobile && getString(home.heroMobileTitle).trim()) || getString(home.homeHeroTitle).trim() || getString(copy.heroTitle).trim() || fallbackContents.home.heroTitle;
+  const scopedTitle = keys.filter((key) => /(?:title|label|eyebrow|name)$/i.test(key)).map((key) => getString(draft[key]).trim()).find(Boolean);
+  const scopedLead = keys.filter((key) => /(?:lead|description|note|text|copyright)$/i.test(key)).map((key) => getString(draft[key]).trim()).find(Boolean);
+  const scopedImage = section.fields.filter((field) => field.type === "image").map((field) => overviewImage(draft[field.key])).find(Boolean);
+  const title = isHero ? heroTitle : card ? getString(draft[cardPrefix + "Title"]).trim() || firstVisitSection.features[cardIndex].title : fixedButtons ? "スマホ下部の固定ボタン" : scopedTitle || getVisualPreviewTitle(section, draft);
+  const lead = isHero ? getString(home.homeHeroLead).trim() || getString(copy.heroLead).trim() || fallbackContents.home.heroLead : card ? getString(draft[cardPrefix + "Text"]).trim() || firstVisitSection.features[cardIndex].text : scopedLead || getVisualPreviewLead(draft);
+  const imageUrl = isHero
+    ? (mobile && overviewImage(slide.mobileImage)) || overviewImage(slide.image, editableMedia.homeHeroImage.src)
+    : card ? overviewImage(draft[cardPrefix + "Image"], editableMedia.atmosphereImages[cardIndex].src) : scopedImage || overviewImage(getVisualPreviewImage(draft));
+  const buttons = [["Call", "電話"], ["Map", "地図"], ["Instagram", "Instagram"], ["Reserve", "予約"]].flatMap(([key, label]) =>
+    draft["mobileHide" + key] === true ? [] : [getString(draft["mobile" + key + "Label"]).trim() || label]
+  );
   const price = getString(draft.price).trim();
   const date = getString(draft.date).trim();
   const startTime = getString(draft.startTime).trim();
@@ -1726,11 +1773,21 @@ function AdminSitePreview({ draft, section }: { draft: Draft; section: SectionDe
         <span>公開サイトの見え方</span>
         <strong>実際のページでは、だいたいこの雰囲気で表示されます。</strong>
       </div>
-      <div className="site-preview-card">
+      <div className="preview-device-controls" role="group" aria-label="表示する端末">
+        <button type="button" className="secondary-button compact" aria-pressed={!mobile} onClick={() => setMobile(false)}>PC表示</button>
+        <button type="button" className="secondary-button compact" aria-pressed={mobile} onClick={() => setMobile(true)}>スマホ表示</button>
+      </div>
+      {fixedButtons ? (
+        <div className="fixed-button-preview">
+          <strong>{title}</strong>
+          {mobile && buttons.length ? <div>{buttons.map((label, index) => <span key={index}>{label}</span>)}</div> : <p>{mobile ? "表示するボタンはありません。" : "スマホ表示で確認できます。"}</p>}
+        </div>
+      ) : (
+      <div className={`site-preview-card device-preview ${mobile ? "device-preview-mobile" : ""} ${isHero ? "device-preview-hero" : ""}`}>
         <div className="site-preview-media">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" />
+            <img src={imageUrl} alt="" style={{ objectPosition: position }} />
           ) : (
             <div className="site-preview-placeholder">Bassic.</div>
           )}
@@ -1743,12 +1800,15 @@ function AdminSitePreview({ draft, section }: { draft: Draft; section: SectionDe
             {price ? <span>{price}</span> : null}
             {date ? <span>{date}</span> : null}
             {startTime ? <span>START {startTime}</span> : null}
-            <span>Google Map</span>
-            <span>電話</span>
-            <span>予約</span>
+            {isHero ? <>
+              <span>{getString(home.heroMapLabel) || "Google Mapで開く"}</span>
+              <span>{getString(home.heroCallLabel) || "電話する"}</span>
+              <span>{getString(home.heroReserveLabel) || "メール予約"}</span>
+            </> : null}
           </div>
         </div>
       </div>
+      )}
     </section>
   );
 }
@@ -1756,11 +1816,13 @@ function AdminSitePreview({ draft, section }: { draft: Draft; section: SectionDe
 function PreviewModal({
   draft,
   section,
+  previewContext,
   onClose,
   onPublish
 }: {
   draft: Draft;
   section: SectionDefinition;
+  previewContext?: Draft;
   onClose: () => void;
   onPublish: () => void;
 }) {
@@ -1784,7 +1846,7 @@ function PreviewModal({
             <X size={20} />
           </button>
         </div>
-        <AdminSitePreview draft={draft} section={section} />
+        <AdminSitePreview draft={draft} section={section} previewContext={previewContext} />
         <dl className="preview-list">
           {section.fields.filter((field) => field.type !== "hidden").map((field) => {
             const value = draft[field.key];
@@ -2622,6 +2684,11 @@ function confirmLeavingEditor(dirty: boolean, busy: boolean) {
 function SectionEditor({
   sectionId,
   initialDraft,
+  homeGroup,
+  fieldKeys,
+  itemId,
+  editLabel,
+  previewContext,
   sourcePage,
   onBack,
   onEditorState,
@@ -2629,6 +2696,11 @@ function SectionEditor({
 }: {
   sectionId: string;
   initialDraft?: Draft;
+  homeGroup?: keyof typeof homeFieldGroups;
+  fieldKeys?: readonly string[];
+  itemId?: string;
+  editLabel?: string;
+  previewContext?: Draft;
   sourcePage?: string;
   onBack: () => void;
   onEditorState: (state: { dirty: boolean; busy: boolean }) => void;
@@ -2686,12 +2758,37 @@ function SectionEditor({
     });
   }, [itemSearch, itemStatusFilter, visibleItems, section]);
   const editableFields = useMemo(() => {
+    if (fieldKeys) return section.fields.filter((field) => fieldKeys.includes(field.key));
+    if (section.id === "hero-slides" && scopedListPage !== "home") {
+      return section.fields.filter((field) => !["page", "mobileImage", "mobilePosition"].includes(field.key) || (!scopedListPage && field.key === "page"));
+    }
+    if (section.id === "home" && homeGroup) {
+      return section.fields.filter((field) => homeFieldGroups[homeGroup].some((key) => key === field.key));
+    }
     if (scopedListPage) {
       return section.fields.filter((field) => field.key !== "page");
     }
 
     return section.fields;
-  }, [section, scopedListPage]);
+  }, [section, scopedListPage, homeGroup, fieldKeys]);
+  const fieldDefaults = currentFieldDefaults(section.id, draft, previewContext);
+  const previewDraft = { ...draft };
+  for (const field of editableFields) {
+    if (!fieldHasValue(field, previewDraft[field.key]) && fieldDefaults[field.key] != null) {
+      previewDraft[field.key] = fieldDefaults[field.key];
+    }
+  }
+
+  function withRequiredDefaults(value: Draft): Draft {
+    if (section.id !== "site-settings" && section.id !== "equipment-rental") return value;
+    const result = { ...value };
+    for (const field of section.fields) {
+      if (field.required && !fieldHasValue(field, result[field.key]) && fieldDefaults[field.key] != null) {
+        result[field.key] = fieldDefaults[field.key];
+      }
+    }
+    return result;
+  }
 
   function confirmDiscardChanges() {
     return confirmLeavingEditor(dirty, saving || deploying);
@@ -2758,7 +2855,7 @@ function SectionEditor({
           ? contents.filter((item) => getString(item.page).trim() === scopedListPage)
           : contents;
         const sortedScopedContents = [...scopedContents].sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder));
-        const firstItem = sortedScopedContents[0];
+        const firstItem = itemId ? sortedScopedContents.find((item) => item.id === itemId) : sortedScopedContents[0];
         if (firstItem) {
           setSelectedId(firstItem.id || "");
           showStoredDraft(firstItem.id || "", mergeDefaults(section, firstItem));
@@ -2788,7 +2885,7 @@ function SectionEditor({
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [section.id, initialDraftKey]);
+  }, [section.id, initialDraftKey, itemId]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -3088,7 +3185,7 @@ function SectionEditor({
 
   function openPreview() {
     userInteractedRef.current = true;
-    const nextErrors = validate(draft);
+    const nextErrors = validate(withRequiredDefaults(draft));
 
     if (Object.keys(nextErrors).length) {
       setShowPreview(false);
@@ -3119,10 +3216,10 @@ function SectionEditor({
       }
       return;
     }
-    const nextDraft: Draft = {
+    const nextDraft: Draft = withRequiredDefaults({
       ...draft,
       ...(scopedListPage ? { page: scopedListPage } : {})
-    };
+    });
     const sourceUrl = getString(nextDraft.sourceUrl).trim();
     const preparedDraft: Draft =
       section.id === "events" && isFacebookEventUrl(sourceUrl)
@@ -3516,6 +3613,23 @@ function hideSelectedItem() {
     }
   }
 
+  function renderEditableField(field: FieldDefinition) {
+    return (
+      <EditableFieldCard
+        section={section}
+        field={field}
+        value={draft[field.key]}
+        fallbackValue={fieldDefaults[field.key]}
+        error={errors[field.key]}
+        key={field.key}
+        isEditing={editingFields.has(field.key)}
+        onEdit={() => openField(field.key)}
+        onClose={() => closeField(field.key)}
+        onChange={(value) => updateField(field.key, value)}
+      />
+    );
+  }
+
   return (
     <div className="editor">
       <div className="editor-topbar">
@@ -3558,7 +3672,7 @@ function hideSelectedItem() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">{section.shortTitle}</p>
-          <h1>{section.title}</h1>
+          <h1>{editLabel || section.title}</h1>
           <p>{section.description}</p>
         </div>
         {section.kind === "list" ? (
@@ -3741,19 +3855,15 @@ function hideSelectedItem() {
               </section>
             ) : null}
             <div className="editable-field-list">
-              {editableFields.map((field) => (
-                <EditableFieldCard
-                  section={section}
-                  field={field}
-                  value={draft[field.key]}
-                  error={errors[field.key]}
-                  key={field.key}
-                  isEditing={editingFields.has(field.key)}
-                  onEdit={() => openField(field.key)}
-                  onClose={() => closeField(field.key)}
-                  onChange={(value) => updateField(field.key, value)}
-                />
-              ))}
+              {editableFields.filter((field) => !isMobileAppearanceField(field.key)).map(renderEditableField)}
+              {editableFields.some((field) => isMobileAppearanceField(field.key)) ? (
+                <details className="page-option-group">
+                  <summary className="mobile-appearance-summary">スマホでの見え方</summary>
+                  <div className="page-option-details">
+                    {editableFields.filter((field) => isMobileAppearanceField(field.key)).map(renderEditableField)}
+                  </div>
+                </details>
+              ) : null}
             </div>
             <SaveChoiceGuide />
             {section.kind === "list" && selectedId !== "new" ? (
@@ -3781,7 +3891,7 @@ function hideSelectedItem() {
       )}
 
       {showPreview ? (
-        <PreviewModal draft={draft} section={section} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
+        <PreviewModal draft={previewDraft} previewContext={previewContext} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
       ) : null}
     </div>
   );
@@ -3790,14 +3900,24 @@ function hideSelectedItem() {
 type ActiveSectionState = {
   id: string;
   initialDraft?: Draft;
+  homeGroup?: keyof typeof homeFieldGroups;
+  fieldKeys?: readonly string[];
+  itemId?: string;
+  editLabel?: string;
+  previewContext?: Draft;
   sourcePage?: string;
 };
 
 type PageAdminAction = {
   label: string;
+  group?: string;
+  thumbnail?: string;
   description: string;
   sectionId: SectionDefinition["id"];
   initialDraft?: Draft;
+  homeGroup?: keyof typeof homeFieldGroups;
+  fieldKeys?: readonly string[];
+  itemId?: string;
 };
 
 type PageAdminItem = {
@@ -3806,36 +3926,30 @@ type PageAdminItem = {
   description: string;
   publicPath: string;
   publicLabel: string;
-  summaryItems: string[];
   actions: PageAdminAction[];
 };
 
 const adminPages: PageAdminItem[] = [
   {
     page: "TOP",
-    title: "TOP",
+    title: "TOPページ",
     description: "最初に見える画像、見出し、初めての方向け文章、SNS欄を変更します。",
     publicPath: "/",
     publicLabel: "TOPページを確認",
-    summaryItems: ["メイン画像", "見出し", "初めての方向け", "SNS"],
-    actions: [
-      { label: "メイン画像", description: "TOPのスライドショー画像を追加・削除・並び替えます。", sectionId: "hero-slides", initialDraft: { page: "home" } },
-      { label: "見出し・初めての方向け文章", description: "TOPの見出し、説明文、初めての方向け文章を編集します。", sectionId: "home" },
-      { label: "SNS欄", description: "TOPに出すSNSお知らせカードを編集します。", sectionId: "social-notices" }
-    ]
+    actions: []
   },
   {
     page: "EVENT SCHEDULE",
-    title: "EVENT SCHEDULE",
+    title: "イベントスケジュール",
     description: "サイトのイベント情報を編集します。Google CalendarやSNSへの掲載は別に確認します。",
     publicPath: "/events/",
     publicLabel: "EVENT SCHEDULEを確認",
-    summaryItems: ["イベント案内文", "Facebookイベント", "SNS投稿の準備"],
     actions: [
-      { label: "サイトのイベント案内", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
-      { label: "Facebookイベント取り込み", description: "FacebookイベントURLから下書き作成に使う情報を取り込みます。", sectionId: "events" },
+      { label: "サイトのイベント案内", group: "開催イベント", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
+      { label: "Facebookイベント取り込み", group: "開催イベント", description: "FacebookイベントURLから下書き作成に使う情報を取り込みます。", sectionId: "events" },
+      { label: "カレンダーの案内文を変える", group: "カレンダー", description: "カレンダーに添える案内文", sectionId: "page-copy", initialDraft: { page: "events" }, fieldKeys: ["calendarNote"] },
       { label: "SNS投稿の下書き", description: "FacebookイベントからX・Instagram向けの下書きを作ります。投稿する前に各SNSで確認してください。", sectionId: "social-notices" },
-      { label: "メイン画像", description: "EVENT SCHEDULEページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "events" } }
+      { label: "メイン画像", group: "メインビジュアル", description: "EVENT SCHEDULEページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "events" } }
     ]
   },
   {
@@ -3844,9 +3958,8 @@ const adminPages: PageAdminItem[] = [
     description: "メイン画像、ドリンク表、フードメニュー、料金を変更します。",
     publicPath: "/menu/",
     publicLabel: "MENUページを確認",
-    summaryItems: ["メイン画像", "ドリンク表", "フードメニュー", "料金"],
     actions: [
-      { label: "メイン画像", description: "MENUページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "menu" } },
+      { label: "メイン画像", group: "メインビジュアル", description: "MENUページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "menu" } },
       { label: "ドリンク表", description: "ドリンクメニュー画像を追加・削除・並び替えます。", sectionId: "drink-menu-sheets" },
       { label: "フードメニュー・料金", description: "フード名、料金、写真、表示順を編集します。", sectionId: "menu" }
     ]
@@ -3857,7 +3970,6 @@ const adminPages: PageAdminItem[] = [
     description: "オンラインストアへのリンクを変更します。",
     publicPath: "/",
     publicLabel: "公開サイトを確認",
-    summaryItems: ["ストアリンク"],
     actions: [
       { label: "オンラインストアURL", description: "公開サイトから移動するオンラインストアのリンクを編集します。", sectionId: "site-settings" }
     ]
@@ -3868,9 +3980,8 @@ const adminPages: PageAdminItem[] = [
     description: "メイン画像、貸切プラン、機材レンタル、PDFリンクを変更します。",
     publicPath: "/party/",
     publicLabel: "PARTY & RENTALを確認",
-    summaryItems: ["メイン画像", "貸切プラン", "機材レンタル", "PDF"],
     actions: [
-      { label: "メイン画像", description: "PARTY & RENTALページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "party" } },
+      { label: "メイン画像", group: "メインビジュアル", description: "PARTY & RENTALページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "party" } },
       { label: "貸切プラン", description: "貸切やパーティープランの料金・説明を編集します。", sectionId: "party-plans" },
       { label: "機材レンタル・PDF", description: "機材レンタル説明とPDFリンクを編集します。", sectionId: "equipment-rental" }
     ]
@@ -3881,30 +3992,166 @@ const adminPages: PageAdminItem[] = [
     description: "メイン画像、住所、電話番号、Google Map、営業時間を変更します。",
     publicPath: "/access/",
     publicLabel: "ACCESSページを確認",
-    summaryItems: ["メイン画像", "住所", "電話", "Google Map", "営業時間"],
     actions: [
-      { label: "メイン画像", description: "ACCESSページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "access" } },
+      { label: "メイン画像", group: "メインビジュアル", description: "ACCESSページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "access" } },
       { label: "住所・電話・Google Map・営業時間", description: "店舗基本情報と地図リンクを編集します。", sectionId: "site-settings" }
     ]
   }
 ];
 
+type PageOverview = {
+  home: Draft;
+  "site-settings": Draft;
+  "hero-slides": Draft[];
+  "page-sections": Draft[];
+  "page-copy": Draft[];
+  "custom-sections": Draft[];
+};
+
+const emptyOverview: PageOverview = {
+  home: {}, "site-settings": {}, "hero-slides": [], "page-sections": [], "page-copy": [], "custom-sections": []
+};
+
+function overviewImage(value: unknown, fallback = "") {
+  const url = getImageUrl(value) || fallback;
+  return url && isValidManagedImageUrl(url) ? resolvePublicUrl(url, publicSiteUrl) : "";
+}
+
+function ActionThumbnail({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  return failed ? (
+    <span className="action-image-fallback">画像を表示できません</span>
+  ) : (
+    <img className="page-overview-image" src={url} alt="" onError={() => setFailed(true)} />
+  );
+}
+
+function topPageActions(home: Draft): PageAdminAction[] {
+  function fields(group: string, label: string, description: string, fieldKeys: readonly string[]): PageAdminAction {
+    return { group, label, description, sectionId: "home", fieldKeys };
+  }
+  function select(prefix: string) {
+    return getSection("home").fields.map((field) => field.key).filter((key) => key.startsWith(prefix));
+  }
+
+  return [
+    fields("ヘッダー", "ロゴ・背景を変える", "ページ上部に表示する画像", ["headerLogo", "headerBackground"]),
+    fields("ヘッダー", "メニューの表示名を変える", "ヘッダーの各ページへのリンク文言", select("headerNav")),
+    { label: "スライド写真を変える", group: "メインビジュアル", description: "共通写真、スマホ用写真、表示順", sectionId: "hero-slides", initialDraft: { page: "home" } },
+    fields("メインビジュアル", "見出し・説明文を変える", "メイン画像に重なる見出しと本文", ["heroEyebrow", "homeHeroTitle", "homeHeroLead", "heroMobileTitle"]),
+    fields("メインビジュアル", "重ねるロゴを変える", "メイン画像に重ねる店のロゴ", ["heroLogo"]),
+    fields("メインビジュアル", "ボタンの文言を変える", "地図・電話・予約のボタン", ["heroMapLabel", "heroCallLabel", "heroReserveLabel"]),
+    fields("初めての方へ", "見出し・説明文を変える", "紹介カードの上に出る文章", ["firstVisitEyebrow", "firstVisitTitle", "firstVisitDescription"]),
+    ...firstVisitSection.features.map((feature, index) => {
+      const prefix = "firstVisitCard" + (index + 1);
+      return {
+        ...fields("初めての方へ", "紹介カード" + (index + 1) + "を変える", getString(home[prefix + "Title"]) || feature.title, select(prefix)),
+        thumbnail: overviewImage(home[prefix + "Image"], editableMedia.atmosphereImages[index].src)
+      };
+    }),
+    fields("来店前の基本情報", "見出し・説明文を変える", "基本情報カードの上に出る文章", ["visitInfoTitle", "visitInfoLead"]),
+    ...visitInfoItems.map((item, index) => fields("来店前の基本情報", item.title + "カードを変える", getString(home["visitInfoCard" + (index + 1) + "Title"]) || item.title, select("visitInfoCard" + (index + 1)))),
+    fields("お店の紹介", "見出し・説明文を変える", "紹介カードの上に出る文章", ["localSearchEyebrow", "localSearchTitle", "localSearchLead"]),
+    ...localSearchSection.cards.map((item, index) => fields("お店の紹介", "紹介カード" + (index + 1) + "を変える", getString(home["localSearchCard" + (index + 1) + "Title"]) || item.title, select("localSearchCard" + (index + 1)))),
+    fields("SNS欄", "見出し・説明文を変える", "SNS欄の上に出る文章", ["socialEyebrow", "socialTitleLine1", "socialTitleLine2", "socialLead"]),
+    ...["Instagram", "Facebook", "X"].map((name) => fields("SNS欄", name + "の表示を変える", "アカウント表記や案内の表示", [...select("social" + name), ...(name === "Instagram" ? ["instagramWidgetSrc"] : [])])),
+    { label: "サイトに載せるお知らせを編集する", group: "SNS欄", description: "SNS投稿へのリンクとお知らせ文", sectionId: "social-notices" },
+    fields("アクセス", "行き方案内・ボタンを変える", "TOPの案内文やボタン", select("homeAccess")),
+    { label: "店舗情報・リンクを変える", group: "アクセス", description: "住所・電話・営業時間・地図リンク。ほかのページにも反映されます。", sectionId: "site-settings" },
+    fields("フッター", "背景を変える", "ページ最下部の背景画像", ["footerBackground"]),
+    fields("フッター", "店名・著作権表記を変える", "ページ最下部の文章", ["footerStoreName", "footerCopyright"]),
+    fields("スマホ下部の固定ボタン", "固定ボタンを変える", "スマホの画面下に常に表示。文言と表示するボタンを選べます。", select("mobile"))
+  ];
+}
+
+type LayoutRow = { key: string; order: number; hidden?: boolean; heading?: string; image?: string };
+
+function latestPageCopy(page: string, overview: PageOverview) {
+  return overview["page-copy"].filter((copy) => copy.page === page && copy.isPublished !== false)
+    .sort((a, b) => (a.displayOrder == null ? 9999 : getOrderNumber(a.displayOrder)) - (b.displayOrder == null ? 9999 : getOrderNumber(b.displayOrder))).at(-1) || {};
+}
+
+function currentHomeSlide(overview: PageOverview) {
+  return overview["hero-slides"].filter((item) => item.page === "home" && item.isPublished !== false && getImageUrl(item.image))
+    .sort((a, b) => (a.displayOrder == null ? 9999 : getOrderNumber(a.displayOrder)) - (b.displayOrder == null ? 9999 : getOrderNumber(b.displayOrder)))[0];
+}
+
+function overviewLayout(page: string, overview: PageOverview): Record<string, LayoutRow> {
+  const bySection = new Map<string, Draft>();
+  for (const entry of overview["page-sections"]) {
+    const key = getString(entry.sectionKey || entry.section);
+    if (entry.page === page && !bySection.has(key)) bySection.set(key, entry);
+  }
+  const row = (key: string, order: number, heading?: string, image?: string): LayoutRow => {
+    const entry = bySection.get(key);
+    return { key, order: entry?.displayOrder != null ? getOrderNumber(entry.displayOrder) : order, hidden: entry?.isPublished === false, heading, image };
+  };
+  const home = overview.home;
+  const copy = latestPageCopy(page, overview);
+  const slide = overview["hero-slides"].filter((item) => item.page === page && item.isPublished !== false && getImageUrl(item.image))
+    .sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder))[0];
+  const heroes = { events: pageHeroes.events, menu: pageHeroes.menu, party: pageHeroes.party, access: pageHeroes.access };
+  const hero: PageHeroContent | undefined = heroes[page as keyof typeof heroes];
+  const heroFallback = page === "home" ? editableMedia.homeHeroImage.src : hero?.slides?.[0]?.src || hero?.image;
+  const heroHeading = page === "home" ? getString(home.homeHeroTitle || copy.heroTitle) || fallbackContents.home.heroTitle : getString(copy.heroTitle) || hero?.title;
+  const heroRow = row("hero", 1, heroHeading, overviewImage(slide?.image, heroFallback));
+  if (page === "home") {
+    return {
+      "ヘッダー": { key: "header", order: -Infinity, heading: "ページ上部のロゴとメニュー", image: overviewImage(home.headerLogo, "/assets/brand/b-logo-mark2.png") },
+      "メインビジュアル": heroRow,
+      "初めての方へ": row("firstVisit", 2, getString(home.firstVisitTitle) || firstVisitSection.title, overviewImage(home.firstVisitCard1Image, editableMedia.atmosphereImages[0].src)),
+      "来店前の基本情報": row("visitInfo", 3, getString(home.visitInfoTitle) || "初めての来店前に、知っておくと安心なこと。"),
+      "お店の紹介": row("localSearch", 4, getString(home.localSearchTitle) || localSearchSection.title),
+      "SNS欄": row("social", 5, getString(home.socialTitleLine1 || copy.socialTitleLine1) || socialUpdatesCopy.titleLines[0]),
+      "アクセス": row("access", 6, getString(home.homeAccessTitle) || "天神駅から徒歩約4分。Google Mapから迷わず来店。"),
+      "フッター": { key: "footer", order: Infinity, heading: getString(home.footerStoreName) || "public bar Bassic.", image: overviewImage(home.footerBackground, "/assets/brand/topbar.jpg") },
+      "スマホ下部の固定ボタン": { key: "mobile", order: Infinity, heading: "スマホの画面下に常に表示" }
+    };
+  }
+  const grouped = (entries: LayoutRow[]) => {
+    const shown = entries.filter((entry) => !entry.hidden);
+    return shown.length ? Math.min(...shown.map((entry) => entry.order)) : Math.min(...entries.map((entry) => entry.order));
+  };
+  const drink = row("drinkSheets", 2, getString(copy.drinkLead));
+  const food = row("foodMenu", 3, getString(copy.foodLead));
+  const plans = row("plans", 2);
+  const rental = row("equipmentRental", 3, getString(copy.rentalLead));
+  const info = row("accessInfo", 2);
+  const map = row("googleMap", 3);
+  return {
+    "メインビジュアル": heroRow,
+    "開催イベント": row("event-list", 2),
+    "カレンダー": row("calendar", 3, getString(copy.calendarNote)),
+    "ドリンク表": { ...drink, order: grouped([drink, food]) },
+    "フードメニュー・料金": { ...food, order: grouped([drink, food]) },
+    "貸切プラン": { ...plans, order: grouped([plans, rental, row("useCases", 4)]) },
+    "機材レンタル・PDF": { ...rental, order: grouped([plans, rental, row("useCases", 4)]) },
+    "住所・電話・Google Map・営業時間": { ...info, hidden: info.hidden && map.hidden, order: grouped([info, map]) }
+  };
+}
+
 function PageBasedDashboard({
   onSelect,
   selectedPage,
-  onPageChange,
+  expandedGroup,
+  onGroupChange,
   lastDeploy,
   onDeployNotice,
   health,
-  opsStatus
+  opsStatus,
+  editor,
+  activeEditLabel
 }: {
   onSelect: (nextSection: ActiveSectionState) => void;
   selectedPage: string;
-  onPageChange: (page: string) => void;
+  expandedGroup: string | null;
+  onGroupChange: (group: string | null) => void;
   lastDeploy?: Notice;
   onDeployNotice: (notice: Notice) => void;
   health?: HealthState;
   opsStatus?: OpsStatus;
+  editor?: ReactNode;
+  activeEditLabel?: string;
 }) {
   const activePage = adminPages.find((page) => page.page === selectedPage) || adminPages[0];
   const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
@@ -3916,17 +4163,150 @@ function PageBasedDashboard({
     "PARTY & RENTAL": "party",
     ACCESS: "access"
   };
-  const activeActions = pageDraftMap[activePage.page]
-    ? [
-        ...activePage.actions,
-        {
-          label: "文言追加・削除",
-          description: `${activePage.page}ページに追加したい案内文や告知枠を作成・削除します。`,
-          sectionId: "custom-sections" as const,
-          initialDraft: { page: pageDraftMap[activePage.page] }
-        }
-      ]
-    : activePage.actions;
+  const [overview, setOverview] = useState<PageOverview>(emptyOverview);
+  const [overviewError, setOverviewError] = useState(false);
+  const editing = Boolean(editor);
+  const editingArea = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!editing || !editingArea.current) return;
+    const area = editingArea.current;
+    area.focus({ preventScroll: true });
+    area.scrollIntoView({ block: "start", inline: "nearest" });
+  }, [editing]);
+
+  useEffect(() => {
+    if (editing) return;
+    let cancelled = false;
+    const endpoints = ["home", "site-settings", "hero-slides", "page-sections", "page-copy", "custom-sections"] as const;
+    void Promise.allSettled(endpoints.map(async (id) => {
+      const { data } = await requestJson<ListResponse | Draft>("/api/content/" + id);
+      return [id, id === "home" || id === "site-settings" ? data || {} : (data as ListResponse)?.contents || []] as const;
+    })).then((results) => {
+      if (cancelled) return;
+      const fulfilled = results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
+      setOverview({ ...emptyOverview, ...Object.fromEntries(fulfilled) });
+      setOverviewError(fulfilled.length !== endpoints.length);
+    });
+    return () => { cancelled = true; };
+  }, [editing]);
+  const pageKey = pageDraftMap[activePage.page];
+  const layout = overviewLayout(pageKey, overview);
+  const activeActions = activePage.page === "TOP" ? topPageActions(overview.home) : activePage.actions;
+  const actionGroups = new Map<string, { layout: LayoutRow; actions: PageAdminAction[] }>();
+  for (const action of activeActions) {
+    const group = action.group || action.label;
+    const entry = actionGroups.get(group);
+    if (entry) entry.actions.push(action);
+    else actionGroups.set(group, { layout: layout[group] || { key: group, order: Infinity }, actions: [action] });
+  }
+  if (pageKey) {
+    for (const item of overview["custom-sections"]) {
+      const id = getString(item.id);
+      if (item.page !== pageKey || !id) continue;
+      const key = "custom-" + id;
+      const title = getString(item.title) || "タイトル未設定";
+      actionGroups.set(key, {
+        layout: { key, order: item.displayOrder == null ? 9000 : getOrderNumber(item.displayOrder), hidden: item.isPublished === false || !getString(item.title) || !getString(item.body), heading: title, image: overviewImage(item.image) },
+        actions: [{ label: "追加した案内を編集する", description: title, sectionId: "custom-sections", initialDraft: { page: pageKey }, itemId: id }]
+      });
+    }
+  }
+  const orderedGroups = [...actionGroups].sort((a, b) => a[1].layout.order - b[1].layout.order);
+
+  function selectAction(action: PageAdminAction, group: string) {
+    onSelect({
+      id: action.sectionId,
+      initialDraft: action.initialDraft,
+      fieldKeys: action.fieldKeys,
+      homeGroup: action.homeGroup,
+      itemId: action.itemId,
+      sourcePage: activePage.page,
+      editLabel: actionPath(action, group),
+      previewContext: pageKey === "home" ? { ...overview.home, settings: overview["site-settings"], slide: currentHomeSlide(overview), copy: latestPageCopy("home", overview) } : undefined
+    });
+  }
+
+  function actionPath(action: PageAdminAction, group: string) {
+    const sectionLabel = actionGroups.get(group)?.layout.key.startsWith("custom-")
+      ? actionGroups.get(group)?.layout.heading || "追加の案内"
+      : group;
+    return [activePage.title, sectionLabel, ...(sectionLabel === action.label ? [] : [action.label])].join(" → ");
+  }
+
+  const selection = expandedGroup ? actionGroups.get(expandedGroup) : undefined;
+  const [actionData, setActionData] = useState<Record<string, Draft>>({});
+  const extraEndpoints = [...new Set(selection?.actions.map((action) => action.sectionId))]
+    .filter((id) => !["home", "site-settings", "page-copy", "hero-slides", "custom-sections"].includes(id))
+    .join(",");
+  useEffect(() => {
+    if (!extraEndpoints) return;
+    const controller = new AbortController();
+    void Promise.allSettled(extraEndpoints.split(",").map(async (id) => {
+      const { data } = await requestJson<ListResponse | Draft>("/api/content/" + id, { signal: controller.signal });
+      const items = (data as ListResponse)?.contents;
+      const current = Array.isArray(items)
+        ? items.find((item) => item.isPublished !== false) || {}
+        : data || {};
+      return [id, current] as const;
+    })).then((results) => {
+      if (controller.signal.aborted) return;
+      setActionData((current) => ({
+        ...current,
+        ...Object.fromEntries(results.flatMap((result) => result.status === "fulfilled" ? [result.value] : []))
+      }));
+    });
+    return () => controller.abort();
+  }, [extraEndpoints, lastDeploy?.requestedAt]);
+  const targets = orderedGroups.map(([group, entry]) => ({ key: entry.layout.key, label: entry.layout.key.startsWith("custom-") ? entry.layout.heading || group : group }));
+  const selectedKey = selection?.layout.key;
+
+  function selectCanvasSection(key: string) {
+    const group = orderedGroups.find(([, entry]) => entry.layout.key === key)?.[0];
+    if (group) onGroupChange(group);
+  }
+
+  function renderActions(actions: PageAdminAction[], group: string) {
+    return (
+      <div className="page-option-details">
+        {actions.map((action) => {
+          const context = { copy: latestPageCopy(pageKey, overview), settings: overview["site-settings"] };
+          const slide = overview["hero-slides"].filter((item) => item.page === pageKey && item.isPublished !== false && getImageUrl(item.image))
+            .sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder))[0];
+          const data = action.sectionId === "home" ? overview.home
+            : action.sectionId === "site-settings" ? overview["site-settings"]
+            : action.sectionId === "page-copy" ? context.copy
+            : action.sectionId === "hero-slides" ? slide || {}
+            : action.itemId ? overview["custom-sections"].find((item) => item.id === action.itemId) || {}
+            : actionData[action.sectionId] || {};
+          const fields = getSection(action.sectionId).fields.filter((field) => !action.fieldKeys || action.fieldKeys.includes(field.key));
+          const defaults = currentFieldDefaults(action.sectionId, { ...action.initialDraft, ...data }, context);
+          const values = fields.map((field) => ({ field, value: fieldHasValue(field, data[field.key]) ? data[field.key] : defaults[field.key] }));
+          const title = values.find(({ field, value }) => /(?:Title|Name|Account|^address|^onlineStoreUrl)$/i.test(field.key) && getString(value).trim());
+          const lead = values.find(({ field, value }) => /(?:Lead|Description|Text|Note|Copyright|hoursLabel|^body)$/i.test(field.key) && getString(value).trim());
+          const labels = values.filter(({ field }) => /Label$/.test(field.key)).map(({ value }) => getString(value).trim()).filter(Boolean);
+          const excerpt = getString(lead?.value) || labels.slice(0, 3).join(" ／ ");
+          const thumbnail = values.map(({ field, value }) => field.type === "image" ? overviewImage(value) : "").find(Boolean)
+            || action.thumbnail || (action.sectionId === "hero-slides" ? overviewImage(selection?.layout.image) : "");
+          const path = actionPath(action, group);
+          return (
+            <article className="action-preview-row" key={action.label}>
+              <button className="action-preview-button" type="button" aria-pressed={activeEditLabel === path} onClick={() => selectAction(action, group)}>
+                {thumbnail ? <ActionThumbnail key={thumbnail} url={thumbnail} /> : null}
+                <span className="action-preview-copy">
+                  <strong>{action.label}</strong>
+                  {title ? <span className="action-preview-current">{getString(title.value)}</span> : null}
+                  <span className="action-preview-excerpt">{excerpt || (!title ? action.description : "")}</span>
+                  {action.sectionId === "site-settings" ? <small>他のページにも反映</small> : null}
+                </span>
+                <span className="action-preview-choice"><Pencil size={15} /> 選ぶ</span>
+              </button>
+            </article>
+          );
+        })}
+        {activePage.page === "EVENT SCHEDULE" && group === "SNS投稿の下書き" ? <FacebookEventSocialDraftPanel /> : null}
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -3934,7 +4314,7 @@ function PageBasedDashboard({
         <div>
           <p className="eyebrow">Bassic. 管理画面</p>
           <h1>公開サイトのどこを変更しますか？</h1>
-          <p>公開中の新HPと同じページ構造から選び、必要なセクションだけを編集します。</p>
+          <p>左でページを選び、中央で変更したい場所を開いてください。</p>
         </div>
         <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
           <ExternalLink size={18} />
@@ -3942,61 +4322,55 @@ function PageBasedDashboard({
         </a>
       </div>
 
-      <section className="page-change-map page-dashboard" aria-label="公開サイトのページから更新場所を選ぶ">
-        <div className="page-change-heading">
-          <div>
-            <strong>ページを選ぶ</strong>
-            <span>カードには、そのページで変更できる項目だけを短く表示しています。</span>
+      <div className="visual-editor-workspace">
+        <div className="visual-editor-center">
+          <div hidden={editing}>
+            <PublicPageCanvas
+              path={activePage.publicPath}
+              title={activePage.title}
+              targets={targets}
+              selected={selectedKey}
+              onSelect={selectCanvasSection}
+              revision={lastDeploy?.requestedAt}
+            />
           </div>
+          {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : null}
         </div>
-        <div className="page-change-grid">
-          {adminPages.map((page) => (
-            <button
-              className={`page-change-card page-select-card${activePage.page === page.page ? " selected" : ""}`}
-              key={page.page}
-              type="button"
-              onClick={() => onPageChange(page.page)}
-            >
-              <span className="page-change-page">{page.page}</span>
-              <h2>{page.title}</h2>
-              <p>{page.description}</p>
-              <span className="page-change-summary">{page.summaryItems.join(" / ")}</span>
-            </button>
-          ))}
-        </div>
-
-        <section className="page-section-picker" aria-label={`${activePage.page}の編集セクション`}>
-          <div className="page-section-heading">
-            <div>
-              <span>{activePage.page}</span>
-              <strong>このページで編集できる項目</strong>
-            </div>
-            <a className="page-change-link" href={resolvePublicUrl(activePage.publicPath, publicSiteUrl)} target="_blank" rel="noreferrer">
-              <ExternalLink size={14} />
-              {activePage.publicLabel}
-            </a>
-          </div>
-          <div className="page-section-list">
-            {activeActions.map((action) => (
-              <article className="page-section-row" key={`${activePage.page}-${action.sectionId}-${action.label}`}>
+        <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
+            <section className="page-section-picker" aria-label={activePage.page + "の編集セクション"}>
+              <div className="page-section-heading">
                 <div>
-                  <strong>{action.label}</strong>
-                  <span>{action.description}</span>
+                  <strong>{selection ? selection.layout.key.startsWith("custom-") ? selection.layout.heading : expandedGroup : "編集する場所を選ぶ"}</strong>
+                  <p>{selection ? "変更したい項目を選んでください。" : "中央のページをクリックすると、ここに編集項目が出ます。"}</p>
                 </div>
-                <button
-                  className="secondary-button compact"
-                  type="button"
-                  onClick={() => onSelect({ id: action.sectionId, initialDraft: action.initialDraft, sourcePage: activePage.page })}
-                >
-                  <Pencil size={16} />
-                  編集
-                </button>
-              </article>
-            ))}
-          </div>
-          {activePage.page === "EVENT SCHEDULE" ? <FacebookEventSocialDraftPanel /> : null}
-        </section>
-      </section>
+                <a className="page-change-link" href={resolvePublicUrl(activePage.publicPath, publicSiteUrl)} target="_blank" rel="noreferrer" aria-label={activePage.publicLabel}>
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+              {selection && expandedGroup ? renderActions(selection.actions, expandedGroup) : null}
+              {overviewError ? <p role="status">一部の編集データを取得できませんでした。</p> : null}
+              <details className="visual-editor-section-list">
+                <summary>編集箇所一覧</summary>
+                <div className="page-section-list">
+                  {orderedGroups.map(([group, { layout: row }]) => (
+                    <button key={group} type="button" className="page-option-toggle"
+                      aria-expanded={expandedGroup === group} onClick={() => onGroupChange(group)}>
+                      <span className="page-overview-label">
+                        <strong>{row.key.startsWith("custom-") ? row.heading : group}</strong>
+                        {row.hidden ? <small className="page-overview-hidden">公開ページでは非表示</small> : null}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+              {pageKey ? (
+                <button type="button" className="secondary-button compact" onClick={() => selectAction({
+                  label: "案内・告知を追加する", description: "", sectionId: "custom-sections", initialDraft: { page: pageKey }, itemId: "new"
+                }, "追加の案内")}>案内・告知を追加する</button>
+              ) : null}
+            </section>
+        </aside>
+      </div>
 
       {hasSetupProblem ? <SetupStatus health={health} /> : null}
       {opsStatus?.alerts.length ? (
@@ -4005,7 +4379,7 @@ function PageBasedDashboard({
           <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
         </details>
       ) : null}
-      {lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
+      {!editing && lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
         <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} />
       ) : <NoticeBox notice={lastDeploy} /> : null}
       {false ? <SnsStatusCard onSelect={(id) => onSelect({ id })} /> : null}
@@ -4030,6 +4404,7 @@ export default function AdminClient() {
   const [authenticated, setAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<ActiveSectionState | null>(null);
   const [dashboardPage, setDashboardPage] = useState(adminPages[0].page);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
   const [sessionError, setSessionError] = useState("");
   const [health, setHealth] = useState<HealthState | undefined>();
@@ -4149,26 +4524,65 @@ export default function AdminClient() {
           ログアウト
         </button>
       </header>
-      {activeSection ? (
-        <SectionEditor
-          sectionId={activeSection.id}
-          initialDraft={activeSection.initialDraft}
-          sourcePage={activeSection.sourcePage}
-          onBack={() => setActiveSection(null)}
-          onEditorState={setEditorState}
-          onDeployNotice={rememberDeployNotice}
-        />
-      ) : (
-        <PageBasedDashboard
-          onSelect={setActiveSection}
-          selectedPage={dashboardPage}
-          onPageChange={setDashboardPage}
-          lastDeploy={lastDeploy}
-          onDeployNotice={rememberDeployNotice}
-          health={health}
-          opsStatus={opsStatus}
-        />
-      )}
+      <div className="admin-workspace">
+        <nav className="admin-page-nav" aria-label="編集するページ">
+          <p>ページを選ぶ</p>
+          <div className="admin-page-nav-list">
+            {adminPages.map((page) => (
+              <button
+                key={page.page}
+                type="button"
+                aria-current={dashboardPage === page.page ? "page" : undefined}
+                disabled={!!activeSection && editorState.busy}
+                onClick={() => {
+                  if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+                  setActiveSection(null);
+                  if (page.page !== dashboardPage) setExpandedGroup(null);
+                  setDashboardPage(page.page);
+                }}
+              >
+                {page.title}
+              </button>
+            ))}
+          </div>
+        </nav>
+        <div className="admin-workspace-content">
+          <PageBasedDashboard
+            onSelect={(next) => {
+              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              setActiveSection(next);
+            }}
+            selectedPage={dashboardPage}
+            expandedGroup={expandedGroup}
+            onGroupChange={(group) => {
+              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              setActiveSection(null);
+              setExpandedGroup(group);
+            }}
+            lastDeploy={lastDeploy}
+            onDeployNotice={rememberDeployNotice}
+            health={health}
+            opsStatus={opsStatus}
+            activeEditLabel={activeSection?.editLabel}
+            editor={activeSection ? (
+              <SectionEditor
+                key={JSON.stringify(activeSection)}
+                sectionId={activeSection.id}
+                initialDraft={activeSection.initialDraft}
+                homeGroup={activeSection.homeGroup}
+                fieldKeys={activeSection.fieldKeys}
+                itemId={activeSection.itemId}
+                editLabel={activeSection.editLabel}
+                previewContext={activeSection.previewContext}
+                sourcePage={activeSection.sourcePage}
+                onBack={() => setActiveSection(null)}
+                onEditorState={setEditorState}
+                onDeployNotice={rememberDeployNotice}
+              />
+            ) : undefined}
+          />
+        </div>
+      </div>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { mobileCrop, type MobileCropPosition } from "@/lib/responsive-media";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -26,7 +27,7 @@ import {
   type FeatureCardContent
 } from "@/lib/page-content";
 import { mailHref, site } from "@/lib/site";
-import type { CustomSection, EquipmentRental, EventItem, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
+import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -53,22 +54,28 @@ function imageSrc(path: string) {
 export function PageHero({
   eyebrow,
   title,
+  mobileTitle,
   lead,
   image = heroImagePath,
   imageAlt = "public bar Bassic.の店内",
   slides,
   className,
   highlights,
-  actionLabels
+  actionLabels,
+  logo,
+  settings
 }: {
   eyebrow: string;
   title: React.ReactNode;
+  mobileTitle?: string;
   lead: string;
   image?: string;
   imageAlt?: string;
-  slides?: readonly { src: string; alt: string }[];
+  slides?: readonly { src: string; alt: string; mobileSrc?: string; mobilePosition?: MobileCropPosition }[];
   className?: string;
   highlights?: string[];
+  logo?: CmsImage;
+  settings?: SiteSettings;
   actionLabels?: {
     mapLabel?: string;
     callLabel?: string;
@@ -80,27 +87,34 @@ export function PageHero({
       {slides?.length ? (
         <div className="hero-slideshow" aria-hidden="true">
           {slides.map((slide, index) => (
+            <picture key={slide.src + index}>
+              {slide.mobileSrc ? <source media="(max-width: 900px)" srcSet={slide.mobileSrc} /> : null}
             <Image
-              key={slide.src}
               className={`hero-slide hero-slide-${index + 1}`}
+              data-mobile-position={slide.mobilePosition}
               src={slide.src}
               alt=""
               fill
-              priority={index === 0}
+              priority={index === 0 && !slide.mobileSrc}
+              loading={index === 0 && slide.mobileSrc ? "eager" : undefined}
               sizes="100vw"
             />
+            </picture>
           ))}
         </div>
       ) : (
         <Image className="hero-image" src={imageSrc(image)} alt={imageAlt} fill priority sizes="100vw" />
       )}
       <div className="hero-overlay" />
-      <img className="hero-logo" src={assetPath("/assets/brand/index-logo.png")} alt="public bar Bassic." width={220} height={220} />
+      <img className="hero-logo" src={assetPath(logo?.url || "/assets/brand/index-logo.png")} alt={logo?.alt || "public bar Bassic."} width={220} height={220} />
       <div className="hero-content">
         <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
+        <h1>{mobileTitle ? <>
+          <span className="hero-title-desktop">{title}</span>
+          <span className="hero-title-mobile">{mobileTitle}</span>
+        </> : title}</h1>
         <p className="lead">{lead}</p>
-        <PrimaryActions {...actionLabels} />
+        <PrimaryActions {...actionLabels} settings={settings} />
         {highlights?.length ? (
           <div className="quick-info" aria-label="来店前の基本情報">
             {highlights.map((item) => (
@@ -113,20 +127,30 @@ export function PageHero({
   );
 }
 
-export function FirstVisitBlock({ lead, tone = "dark" }: { lead: string; tone?: "dark" | "light" }) {
+export function FirstVisitBlock({ lead, tone = "dark", home }: { lead: string; tone?: "dark" | "light"; home?: HomeContent }) {
+  const features = firstVisitSection.features.map((feature, index) => {
+    const card = (index + 1) as 1 | 2 | 3;
+    return {
+      ...feature,
+      title: home?.[`firstVisitCard${card}Title`]?.trim() || feature.title,
+      text: home?.[`firstVisitCard${card}Text`]?.trim() || feature.text,
+      image: home?.[`firstVisitCard${card}Image`],
+      mobilePosition: mobileCrop(home?.[`firstVisitCard${card}MobilePosition`])
+    };
+  });
   return (
     <section className={`section intro intro-${tone}`}>
       <div className="section-heading narrow-copy">
-        <p className="eyebrow">{firstVisitSection.eyebrow}</p>
-        <h2>{firstVisitSection.title}</h2>
+        <p className="eyebrow">{home?.firstVisitEyebrow?.trim() || firstVisitSection.eyebrow}</p>
+        <h2>{home?.firstVisitTitle?.trim() || firstVisitSection.title}</h2>
       </div>
       <p className="section-lead narrow-copy">{lead}</p>
-      <FeatureCardGrid features={firstVisitSection.features} />
+      <FeatureCardGrid features={features} />
     </section>
   );
 }
 
-export function VisitInfoCards({ settings }: { settings?: SiteSettings }) {
+export function VisitInfoCards({ settings, title, lead, home }: { settings?: SiteSettings; title?: string; lead?: string; home?: HomeContent }) {
   const items = settings
     ? visitInfoItems.map((item) => {
         if (item.icon === "clock") return { ...item, text: settings.hoursLabel };
@@ -140,30 +164,34 @@ export function VisitInfoCards({ settings }: { settings?: SiteSettings }) {
   return (
     <VisitInfoGrid
       ariaLabel="来店前の基本情報"
-      title="初めての来店前に、知っておくと安心なこと。"
-      lead="営業時間、テーブル・チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"
-      items={items}
+      title={title?.trim() || "初めての来店前に、知っておくと安心なこと。"}
+      lead={lead?.trim() || "営業時間、テーブル・チャージ、喫煙可否、イベント日の営業について、来店前に迷いやすい情報をまとめました。"}
+      items={items.map((item, index) => {
+        const position = (index + 1) as 1 | 2 | 3 | 4;
+        return { ...item, title: home?.[`visitInfoCard${position}Title`]?.trim() || item.title, text: home?.[`visitInfoCard${position}Text`]?.trim() || item.text };
+      })}
     />
   );
 }
 
-export function LocalSearchSection() {
+export function LocalSearchSection({ home }: { home?: HomeContent }) {
   return (
     <section className="section local-search-section">
       <div className="section-heading">
-        <p className="eyebrow">{localSearchSection.eyebrow}</p>
-        <h2>{localSearchSection.title}</h2>
-        <p className="section-lead">{localSearchSection.lead}</p>
+        <p className="eyebrow">{home?.localSearchEyebrow?.trim() || localSearchSection.eyebrow}</p>
+        <h2>{home?.localSearchTitle?.trim() || localSearchSection.title}</h2>
+        <p className="section-lead">{home?.localSearchLead?.trim() || localSearchSection.lead}</p>
       </div>
       <div className="local-search-grid">
-        {localSearchSection.cards.map((card) => {
+        {localSearchSection.cards.map((card, index) => {
           const Icon = localSearchIcons[card.icon];
+          const position = (index + 1) as 1 | 2 | 3 | 4;
 
           return (
             <article key={card.title}>
               <Icon />
-              <h3>{card.title}</h3>
-              <p>{card.text}</p>
+              <h3>{home?.[`localSearchCard${position}Title`]?.trim() || card.title}</h3>
+              <p>{home?.[`localSearchCard${position}Text`]?.trim() || card.text}</p>
             </article>
           );
         })}
@@ -172,27 +200,31 @@ export function LocalSearchSection() {
   );
 }
 
-function PairedFeaturePhoto({ photo }: { photo: (typeof atmosphereImages)[number] }) {
+function PairedFeaturePhoto({ photo, mobilePosition }: { photo: (typeof atmosphereImages)[number]; mobilePosition?: MobileCropPosition }) {
   return (
     <figure className="feature-photo">
-      <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 900px) 100vw, 33vw" />
+      <Image src={photo.src} alt={photo.alt} data-mobile-position={mobilePosition} fill sizes="(max-width: 900px) 100vw, 33vw" />
     </figure>
   );
 }
 
-export function FeatureCardGrid({ features }: { features: readonly FeatureCardContent[] }) {
+export function FeatureCardGrid({ features }: { features: readonly (FeatureCardContent & { image?: CmsImage; mobilePosition?: MobileCropPosition })[] }) {
   return (
     <div className="feature-grid">
       {features.map((feature, index) => {
         const Icon = featureIcons[feature.icon];
-        const photo = atmosphereImages[index % atmosphereImages.length];
+        const defaultPhoto = atmosphereImages[index % atmosphereImages.length];
+        const url = feature.image?.url?.trim();
+        const photo = url && (url.startsWith("https://") || url.startsWith("/assets/"))
+          ? { src: imageSrc(url), alt: feature.image?.alt?.trim() || feature.title }
+          : defaultPhoto;
 
         return (
-          <article key={feature.title}>
+          <article key={index}>
             <Icon />
             <h3>{feature.title}</h3>
             <p>{feature.text}</p>
-            <PairedFeaturePhoto photo={photo} />
+            <PairedFeaturePhoto photo={photo} mobilePosition={feature.mobilePosition} />
           </article>
         );
       })}
@@ -204,6 +236,7 @@ export function SocialUpdatesSection({
   notices = [],
   instagramWidgetSrc,
   settings,
+  home,
   titleLine1 = socialUpdatesCopy.titleLines[0],
   titleLine2 = socialUpdatesCopy.titleLines[1],
   lead = socialUpdatesCopy.lead
@@ -211,6 +244,7 @@ export function SocialUpdatesSection({
   notices?: SocialNotice[];
   instagramWidgetSrc?: string;
   settings?: SiteSettings;
+  home?: HomeContent;
   titleLine1?: string;
   titleLine2?: string;
   lead?: string;
@@ -227,6 +261,7 @@ export function SocialUpdatesSection({
       lead={lead}
       notices={notices}
       instagramWidgetSrc={instagramWidgetSrc}
+      home={home}
       settings={settings}
     />
   );
@@ -245,7 +280,7 @@ export function CustomSectionBlock({ section }: { section: CustomSection }) {
           </figure>
         ) : null}
         <div className="section-heading narrow-copy">
-          <p className="eyebrow">Information</p>
+          <p className="eyebrow">{section.eyebrow?.trim() || "Information"}</p>
           <h2>{section.title}</h2>
           <p className="section-lead">{section.body}</p>
           {hasLink ? (
@@ -509,11 +544,17 @@ export function PartyContent({
 
 export function AccessContent({
   note,
+  heading,
+  home,
+  routeTips = accessRouteTips,
   settings,
   showInfo = true,
   showMap = true
 }: {
   note: string;
+  heading?: string;
+  home?: HomeContent;
+  routeTips?: readonly string[];
   settings?: SiteSettings;
   showInfo?: boolean;
   showMap?: boolean;
@@ -526,49 +567,47 @@ export function AccessContent({
     <section className="section access-section">
       {showInfo ? (
       <div className="access-copy narrow-copy">
-        <p className="eyebrow">Access</p>
+        <p className="eyebrow">{home?.homeAccessEyebrow?.trim() || "Access"}</p>
         <h2>
-          天神駅から徒歩約4分。
-          <br />
-          Google Mapから迷わず来店。
+          {heading?.trim() || <>天神駅から徒歩約4分。<br />Google Mapから迷わず来店。</>}
         </h2>
         <p>{note}</p>
         <dl className="access-list">
-          <dt>住所</dt>
+          <dt>{home?.homeAccessAddressLabel?.trim() || "住所"}</dt>
           <dd>{accessSettings.address}</dd>
-          <dt>電話</dt>
+          <dt>{home?.homeAccessPhoneLabel?.trim() || "電話"}</dt>
           <dd>{accessSettings.phone}</dd>
-          <dt>メール</dt>
-          <dd>{site.email}</dd>
-          <dt>営業時間</dt>
+          <dt>{home?.homeAccessEmailLabel?.trim() || "メール"}</dt>
+          <dd>{accessSettings.email || site.email}</dd>
+          <dt>{home?.homeAccessHoursLabel?.trim() || "営業時間"}</dt>
           <dd>
             {accessSettings.hoursLabel}
             <br />
             {accessSettings.eventHoursNote || site.eventHoursNote}
             <br />
             <Link className="inline-access-link" href="/events">
-              イベントスケジュールページを見る
+              {home?.homeAccessEventsLabel?.trim() || "イベントスケジュールページを見る"}
             </Link>
           </dd>
-          <dt>喫煙</dt>
+          <dt>{home?.homeAccessSmokingLabel?.trim() || "喫煙"}</dt>
           <dd>{accessSettings.smokingLabel}</dd>
         </dl>
         <div className="route-tips" aria-label="初来店向けの行き方案内">
-          <h3>Google Mapから来店する方へ</h3>
+          <h3>{home?.homeAccessDirectionsTitle?.trim() || "Google Mapから来店する方へ"}</h3>
           <ul>
-            {accessRouteTips.map((tip) => (
-              <li key={tip}>{tip}</li>
+            {routeTips.map((tip, index) => (
+              <li key={index}>{tip}</li>
             ))}
           </ul>
         </div>
         <div className="hero-actions">
           <a className="button primary" href={accessSettings.directionsUrl || accessSettings.googleMapsUrl} target="_blank" rel="noreferrer">
             <Navigation size={18} />
-            現在地から向かう
+            {home?.homeAccessDirectionsLabel?.trim() || "現在地から向かう"}
           </a>
-          <a className="button" href={mailHref("Bassic.予約問い合わせ")}>
+          <a className="button" href={mailHref("Bassic.予約問い合わせ", accessSettings.email)}>
             <CalendarDays size={18} />
-            予約する
+            {home?.homeAccessReserveLabel?.trim() || "予約する"}
           </a>
         </div>
       </div>

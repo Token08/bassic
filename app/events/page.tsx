@@ -150,7 +150,7 @@ export default async function EventsPage() {
       <EventsJsonLd events={visibleSections.has("event-list") ? upcomingEvents : []} settings={contents.siteSettings} />
       <main>
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
-          <div className="managed-section" key={section.key}>
+          <div className="managed-section" data-public-section={section.key} key={section.key}>
             {section.node}
           </div>
         ))}

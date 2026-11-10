@@ -41,8 +41,8 @@
 
 | 表示名 | fieldId | 種類 | 必須 |
 | --- | --- | --- | --- |
-| TOP見出し | `heroTitle` | テキスト | yes |
-| TOP説明文 | `heroLead` | テキストエリア | yes |
+| TOP見出し（旧設定） | `heroTitle` | テキスト | no |
+| TOP説明文 | `heroLead` | テキストエリア | no |
 | 初回来店説明文 | `firstVisitLead` | テキストエリア | no |
 | アクセス補足 | `accessNote` | テキストエリア | no |
 | Instagram表示URL | `instagramWidgetSrc` | テキスト | no |
@@ -50,6 +50,24 @@
 `instagramWidgetSrc` はLightWidgetなど外部サービスで発行したiframe URLだけを入力します。Instagram IDだけでは直近投稿一覧を安定表示できません。
 
 `firstVisitLead` と `accessNote` は未入力でも公開サイトの既存文言を使います。文言を変えたい時だけ入力してください。
+
+TOPのメイン画像より下の編集内容は、既存の `home` レコードのJSON本文に保存します。microCMSに個別のフィールドを追加する必要はありません。空欄の項目は現在の表示に戻ります。
+
+| 表示箇所 | JSONの項目 |
+| --- | --- |
+| 初めての方へ | `firstVisitEyebrow`、`firstVisitTitle`、`firstVisitDescription` |
+| 初めての方へのカード1〜3 | `firstVisitCard1Title`、`firstVisitCard1Text`、`firstVisitCard1Image`。カード番号が2、3の場合も同じ形式。画像は `url` と任意の `alt` を持つオブジェクト。 |
+| 来店前の基本情報 | `visitInfoTitle`、`visitInfoLead` |
+| お店の紹介 | `localSearchEyebrow`、`localSearchTitle`、`localSearchLead` |
+| お店の紹介のカード1〜4 | `localSearchCard1Title`、`localSearchCard1Text`。カード番号が2〜4の場合も同じ形式。 |
+| SNS | `socialTitleLine1`、`socialTitleLine2`、`socialLead` |
+| アクセス | `homeAccessTitle`、`homeAccessNote`、`homeAccessTip1`、`homeAccessTip2`、`homeAccessTip3` |
+| メイン | `homeHeroTitle`、`homeHeroLead`、`heroEyebrow`、`heroMapLabel`、`heroCallLabel`、`heroReserveLabel`、`heroLogo` |
+| 来店前の基本情報 | `visitInfoCard1Title`、`visitInfoCard1Text`、`visitInfoCard2Title`、`visitInfoCard2Text`、`visitInfoCard3Title`、`visitInfoCard3Text`、`visitInfoCard4Title`、`visitInfoCard4Text` |
+| SNS欄 | `socialEyebrow`、`socialInstagramLabel`、`socialInstagramAccount`、`socialInstagramButton`、`socialInstagramDescription`、`socialInstagramImage`、`socialFacebookLabel`、`socialFacebookAccount`、`socialFacebookButton`、`socialXLabel`、`socialXAccount`、`socialXButton`、`socialXDescription`、`socialXImage` |
+| アクセス | `homeAccessEyebrow`、`homeAccessAddressLabel`、`homeAccessPhoneLabel`、`homeAccessEmailLabel`、`homeAccessHoursLabel`、`homeAccessSmokingLabel`、`homeAccessEventsLabel`、`homeAccessDirectionsTitle`、`homeAccessDirectionsLabel`、`homeAccessReserveLabel` |
+| ヘッダー・フッター | `headerLogo`、`headerBackground`、`footerBackground`、`footerStoreName`、`footerCopyright`、`headerNav1Label`、`headerNav2Label`、`headerNav3Label`、`headerNav4Label`、`headerNav5Label`、`headerNav6Label`、`mobileCallLabel`、`mobileMapLabel`、`mobileInstagramLabel`、`mobileReserveLabel` |
+| スマホの表示 | `heroMobileTitle`、`firstVisitCard1MobilePosition`、`firstVisitCard2MobilePosition`、`firstVisitCard3MobilePosition`、`mobileHideCall`、`mobileHideMap`、`mobileHideInstagram`、`mobileHideReserve` |
 
 TOPを含む各ページのメイン画像は、下記の `hero-slides` で管理します。画像変更の入口を分けないため、`home` には画像フィールドを作りません。
 `displayOrder` や `優先順位` などの数字欄は、0以上の半角整数だけを入力します。小数やマイナスは使いません。
@@ -63,6 +81,8 @@ TOPを含む各ページのメイン画像は、下記の `hero-slides` で管�
 | 画像 | `image` | 画像 | yes |
 | 表示順 | `displayOrder` | 数字 | no |
 | 公開する | `isPublished` | 真偽値 | yes |
+
+TOPスライドのスマホ用画像（`mobileImage`）と切り抜き位置（`mobilePosition`）は管理画面専用項目です。APIでは既存の画像名フィールドに画像名と合わせて保存します。
 
 `page` の選択肢:
 
@@ -229,6 +249,7 @@ SNSへ投稿する運用では、`deliveryStatus` を `draft` から `approved` 
 
 | 表示名 | fieldId | 種類 | 必須 |
 | --- | --- | --- | --- |
+| 小見出し | `eyebrow` | テキスト | no |
 | ページ | `page` | セレクト | yes |
 | 見出し | `title` | テキスト | yes |
 | 本文 | `body` | テキストエリア | yes |

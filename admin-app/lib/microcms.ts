@@ -1,3 +1,5 @@
+import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
+
 export type AdminEndpointType = "object" | "list";
 
 export type AdminEndpoint = {
@@ -186,6 +188,11 @@ function sanitizeDraft(draft: Record<string, unknown>) {
 
 function compactDraft(endpointId: string, draft: Record<string, unknown>) {
   const sanitized = sanitizeDraft(draft);
+
+  if (endpointId === "hero-slides") {
+    const { mobileImage, mobilePosition, title, ...slide } = sanitized;
+    return { ...slide, title: packSlideTitle(title, mobileImage, mobilePosition) };
+  }
 
   if (endpointId === "menu") {
     return {
@@ -385,7 +392,9 @@ export async function getContent(endpointId: string) {
       return getFallbackContent(endpointId, endpoint);
     }
 
-    return data;
+    return endpointId === "hero-slides"
+      ? { ...data, contents: contents.map((slide: Record<string, unknown>) => ({ ...slide, ...unpackSlideTitle(slide.title) })) }
+      : data;
   } catch (error) {
     if (process.env.ADMIN_ALLOW_CONTENT_FALLBACK === "false") {
       throw error;

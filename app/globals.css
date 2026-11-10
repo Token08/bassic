@@ -3222,3 +3222,20 @@ main > section.visit-info-strip .visit-info-grid article p {
     padding: 7px 9px;
   }
 }
+
+.hero-title-mobile { display: none; }
+
+@media (max-width: 900px) {
+  .hero-title-desktop { display: none; }
+  .hero-title-mobile { display: inline; }
+  .home-hero .hero-slide[data-mobile-position="center"],
+  .feature-photo img[data-mobile-position="center"] { object-position: center; }
+  .home-hero .hero-slide[data-mobile-position="top"],
+  .feature-photo img[data-mobile-position="top"] { object-position: center top; }
+  .home-hero .hero-slide[data-mobile-position="bottom"],
+  .feature-photo img[data-mobile-position="bottom"] { object-position: center bottom; }
+  .home-hero .hero-slide[data-mobile-position="left"],
+  .feature-photo img[data-mobile-position="left"] { object-position: left center; }
+  .home-hero .hero-slide[data-mobile-position="right"],
+  .feature-photo img[data-mobile-position="right"] { object-position: right center; }
+}
