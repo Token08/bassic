@@ -30,11 +30,12 @@ const legacyUrl = "https://www.facebook.com/events/12345678/";
 const newUrl = "https://www.facebook.com/events/87654321/";
 const bassicArchiveUrl = "https://www.facebook.com/events/5208864859197487/";
 const image = { url: "https://images.example.invalid/poster.png" };
-const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl }]]);
+const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl, image, isPublished: true }]]);
 const notices = new Map();
 let calendarItems = [];
 let socialUnavailable = false;
 let publishRequests = 0;
+let lastPublishId = "";
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (input, init) => {
   const url = new URL(input instanceof Request ? input.url : input);
@@ -64,18 +65,31 @@ globalThis.fetch = async (input, init) => {
       if (id) return Response.json(collection.get(id));
       return Response.json({ contents: [...collection.values()], totalCount: collection.size });
     }
-    assert.equal(method, "PUT");
-    if (collection.has(id)) return Response.json({ message: "Content is already exists." }, { status: 400 });
     const body = init?.body ?? await input.text();
-    collection.set(id, { ...JSON.parse(body), id });
+    if (method === "PUT") {
+      if (collection.has(id)) return Response.json({ message: "Content is already exists." }, { status: 400 });
+      collection.set(id, { ...JSON.parse(body), id });
+    } else {
+      assert.equal(method, "PATCH");
+      assert.ok(collection.has(id));
+      collection.set(id, { ...collection.get(id), ...JSON.parse(body), id });
+    }
     return Response.json({ id });
   }
 
   if (url.hostname === "api.github.com") {
-    assert.equal(method, "POST");
-    assert.equal(url.pathname, "/repos/fixture/fixture/dispatches");
-    publishRequests += 1;
-    return new Response(null, { status: 204 });
+    if (url.pathname === "/repos/fixture/fixture/dispatches") {
+      assert.equal(method, "POST");
+      lastPublishId = JSON.parse(init?.body ?? await input.text()).client_payload.requestId;
+      publishRequests += 1;
+      return new Response(null, { status: 204 });
+    }
+    assert.equal(method, "GET");
+    if (url.pathname === "/repos/fixture/fixture/actions/workflows/deploy-pages.yml/runs") {
+      return Response.json({ workflow_runs: [{ id: 123, display_title: "Bassic publish " + lastPublishId, status: "completed", conclusion: "success" }] });
+    }
+    assert.equal(url.pathname, "/repos/fixture/fixture/actions/runs/123/jobs");
+    return Response.json({ jobs: [{ name: "publish-lolipop-release", steps: [{ name: "Confirm release served by the production site", conclusion: "success" }] }] });
   }
   if (url.hostname === "oauth2.googleapis.com") return Response.json({ access_token: "fixture" });
   if (url.hostname === "www.googleapis.com") {
@@ -191,6 +205,17 @@ try {
       console.log("Mobile admin browser passed: login, Facebook import, existing event selection and draft save.");
 
       socialUnavailable = false;
+      await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
+      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
+      await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
+      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
+      assert.equal(publishRequests, 2);
+      assert.equal(events.get("legacy").title, "Fixture live");
+      assert.equal(events.get("legacy").startTime, "11:30");
+      assert.deepEqual(events.get("legacy").image, image);
+      assert.equal(notices.size, 4);
+      console.log("Mobile publication passed: existing event updated, missing image preserved, two drafts created, site status verified.");
+
       await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: base });
       await page.getByRole("button", { name: "EVENT SCHEDULEへ戻る" }).click();
       await page.locator("article").filter({ hasText: "SNS投稿の下書き" }).getByRole("button", { name: "編集" }).click();
@@ -233,6 +258,7 @@ try {
           await publicPage.goto(publicBase + "/events/");
           const upcoming = publicPage.getByRole("region", { name: "開催予定のイベント" });
           await upcoming.getByRole("heading", { name: event.title }).waitFor();
+          await upcoming.getByRole("heading", { name: "Fixture live" }).waitFor();
           assert.equal(await upcoming.getByText("19:00", { exact: true }).count(), 1);
           assert.equal(await upcoming.getByText("Hidden fixture live", { exact: true }).count(), 0);
           const poster = upcoming.getByRole("img", { name: event.title });
