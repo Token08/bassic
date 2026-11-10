@@ -156,6 +156,17 @@ try {
   }];
   assert.equal((await post("calendar-status", check)).result.data.state, "matched");
   assert.equal((await post("calendar-status", { ...check, startTime: "20:00" })).result.data.state, "review");
+  const originalVercelEnv = process.env.VERCEL_ENV;
+  process.env.VERCEL_ENV = "preview";
+  try {
+    await post("content/events", { ...event, sourceUrl: "https://www.facebook.com/events/66666666/" }, 502);
+    assert.equal(events.size, 2);
+    await post("deploy", {}, 403);
+    assert.equal(publishRequests, 1);
+  } finally {
+    if (originalVercelEnv === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = originalVercelEnv;
+  }
   console.log("Isolated admin flow passed: Facebook fallback, event and SNS deduplication, staff edits, independent publishing, calendar status.");
 
   // Optional browser check with a locally installed Playwright and Chromium.

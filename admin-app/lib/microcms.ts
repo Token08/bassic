@@ -313,6 +313,9 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
 }
 
 async function microCmsFetch(path: string, init: RequestInit = {}) {
+  if (init.method && init.method !== "GET" && process.env.VERCEL_ENV === "preview") {
+    throw new Error("Preview CMS access is read-only.");
+  }
   const response = await fetch(`${getContentBaseUrl()}${path}`, {
     ...init,
     signal: init.signal ?? AbortSignal.timeout(8000),
@@ -508,6 +511,9 @@ export async function deleteContent(endpointId: string, contentId: string) {
 }
 
 export async function uploadMedia(file: File) {
+  if (process.env.VERCEL_ENV === "preview") {
+    throw new Error("Preview CMS access is read-only.");
+  }
   const formData = new FormData();
   formData.set("file", file);
 
