@@ -128,7 +128,8 @@ const fallbackPageSections: CmsContents["pageSections"] = {
   ],
   events: [
     { page: "events", sectionKey: "hero", displayOrder: 1, isPublished: true },
-    { page: "events", sectionKey: "calendar", displayOrder: 2, isPublished: true }
+    { page: "events", sectionKey: "event-list", displayOrder: 2, isPublished: true },
+    { page: "events", sectionKey: "calendar", displayOrder: 3, isPublished: true }
   ],
   menu: [
     { page: "menu", sectionKey: "hero", displayOrder: 1, isPublished: true },
@@ -481,10 +482,12 @@ export async function getCmsContents(): Promise<CmsContents> {
       filters: "isPublished[equals]true",
       limit: 100
     }),
-    getList<EventItem>("events", fallbackContents.events!, {
-      orders: "date",
-      filters: "isPublished[equals]true",
-      limit: 20
+    client.getAllContents<EventItem>({
+      endpoint: "events",
+      queries: { orders: "date", filters: "isPublished[equals]true" }
+    }).catch((error) => {
+      console.warn("microCMS events fetch failed. Falling back to local content.", error);
+      return fallbackContents.events!;
     }),
     getList<CompactCmsItem>("menu", defaultMenuItems as CompactCmsItem[], { orders: "displayOrder", limit: 100 })
   ]);

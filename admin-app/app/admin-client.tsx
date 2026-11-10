@@ -3721,14 +3721,14 @@ const adminPages: PageAdminItem[] = [
   {
     page: "EVENT SCHEDULE",
     title: "EVENT SCHEDULE",
-    description: "Google Calendarに出すイベント情報と、イベント案内文を変更します。",
+    description: "サイトのイベント情報を編集します。Google CalendarやSNSへの掲載は別に確認します。",
     publicPath: "/events/",
     publicLabel: "EVENT SCHEDULEを確認",
-    summaryItems: ["Google Calendar", "イベント案内文", "Facebookイベント"],
+    summaryItems: ["イベント案内文", "Facebookイベント", "SNS投稿の準備"],
     actions: [
-      { label: "Google Calendar・イベント案内", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
+      { label: "サイトのイベント案内", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
       { label: "Facebookイベント取り込み", description: "FacebookイベントURLから下書き作成に使う情報を取り込みます。", sectionId: "events" },
-      { label: "SNS投稿準備", description: "FacebookイベントからX / Instagram向けの投稿下書きを作ります。", sectionId: "social-notices" },
+      { label: "SNS投稿の下書き", description: "FacebookイベントからX・Instagram向けの下書きを作ります。投稿する前に各SNSで確認してください。", sectionId: "social-notices" },
       { label: "メイン画像", description: "EVENT SCHEDULEページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "events" } }
     ]
   },

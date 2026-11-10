@@ -70,6 +70,7 @@ const sectionOptions: FieldOption[] = [
   { value: "social", label: "SNS欄" },
   { value: "access", label: "TOP内アクセス" },
   { value: "calendar", label: "Googleカレンダー" },
+  { value: "event-list", label: "開催予定のイベント" },
   { value: "drinkSheets", label: "ドリンク表" },
   { value: "foodMenu", label: "フードメニュー" },
   { value: "plans", label: "貸切プラン" },

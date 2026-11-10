@@ -324,7 +324,7 @@ export function EventCard({ event }: { event: EventItem }) {
         {event.reservation ? <p className="muted">{event.reservation}</p> : null}
         {event.sourceUrl ? (
           <a className="text-link event-source-link" href={event.sourceUrl} target="_blank" rel="noreferrer">
-            Facebookで詳細を見る <ExternalLink size={15} />
+            イベントの詳細を見る <ExternalLink size={15} />
           </a>
         ) : null}
       </div>

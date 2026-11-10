@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, PageHero } from "@/components/content";
+import { CustomSectionBlock, EventList, PageHero } from "@/components/content";
 import { EventCalendarSection } from "@/components/event-calendar";
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
@@ -93,11 +93,13 @@ function EventsJsonLd({ events, settings }: { events: Awaited<ReturnType<typeof 
   if (!data.length) {
     return null;
   }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
 }
 
 export default async function EventsPage() {
   const contents = await getCmsContents();
+  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", dateStyle: "short" }).format(new Date());
+  const upcomingEvents = contents.events.filter((event) => event.date.slice(0, 10) >= today);
   const copy = contents.pageCopy.events;
   const pageSections = contents.pageSections.events;
   const sectionOrder = (key: string, fallback: number) => pageSections.find((section) => section.sectionKey === key)?.displayOrder ?? fallback;
@@ -119,6 +121,21 @@ export default async function EventsPage() {
           )
         }
       : null,
+    visibleSections.has("event-list") && upcomingEvents.length > 0
+      ? {
+          key: "event-list",
+          order: sectionOrder("event-list", 2),
+          node: (
+            <section className="section" aria-labelledby="upcoming-events-heading">
+              <div className="section-heading narrow-copy">
+                <p className="eyebrow">Upcoming Events</p>
+                <h2 id="upcoming-events-heading">開催予定のイベント</h2>
+              </div>
+              <EventList events={upcomingEvents} includePoster={false} />
+            </section>
+          )
+        }
+      : null,
     visibleSections.has("calendar") ? { key: "calendar", order: sectionOrder("calendar", 3), node: <EventCalendarSection note={copy.calendarNote} /> } : null,
     ...contents.customSections.events.map((section) => ({
       key: `custom-${section.id || section.title}`,
@@ -130,7 +147,7 @@ export default async function EventsPage() {
 
   return (
     <PageShell settings={contents.siteSettings}>
-      <EventsJsonLd events={contents.events} settings={contents.siteSettings} />
+      <EventsJsonLd events={visibleSections.has("event-list") ? upcomingEvents : []} settings={contents.siteSettings} />
       <main>
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
           <div className="managed-section" key={section.key}>
