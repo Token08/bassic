@@ -93,6 +93,116 @@ const socialDeliveryStatusOptions: FieldOption[] = [
   { value: "failed", label: "投稿失敗" }
 ];
 
+const mobileCropOptions = [
+  { value: "", label: "現在の表示" },
+  { value: "center", label: "中央" },
+  { value: "top", label: "上" },
+  { value: "bottom", label: "下" },
+  { value: "left", label: "左" },
+  { value: "right", label: "右" }
+];
+
+const homeBodyFields: FieldDefinition[] = [
+  { key: "firstVisitEyebrow", label: "初めての方へ：小見出し", type: "text", placeholder: "First Visit" },
+  { key: "firstVisitTitle", label: "初めての方へ：見出し", type: "textarea", rows: 2, placeholder: "高い天井と柔らかな灯り。\n豊富なお酒と音楽が心地よい空間。" },
+  { key: "firstVisitDescription", label: "初めての方へ：説明文", type: "textarea", rows: 4 },
+  ...[1, 2, 3].flatMap((card): FieldDefinition[] => [
+    { key: `firstVisitCard${card}Title`, label: `初めての方へ：カード${card}の見出し`, type: "text" },
+    { key: `firstVisitCard${card}Text`, label: `初めての方へ：カード${card}の説明文`, type: "textarea", rows: 3 },
+    { key: `firstVisitCard${card}MobilePosition`, label: "スマホで見せたい位置", type: "select", options: mobileCropOptions },
+    { key: `firstVisitCard${card}Image`, label: `初めての方へ：カード${card}の画像`, type: "image", hint: "空欄の場合は現在の標準画像が表示されます。" }
+  ]),
+  { key: "visitInfoTitle", label: "来店前の基本情報：見出し", type: "text" },
+  { key: "visitInfoLead", label: "来店前の基本情報：説明文", type: "textarea", rows: 3 },
+  { key: "localSearchEyebrow", label: "お店の紹介：小見出し", type: "text", placeholder: "Local Search" },
+  { key: "localSearchTitle", label: "お店の紹介：見出し", type: "text" },
+  { key: "localSearchLead", label: "お店の紹介：説明文", type: "textarea", rows: 3 },
+  ...[1, 2, 3, 4].flatMap((card): FieldDefinition[] => [
+    { key: `localSearchCard${card}Title`, label: `お店の紹介：カード${card}の見出し`, type: "text" },
+    { key: `localSearchCard${card}Text`, label: `お店の紹介：カード${card}の説明文`, type: "textarea", rows: 3 }
+  ]),
+  { key: "socialTitleLine1", label: "SNS：見出しの1行目", type: "text" },
+  { key: "socialTitleLine2", label: "SNS：見出しの2行目", type: "text" },
+  { key: "socialLead", label: "SNS：説明文", type: "textarea", rows: 3 },
+  { key: "homeAccessTitle", label: "アクセス：見出し", type: "text" },
+  { key: "homeAccessNote", label: "アクセス：説明文", type: "textarea", rows: 3 },
+  ...[1, 2, 3].map((tip): FieldDefinition => ({ key: `homeAccessTip${tip}`, label: `アクセス：行き方案内${tip}`, type: "textarea", rows: 2 }))
+];
+
+const extraHomeFields: FieldDefinition[] = [
+  { key: "heroMobileTitle", label: "スマホ用の短い見出し", type: "text", hint: "空欄なら共通の見出しを表示します。" },
+  { key: "mobileHideCall", label: "電話ボタンを非表示にする", type: "checkbox" },
+  { key: "mobileHideMap", label: "地図ボタンを非表示にする", type: "checkbox" },
+  { key: "mobileHideInstagram", label: "Instagramボタンを非表示にする", type: "checkbox" },
+  { key: "mobileHideReserve", label: "予約ボタンを非表示にする", type: "checkbox" },
+  { key: "homeHeroTitle", label: "大きな見出し", type: "textarea", rows: 2 },
+  { key: "homeHeroLead", label: "メインの説明文", type: "textarea", rows: 4 },
+  { key: "heroEyebrow", label: "メインの小見出し", type: "text" },
+  { key: "heroMapLabel", label: "地図ボタン", type: "text" },
+  { key: "heroCallLabel", label: "電話ボタン", type: "text" },
+  { key: "heroReserveLabel", label: "メール予約ボタン", type: "text" },
+  { key: "heroLogo", label: "メインに重なるロゴ画像", type: "image" },
+  { key: "visitInfoCard1Title", label: "営業時間カードの見出し", type: "text" },
+  { key: "visitInfoCard1Text", label: "営業時間カードの説明文", type: "textarea", rows: 3 },
+  { key: "visitInfoCard2Title", label: "イベント日の営業カードの見出し", type: "text" },
+  { key: "visitInfoCard2Text", label: "イベント日の営業カードの説明文", type: "textarea", rows: 3 },
+  { key: "visitInfoCard3Title", label: "喫煙カードの見出し", type: "text" },
+  { key: "visitInfoCard3Text", label: "喫煙カードの説明文", type: "textarea", rows: 3 },
+  { key: "visitInfoCard4Title", label: "チャージカードの見出し", type: "text" },
+  { key: "visitInfoCard4Text", label: "チャージカードの説明文", type: "textarea", rows: 3 },
+  { key: "socialEyebrow", label: "SNS欄の小見出し", type: "text" },
+  { key: "socialInstagramLabel", label: "Instagramの表示名", type: "text" },
+  { key: "socialInstagramAccount", label: "Instagramのアカウント表記", type: "text" },
+  { key: "socialInstagramButton", label: "Instagramのボタン文言", type: "text" },
+  { key: "socialInstagramDescription", label: "Instagramに投稿がないときの説明", type: "textarea", rows: 3 },
+  { key: "socialInstagramImage", label: "Instagramに投稿がないときの画像", type: "image" },
+  { key: "socialFacebookLabel", label: "Facebookの表示名", type: "text" },
+  { key: "socialFacebookAccount", label: "Facebookのアカウント表記", type: "text" },
+  { key: "socialFacebookButton", label: "Facebookのボタン文言", type: "text" },
+  { key: "socialXLabel", label: "Xの表示名", type: "text" },
+  { key: "socialXAccount", label: "Xのアカウント表記", type: "text" },
+  { key: "socialXButton", label: "Xのボタン文言", type: "text" },
+  { key: "socialXDescription", label: "Xに投稿がないときの説明", type: "textarea", rows: 3 },
+  { key: "socialXImage", label: "Xに投稿がないときの画像", type: "image" },
+  { key: "homeAccessEyebrow", label: "アクセス：小見出し", type: "text" },
+  { key: "homeAccessAddressLabel", label: "アクセス：住所の項目名", type: "text" },
+  { key: "homeAccessPhoneLabel", label: "アクセス：電話の項目名", type: "text" },
+  { key: "homeAccessEmailLabel", label: "アクセス：メールの項目名", type: "text" },
+  { key: "homeAccessHoursLabel", label: "アクセス：営業時間の項目名", type: "text" },
+  { key: "homeAccessSmokingLabel", label: "アクセス：喫煙の項目名", type: "text" },
+  { key: "homeAccessEventsLabel", label: "アクセス：イベント案内へのリンク文言", type: "text" },
+  { key: "homeAccessDirectionsTitle", label: "アクセス：行き方案内の見出し", type: "text" },
+  { key: "homeAccessDirectionsLabel", label: "アクセス：道順ボタン", type: "text" },
+  { key: "homeAccessReserveLabel", label: "アクセス：予約ボタン", type: "text" },
+  { key: "headerLogo", label: "ヘッダーのロゴ画像", type: "image" },
+  { key: "headerBackground", label: "ヘッダーの背景画像", type: "image" },
+  { key: "footerBackground", label: "フッターの背景画像", type: "image" },
+  { key: "footerStoreName", label: "フッターの店名", type: "text" },
+  { key: "footerCopyright", label: "フッターの著作権表記", type: "text" },
+  { key: "headerNav1Label", label: "TOPへのメニュー文言", type: "text" },
+  { key: "headerNav2Label", label: "イベントへのメニュー文言", type: "text" },
+  { key: "headerNav3Label", label: "MENUへのメニュー文言", type: "text" },
+  { key: "headerNav4Label", label: "オンラインストアへのメニュー文言", type: "text" },
+  { key: "headerNav5Label", label: "貸切へのメニュー文言", type: "text" },
+  { key: "headerNav6Label", label: "アクセスへのメニュー文言", type: "text" },
+  { key: "mobileCallLabel", label: "スマホ下部：電話ボタン", type: "text" },
+  { key: "mobileMapLabel", label: "スマホ下部：地図ボタン", type: "text" },
+  { key: "mobileInstagramLabel", label: "スマホ下部：Instagramボタン", type: "text" },
+  { key: "mobileReserveLabel", label: "スマホ下部：予約ボタン", type: "text" }
+];
+
+const keysStartingWith = (prefix: string) => [...homeBodyFields, ...extraHomeFields].filter((field) => field.key.startsWith(prefix)).map((field) => field.key);
+
+export const homeFieldGroups = {
+  hero: [...keysStartingWith("homeHero"), ...keysStartingWith("hero")],
+  firstVisit: keysStartingWith("firstVisit"),
+  visitInfo: keysStartingWith("visitInfo"),
+  localSearch: keysStartingWith("localSearch"),
+  social: [...keysStartingWith("social"), "instagramWidgetSrc"],
+  access: keysStartingWith("homeAccess"),
+  shell: ["header", "footer", "mobile"].flatMap(keysStartingWith)
+};
+
 export const sections: SectionDefinition[] = [
   {
     id: "site-settings",
@@ -173,8 +283,8 @@ export const sections: SectionDefinition[] = [
     kind: "object",
     icon: Home,
     fields: [
-      { key: "heroTitle", label: "大きな見出し", type: "textarea", required: true, rows: 2, placeholder: "public bar Bassic." },
-      { key: "heroLead", label: "TOP説明文", type: "textarea", required: true, rows: 4, placeholder: "福岡は親不孝通りにあるミュージックバーです。" },
+      { key: "heroTitle", label: "旧設定：大きな見出し", type: "textarea", rows: 2, placeholder: "public bar Bassic." },
+      { key: "heroLead", label: "旧設定：TOP説明文", type: "textarea", rows: 4, placeholder: "福岡は親不孝通りにあるミュージックバーです。" },
       { key: "firstVisitLead", label: "初回来店向け説明文", type: "textarea", rows: 4, placeholder: "初めての方でも入りやすい雰囲気を伝える文章" },
       { key: "accessNote", label: "アクセス補足", type: "textarea", rows: 3, placeholder: "天神駅から徒歩約4分。" },
       {
@@ -183,7 +293,9 @@ export const sections: SectionDefinition[] = [
         type: "url",
         placeholder: "https://cdn.lightwidget.com/widgets/...",
         hint: "通常のInstagramプロフィールURLではありません。保守担当者が用意した表示用URLを入れます。分からない場合は空欄のままで大丈夫です。"
-      }
+      },
+      ...homeBodyFields,
+      ...extraHomeFields
     ],
     defaults: {}
   },
@@ -201,6 +313,8 @@ export const sections: SectionDefinition[] = [
       { key: "page", label: "使うページ", type: "select", required: true, options: pageOptions },
       { key: "title", label: "画像名", type: "text", placeholder: "TOP 1枚目" },
       { key: "image", label: "画像", type: "image", required: true, hint: heroImageFieldHint },
+      { key: "mobileImage", label: "スマホ専用の写真", type: "image", hint: "空欄なら共通の写真を使います。" },
+      { key: "mobilePosition", label: "スマホで見せたい位置", type: "select", options: mobileCropOptions },
       { key: "displayOrder", label: "表示順", type: "number", placeholder: "1", hint: displayOrderHint },
       { key: "isPublished", label: "公開する", type: "checkbox", hint: publishFieldHint }
     ],
@@ -414,6 +528,7 @@ export const sections: SectionDefinition[] = [
     icon: Megaphone,
     titleKey: "title",
     fields: [
+      { key: "eyebrow", label: "小見出し", type: "text", placeholder: "Information" },
       { key: "page", label: "表示ページ", type: "select", required: true, options: pageOptions },
       { key: "title", label: "タイトル", type: "text", required: true, placeholder: "臨時休業のお知らせ", hint: "公開する場合は6文字以上で、内容が分かるタイトルにします。" },
       { key: "body", label: "本文", type: "textarea", required: true, rows: 5, placeholder: "お客様に伝えたい内容を短く入力します。", hint: "公開する場合は20文字以上で、誰に何を伝える案内か分かる文章にします。" },

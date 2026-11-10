@@ -1,3 +1,4 @@
+import { unpackSlideTitle, type MobileCropPosition } from "./responsive-media";
 import { assetPath } from "./assets";
 import { site } from "./site";
 import type { CmsImage, HeroSlide } from "./types";
@@ -5,6 +6,8 @@ import type { CmsImage, HeroSlide } from "./types";
 export type EditableImage = {
   src: string;
   alt: string;
+  mobileSrc?: string;
+  mobilePosition?: MobileCropPosition;
 };
 
 export type SocialLink = {
@@ -33,9 +36,14 @@ export function resolveHeroSlides(slides: HeroSlide[] | undefined, fallback: rea
     return [...fallback];
   }
 
-  return slides.map((slide, index) =>
-    resolveEditableImage(slide.image, fallback[index % fallback.length] || fallback[0])
-  );
+  return slides.map((slide, index) => {
+    const responsive = slide.page === "home" ? unpackSlideTitle(slide.title) : undefined;
+    return {
+      ...resolveEditableImage(slide.image, fallback[index % fallback.length] || fallback[0]),
+      mobileSrc: responsive?.mobileImage ? assetPath(responsive.mobileImage.url) : undefined,
+      mobilePosition: responsive?.mobilePosition
+    };
+  });
 }
 
 export const editableMedia = {

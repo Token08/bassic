@@ -8,40 +8,42 @@ import { assetPath } from "@/lib/assets";
 import { type LocaleCode } from "@/lib/i18n";
 import { currentLocale, localizedInternalHref } from "@/lib/path-utils";
 import { mailHref, navItems, site, telHref } from "@/lib/site";
-import type { SiteSettings } from "@/lib/types";
+import type { HomeContent, SiteSettings } from "@/lib/types";
 import { LanguageSwitcher } from "./language-switcher";
 
-function HeaderNavLinks({ locale }: { locale?: LocaleCode }) {
+function HeaderNavLinks({ locale, home, settings }: { locale?: LocaleCode; home?: HomeContent; settings?: SiteSettings }) {
   return (
     <>
-      {navItems.map((item) =>
-        "external" in item && item.external ? (
-          <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
-            {item.label}
+      {navItems.map((item, index) => {
+        const position = (index + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+        const label = home?.[`headerNav${position}Label`]?.trim() || item.label;
+        return "external" in item && item.external ? (
+          <a key={item.href} href={settings?.onlineStoreUrl || item.href} target="_blank" rel="noreferrer">
+            {label}
           </a>
         ) : (
           <Link key={item.href} href={localizedInternalHref(item.href, locale)}>
-            {item.label}
+            {label}
           </Link>
-        )
-      )}
+        );
+      })}
     </>
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ home, settings }: { home?: HomeContent; settings?: SiteSettings } = {}) {
   const pathname = usePathname() || "/";
   const locale = currentLocale(pathname);
   const homeHref = localizedInternalHref("/", locale);
 
   return (
     <header className="site-header">
-      <Image className="site-header-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill priority sizes="100vw" />
+      <Image className="site-header-bg" src={assetPath(home?.headerBackground?.url || "/assets/brand/topbar.jpg")} alt="" fill priority sizes="100vw" />
       <Link href={homeHref} className="brand" aria-label="public bar Bassic. ホーム">
-        <img src={assetPath("/assets/brand/b-logo-mark2.png")} alt="public bar Bassic." width={132} height={132} />
+        <img src={assetPath(home?.headerLogo?.url || "/assets/brand/b-logo-mark2.png")} alt={home?.headerLogo?.alt || "public bar Bassic."} width={132} height={132} />
       </Link>
       <nav className="desktop-nav" aria-label="主要ナビゲーション">
-        <HeaderNavLinks locale={locale} />
+        <HeaderNavLinks locale={locale} home={home} settings={settings} />
       </nav>
       <LanguageSwitcher />
       <details className="mobile-menu">
@@ -49,7 +51,7 @@ export function SiteHeader() {
           <Menu size={24} />
         </summary>
         <nav aria-label="スマートフォン用ナビゲーション">
-          <HeaderNavLinks locale={locale} />
+          <HeaderNavLinks locale={locale} home={home} settings={settings} />
           <LanguageSwitcher compact />
         </nav>
       </details>
@@ -57,52 +59,49 @@ export function SiteHeader() {
   );
 }
 
-export function SiteFooter({ settings }: { settings?: SiteSettings }) {
+export function SiteFooter({ settings, home }: { settings?: SiteSettings; home?: HomeContent }) {
   const footerSettings = settings || site;
 
   return (
     <footer className="footer">
       <Image className="footer-bg" src={assetPath("/assets/brand/topbar.jpg")} alt="" fill sizes="100vw" />
       <p>
-        {site.name} / {footerSettings.address}
+        {home?.footerStoreName?.trim() || site.name} / {footerSettings.address}
       </p>
-      <p>Copyright (C) 2009 - {new Date().getFullYear()} bar Bassic. All Rights Reserved.</p>
+      <p>{home?.footerCopyright?.trim() || `Copyright (C) 2009 - ${new Date().getFullYear()} bar Bassic. All Rights Reserved.`}</p>
     </footer>
   );
 }
 
-export function MobileCta({ settings }: { settings?: SiteSettings }) {
+export function MobileCta({ settings, home }: { settings?: SiteSettings; home?: HomeContent }) {
   const ctaSettings = settings || site;
 
-  return (
-    <div className="mobile-cta" aria-label="固定アクション">
-      <a href={telHref(ctaSettings.phone)}>
-        <Phone size={18} />
-        電話
-      </a>
-      <a href={ctaSettings.googleMapsUrl} target="_blank" rel="noreferrer">
-        <MapPin size={18} />
-        地図
-      </a>
-      <a href={ctaSettings.instagramUrl} target="_blank" rel="noreferrer">
-        <Instagram size={18} />
-        Instagram
-      </a>
-      <a href={mailHref("Bassic.予約問い合わせ")}>
-        <CalendarDays size={18} />
-        予約
-      </a>
+  const links = [
+    { hidden: home?.mobileHideCall, label: home?.mobileCallLabel?.trim() || "電話", href: telHref(ctaSettings.phone), icon: Phone },
+    { hidden: home?.mobileHideMap, label: home?.mobileMapLabel?.trim() || "地図", href: ctaSettings.googleMapsUrl, icon: MapPin, external: true },
+    { hidden: home?.mobileHideInstagram, label: home?.mobileInstagramLabel?.trim() || "Instagram", href: ctaSettings.instagramUrl, icon: Instagram, external: true },
+    { hidden: home?.mobileHideReserve, label: home?.mobileReserveLabel?.trim() || "予約", href: mailHref("Bassic.予約問い合わせ", ctaSettings.email), icon: CalendarDays }
+  ].filter((link) => link.hidden !== true);
+
+  return links.length ? (
+    <div className="mobile-cta" aria-label="固定アクション" style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}>
+      {links.map(({ label, href, icon: Icon, external }) => (
+        <a key={href} href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>
+          <Icon size={18} />
+          {label}
+        </a>
+      ))}
     </div>
-  );
+  ) : null;
 }
 
-export function PageShell({ children, settings }: { children: React.ReactNode; settings?: SiteSettings }) {
+export function PageShell({ children, settings, home }: { children: React.ReactNode; settings?: SiteSettings; home?: HomeContent }) {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader home={home} settings={settings} />
       {children}
-      <SiteFooter settings={settings} />
-      <MobileCta settings={settings} />
+      <SiteFooter settings={settings} home={home} />
+      <MobileCta settings={settings} home={home} />
     </>
   );
 }
@@ -110,19 +109,21 @@ export function PageShell({ children, settings }: { children: React.ReactNode; s
 export function PrimaryActions({
   mapLabel = "Google Mapで開く",
   callLabel = "電話する",
-  reserveLabel = "メール予約"
+  reserveLabel = "メール予約",
+  settings
 }: {
   mapLabel?: string;
   callLabel?: string;
   reserveLabel?: string;
+  settings?: SiteSettings;
 } = {}) {
   return (
     <div className="hero-actions">
-      <a className="button primary" href={site.googleMapsUrl} target="_blank" rel="noreferrer">
+      <a className="button primary" href={settings?.googleMapsUrl || site.googleMapsUrl} target="_blank" rel="noreferrer">
         <MapPin size={18} />
         {mapLabel}
       </a>
-      <a className="button" href={telHref()}>
+      <a className="button" href={telHref(settings?.phone)}>
         <Phone size={18} />
         {callLabel}
       </a>
