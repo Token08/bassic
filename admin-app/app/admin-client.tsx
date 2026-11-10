@@ -562,7 +562,9 @@ function NoticeBox({ notice }: { notice: Notice }) {
   const Icon = notice.tone === "error" ? AlertCircle : notice.tone === "info" ? Info : CheckCircle2;
   const helper =
     notice.tone === "error"
-      ? "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
+      ? notice.requestedAt
+        ? "保存した内容はそのままです。この表示を担当者に伝えてください。"
+        : "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
       : notice.tone === "info"
         ? "このまま画面を閉じずに、少し待ってください。"
         : "反映には数分かかります。少し待ってから公開サイトを開き、再読み込みして確認してください。";
@@ -589,7 +591,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
       <div className="notice-actions">
         {notice.actionsUrl ? (
           <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
-            反映状況を見る
+            担当者向けの実行ログ
           </a>
         ) : null}
         <a href={publicSiteUrl} target="_blank" rel="noreferrer">
@@ -626,9 +628,9 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
 
   const label = notice.tone === "success" ? "反映を受け付けました" : notice.tone === "error" ? "反映に確認が必要" : "処理中";
   const timeLabel = formatDeployTime(notice.requestedAt);
-  const statusMessage = notice.tone === "success"
-    ? "公開サイトへの反映を受け付けました。数分後に公開サイトを再読み込みして確認してください。"
-    : "数分後に公開サイトを再読み込みして確認してください。";
+  const statusMessage = notice.tone === "error"
+    ? "内容は保存済みです。この表示を担当者に伝えてください。"
+    : "数分後に公開サイトを開き、変更したページを確認してください。";
 
   return (
     <section className={`deploy-status ${notice.tone}`} aria-label="最後の反映状況">
@@ -641,14 +643,14 @@ function DeployStatusCard({ notice }: { notice?: Notice }) {
         <span>{timeLabel ? `${timeLabel} に実行。${statusMessage}` : `時刻は未取得です。${statusMessage}`}</span>
       </div>
       <div className="deploy-status-actions">
-        {notice.actionsUrl ? (
-          <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
-            反映状況を見る
-          </a>
-        ) : null}
         <a href={publicSiteUrl} target="_blank" rel="noreferrer">
           公開サイトを開く
         </a>
+        {notice.actionsUrl ? (
+          <a href={notice.actionsUrl} target="_blank" rel="noreferrer">
+            担当者向けの実行ログ
+          </a>
+        ) : null}
       </div>
     </section>
   );
