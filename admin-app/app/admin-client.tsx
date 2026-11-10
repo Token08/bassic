@@ -39,6 +39,7 @@ type Notice = {
   message: string;
   actionsUrl?: string;
   requestId?: string;
+  retryPublish?: boolean;
   sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
@@ -624,8 +625,19 @@ function formatDeployTime(value?: string) {
 
 type PublishStatus = { state: "pending" | "published" | "failed" | "unconfirmed"; actionsUrl?: string };
 
-function DeployStatusCard({ notice }: { notice: Notice }) {
-  const [status, setStatus] = useState<PublishStatus>({ state: "pending" });
+async function requestPublication(notice: Notice): Promise<Notice> {
+  const { data } = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/deploy", {
+    method: "POST",
+    body: "{}"
+  });
+  if (!data?.requestId) throw new Error("公開依頼を確認できませんでした。");
+  return { ...notice, ...data, tone: "success", retryPublish: false };
+}
+
+function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notice: Notice) => void }) {
+  const [status, setStatus] = useState<PublishStatus>({ state: notice.requestId ? "pending" : "failed" });
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState(false);
   const { requestId, requestedAt } = notice;
 
   useEffect(() => {
@@ -663,13 +675,26 @@ function DeployStatusCard({ notice }: { notice: Notice }) {
   const presentation = {
     pending: { label: "公開サイトに反映中", message: "内容は保存済みです。反映まで数分かかります。この画面は閉じても大丈夫です。", tone: "info" },
     published: { label: "公開サイトに反映されました", message: "公開サイトを開き、変更したページを確認してください。", tone: "success" },
-    failed: { label: "公開サイトへの反映に失敗しました", message: "内容は保存済みです。この表示を担当者に伝えてください。", tone: "error" },
+    failed: { label: "公開サイトへの反映に失敗しました", message: "内容は保存済みです。反映だけをやり直せます。", tone: "error" },
     unconfirmed: { label: "公開サイトへの反映を確認できませんでした", message: "内容は保存済みです。公開サイトを確認し、反映されていなければ担当者へ連絡してください。", tone: "info" }
   }[status.state];
   const timeLabel = formatDeployTime(notice.requestedAt);
   const actionsUrl = status.actionsUrl || notice.actionsUrl;
   const section = sections.find((item) => item.id === notice.sectionId);
   const pageUrl = section && getPublicPageUrl(section);
+
+  async function retry() {
+    if (retrying || status.state !== "failed") return;
+    setRetrying(true);
+    setRetryError(false);
+    try {
+      onRetry(await requestPublication(notice));
+    } catch {
+      setRetryError(true);
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   return (
     <section className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
@@ -682,6 +707,11 @@ function DeployStatusCard({ notice }: { notice: Notice }) {
         <span>{timeLabel ? `${timeLabel} に依頼。` : ""}{presentation.message}</span>
       </div>
       <div className="deploy-status-actions">
+        {status.state === "failed" ? (
+          <button className="secondary-button" type="button" disabled={retrying} onClick={() => void retry()}>
+            {retrying ? "反映を依頼中…" : "反映だけをやり直す"}
+          </button>
+        ) : null}
         <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
           {pageUrl ? "変更したページを開く" : "公開サイトを開く"}
         </a>
@@ -691,6 +721,7 @@ function DeployStatusCard({ notice }: { notice: Notice }) {
           </a>
         ) : null}
       </div>
+      {retryError ? <p role="alert">反映を依頼できませんでした。この表示を担当者に伝えてください。</p> : null}
       {status.state === "published" && notice.confirmationSteps?.length ? (
         <details>
           <summary>表示の確認ポイント</summary>
@@ -3108,35 +3139,22 @@ function SectionEditor({
       setDeploying(true);
       setNotice({ tone: "info", message: "保存しました。サイトへの反映を依頼しています。" });
 
+      const publishNotice: Notice = {
+        tone: "error",
+        message: "内容は保存済みです。公開サイトへの反映だけをやり直せます。",
+        retryPublish: true,
+        sectionId: section.id,
+        requestedAt: new Date().toISOString(),
+        sourceLabel: `${section.shortTitle}を公開`,
+        confirmationSteps: getPostPublishSteps(section)
+      };
       try {
-        const deployResult = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/deploy", {
-          method: "POST",
-          body: JSON.stringify({})
-        });
-        const deployNotice = {
-          tone: "success" as const,
-          message: "保存し、公開サイトへの反映を受け付けました。数分後に公開サイトを再読み込みしてください。",
-          actionsUrl: deployResult.data?.actionsUrl,
-          requestId: deployResult.data?.requestId,
-          sectionId: section.id,
-          requestedAt: deployResult.data?.requestedAt || new Date().toISOString(),
-          sourceLabel: `${section.shortTitle}を公開`,
-          confirmationSteps: getPostPublishSteps(section)
-        };
+        const deployNotice = await requestPublication(publishNotice);
         setNotice(deployNotice);
         onDeployNotice(deployNotice);
-      } catch (deployError) {
-        const deployNotice = {
-          tone: "error" as const,
-          message:
-            deployError instanceof Error
-              ? `${deployError.message} 保存は済んでいます。担当者へ「反映だけ失敗」と伝えてください。`
-              : "保存は済んでいますが、公開サイトへの反映だけ失敗しました。担当者へ「反映だけ失敗」と伝えてください。",
-          requestedAt: new Date().toISOString(),
-          sourceLabel: `${section.shortTitle}を公開`
-        };
-        setNotice(deployNotice);
-        onDeployNotice(deployNotice);
+      } catch {
+        setNotice(publishNotice);
+        onDeployNotice(publishNotice);
       }
     } catch (saveError) {
       setNotice({
@@ -3500,7 +3518,12 @@ function hideSelectedItem() {
         </div>
       ) : null}
 
-      {notice ? notice.requestId ? <DeployStatusCard key={notice.requestId} notice={notice} /> : <NoticeBox notice={notice} /> : null}
+      {notice ? (notice.requestId || notice.retryPublish) ? (
+        <DeployStatusCard key={notice.requestId || notice.requestedAt} notice={notice} onRetry={(next) => {
+          setNotice(next);
+          onDeployNotice(next);
+        }} />
+      ) : <NoticeBox notice={notice} /> : null}
       <EditorGuide section={section} dirty={dirty} selectedId={selectedId} />
 
       {loading ? (
@@ -3788,6 +3811,7 @@ function PageBasedDashboard({
   selectedPage,
   onPageChange,
   lastDeploy,
+  onDeployNotice,
   health,
   opsStatus
 }: {
@@ -3795,6 +3819,7 @@ function PageBasedDashboard({
   selectedPage: string;
   onPageChange: (page: string) => void;
   lastDeploy?: Notice;
+  onDeployNotice: (notice: Notice) => void;
   health?: HealthState;
   opsStatus?: OpsStatus;
 }) {
@@ -3897,7 +3922,9 @@ function PageBasedDashboard({
           <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
         </details>
       ) : null}
-      {lastDeploy ? lastDeploy.requestId ? <DeployStatusCard key={lastDeploy.requestId} notice={lastDeploy} /> : <NoticeBox notice={lastDeploy} /> : null}
+      {lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
+        <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} />
+      ) : <NoticeBox notice={lastDeploy} /> : null}
       {false ? <SnsStatusCard onSelect={(id) => onSelect({ id })} /> : null}
 
       <details className="maintenance-tools">
@@ -3989,6 +4016,15 @@ export default function AdminClient() {
     setOpsStatus(undefined);
   }
 
+  function rememberDeployNotice(notice: Notice) {
+    setLastDeploy(notice);
+    try {
+      window.localStorage.setItem("bassic-admin-last-deploy", JSON.stringify(notice));
+    } catch {
+      // The request succeeded even when browser storage is unavailable.
+    }
+  }
+
   if (checking) {
     return (
       <main className="loading-shell">
@@ -4037,14 +4073,7 @@ export default function AdminClient() {
           sourcePage={activeSection.sourcePage}
           onBack={() => setActiveSection(null)}
           onEditorState={setEditorState}
-          onDeployNotice={(notice) => {
-            setLastDeploy(notice);
-            try {
-              window.localStorage.setItem("bassic-admin-last-deploy", JSON.stringify(notice));
-            } catch {
-              // The request succeeded even when browser storage is unavailable.
-            }
-          }}
+          onDeployNotice={rememberDeployNotice}
         />
       ) : (
         <PageBasedDashboard
@@ -4052,6 +4081,7 @@ export default function AdminClient() {
           selectedPage={dashboardPage}
           onPageChange={setDashboardPage}
           lastDeploy={lastDeploy}
+          onDeployNotice={rememberDeployNotice}
           health={health}
           opsStatus={opsStatus}
         />
