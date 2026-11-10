@@ -14,6 +14,8 @@ FTP接続元の制限を維持したまま初回公開する場合は、検査�
 
 接続元制限を維持する自動更新では、`pull-lolipop` が検査済みの静的サイトを署名してGitHub Releasesに配置し、ロリポップのcronが取得する。署名の秘密鍵は `lolipop` 環境の `LOLIPOP_RELEASE_SIGNING_KEY` に置く。公開鍵と取得スクリプトはHTTPアクセスを拒否した `bassic-site-v2/.bassic-ops` に置く。cronと公開ドメインの `/_bassic-build.json` を確認してから `LOLIPOP_PULL_ENABLED=true` にする。通常実行では、このファイルが該当するGitHubの実行番号とコミットを返した時点で反映完了とする。
 
+2026-11-10 に `LOLIPOP_PULL_ENABLED` を有効化した。管理画面と同じ `microcms_publish` を送り、[実行番号1144](https://github.com/Token08/bassic/actions/runs/42740258747) が本番で返ることを確認した。失敗時は実行ログの生成・署名・本番確認のうち失敗した段階を調べる。自動公開を停止する場合は `LOLIPOP_PULL_ENABLED` を無効にし、署名済みファイルの取得も止める必要があればロリポップの `Bassic site publish` を停止する。
+
 公開前から納品後までの確認リストです。納品先にはGitHubではなく、サイトURLと管理画面URLを渡す前提で整理しています。
 
 ## 1. 公開前に決めること
