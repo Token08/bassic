@@ -2533,17 +2533,26 @@ function getHeroSlidePageLabel(page: string) {
   return labels[page] || page || "ページ";
 }
 
+function confirmLeavingEditor(dirty: boolean, busy: boolean) {
+  if (busy) return false;
+  return !dirty || window.confirm(
+    "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、下書き保存またはプレビューして公開を押してください。"
+  );
+}
+
 function SectionEditor({
   sectionId,
   initialDraft,
   sourcePage,
   onBack,
+  onEditorState,
   onDeployNotice
 }: {
   sectionId: string;
   initialDraft?: Draft;
   sourcePage?: string;
   onBack: () => void;
+  onEditorState: (state: { dirty: boolean; busy: boolean }) => void;
   onDeployNotice: (notice: Notice) => void;
 }) {
   const section = useMemo(() => getSection(sectionId), [sectionId]);
@@ -2605,14 +2614,12 @@ function SectionEditor({
   }, [section, scopedListPage]);
 
   function confirmDiscardChanges() {
-    if (!dirty) {
-      return true;
-    }
-
-    return window.confirm(
-      "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、下書き保存またはプレビューして公開を押してください。"
-    );
+    return confirmLeavingEditor(dirty, saving || deploying);
   }
+
+  useEffect(() => {
+    onEditorState({ dirty, busy: saving || deploying });
+  }, [dirty, saving, deploying, onEditorState]);
 
   function draftStorageKey(id: string) {
     return `bassic-admin-draft-v1:${section.id}:${scopedListPage}:${id}`;
@@ -2705,7 +2712,7 @@ function SectionEditor({
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!dirty) {
+      if (!dirty && !saving && !deploying) {
         return;
       }
 
@@ -2715,7 +2722,7 @@ function SectionEditor({
 
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
+  }, [dirty, saving, deploying]);
 
   function updateField(key: string, value: unknown) {
     userInteractedRef.current = true;
@@ -3908,6 +3915,7 @@ function PageBasedDashboard({
 }
 
 export default function AdminClient() {
+  const [editorState, setEditorState] = useState({ dirty: false, busy: false });
   const [checking, setChecking] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<ActiveSectionState | null>(null);
@@ -3973,6 +3981,7 @@ export default function AdminClient() {
   }, [authenticated, activeSection]);
 
   async function logout() {
+    if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
     await fetch("/api/logout", { method: "POST" });
     setAuthenticated(false);
     setActiveSection(null);
@@ -4011,10 +4020,12 @@ export default function AdminClient() {
   return (
     <main className="admin-shell">
       <header className="app-header">
-        <button className="brand-button" type="button" onClick={() => setActiveSection(null)}>
+        <button className="brand-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => {
+          if (!activeSection || confirmLeavingEditor(editorState.dirty, editorState.busy)) setActiveSection(null);
+        }}>
           Bassic.
         </button>
-        <button className="text-button" type="button" onClick={() => void logout()}>
+        <button className="text-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => void logout()}>
           <LogOut size={18} />
           ログアウト
         </button>
@@ -4025,9 +4036,14 @@ export default function AdminClient() {
           initialDraft={activeSection.initialDraft}
           sourcePage={activeSection.sourcePage}
           onBack={() => setActiveSection(null)}
+          onEditorState={setEditorState}
           onDeployNotice={(notice) => {
             setLastDeploy(notice);
-            window.localStorage.setItem("bassic-admin-last-deploy", JSON.stringify(notice));
+            try {
+              window.localStorage.setItem("bassic-admin-last-deploy", JSON.stringify(notice));
+            } catch {
+              // The request succeeded even when browser storage is unavailable.
+            }
           }}
         />
       ) : (
