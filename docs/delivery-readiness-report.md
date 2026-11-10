@@ -116,7 +116,6 @@ npm run smoke:links
 npm run smoke:content
 npm run smoke:seo
 npm run smoke:admin-app
-npm run smoke:handoff-rehearsal
 npm run check:handoff
 ```
 
@@ -125,7 +124,7 @@ Vercel本番環境とGitHub Secretsには接続情報を設定済みです。
 
 `npm run smoke:handoff-rehearsal` は、TOP保存、EVENT下書き、MENU下書き、画像追加・並び替え・削除、X / Instagram下書き作成、SNS下書き重複防止をまとめて確認します。
 作成した確認用データは最後に削除します。
-公開再ビルドまで確認する場合は、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` を付けて実行します。
+この検査はテストCMSにつないだローカル管理画面で実行します。公開再ビルドも検査する場合は、テスト用リポジトリを公開依頼の送信先に設定します。
 
 2026-07-06時点で、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` 付きの実運用リハーサルは通過済みです。
 GitHub Pagesの `repository_dispatch` デプロイも成功しています。
@@ -135,30 +134,26 @@ GitHub Pagesの `repository_dispatch` デプロイも成功しています。
 - 店舗側端末で管理画面入口からログインできる
 - TOP / EVENT / MENU / PARTY / ACCESS のうち、1〜2箇所を実際に変更して戻せる
 - 「下書き保存」では公開サイトが変わらない
-- 「プレビューして公開」後、1〜3分ほど待つと公開サイトに反映される
+- 公開を確定した後、管理画面で反映完了を確認できる
 - FacebookイベントURLを貼った時、日付、START、画像、URLを確認できる
 - SNS下書きがX / Instagramに重複作成されない
 - スマホでTOP、MENU、EVENT、ACCESSを確認できる
 
 ## 実運用リハーサル
 
-制作側は納品前に次を実行します。
+制作側は、隔離したテストCMSに接続したローカル管理画面を起動してから実行します。
 
 ```powershell
-$env:ADMIN_PASSWORD="別送の管理画面パスワード"
+$env:ADMIN_APP_URL="http://127.0.0.1:3001"
+$env:ADMIN_PASSWORD="テスト用の管理画面パスワード"
+$env:RUN_WRITE_REHEARSAL="true"
 npm run smoke:handoff-rehearsal
 Remove-Item Env:\ADMIN_PASSWORD
+Remove-Item Env:\ADMIN_APP_URL
+Remove-Item Env:\RUN_WRITE_REHEARSAL
 ```
 
-公開再ビルドの起動まで含める場合:
-
-```powershell
-$env:ADMIN_PASSWORD="別送の管理画面パスワード"
-$env:RUN_PUBLIC_DEPLOY_REHEARSAL="true"
-npm run smoke:handoff-rehearsal
-Remove-Item Env:\ADMIN_PASSWORD
-Remove-Item Env:\RUN_PUBLIC_DEPLOY_REHEARSAL
-```
+公開再ビルドまで検査する場合は、テスト用リポジトリへの接続を確認し、実行時に `RUN_PUBLIC_DEPLOY_REHEARSAL=true` を追加します。
 
 この確認は店舗側に実施してもらうものではありません。
 制作側が、管理画面保存、下書き作成、削除、公開反映依頼が壊れていないことを事前に見るためのものです。

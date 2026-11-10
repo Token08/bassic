@@ -462,7 +462,7 @@ function checkClientHandoffDocsLinked() {
 
   const checklistText = readFileSync(checklistFile, "utf8");
   const sheetText = readFileSync(sheetFile, "utf8");
-  const requiredSheetTerms = ["公開サイト（確認用URL）", "公開サイト（本番URL）", "本番URLがまだ決まっていない時は、確認用URLを使います", "管理画面", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット", "TOP / EVENT / MENU / PARTY / ACCESS", "変更するページを選ぶ", "確認するページ"];
+  const requiredSheetTerms = ["お客様向けの公開サイト", "https://www.bassic.jp/", "スタッフ用の管理画面", "https://bassic-admin.vercel.app/", "ログイン方法", "パスワード", "困った時の連絡先", "Google Calendar反映依頼先", "スマホでAccessページ", "スマホでTOPページのSNS欄", "1〜2箇所", "スクリーンショット", "TOP / EVENT / MENU / PARTY / ACCESS", "変更するページを選ぶ", "確認するページ"];
   const missingSheetTerms = requiredSheetTerms.filter((term) => !sheetText.includes(term));
   const checklistMentionsSheet = checklistText.includes("引き渡しメモ");
   const requiredChecklistTerms = ["リンクを開いて確認", "画像を開いて確認", "画像の説明", "検索や読み上げ用", "1〜2箇所ずつ変更", "スクリーンショット", "公開サイトの確認用URLと本番URLのどちらを使うか", "公開サイト（本番URL）", "納品OKの目安", "納品先が管理画面へログインできる", "イベント、メニュー、画像、SNSお知らせ", "ページカード", "TOP / EVENT / MENU / PARTY / ACCESS", "確認するページ"];
@@ -500,9 +500,9 @@ function checkClientHandoffDocsLinked() {
 
 function checkClientDocsMentionSectionPublicPageLinks() {
   const files = [
-    { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "該当ページを開く", "イベントならイベントページ", "メニューならメニューページ", "「公開する」ONは、サイトへ出す準備ができた印です", "公開後はサイトに表示されます", "まだサイトには出ません"] },
+    { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "変更したページを開く", "イベントならイベントページ", "メニューならメニューページ", "「公開する」ONは、サイトへ出す準備ができた印です", "公開後はサイトに表示されます", "まだサイトには出ません"] },
     { path: "docs/client-handoff-checklist.md", terms: ["確認するページ", "該当ページを開き", "反映を確認する", "「公開する」ONは表示許可", "公開後はサイトに表示されます", "まだサイトには出ません"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか", "ONだけでは公開されない"] }
+    { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか", "この内容で公開"] }
   ];
   const missing = [];
 
@@ -1025,7 +1025,7 @@ function checkAdminValidationSummaryLinksFields() {
     [clientFile, clientText, "function ValidationSummary"],
     [clientFile, clientText, "公開前に直す項目があります。"],
     [clientFile, clientText, "項目名を押すと入力欄へ移動できます。"],
-    [clientFile, clientText, "上から順番に直して、もう一度「プレビュー確認」を押してください。"],
+    [clientFile, clientText, "入力を直してから、もう一度「プレビューして公開」を押してください。"],
     [clientFile, clientText, "href={`#${key}`}"],
     [clientFile, clientText, "className=\"missing-required-links\""],
     [clientFile, clientText, "href={`#${field.key}`}"],
@@ -1069,13 +1069,13 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const text = readFileSync(file, "utf8");
   const required = [
     "プレビュー確認へ進めます",
-    "次は画面下の「プレビュー確認」を押してください。",
+    "次は画面下の「プレビューして公開」を押してください。",
     "入力内容・リンク先・画像",
     "「公開する」がONの項目",
     "ONにすると「プレビューして公開」後に公開サイトへ表示されます",
     "field-publish-help",
-    "下書き保存は公開サイトに出ません",
-    "サイトへ出す時は「プレビューして公開」で確認画面へ進みます",
+    "下書きはこのブラウザに保存します",
+    "サイトへ反映する時は「プレビューして公開」で確認画面へ進みます",
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
     "途中保存や後で確認したい時",
@@ -1170,8 +1170,8 @@ function checkAdminDraftSaveDoesNotClaimPublicPublish() {
 
   const text = readFileSync(file, "utf8");
   const required = [
-    "下書き保存しました。公開するまでサイトには出ません。",
-    "公開しました。1〜3分ほど待ってから公開サイトを再読み込みして確認してください。"
+    "このブラウザに下書きを保存しました",
+    "公開サイトに反映されました"
   ];
   const missing = required.filter((term) => !text.includes(term));
 
@@ -1187,7 +1187,7 @@ function checkAdminErrorsExplainWhatToTellSupport() {
 
   const text = readFileSync(file, "utf8");
   const required = [
-    "担当者へ「反映だけ失敗」と伝えてください",
+    "反映を依頼できませんでした。この表示を担当者に伝えてください",
     "担当者へこの画面の内容を伝えてください"
   ];
   const missing = required.filter((term) => !text.includes(term));
@@ -1198,11 +1198,7 @@ function checkAdminErrorsExplainWhatToTellSupport() {
 function checkPublishWaitCopyIsSpecific() {
   const files = [
     "admin-app/app/admin-client.tsx",
-    "admin-app/README.md",
-    "docs/delivery-admin-manual.md",
-    "docs/dedicated-admin-app-v1.md",
-    "docs/client-handoff-checklist.md",
-    "docs/client-handoff-sheet.md"
+    "admin-app/README.md"
   ];
   const missing = [];
 
@@ -1213,11 +1209,8 @@ function checkPublishWaitCopyIsSpecific() {
     }
 
     const text = readFileSync(file, "utf8");
-    if (!text.includes("1〜3分")) {
-      missing.push(`${file}: 1〜3分`);
-    }
-    if (["docs/delivery-admin-manual.md", "docs/client-handoff-checklist.md", "docs/client-handoff-sheet.md"].includes(file) && !text.includes("再読み込み")) {
-      missing.push(`${file}: 再読み込み`);
+    if (!text.includes("数分")) {
+      missing.push(`${file}: 数分`);
     }
   }
 
@@ -1229,12 +1222,12 @@ function checkPublicConfirmationGuidanceIsComplete() {
     "admin-app/app/admin-client.tsx": [
       "確認するページ",
       "公開ページを開く",
-      "1〜3分ほど待ってから公開サイトを再読み込みして確認してください",
+      "公開サイトに反映されました",
       "最後にスマホでも表示を確認します"
     ],
-    "docs/delivery-admin-manual.md": ["公開後の確認", "確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ", "TOPのSNS欄", "Google Calendar", "スクリーンショット"],
-    "docs/client-handoff-sheet.md": ["確認するページ", "公開ページ", "1〜3分", "再読み込み", "スマホ"],
-    "docs/client-handoff-checklist.md": ["確認するページ", "1〜3分", "再読み込み", "スマホ"]
+    "docs/delivery-admin-manual.md": ["公開後の確認", "確認するページ", "公開サイトに反映されました", "変更したページを開く", "スマホ", "TOPのSNS欄", "Google Calendar", "スクリーンショット"],
+    "docs/client-handoff-sheet.md": ["確認するページ", "公開サイトに反映されました", "変更したページを開く", "スマホ"],
+    "docs/client-handoff-checklist.md": ["確認するページ", "公開サイトに反映されました", "表示の確認ポイント", "スマホ"]
   };
   const missing = [];
 
@@ -1609,7 +1602,7 @@ function checkProductionHandoffCommands() {
   const requiredGuidance = [
     "毎回実行するもの",
     "納品前の順番でまとめて実行します",
-    "microCMS接続情報を設定した後だけ実行するもの",
+    "本番microCMSの接続確認",
     "本物のmicroCMS接続情報で一度通します",
     "FacebookイベントをGoogle Calendarへ反映する前に実行するもの",
     "Google Calendarへ書き込まず",
@@ -1694,9 +1687,9 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   const text = readFileSync(file, "utf8");
   const required = [
     "publicSiteUrl",
-    "公開済み・確認待ち",
-    "公開操作は完了しました。1〜3分後に公開サイトを再読み込みして確認してください。",
-    "反映状況を見る",
+    "公開サイトに反映中",
+    "公開サイトに反映されました",
+    "反映だけをやり直す",
     "公開サイトを開く",
     "再読み込み",
     "どの画面で何を押したか",
@@ -2058,7 +2051,7 @@ function checkAdminPublishNoticeShowsConfirmationSteps() {
   const required = [
     [clientFile, clientText, "confirmationSteps?: string[]"],
     [clientFile, clientText, "getPostPublishSteps(section)"],
-    [clientFile, clientText, "1〜3分待ってから公開ページを再読み込み"],
+    [clientFile, clientText, "表示の確認ポイント"],
     [clientFile, clientText, "スマホでも同じページを確認"],
     [clientFile, clientText, "TOPページのSNS欄を確認"],
     [clientFile, clientText, "SNSカードのタイトル・説明・ボタンリンクを確認"],
@@ -2073,10 +2066,9 @@ function checkAdminPublishNoticeShowsConfirmationSteps() {
     [clientFile, clientText, "電話・地図・SNSボタンが正しく開くか確認"],
     [clientFile, clientText, "notice-checklist"],
     [cssFile, cssText, ".notice-checklist"],
-    [manualFile, manualText, "公開後の確認手順"],
-    [manualFile, manualText, "上から順番に"],
-    [checklistFile, checklistText, "公開後の確認手順"],
-    [sheetFile, sheetText, "公開後の確認手順"]
+    [manualFile, manualText, "表示の確認ポイント"],
+    [checklistFile, checklistText, "表示の確認ポイント"],
+    [sheetFile, sheetText, "表示の確認ポイント"]
   ];
   const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
 

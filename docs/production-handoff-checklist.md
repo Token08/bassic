@@ -109,16 +109,14 @@ npm run smoke:content
 npm run smoke:seo
 ```
 
-microCMS接続情報を設定した後だけ実行するもの:
+本番microCMSの接続確認:
 
 ```bash
 npm run smoke:cms
-npm run smoke:handoff-rehearsal
 ```
 
 `smoke:cms` はmicroCMSのAPI IDや必須項目が合っているか確認します。microCMS未接続の場合はスキップします。納品前に管理画面を実運用へ移す時は、必ず本物のmicroCMS接続情報で一度通します。
-`smoke:handoff-rehearsal` は、管理画面からTOP保存、EVENT下書き、MENU下書き、画像追加・並び替え・削除、X / Instagram下書き作成、SNS下書き重複防止を確認します。作成した確認用データは最後に削除します。
-公開再ビルドの起動まで確認する場合は、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` を付けて実行します。
+`smoke:handoff-rehearsal` はCMSに書き込むため、テストCMSに接続したローカル管理画面だけで実行します。実行時は `ADMIN_APP_URL` にローカルURLを指定し、`RUN_WRITE_REHEARSAL=true` を設定します。公開再ビルドの起動も試す場合は、管理画面の送信先を隔離したテスト用リポジトリに設定したうえで、`RUN_PUBLIC_DEPLOY_REHEARSAL=true` を付けます。
 
 FacebookイベントをGoogle Calendarへ反映する前に実行するもの:
 
@@ -193,7 +191,7 @@ GitHub、Actions、APIキー、環境変数は制作側で管理します。納�
 
 - `npm run check:handoff` が通る。個別に確認する場合は、`npm run typecheck`、`npm run typecheck:admin-app`、`npm run build`、`npm run build:admin-app`、`npm run smoke:links`、`npm run smoke:content`、`npm run smoke:seo`、`npm run check:admin-app` が通る
 - microCMS接続情報がある場合は、本物の接続情報で `npm run smoke:cms` が通る
-- 本番管理画面接続情報がある場合は、`npm run smoke:handoff-rehearsal` が通る
+- 本番はスタッフ画面で確認する。書き込みを伴う `npm run smoke:handoff-rehearsal` は隔離したテストCMSとローカル管理画面でのみ実行する
 - 管理画面でイベント、メニュー、画像、SNSお知らせのうち最低1件ずつ保存と公開確認を行った
 - 管理画面トップのページカード、または編集画面の「確認するページ」から、TOP / EVENT / MENU / PARTY / ACCESSをPCとスマホで確認した
 - Google Map、電話、メール予約、Instagram、Online Store、PDF、Google Calendarの主要リンクが開く

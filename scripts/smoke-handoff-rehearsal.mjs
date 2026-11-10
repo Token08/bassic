@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-const adminAppUrl = (process.env.ADMIN_APP_URL || "https://bassic-admin.vercel.app/").replace(/\/+$/, "");
+const adminAppUrl = (process.env.ADMIN_APP_URL || "").replace(/\/+$/, "");
 const adminPassword = process.env.ADMIN_PASSWORD;
 const shouldTriggerDeploy = process.env.RUN_PUBLIC_DEPLOY_REHEARSAL === "true";
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
@@ -8,6 +8,13 @@ const sourceEventId = "9876543210987654";
 const sourceEventUrl = `https://www.facebook.com/events/${sourceEventId}/`;
 const eventTitle = `Handoff Rehearsal Event ${runId}`;
 const createdItems = [];
+
+const target = URL.canParse(adminAppUrl) ? new URL(adminAppUrl) : null;
+if (!target || !["localhost", "127.0.0.1", "[::1]"].includes(target.hostname) ||
+    process.env.RUN_WRITE_REHEARSAL !== "true") {
+  console.error("This rehearsal writes and deletes CMS data. Use a local admin app connected to an isolated test CMS and explicitly set ADMIN_APP_URL and RUN_WRITE_REHEARSAL=true.");
+  process.exit(1);
+}
 
 if (!adminPassword) {
   console.error("ADMIN_PASSWORD is required. Example:");
