@@ -172,6 +172,7 @@ function mergeSiteSettings(settings?: Partial<SiteSettings> | null): SiteSetting
     ...fallbackSiteSettings,
     ...settings,
     address: nonEmptyString(settings?.address) || fallbackSiteSettings.address,
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings?.email?.trim() || "") ? settings!.email!.trim() : fallbackSiteSettings.email,
     phone: nonEmptyString(settings?.phone) || fallbackSiteSettings.phone,
     hoursLabel: nonEmptyString(settings?.hoursLabel) || fallbackSiteSettings.hoursLabel,
     eventHoursNote: nonEmptyString(settings?.eventHoursNote) || fallbackSiteSettings.eventHoursNote,
@@ -432,7 +433,7 @@ function customSectionsByPage(sections?: CustomSection[]): CmsContents["customSe
   }, {} as CmsContents["customSections"]);
 }
 
-function normalizeContents(contents: Partial<CmsContents>): CmsContents {
+function normalizeContents(contents: Partial<CmsContents>, rawPageSections?: PageSection[]): CmsContents {
   return {
     siteSettings: mergeSiteSettings(contents.siteSettings),
     home: mergeHomeContent(contents.home),
@@ -447,7 +448,7 @@ function normalizeContents(contents: Partial<CmsContents>): CmsContents {
     },
     socialNotices: visibleSocialNotices(contents.socialNotices),
     pageCopy: pageCopyByPage(contents.pageCopy ? (Object.values(contents.pageCopy) as PageCopy[]) : undefined),
-    pageSections: pageSectionsByPage(contents.pageSections ? (Object.values(contents.pageSections).flat() as PageSection[]) : undefined),
+    pageSections: pageSectionsByPage(rawPageSections ?? Object.values(contents.pageSections || {}).flat()),
     customSections: customSectionsByPage(contents.customSections ? (Object.values(contents.customSections).flat() as CustomSection[]) : undefined)
   };
 }
@@ -514,7 +515,6 @@ export async function getCmsContents(): Promise<CmsContents> {
     equipmentRental,
     socialNotices,
     pageCopy: pageCopyByPage(pageCopy),
-    pageSections: pageSectionsByPage(pageSections),
     customSections: customSectionsByPage(customSections)
-  });
+  }, pageSections);
 }

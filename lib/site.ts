@@ -58,6 +58,6 @@ export function telHref(phone: string = site.phone) {
   return `tel:${phone.replace(/-/g, "")}`;
 }
 
-export function mailHref(subject: string) {
-  return `mailto:${site.email}?subject=${encodeURIComponent(subject)}`;
+export function mailHref(subject: string, email: string = site.email) {
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 }

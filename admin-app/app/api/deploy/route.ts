@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
   if (!isAuthenticatedRequest(request)) {
     return NextResponse.json({ ok: false, message: "ログインしてください。" }, { status: 401 });
   }
+  if (process.env.VERCEL_ENV === "preview") {
+    return NextResponse.json({ ok: false, message: "確認用の管理画面からはサイトへ公開できません。" }, { status: 403 });
+  }
 
   try {
     const data = await triggerDeploy();

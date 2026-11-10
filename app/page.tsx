@@ -12,6 +12,7 @@ import {
 import { PageShell } from "@/components/site-shell";
 import { editableMedia, resolveEditableImage, resolveHeroSlides } from "@/lib/editable-content";
 import { getCmsContents } from "@/lib/microcms";
+import { accessRouteTips } from "@/lib/page-content";
 import { buildMetadata } from "@/lib/seo";
 import { absoluteUrl, site } from "@/lib/site";
 import type { SiteSettings } from "@/lib/types";
@@ -28,7 +29,7 @@ function JsonLd({ settings }: { settings: SiteSettings }) {
     description: site.description,
     url: site.siteUrl,
     telephone: settings.phone,
-    email: site.email,
+    email: settings.email || site.email,
     priceRange: site.priceRange,
     image: absoluteUrl("/ogp.png"),
     hasMap: settings.googleMapsUrl,
@@ -91,6 +92,7 @@ function JsonLd({ settings }: { settings: SiteSettings }) {
 
 export default async function Home() {
   const contents = await getCmsContents();
+  const home = contents.home;
   const copy = contents.pageCopy.home;
   const pageSections = contents.pageSections.home;
   const sectionOrder = (key: string, fallback: number) => pageSections.find((section) => section.sectionKey === key)?.displayOrder ?? fallback;
@@ -104,9 +106,13 @@ export default async function Home() {
           order: sectionOrder("hero", 1),
           node: (
             <PageHero
-              eyebrow={site.tagline}
-              title={copy.heroTitle || contents.home.heroTitle}
-              lead={copy.heroLead || contents.home.heroLead}
+              eyebrow={home.heroEyebrow?.trim() || site.tagline}
+              mobileTitle={home.heroMobileTitle?.trim()}
+              title={home.homeHeroTitle?.trim() || copy.heroTitle || home.heroTitle}
+              lead={home.homeHeroLead?.trim() || copy.heroLead || home.heroLead}
+              logo={home.heroLogo}
+              settings={contents.siteSettings}
+              actionLabels={{ mapLabel: home.heroMapLabel?.trim() || undefined, callLabel: home.heroCallLabel?.trim() || undefined, reserveLabel: home.heroReserveLabel?.trim() || undefined }}
               image={homeHeroImage.src}
               imageAlt={homeHeroImage.alt}
               slides={homeHeroSlides}
@@ -116,13 +122,13 @@ export default async function Home() {
         }
       : null,
     visibleSections.has("firstVisit")
-      ? { key: "firstVisit", order: sectionOrder("firstVisit", 2), node: <FirstVisitBlock lead={copy.introLead || contents.home.firstVisitLead} tone="light" /> }
+      ? { key: "firstVisit", order: sectionOrder("firstVisit", 2), node: <FirstVisitBlock home={home} lead={home.firstVisitDescription?.trim() || copy.introLead || home.firstVisitLead} tone="light" /> }
       : null,
     visibleSections.has("visitInfo")
-      ? { key: "visitInfo", order: sectionOrder("visitInfo", 3), node: <VisitInfoCards settings={contents.siteSettings} /> }
+      ? { key: "visitInfo", order: sectionOrder("visitInfo", 3), node: <VisitInfoCards settings={contents.siteSettings} title={home.visitInfoTitle} lead={home.visitInfoLead} home={home} /> }
       : null,
     visibleSections.has("localSearch")
-      ? { key: "localSearch", order: sectionOrder("localSearch", 4), node: <LocalSearchSection /> }
+      ? { key: "localSearch", order: sectionOrder("localSearch", 4), node: <LocalSearchSection home={home} /> }
       : null,
     visibleSections.has("social")
       ? {
@@ -131,11 +137,12 @@ export default async function Home() {
           node: (
             <SocialUpdatesSection
               notices={contents.socialNotices}
+              home={home}
               instagramWidgetSrc={contents.home.instagramWidgetSrc}
               settings={contents.siteSettings}
-              titleLine1={copy.socialTitleLine1}
-              titleLine2={copy.socialTitleLine2}
-              lead={copy.socialLead}
+              titleLine1={home.socialTitleLine1?.trim() || copy.socialTitleLine1}
+              titleLine2={home.socialTitleLine2?.trim() || copy.socialTitleLine2}
+              lead={home.socialLead?.trim() || copy.socialLead}
             />
           )
         }
@@ -144,7 +151,15 @@ export default async function Home() {
       ? {
           key: "access",
           order: sectionOrder("access", 6),
-          node: <AccessContent note={copy.accessNote || contents.home.accessNote} settings={contents.siteSettings} />
+          node: (
+            <AccessContent
+              heading={home.homeAccessTitle}
+              home={home}
+              note={home.homeAccessNote?.trim() || copy.accessNote || home.accessNote}
+              routeTips={accessRouteTips.map((tip, index) => [home.homeAccessTip1, home.homeAccessTip2, home.homeAccessTip3][index]?.trim() || tip)}
+              settings={contents.siteSettings}
+            />
+          )
         }
       : null,
     ...contents.customSections.home.map((section) => ({
@@ -156,11 +171,11 @@ export default async function Home() {
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
   return (
-    <PageShell settings={contents.siteSettings}>
+    <PageShell settings={contents.siteSettings} home={home}>
       <JsonLd settings={contents.siteSettings} />
       <main id="top">
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
-          <div className="managed-section" key={section.key}>
+          <div className="managed-section" data-public-section={section.key} key={section.key}>
             {section.node}
           </div>
         ))}

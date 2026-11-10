@@ -1849,9 +1849,9 @@ function checkAdminSupportsPageScopedCustomCopy() {
   const text = readFileSync(file, "utf8");
   const requiredTerms = [
     "pageDraftMap",
-    "文言追加・削除",
+    "案内・告知を追加する",
     'sectionId: "custom-sections"',
-    "initialDraft: { page: pageDraftMap[activePage.page] }",
+    "initialDraft: { page: pageKey }",
     "scopedListPage",
     "custom-sections",
     'section.fields.filter((field) => field.key !== "page")'

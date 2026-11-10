@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { assetPath } from "@/lib/assets";
 import { editableSocialLinks } from "@/lib/editable-content";
-import type { SiteSettings, SocialNotice, SocialPlatform } from "@/lib/types";
+import type { HomeContent, SiteSettings, SocialNotice, SocialPlatform } from "@/lib/types";
 import socialFeed from "@/public/data/social-feed.json";
 
 type SocialUpdatesProps = {
@@ -10,6 +10,7 @@ type SocialUpdatesProps = {
   notices?: SocialNotice[];
   instagramWidgetSrc?: string;
   settings?: SiteSettings;
+  home?: HomeContent;
   instagramFallbackLabel?: string;
   facebookFallbackLabel?: string;
   xFallbackLabel?: string;
@@ -21,6 +22,7 @@ export function SocialUpdates({
   notices = [],
   instagramWidgetSrc,
   settings,
+  home,
   instagramFallbackLabel = "Instagramで最新情報を見る",
   facebookFallbackLabel = "Facebookで最新情報を見る",
   xFallbackLabel = "Xで最新情報を見る"
@@ -30,13 +32,20 @@ export function SocialUpdates({
   const xNotices = getNoticeItems(notices, "x");
   const facebookItems = getFeedItems("facebook");
   const xItems = getFeedItems("x");
-  const socialLinks = settings
-    ? [
-        { ...editableSocialLinks[0], href: settings.instagramUrl },
-        { ...editableSocialLinks[1], href: settings.facebookUrl },
-        { ...editableSocialLinks[2], href: settings.xUrl }
-      ]
-    : editableSocialLinks;
+  const platformNames = ["Instagram", "Facebook", "X"] as const;
+  const managedLinks = [settings?.instagramUrl, settings?.facebookUrl, settings?.xUrl];
+  const socialLinks = editableSocialLinks.map((link, index) => {
+    const name = platformNames[index];
+    return {
+      id: name,
+      label: home?.[`social${name}Label`]?.trim() || link.label,
+      account: home?.[`social${name}Account`]?.trim() || link.account,
+      href: managedLinks[index] || link.href
+    };
+  });
+  instagramFallbackLabel = home?.socialInstagramButton?.trim() || instagramFallbackLabel;
+  facebookFallbackLabel = home?.socialFacebookButton?.trim() || facebookFallbackLabel;
+  xFallbackLabel = home?.socialXButton?.trim() || xFallbackLabel;
   const instagramUrl = socialLinks[0].href;
   const facebookUrl = socialLinks[1].href;
   const xUrl = socialLinks[2].href;
@@ -44,7 +53,7 @@ export function SocialUpdates({
   return (
     <section className="section social-section">
       <div className="section-heading narrow-copy">
-        <p className="eyebrow">Social Updates</p>
+        <p className="eyebrow">{home?.socialEyebrow?.trim() || "Social Updates"}</p>
         <h2>{title}</h2>
         <p className="section-lead">{lead}</p>
       </div>
@@ -58,10 +67,10 @@ export function SocialUpdates({
           ) : (
             <SocialProfileCard
               href={instagramUrl}
-              account="@bassic_official"
-              imageSrc={assetPath("/assets/brand/index-logo.png")}
-              title="Instagram"
-              lead="直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"
+              account={socialLinks[0].account}
+              imageSrc={assetPath(home?.socialInstagramImage?.url || "/assets/brand/index-logo.png")}
+              title={socialLinks[0].label}
+              lead={home?.socialInstagramDescription?.trim() || "直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"}
               buttonLabel={instagramFallbackLabel}
             />
           )}
@@ -92,10 +101,10 @@ export function SocialUpdates({
           ) : (
             <SocialProfileCard
               href={xUrl}
-              account="@bar_Bassic"
-              imageSrc={assetPath("/assets/brand/b-logo-mark2.png")}
-              title="X"
-              lead="イベント告知や営業情報は公式Xでも更新しています。管理画面に投稿URLを登録すると、この欄にカード表示できます。"
+              account={socialLinks[2].account}
+              imageSrc={assetPath(home?.socialXImage?.url || "/assets/brand/b-logo-mark2.png")}
+              title={socialLinks[2].label}
+              lead={home?.socialXDescription?.trim() || "イベント告知や営業情報は公式Xでも更新しています。管理画面に投稿URLを登録すると、この欄にカード表示できます。"}
               buttonLabel={xFallbackLabel}
             />
           )}
@@ -104,7 +113,7 @@ export function SocialUpdates({
 
       <div className="social-direct-links">
         {socialLinks.map((link) => (
-          <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
+          <a key={link.id} href={link.href} target="_blank" rel="noreferrer">
             {link.label} <ExternalLink size={15} />
           </a>
         ))}
@@ -155,7 +164,8 @@ function SocialNoticeFeed({
     <div className={`social-embed-frame social-api-feed social-notice-feed social-notice-feed-${platform}`}>
       <div className="social-feed-list">
         {items.map((item) => (
-          <a key={`${platform}-${item.id}`} className="social-feed-item no-image social-notice-item" href={item.url} target="_blank" rel="noreferrer">
+          <a key={`${platform}-${item.id}`} className={`social-feed-item social-notice-item${item.image?.url ? "" : " no-image"}`} href={item.url} target="_blank" rel="noreferrer">
+            {item.image?.url ? <span className="social-feed-thumb"><img src={assetPath(item.image.url)} alt={item.image.alt || ""} loading="lazy" /></span> : null}
             <span className="social-feed-copy">
               <span className="social-feed-date">{formatFeedDate(item.date)}</span>
               <span className="social-notice-title">{item.title}</span>
