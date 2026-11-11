@@ -510,7 +510,7 @@ export function PartyContent({
           {rental.price ? <strong>{rental.price}</strong> : null}
           <p>{rentalLead || rental.body}</p>
           <a className="button equipment-rental-link" href={assetPath(rental.pdfUrl || "/assets/pdf/equipment-rental-list.pdf")} target="_blank" rel="noreferrer">
-            詳細はコチラ
+            機材リスト詳細はこちら
           </a>
         </div>
       </article>
