@@ -117,6 +117,7 @@ export default async function EventsPage() {
               lead={copy.heroLead || pageHeroes.events.lead}
               slides={eventSlides}
               className={pageHeroes.events.className}
+              actionLabels={{ reserveLabel: "お問い合わせ" }}
             />
           )
         }

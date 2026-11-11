@@ -32,7 +32,7 @@ export function EventCalendarSection({ note }: { note?: string }) {
           </a>
           <a className="button" href={mailHref("Bassic.イベント予約")}>
             <Mail size={18} />
-            イベント予約メール
+            お問い合わせ
           </a>
         </div>
       </div>
