@@ -49,7 +49,7 @@ type Notice = {
   actionsUrl?: string;
   requestId?: string;
   retryPublish?: boolean;
-  eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialRetryNeeded?: boolean; event?: { id: string; title: string; date: string; startTime: string } };
+  eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialSourceId?: string; socialRetryNeeded?: boolean; event?: { id: string; title: string; date: string; startTime: string } };
   sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
@@ -629,7 +629,7 @@ async function requestPublication(notice: Notice): Promise<Notice> {
   return { ...notice, ...data, tone: "success", retryPublish: false };
 }
 
-function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notice: Notice) => void }) {
+function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Notice; onRetry: (notice: Notice) => void; onOpenSocialDrafts?: (sourceId: string) => void }) {
   const [status, setStatus] = useState<PublishStatus>({ state: notice.requestId ? "pending" : "failed" });
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState(false);
@@ -752,6 +752,9 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
         </dl>
       ) : null}
       <div className="deploy-status-actions">
+        {status.state === "published" && !notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery?.socialSourceId && onOpenSocialDrafts ? (
+          <button className="primary-button" type="button" onClick={() => onOpenSocialDrafts(notice.eventDelivery!.socialSourceId!)}>SNS用の文面を開く</button>
+        ) : null}
         {notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery.socialEventId ? (
           <button className="secondary-button" type="button" disabled={retryingSocial} onClick={() => void retrySocial()}>
             {retryingSocial ? "SNS下書きを確認中…" : "SNS下書きだけをやり直す"}
@@ -2362,6 +2365,9 @@ function SectionEditor({
   editLabel,
   previewContext,
   sourcePage,
+  eventEntry = false,
+  relatedEventId,
+  onOpenSocialDrafts,
   onBack,
   onEditorState,
   onDeployNotice
@@ -2374,6 +2380,9 @@ function SectionEditor({
   editLabel?: string;
   previewContext?: Draft;
   sourcePage?: string;
+  eventEntry?: boolean;
+  relatedEventId?: string;
+  onOpenSocialDrafts: (sourceId: string) => void;
   onBack: () => void;
   onEditorState: (state: { dirty: boolean; busy: boolean }) => void;
   onDeployNotice: (notice: Notice) => void;
@@ -2408,14 +2417,18 @@ function SectionEditor({
   const isMaintenanceSection = !dailySectionIds.has(section.id);
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
+  function matchesRelatedEvent(item: Draft) {
+    return !relatedEventId || getString(item.sourceEventId) === relatedEventId ||
+      getFacebookEventId(getString(item.sourceEventUrl) || getString(item.url)) === relatedEventId;
+  }
 
   const visibleItems = useMemo(() => {
     if (!scopedListPage) {
-      return items;
+      return items.filter(matchesRelatedEvent);
     }
 
     return items.filter((item) => getString(item.page).trim() === scopedListPage);
-  }, [items, scopedListPage]);
+  }, [items, scopedListPage, relatedEventId]);
   const publishedCount = useMemo(() => visibleItems.filter((item) => isPublished(item)).length, [visibleItems]);
   const draftCount = visibleItems.length - publishedCount;
   const filteredItems = useMemo(() => {
@@ -2527,7 +2540,7 @@ function SectionEditor({
         setItemStatusFilter("all");
         const scopedContents = scopedListPage
           ? contents.filter((item) => getString(item.page).trim() === scopedListPage)
-          : contents;
+          : contents.filter(matchesRelatedEvent);
         const sortedScopedContents = [...scopedContents].sort((a, b) => getOrderNumber(a.displayOrder) - getOrderNumber(b.displayOrder));
         const firstItem = itemId ? sortedScopedContents.find((item) => item.id === itemId) : sortedScopedContents[0];
         if (firstItem) {
@@ -2540,7 +2553,7 @@ function SectionEditor({
       } else {
         showStoredDraft("object", mergeDefaults(section, { ...(data as Draft), ...(initialDraft || {}) }));
       }
-      setEditingFields(new Set());
+      setEditingFields(new Set(eventEntry ? ["sourceUrl"] : []));
       setDirty(false);
     } catch (loadError) {
       if (loadToken !== loadTokenRef.current || userInteractedRef.current) {
@@ -2561,6 +2574,15 @@ function SectionEditor({
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section.id, initialDraftKey, itemId]);
+
+  useEffect(() => {
+    if (loading || loadFailed || !eventEntry) return;
+    const input = document.getElementById("sourceUrl");
+    if (input instanceof HTMLInputElement) {
+      input.focus({ preventScroll: true });
+      input.scrollIntoView({ block: "center" });
+    }
+  }, [loading, loadFailed, eventEntry]);
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -2860,7 +2882,12 @@ function SectionEditor({
 
   function openPreview() {
     userInteractedRef.current = true;
-    const nextErrors = validate(withRequiredDefaults(draft));
+    const nextDraft = eventEntry ? { ...draft, isPublished: true } : draft;
+    if (eventEntry) {
+      setDraft(nextDraft);
+      setDirty(true);
+    }
+    const nextErrors = validate(withRequiredDefaults(nextDraft));
 
     if (Object.keys(nextErrors).length) {
       setShowPreview(false);
@@ -2954,6 +2981,7 @@ function SectionEditor({
       const facebookId = getFacebookEventId(getString(savedData.sourceUrl));
       const eventDelivery: Notice["eventDelivery"] = section.id === "events" ? {
         socialEventId: preparedDraft.isPublished ? getString(savedData.id) : undefined,
+        socialSourceId: facebookId || getString(savedData.sourceId) || getString(savedData.id),
         calendar: preparedDraft.isPublished
           ? "同期結果は未確認です。掲載が必要な場合は反映依頼メモを使ってください。"
           : "サイトを非公開にしても、カレンダーの予定は残ります。変更は保守担当へ依頼してください。",
@@ -3326,7 +3354,7 @@ function SectionEditor({
           <h1>{editLabel?.split(" → ").at(-1) || section.title}</h1>
           <p>{section.description}</p>
         </div>
-        {section.kind === "list" ? (
+        {section.kind === "list" && !eventEntry && !relatedEventId ? (
           <button className="secondary-button" type="button" onClick={startNewItem}>
             <Plus size={18} />
             {listCreateLabel}
@@ -3346,7 +3374,7 @@ function SectionEditor({
       ) : null}
 
       {notice ? (notice.requestId || notice.retryPublish) ? (
-        <DeployStatusCard key={notice.requestId || notice.requestedAt} notice={notice} onRetry={(next) => {
+        <DeployStatusCard key={notice.requestId || notice.requestedAt} notice={notice} onOpenSocialDrafts={onOpenSocialDrafts} onRetry={(next) => {
           setNotice(next);
           onDeployNotice(next);
         }} />
@@ -3369,13 +3397,13 @@ function SectionEditor({
         </section>
       ) : (
         <div className="editor-layout">
-          {section.kind === "list" ? (
+          {section.kind === "list" && !eventEntry ? (
             <aside className="item-list">
               <strong className="item-list-heading">現在登録されている内容</strong>
-              <button className={selectedId === "new" ? "selected" : ""} type="button" onClick={startNewItem}>
+              {!relatedEventId ? <button className={selectedId === "new" ? "selected" : ""} type="button" onClick={startNewItem}>
                 <Plus size={18} />
                 {listCreateLabel}
-              </button>
+              </button> : null}
               <div className="item-list-tools" aria-label="一覧の絞り込み">
                 <div className="item-counts">
                   <span>全部 {visibleItems.length}</span>
@@ -3456,10 +3484,17 @@ function SectionEditor({
               void save("draft");
             }}
           >
+            {eventEntry ? (
+              <section className="event-entry-guide" aria-label="イベント追加の流れ">
+                <strong>Facebookからイベントを追加</strong>
+                <ol><li>FacebookのURLを貼る</li><li>読み取った内容を確認・修正</li><li>サイトに掲載</li><li>SNS用の文面を使う</li></ol>
+                <p>最後の確認画面で確定するまで、サイトには掲載されません。SNSは文面をコピーしてスタッフが投稿します。</p>
+              </section>
+            ) : null}
             <ValidationSummary errors={errors} section={section} />
-            {!(editLabel && section.kind === "object") ? <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} /> : null}
-            <RequiredProgress section={section} draft={draft} />
-            <EditorFocusTips section={section} />
+            {!eventEntry && !(editLabel && section.kind === "object") ? <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} /> : null}
+            {!eventEntry ? <RequiredProgress section={section} draft={draft} /> : null}
+            {!eventEntry ? <EditorFocusTips section={section} /> : null}
             {section.id === "hero-slides" ? (
               <section className="slide-tools" aria-label="スライドショーの画像操作">
                 <div>
@@ -3491,7 +3526,10 @@ function SectionEditor({
                 <small>完全削除ではなく公開OFFにするので、間違えて外しても戻せます。</small>
               </section>
             ) : null}
+            {eventEntry ? <section aria-label="1 FacebookのURLを貼る"><h2 className="event-entry-heading">1. FacebookのURLを貼る</h2>{renderEditableField(section.fields.find(field => field.key === "sourceUrl")!)}</section> : null}
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} /> : null}
+            {eventEntry ? <><h2 className="event-entry-heading">2. 内容を確認・修正する</h2><RequiredProgress section={section} draft={draft} /></> : null}
+            {relatedEventId ? <p className="event-entry-guide">4. このイベントのX・Instagram用の文面です。投稿先を選び、「投稿文をコピー」から各SNSへ進んでください。画像は投稿先で添付します。</p> : null}
             {section.id === "social-notices" ? <SocialNoticeUrlGuide draft={draft} /> : null}
             {section.id === "social-notices" && ["x", "instagram"].includes(getString(draft.platform)) ? (
               <section className="sns-draft-panel" aria-label="SNSへの投稿準備">
@@ -3515,7 +3553,7 @@ function SectionEditor({
               </section>
             ) : null}
             <div className="editable-field-list">
-              {editableFields.filter((field) => !isMobileAppearanceField(field.key)).map(renderEditableField)}
+              {editableFields.filter((field) => !isMobileAppearanceField(field.key) && (!eventEntry || !["sourceUrl", "isPublished"].includes(field.key))).map(renderEditableField)}
               {editableFields.some((field) => isMobileAppearanceField(field.key)) ? (
                 <details className="page-option-group">
                   <summary className="mobile-appearance-summary">スマホでの見え方</summary>
@@ -3542,7 +3580,7 @@ function SectionEditor({
               </button>
               <button className="primary-button" type="button" disabled={saving || deploying} onClick={openPreview}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
-                プレビューして公開
+                {eventEntry ? "内容を確認してサイトに掲載" : "プレビューして公開"}
               </button>
               <small className="action-note">下書きはこのブラウザに保存します。サイトへ反映する時は「プレビューして公開」で確認画面へ進みます。</small>
             </div>
@@ -3693,7 +3731,8 @@ function PageBasedDashboard({
   health,
   opsStatus,
   editor,
-  activeEditLabel
+  activeEditLabel,
+  onOpenSocialDrafts
 }: {
   onSelect: (nextSection: ActiveSectionState) => void;
   selectedPage: string;
@@ -3705,6 +3744,7 @@ function PageBasedDashboard({
   opsStatus?: OpsStatus;
   editor?: ReactNode;
   activeEditLabel?: string;
+  onOpenSocialDrafts: (sourceId: string) => void;
 }) {
   const activePage = adminPages.find((page) => page.page === selectedPage) || adminPages[0];
   const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
@@ -3880,11 +3920,11 @@ function PageBasedDashboard({
         </a>
       </div>
 
-      <ol className="workspace-steps" aria-label="操作の流れ">
+      {!activeEditLabel?.startsWith("イベント追加") ? <ol className="workspace-steps" aria-label="操作の流れ">
         <li><span>1</span>左でページを選ぶ</li>
         <li aria-current={!editing ? "step" : undefined}><span>2</span>変更する場所・項目を選ぶ</li>
         <li aria-current={editing ? "step" : undefined}><span>3</span>中央で編集・公開する</li>
-      </ol>
+      </ol> : null}
 
       <div className="visual-editor-workspace">
         <div className="visual-editor-center">
@@ -3944,7 +3984,7 @@ function PageBasedDashboard({
         </details>
       ) : null}
       {!editing && lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
-        <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} />
+        <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} onOpenSocialDrafts={onOpenSocialDrafts} />
       ) : <NoticeBox notice={lastDeploy} /> : null}
 
       <details className="maintenance-tools">
@@ -4057,6 +4097,13 @@ export default function AdminClient() {
     }
   }
 
+  function openRelatedSocialDrafts(sourceId: string) {
+    if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+    setDashboardPage("EVENT SCHEDULE");
+    setExpandedGroup("SNS投稿の下書き");
+    setActiveSection({ id: "social-notices", relatedEventId: sourceId, editLabel: "イベント追加 → SNS用の文面を使う", sourcePage: "EVENT SCHEDULE" });
+  }
+
   if (checking) {
     return (
       <main className="loading-shell">
@@ -4119,6 +4166,16 @@ export default function AdminClient() {
               </button>
             ))}
           </div>
+          <div className="admin-shortcuts">
+            <p>イベントの更新</p>
+            <button className="event-add-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => {
+              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              setDashboardPage("EVENT SCHEDULE");
+              setExpandedGroup("開催イベント");
+              setActiveSection({ id: "events", itemId: "new", eventEntry: true, initialDraft: { isPublished: false }, editLabel: "イベント追加", sourcePage: "EVENT SCHEDULE" });
+            }}><Plus size={18} /> イベントを追加</button>
+            <small>FacebookのURLから始める</small>
+          </div>
         </nav>
         <div className="admin-workspace-content">
           <PageBasedDashboard
@@ -4135,6 +4192,7 @@ export default function AdminClient() {
             }}
             lastDeploy={lastDeploy}
             onDeployNotice={rememberDeployNotice}
+            onOpenSocialDrafts={openRelatedSocialDrafts}
             health={health}
             opsStatus={opsStatus}
             activeEditLabel={activeSection?.editLabel}
@@ -4149,6 +4207,9 @@ export default function AdminClient() {
                 editLabel={activeSection.editLabel}
                 previewContext={activeSection.previewContext}
                 sourcePage={activeSection.sourcePage}
+                eventEntry={activeSection.eventEntry}
+                relatedEventId={activeSection.relatedEventId}
+                onOpenSocialDrafts={openRelatedSocialDrafts}
                 onBack={() => setActiveSection(null)}
                 onEditorState={setEditorState}
                 onDeployNotice={rememberDeployNotice}

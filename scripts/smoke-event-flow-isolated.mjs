@@ -30,6 +30,7 @@ Object.assign(process.env, {
 
 const legacyUrl = "https://www.facebook.com/events/12345678/";
 const newUrl = "https://www.facebook.com/events/87654321/";
+const guidedUrl = "https://www.facebook.com/events/77777777/";
 const bassicArchiveUrl = "https://www.facebook.com/events/5208864859197487/";
 const image = { url: "https://images.example.invalid/poster.png" };
 const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl, image, isPublished: true }]]);
@@ -60,9 +61,9 @@ globalThis.fetch = async (input, init) => {
     if (url.href === newUrl) return new Response("Unavailable", { status: 503 });
     const event = {
       "@type": "Event",
-      url: legacyUrl,
-      name: "Fixture live",
-      startDate: "2027-05-04T19:30:00-07:00",
+      url: url.href,
+      name: url.href === guidedUrl ? "Guided live" : "Fixture live",
+      startDate: url.href === guidedUrl ? "2027-07-07T19:00:00+09:00" : "2027-05-04T19:30:00-07:00",
       description: "18:00 OPEN / 19:00 START"
     };
     return new Response(`<script type="application/ld+json">${JSON.stringify(event)}</script>`);
@@ -424,6 +425,32 @@ try {
         assert.equal(copied.replace(/\r\n/g, "\n"), expected);
       }
       console.log("Mobile SNS browser passed: X and Instagram clipboard text, poster links and posting destinations.");
+
+      await page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click();
+      const entryGuide = page.getByRole("region", { name: "イベント追加の流れ" });
+      await entryGuide.waitFor();
+      assert.equal(await entryGuide.getByRole("listitem").count(), 4);
+      assert.equal(await page.locator(".item-list").count(), 0, "The event entry opens a new event instead of selecting an existing one");
+      const entryUrl = page.getByRole("region", { name: "1 FacebookのURLを貼る", exact: true }).getByRole("textbox");
+      assert.equal(await entryUrl.inputValue(), "");
+      await entryUrl.fill(guidedUrl);
+      await page.getByRole("region", { name: "Facebookイベント取り込み" }).getByRole("button", { name: "Facebookから読み取る" }).click();
+      await page.locator(".editable-field-card").filter({ hasText: "イベント名" }).getByText("Guided live", { exact: true }).waitFor();
+      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Reading alone must not save the event");
+      await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
+      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Preview alone must not publish the event");
+      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
+      await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
+      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
+      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl && item.isPublished).length, 1);
+      const guidedDrafts = [...notices.values()].filter(item => item.sourceEventId === "77777777");
+      assert.equal(guidedDrafts.length, 2);
+      await page.getByRole("button", { name: "SNS用の文面を開く", exact: true }).click();
+      await page.locator(".item-list").getByRole("button", { name: "Guided live (INSTAGRAM)" }).click();
+      await page.getByRole("region", { name: "SNSへの投稿準備" }).getByRole("button", { name: "投稿文をコピー" }).click();
+      assert.match(await page.evaluate(() => navigator.clipboard.readText()), /Guided live/);
+      assert.equal(await page.locator(".item-list").getByRole("button", { name: /Isolated live|Fixture live/ }).count(), 0, "The SNS handoff must show only this event's drafts");
+      console.log("Guided event entry passed: sidebar shortcut, blank URL, reviewed publication, and related SNS drafts with clipboard copy.");
 
       if (process.env.BASSIC_QA_PUBLIC_SITE === "1") {
         socialUnavailable = false;
