@@ -2,7 +2,7 @@ import { mobileCrop, type MobileCropPosition } from "@/lib/responsive-media";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  CalendarDays,
+  Phone,
   ExternalLink,
   MapPin,
   Mic2,
@@ -26,7 +26,7 @@ import {
   visitInfoItems,
   type FeatureCardContent
 } from "@/lib/page-content";
-import { mailHref, site } from "@/lib/site";
+import { mailHref, site, telHref } from "@/lib/site";
 import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
@@ -605,9 +605,9 @@ export function AccessContent({
             <Navigation size={18} />
             {home?.homeAccessDirectionsLabel?.trim() || "現在地から向かう"}
           </a>
-          <a className="button" href={mailHref("Bassic.予約問い合わせ", accessSettings.email)}>
-            <CalendarDays size={18} />
-            {home?.homeAccessReserveLabel?.trim() || "予約する"}
+          <a className="button" href={telHref(accessSettings.phone)}>
+            <Phone size={18} />
+            電話する
           </a>
         </div>
       </div>
