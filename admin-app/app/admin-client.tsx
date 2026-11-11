@@ -28,6 +28,7 @@ import { firstVisitSection, localSearchSection, pageHeroes, socialUpdatesCopy, v
 import { mobileCrop } from "../../lib/responsive-media";
 import { getSection, homeFieldGroups, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
 import { resolvePublicUrl } from "@/lib/public-site-url";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 type Draft = Record<string, unknown>;
 type ApiResult<T = unknown> = {
@@ -544,20 +545,6 @@ function getPreviewText(field: FieldDefinition, value: unknown) {
   }
 
   return String(value ?? "");
-}
-
-async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 12000) {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    return await fetch(url, {
-      ...init,
-      signal: init?.signal || controller.signal
-    });
-  } finally {
-    window.clearTimeout(timeoutId);
-  }
 }
 
 async function requestJson<T>(url: string, init?: RequestInit) {

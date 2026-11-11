@@ -18,7 +18,7 @@
 
 ```powershell
 npm run build:admin-app
-node --test scripts/facebook-event-time.test.mjs scripts/ops-failure.test.mjs scripts/calendar-upsert.test.mjs
+npm run test:events
 $env:BASSIC_QA_PLAYWRIGHT=Join-Path $env:TEMP 'bassic-browser-qa/node_modules/playwright-core'
 $env:BASSIC_QA_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 $env:BASSIC_QA_PUBLIC_SITE='1'
@@ -43,6 +43,7 @@ Googleカレンダーは店舗の共有先と権限を確認後、専用の非�
 - SNS作成途中の通信失敗: 一つ目の下書きの保存後にエラーを返し、再実行で不足する投稿先だけが作られること、編集済み文面が残ることを確認する。
 - SNS単独復旧: 実際の管理画面の復旧ボタンで、サイト公開依頼を増やさずSNS下書きを作成する。最新の保存済み日時を使い、非公開化したイベントは拒否する。
 - 公開・SNS再作成ボタンの連打でも処理を一度だけ進める。投稿先ごとの作成結果が欠けた応答は成功表示にしない。
+- 公開状況の確認通信にキャンセル用の信号がある場合もタイムアウトが有効で、通信待ちのまま止まらないことを確認する。キャンセルとタイムアウトの2件を追加し、関連テストは計21件が成功した。
 - STARTを入力欄で消した場合、依頼メモにも未入力と表示してコピーを止める。再取り込みでSTARTが取得できなかった場合は、手入力済みのSTARTを消さない。
 - カレンダー照合失敗・重複・中止済み予定: 成功表示を出さない。
 - 公開ページ: 縦長画像、横長画像、画像なし、長い英数字のイベント名を320・390・768・1440px幅で表示し、横スクロールがないこととスマホの一列配置を確認する。
@@ -66,4 +67,4 @@ Facebook連携のドラフトPR #4で管理し、管理画面と公開サイト�
 | 復旧・重複防止 | 部分保存後の再実行、入力保持、公開とSNS復旧の連打、カレンダー再実行の自動テスト |
 | 公開準備 | `npm run check:handoff` 成功、ドラフトPR #4、導入・復旧手順、カレンダー同期とSNS自動投稿の無効維持 |
 
-`npm run test:events` と `npm run smoke:events:isolated` で回帰テストを実行できる。PRでは `Event regression` ワークフローが秘密情報を使わず19件の関連テスト、両アプリのビルド、隔離APIテストを実行する。ブラウザ・画面幅の検証は上記のローカル手順で行う。
+`npm run test:events` と `npm run smoke:events:isolated` で回帰テストを実行できる。PRでは `Event regression` ワークフローが秘密情報を使わず21件の関連テスト、両アプリのビルド、隔離APIテストを実行する。ブラウザ・画面幅の検証は上記のローカル手順で行う。
