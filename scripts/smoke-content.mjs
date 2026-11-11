@@ -53,7 +53,7 @@ const pages = [
       "Bassic. Party Plan",
       ["￥4,000", "￥４,000", "¥4,000"],
       "機材レンタルについて",
-      "詳細はコチラ",
+  "機材リスト詳細はこちら",
       "/assets/pdf/equipment-rental-list.pdf"
     ]
   },
