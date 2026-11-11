@@ -136,9 +136,7 @@ export default async function Home() {
           order: sectionOrder("social", 5),
           node: (
             <SocialUpdatesSection
-              notices={contents.socialNotices}
               home={home}
-              instagramWidgetSrc={contents.home.instagramWidgetSrc}
               settings={contents.siteSettings}
               titleLine1={home.socialTitleLine1?.trim() || copy.socialTitleLine1}
               titleLine2={home.socialTitleLine2?.trim() || copy.socialTitleLine2}

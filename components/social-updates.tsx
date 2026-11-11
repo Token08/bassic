@@ -1,54 +1,17 @@
-import { ExternalLink } from "lucide-react";
-import { assetPath } from "@/lib/assets";
+import { ExternalLink, Facebook, Instagram } from "lucide-react";
 import { editableSocialLinks } from "@/lib/editable-content";
-import type { HomeContent, SiteSettings, SocialNotice, SocialPlatform } from "@/lib/types";
-import socialFeed from "@/public/data/social-feed.json";
+import type { HomeContent, SiteSettings } from "@/lib/types";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;
   lead: React.ReactNode;
-  notices?: SocialNotice[];
-  instagramWidgetSrc?: string;
   settings?: SiteSettings;
   home?: HomeContent;
-  instagramFallbackLabel?: string;
-  facebookFallbackLabel?: string;
-  xFallbackLabel?: string;
 };
 
-export function SocialUpdates({
-  title,
-  lead,
-  notices = [],
-  instagramWidgetSrc,
-  settings,
-  home,
-  instagramFallbackLabel = "Instagramで最新情報を見る",
-  facebookFallbackLabel = "Facebookで最新情報を見る",
-  xFallbackLabel = "Xで最新情報を見る"
-}: SocialUpdatesProps) {
-  const instagramNotices = getNoticeItems(notices, "instagram");
-  const safeInstagramWidgetSrc = getSafeEmbedSrc(instagramWidgetSrc);
-  const xNotices = getNoticeItems(notices, "x");
-  const facebookItems = getFeedItems("facebook");
-  const xItems = getFeedItems("x");
-  const platformNames = ["Instagram", "Facebook", "X"] as const;
-  const managedLinks = [settings?.instagramUrl, settings?.facebookUrl, settings?.xUrl];
-  const socialLinks = editableSocialLinks.map((link, index) => {
-    const name = platformNames[index];
-    return {
-      id: name,
-      label: home?.[`social${name}Label`]?.trim() || link.label,
-      account: home?.[`social${name}Account`]?.trim() || link.account,
-      href: managedLinks[index] || link.href
-    };
-  });
-  instagramFallbackLabel = home?.socialInstagramButton?.trim() || instagramFallbackLabel;
-  facebookFallbackLabel = home?.socialFacebookButton?.trim() || facebookFallbackLabel;
-  xFallbackLabel = home?.socialXButton?.trim() || xFallbackLabel;
-  const instagramUrl = socialLinks[0].href;
-  const facebookUrl = socialLinks[1].href;
-  const xUrl = socialLinks[2].href;
+export function SocialUpdates({ title, lead, settings, home }: SocialUpdatesProps) {
+  const names = ["Instagram", "Facebook", "X"] as const;
+  const urls = [settings?.instagramUrl, settings?.facebookUrl, settings?.xUrl];
 
   return (
     <section className="section social-section">
@@ -57,267 +20,24 @@ export function SocialUpdates({
         <h2>{title}</h2>
         <p className="section-lead">{lead}</p>
       </div>
-
-      <div className="social-embed-grid">
-        <SocialEmbedCard {...socialLinks[0]}>
-          {safeInstagramWidgetSrc ? (
-            <InstagramWidgetFrame src={safeInstagramWidgetSrc} />
-          ) : instagramNotices.length ? (
-            <SocialNoticeFeed platform="instagram" items={instagramNotices} fallbackLabel={instagramFallbackLabel} href={instagramUrl} />
-          ) : (
-            <SocialProfileCard
-              href={instagramUrl}
-              account={socialLinks[0].account}
-              imageSrc={assetPath(home?.socialInstagramImage?.url || "/assets/brand/index-logo.png")}
-              title={socialLinks[0].label}
-              lead={home?.socialInstagramDescription?.trim() || "直近の写真、イベント告知、店内の空気感は公式Instagramで更新しています。"}
-              buttonLabel={instagramFallbackLabel}
-            />
-          )}
-        </SocialEmbedCard>
-
-        <SocialEmbedCard {...socialLinks[1]}>
-          {facebookItems.length ? (
-            <SocialApiFeed platform="facebook" items={facebookItems} fallbackLabel={facebookFallbackLabel} href={facebookUrl} />
-          ) : (
-            <div className="social-embed-frame facebook-frame">
-              <iframe
-                title="public bar Bassic. Facebook timeline"
-                src={getFacebookPluginUrl(facebookUrl)}
-                width="500"
-                height="620"
-                loading="lazy"
-                referrerPolicy="origin-when-cross-origin"
-              />
-            </div>
-          )}
-        </SocialEmbedCard>
-
-        <SocialEmbedCard {...socialLinks[2]}>
-          {xNotices.length ? (
-            <SocialNoticeFeed platform="x" items={xNotices} fallbackLabel={xFallbackLabel} href={xUrl} />
-          ) : xItems.length ? (
-            <SocialApiFeed platform="x" items={xItems} fallbackLabel={xFallbackLabel} href={xUrl} />
-          ) : (
-            <SocialProfileCard
-              href={xUrl}
-              account={socialLinks[2].account}
-              imageSrc={assetPath(home?.socialXImage?.url || "/assets/brand/b-logo-mark2.png")}
-              title={socialLinks[2].label}
-              lead={home?.socialXDescription?.trim() || "イベント告知や営業情報は公式Xでも更新しています。管理画面に投稿URLを登録すると、この欄にカード表示できます。"}
-              buttonLabel={xFallbackLabel}
-            />
-          )}
-        </SocialEmbedCard>
-      </div>
-
-      <div className="social-direct-links">
-        {socialLinks.map((link) => (
-          <a key={link.id} href={link.href} target="_blank" rel="noreferrer">
-            {link.label} <ExternalLink size={15} />
-          </a>
-        ))}
+      <div className="social-account-grid">
+        {editableSocialLinks.map((link, index) => {
+          const name = names[index];
+          const label = home?.[`social${name}Label`]?.trim() || link.label;
+          const account = home?.[`social${name}Account`]?.trim() || link.account;
+          return (
+            <a className="social-account-link" key={name} href={urls[index] || link.href} target="_blank" rel="noreferrer" aria-label={`${label} ${account}（新しいタブで開く）`}>
+              <span className="social-account-logo" aria-hidden="true">
+                {name === "Instagram" ? <Instagram size={32} strokeWidth={1.6} /> : name === "Facebook" ? <Facebook size={32} strokeWidth={1.6} /> : (
+                  <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.64 7.584H.47l8.6-9.835L0 1.154h7.594l5.243 6.932zM17.61 20.644h2.039L6.486 3.24H4.298z" /></svg>
+                )}
+              </span>
+              <span className="social-account-copy"><span className="social-account-name">{label}</span><span className="social-account-id">{account}</span></span>
+              <ExternalLink className="social-account-arrow" size={17} aria-hidden="true" />
+            </a>
+          );
+        })}
       </div>
     </section>
   );
-}
-
-function InstagramWidgetFrame({ src }: { src: string }) {
-  return (
-    <div className="social-embed-frame instagram-widget-frame external-social-frame">
-      <iframe
-        title="public bar Bassic. Instagram timeline"
-        src={src}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        allowTransparency
-      />
-    </div>
-  );
-}
-
-type SocialFeedItem = {
-  id: string;
-  platform: string;
-  text: string;
-  url: string;
-  imageUrl?: string | null;
-  createdAt?: string | null;
-};
-
-type SocialFeedData = {
-  feeds?: Record<"instagram" | "facebook" | "x", SocialFeedItem[]>;
-};
-
-function SocialNoticeFeed({
-  platform,
-  items,
-  href,
-  fallbackLabel
-}: {
-  platform: SocialPlatform;
-  items: SocialNotice[];
-  href: string;
-  fallbackLabel: string;
-}) {
-  return (
-    <div className={`social-embed-frame social-api-feed social-notice-feed social-notice-feed-${platform}`}>
-      <div className="social-feed-list">
-        {items.map((item) => (
-          <a key={`${platform}-${item.id}`} className={`social-feed-item social-notice-item${item.image?.url ? "" : " no-image"}`} href={item.url} target="_blank" rel="noreferrer">
-            {item.image?.url ? <span className="social-feed-thumb"><img src={assetPath(item.image.url)} alt={item.image.alt || ""} loading="lazy" /></span> : null}
-            <span className="social-feed-copy">
-              <span className="social-feed-date">{formatFeedDate(item.date)}</span>
-              <span className="social-notice-title">{item.title}</span>
-              {item.description ? <span className="social-notice-description">{item.description}</span> : null}
-            </span>
-          </a>
-        ))}
-      </div>
-      <a className="social-feed-more" href={href} target="_blank" rel="noreferrer">
-        {fallbackLabel} <ExternalLink size={14} />
-      </a>
-    </div>
-  );
-}
-
-function SocialApiFeed({
-  platform,
-  items,
-  href,
-  fallbackLabel
-}: {
-  platform: "instagram" | "facebook" | "x";
-  items: SocialFeedItem[];
-  href: string;
-  fallbackLabel: string;
-}) {
-  return (
-    <div className={`social-embed-frame social-api-feed social-api-feed-${platform}`}>
-      <div className="social-feed-list">
-        {items.map((item) => (
-          <a
-            key={`${platform}-${item.id}`}
-            className={`social-feed-item${item.imageUrl ? "" : " no-image"}`}
-            href={item.url || href}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {item.imageUrl ? (
-              <span className="social-feed-thumb">
-                <img src={item.imageUrl} alt="" loading="lazy" />
-              </span>
-            ) : null}
-            <span className="social-feed-copy">
-              <span className="social-feed-date">{formatFeedDate(item.createdAt)}</span>
-              <span>{item.text}</span>
-            </span>
-          </a>
-        ))}
-      </div>
-      <a className="social-feed-more" href={href} target="_blank" rel="noreferrer">
-        {fallbackLabel} <ExternalLink size={14} />
-      </a>
-    </div>
-  );
-}
-
-function SocialEmbedCard({
-  label,
-  href,
-  account,
-  children
-}: {
-  label: string;
-  href: string;
-  account: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <article className="social-embed-card">
-      <div className="social-embed-heading">
-        <span>{label}</span>
-        <a href={href} target="_blank" rel="noreferrer">
-          {account} <ExternalLink size={15} />
-        </a>
-      </div>
-      {children}
-    </article>
-  );
-}
-
-function SocialProfileCard({
-  href,
-  account,
-  imageSrc,
-  title,
-  lead,
-  buttonLabel
-}: {
-  href: string;
-  account: string;
-  imageSrc: string;
-  title: string;
-  lead: string;
-  buttonLabel: string;
-}) {
-  return (
-    <div className="social-profile-card">
-      <img src={imageSrc} alt="public bar Bassic." width={160} height={160} loading="lazy" />
-      <div>
-        <p className="social-profile-kicker">{account}</p>
-        <h3>{title}</h3>
-        <p>{lead}</p>
-      </div>
-      <a className="social-profile-button" href={href} target="_blank" rel="noreferrer">
-        {buttonLabel} <ExternalLink size={15} />
-      </a>
-    </div>
-  );
-}
-
-function getFeedItems(platform: "facebook" | "x"): SocialFeedItem[] {
-  const feedData = socialFeed as SocialFeedData;
-  const items = feedData.feeds?.[platform];
-  return Array.isArray(items) ? items.filter((item) => item?.url && item?.text).slice(0, 5) : [];
-}
-
-function getNoticeItems(notices: SocialNotice[], platform: SocialPlatform): SocialNotice[] {
-  return notices
-    .filter((notice) => notice.platform === platform && notice.isPublished && notice.url && notice.title)
-    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
-    .slice(0, 5);
-}
-
-function getSafeEmbedSrc(value?: string) {
-  const src = value?.trim();
-  if (!src) {
-    return "";
-  }
-
-  try {
-    const url = new URL(src);
-    return url.protocol === "https:" ? url.toString() : "";
-  } catch {
-    return "";
-  }
-}
-
-function getFacebookPluginUrl(facebookUrl: string) {
-  return `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
-    facebookUrl
-  )}&tabs=timeline&width=500&height=620&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId=542452342568830`;
-}
-
-function formatFeedDate(value?: string | null) {
-  if (!value) {
-    return "Latest";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Latest";
-  }
-
-  return new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(date);
 }

@@ -27,7 +27,7 @@ import {
   type FeatureCardContent
 } from "@/lib/page-content";
 import { mailHref, site, telHref } from "@/lib/site";
-import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings, SocialNotice } from "@/lib/types";
+import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings } from "@/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -233,16 +233,12 @@ export function FeatureCardGrid({ features }: { features: readonly (FeatureCardC
 }
 
 export function SocialUpdatesSection({
-  notices = [],
-  instagramWidgetSrc,
   settings,
   home,
   titleLine1 = socialUpdatesCopy.titleLines[0],
   titleLine2 = socialUpdatesCopy.titleLines[1],
   lead = socialUpdatesCopy.lead
 }: {
-  notices?: SocialNotice[];
-  instagramWidgetSrc?: string;
   settings?: SiteSettings;
   home?: HomeContent;
   titleLine1?: string;
@@ -259,8 +255,6 @@ export function SocialUpdatesSection({
         </>
       }
       lead={lead}
-      notices={notices}
-      instagramWidgetSrc={instagramWidgetSrc}
       home={home}
       settings={settings}
     />
