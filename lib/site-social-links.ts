@@ -10,7 +10,8 @@ export function resolveSiteSocialLinks(settings?: Partial<Record<SocialLinkField
     xUrl: ["x.com", "twitter.com"]
   };
   return Object.fromEntries(socialLinkFields.map((key) => {
-    const value = settings?.[key]?.trim();
+    const raw = settings?.[key];
+    const value = typeof raw === "string" ? raw.trim() : "";
     try {
       if (value && hosts[key].includes(new URL(value).hostname.replace(/^www\./, ""))) return [key, value];
     } catch { /* Invalid settings use the same standard link as the public site. */ }
