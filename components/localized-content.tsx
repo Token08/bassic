@@ -42,7 +42,7 @@ function LocalizedSocialIntro({ locale }: { locale: LocaleCode }) {
   const copy = localizedHomeSections[locale];
 
   return (
-    <SocialUpdates title={copy.socialTitle} lead={copy.socialLead} instagramFallbackLabel="Instagram" xFallbackLabel="X" />
+    <SocialUpdates title={copy.socialTitle} lead={copy.socialLead} />
   );
 }
 

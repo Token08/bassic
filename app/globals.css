@@ -1088,244 +1088,79 @@ h3 {
   color: rgba(255, 247, 217, 0.74);
 }
 
-.social-embed-grid {
+.social-account-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(340px, 500px) minmax(260px, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-top: 36px;
 }
 
-.social-embed-card {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.social-embed-heading {
+.social-account-link {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 40px;
-}
-
-.social-embed-heading span {
-  color: var(--gold);
-  font-size: 0.8rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.social-embed-heading a,
-.social-direct-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: rgba(255, 247, 217, 0.9);
-  font-weight: 800;
-}
-
-.social-embed-frame {
-  height: min(620px, 66vh);
-  min-height: 430px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 247, 217, 0.14);
-  border-radius: 8px;
-  background: #fffaf0;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-}
-
-.social-embed-frame iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.facebook-frame {
-  display: grid;
-  justify-items: center;
-  align-items: start;
-  width: min(500px, 100%);
-  justify-self: center;
-  background: #fffaf0;
-}
-
-.facebook-frame iframe {
-  display: block;
-  width: 100% !important;
-  max-width: 100%;
-}
-
-.external-social-frame {
-  background: #fffaf0;
-}
-
-.social-api-feed {
-  position: relative;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  background: #fffaf0;
-  color: var(--ink);
-}
-
-.social-feed-list {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-height: 0;
-  padding: 14px;
-  overflow: auto;
-}
-
-.social-feed-item {
-  display: grid;
-  grid-template-columns: 86px 1fr;
-  gap: 12px;
-  min-height: 96px;
-  padding: 10px;
-  border: 1px solid rgba(111, 15, 21, 0.13);
-  border-radius: 7px;
-  background: rgba(255, 250, 240, 0.82);
-  color: var(--ink);
-}
-
-.social-feed-item.no-image {
-  grid-template-columns: 1fr;
-}
-
-.social-feed-item:hover {
-  border-color: rgba(111, 15, 21, 0.34);
-  transform: translateY(-1px);
-}
-
-.social-feed-thumb {
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
-  background: rgba(16, 12, 10, 0.08);
-}
-
-.social-feed-thumb img {
-  width: 100%;
-  height: 100%;
-  min-height: 76px;
-  object-fit: cover;
-}
-
-.social-feed-copy {
-  display: grid;
-  align-content: start;
-  gap: 4px;
+  gap: 18px;
   min-width: 0;
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.62;
-}
-
-.social-feed-date {
-  color: var(--red);
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.social-notice-title {
-  color: var(--ink);
-  font-weight: 900;
-  line-height: 1.45;
-}
-
-.social-notice-description {
-  color: rgba(42, 31, 24, 0.72);
-  font-size: 0.86rem;
-  line-height: 1.7;
-}
-
-.social-feed-more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 44px;
-  margin: 0 14px 14px;
-  border-radius: 6px;
-  background: var(--red);
-  color: #fffaf0;
-  font-size: 0.88rem;
-  font-weight: 900;
-}
-
-.social-profile-card {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 22px;
-  min-height: min(620px, 66vh);
-  padding: clamp(28px, 4vw, 44px);
-  border: 1px solid rgba(255, 247, 217, 0.14);
+  min-height: 132px;
+  padding: 26px;
+  border: 1px solid rgba(255, 247, 217, 0.22);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(16, 12, 10, 0.1), rgba(111, 15, 21, 0.14)),
-    #fffaf0;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-  color: var(--ink);
-  text-align: center;
+  background: rgba(255, 247, 217, 0.035);
+  color: var(--ivory);
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
-.social-profile-card img {
-  width: 142px;
-  height: 142px;
-  object-fit: contain;
-  border-radius: 999px;
-  background: #050403;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+.social-account-link:hover {
+  background: rgba(255, 247, 217, 0.08);
+  border-color: var(--gold);
 }
 
-.social-profile-card h3 {
-  margin: 6px 0 10px;
-  font-size: clamp(1.7rem, 3vw, 2.5rem);
-  line-height: 1;
+.social-account-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
 }
 
-.social-profile-card p {
-  max-width: 26em;
-  margin: 0 auto;
-  color: rgba(42, 31, 24, 0.82);
-  line-height: 1.85;
+.social-account-logo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 247, 217, 0.15);
+  border-radius: 50%;
+  color: var(--gold);
+  background: rgba(122, 15, 27, 0.25);
 }
 
-.social-section .social-profile-card p:not(.social-profile-kicker) {
-  color: rgba(42, 31, 24, 0.82);
-}
-
-.social-profile-kicker {
-  color: var(--red) !important;
-  font-size: 0.9rem;
-  font-weight: 900;
-}
-
-.social-profile-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.social-account-copy {
+  display: grid;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 6px;
-  background: var(--red);
-  color: #fffaf0;
-  font-weight: 900;
+  min-width: 0;
 }
 
-.social-direct-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 18px;
-  margin-top: 22px;
-}
-
-.social-direct-links a {
+.social-account-name {
   color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.social-account-id {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.social-account-arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--gold);
+}
+
+@media (max-width: 1000px) {
+  .social-account-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
+  .social-account-link { min-height: 106px; padding: 20px; }
+  .social-account-id { font-size: 1.1rem; }
 }
 
 .event-list {
@@ -2840,13 +2675,6 @@ main > section.visit-info-strip .visit-info-grid article p {
     grid-template-columns: 1fr;
   }
 
-  .social-embed-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .social-direct-links {
-    grid-column: 1;
-  }
 
   .social-section {
     padding-top: 54px;
@@ -2866,135 +2694,27 @@ main > section.visit-info-strip .visit-info-grid article p {
     line-height: 1.75;
   }
 
-  .social-embed-grid {
-    gap: 14px;
-    margin-top: 24px;
-  }
 
-  .social-embed-card {
-    gap: 8px;
-  }
 
-  .social-embed-heading {
-    min-height: auto;
-  }
 
-  .social-embed-heading span {
-    font-size: 0.72rem;
-  }
 
-  .social-embed-heading a {
-    font-size: 0.82rem;
-  }
 
-  .social-embed-frame {
-    height: 228px;
-    min-height: 0;
-    overflow: hidden;
-    border-radius: 7px;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
-  }
 
-  .social-profile-card {
-    grid-template-columns: 64px 1fr;
-    align-content: center;
-    align-items: center;
-    justify-items: start;
-    min-height: 0;
-    gap: 12px 14px;
-    padding: 16px;
-    border-radius: 7px;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
-    text-align: left;
-  }
 
-  .social-profile-card img {
-    grid-row: 1 / 3;
-    width: 60px;
-    height: 60px;
-  }
 
-  .social-profile-card h3 {
-    margin: 2px 0 4px;
-    font-size: 1.25rem;
-  }
 
-  .social-profile-card p {
-    max-width: none;
-    font-size: 0.78rem;
-    line-height: 1.55;
-  }
 
-  .social-profile-card > div {
-    min-width: 0;
-  }
 
-  .social-profile-button {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 38px;
-    font-size: 0.88rem;
-  }
 
-  .social-embed-frame iframe {
-    width: 100% !important;
-    pointer-events: none;
-  }
 
-  .social-embed-frame > * {
-    pointer-events: none;
-  }
 
-  .facebook-frame {
-    width: 100%;
-    justify-items: stretch;
-  }
 
-  .social-feed-list {
-    gap: 8px;
-    padding: 10px;
-  }
 
-  .social-feed-item {
-    grid-template-columns: 64px 1fr;
-    min-height: 78px;
-    padding: 8px;
-  }
 
-  .social-feed-item.no-image {
-    grid-template-columns: 1fr;
-  }
 
-  .social-feed-thumb img {
-    min-height: 60px;
-  }
 
-  .social-feed-copy {
-    font-size: 0.78rem;
-    line-height: 1.45;
-  }
 
-  .social-feed-more {
-    min-height: 38px;
-    margin: 0 10px 10px;
-    font-size: 0.78rem;
-  }
 
-  .social-direct-links {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 18px;
-  }
-
-  .social-direct-links a {
-    justify-content: center;
-    min-height: 42px;
-    border: 1px solid rgba(255, 247, 217, 0.18);
-    border-radius: 7px;
-    background: rgba(255, 247, 217, 0.06);
-    font-size: 0.84rem;
-  }
 
   .menu-photos figure,
   .event-poster {

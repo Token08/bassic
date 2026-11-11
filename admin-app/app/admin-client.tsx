@@ -3661,8 +3661,10 @@ function topPageActions(home: Draft): PageAdminAction[] {
     fields("お店の紹介", "見出し・説明文", "紹介カードの上に出る文章", ["localSearchEyebrow", "localSearchTitle", "localSearchLead"]),
     ...localSearchSection.cards.map((item, index) => fields("お店の紹介", "紹介カード" + (index + 1), getString(home["localSearchCard" + (index + 1) + "Title"]) || item.title, select("localSearchCard" + (index + 1)))),
     fields("SNS欄", "見出し・説明文", "SNS欄の上に出る文章", ["socialEyebrow", "socialTitleLine1", "socialTitleLine2", "socialLead"]),
-    ...["Instagram", "Facebook", "X"].map((name) => fields("SNS欄", name, "アカウント表記や案内の表示", [...select("social" + name), ...(name === "Instagram" ? ["instagramWidgetSrc"] : [])])),
-    { label: "サイトに載せるお知らせを編集する", group: "SNS欄", description: "SNS投稿へのリンクとお知らせ文", sectionId: "social-notices" },
+    ...["Instagram", "Facebook", "X"].flatMap<PageAdminAction>((name) => [
+      fields("SNS欄", name + "の表示", "表示名・アカウントID", ["social" + name + "Label", "social" + name + "Account"]),
+      { label: name + "のリンク先", group: "SNS欄", description: "公式アカウントのURL", sectionId: "site-settings", fieldKeys: [name.toLowerCase() + "Url"] }
+    ]),
     fields("アクセス", "行き方案内・ボタン", "TOPの案内文やボタン", select("homeAccess")),
     { label: "店舗情報・リンク", group: "アクセス", description: "住所・電話・営業時間・地図リンク。ほかのページにも反映されます。", sectionId: "site-settings" },
     fields("フッター", "背景", "ページ最下部の背景画像", ["footerBackground"]),
