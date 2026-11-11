@@ -1172,6 +1172,13 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   const [uploadMessage, setUploadMessage] = useState("");
   const image = isImageObject(value) ? value : { url: getString(value) };
   const url = image.url || "";
+  const latestImage = useRef(image);
+  latestImage.current = image;
+  const uploadRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => {
+    uploadRequest.current?.abort();
+    uploadRequest.current = null;
+  }, []);
   const trimmedUrl = url.trim();
   const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedImageUrl(trimmedUrl);
 
@@ -1184,6 +1191,10 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   }
 
   async function upload(file: File) {
+    if (uploadRequest.current) return;
+    const controller = new AbortController();
+    uploadRequest.current = controller;
+    const originalUrl = url;
     setUploading(true);
     setError("");
     setUploadMessage("");
@@ -1191,22 +1202,33 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
     try {
       const formData = new FormData();
       formData.set("file", file);
-      const response = await fetch("/api/media", {
+      const response = await fetchWithTimeout("/api/media", {
         method: "POST",
-        body: formData
-      });
+        body: formData,
+        signal: controller.signal
+      }, 30000);
       const result = (await response.json()) as ApiResult<{ url: string }>;
 
       if (!response.ok || !result.ok || !result.data?.url) {
         throw new Error(result.message || "画像をアップロードできませんでした。");
       }
 
-      onChange({ url: result.data.url, alt: image.alt || "" });
+      if (controller.signal.aborted) return;
+      if ((latestImage.current.url || "") !== originalUrl) {
+        setUploadMessage("アップロード中に画像URLが変更されたため、入力したURLを残しました。アップロード画像を使う場合は、もう一度選んでください。");
+        return;
+      }
+
+      onChange({ url: result.data.url, alt: latestImage.current.alt || "" });
       setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、下書き保存またはプレビューして公開してください。");
     } catch (uploadError) {
+      if (controller.signal.aborted) return;
       setError(uploadError instanceof Error ? uploadError.message : "画像をアップロードできませんでした。");
     } finally {
-      setUploading(false);
+      if (uploadRequest.current === controller) {
+        uploadRequest.current = null;
+        setUploading(false);
+      }
     }
   }
 
@@ -1254,6 +1276,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
             disabled={uploading}
             onChange={(event) => {
               const file = event.target.files?.[0];
+              event.currentTarget.value = "";
 
               if (file) {
                 void upload(file);
@@ -2363,6 +2386,7 @@ function SectionEditor({
       : "";
   const initialMergedDraft = useMemo(() => mergeDefaults(section, initialDraft), [section, initialDraftKey]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [items, setItems] = useState<Array<Draft & { id?: string }>>([]);
@@ -2481,6 +2505,7 @@ function SectionEditor({
     loadTokenRef.current = loadToken;
     userInteractedRef.current = false;
     setLoading(true);
+    setLoadFailed(false);
     setNotice(null);
     if (section.kind === "list") {
       setSelectedId("new");
@@ -2522,12 +2547,13 @@ function SectionEditor({
         return;
       }
 
+      setLoadFailed(true);
       setNotice({
         tone: "error",
         message: loadError instanceof Error ? loadError.message : "読み込みできませんでした。時間をおいて再度お試しください。"
       });
     } finally {
-      setLoading(false);
+      if (loadToken === loadTokenRef.current) setLoading(false);
     }
   }
 
@@ -2848,7 +2874,7 @@ function SectionEditor({
   }
 
   async function save(mode: "draft" | "publish") {
-    if (saveInFlightRef.current) return;
+    if (saveInFlightRef.current || loading || loadFailed) return;
     if (mode === "draft") {
       try {
         const savedAt = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
@@ -3246,7 +3272,7 @@ function SectionEditor({
         value={draft[field.key]}
         fallbackValue={fieldDefaults[field.key]}
         error={errors[field.key]}
-        key={field.key}
+        key={`${selectedId}:${field.key}`}
         isEditing={editingFields.has(field.key)}
         onEdit={() => openField(field.key)}
         onClose={() => closeField(field.key)}
@@ -3335,6 +3361,12 @@ function SectionEditor({
           <Loader2 className="spin" size={28} />
           読み込み中
         </div>
+      ) : loadFailed ? (
+        <section className="load-failure" role="alert">
+          <strong>現在の内容を読み込めませんでした</strong>
+          <p>現在の内容を確認できないため、編集と保存はできません。通信を確認して、もう一度読み込んでください。</p>
+          <button type="button" className="secondary-button" onClick={() => void load()}>もう一度読み込む</button>
+        </section>
       ) : (
         <div className="editor-layout">
           {section.kind === "list" ? (
@@ -3980,13 +4012,24 @@ export default function AdminClient() {
 
   useEffect(() => {
     void checkSession();
-    const savedDeployNotice = window.localStorage.getItem("bassic-admin-last-deploy");
-    if (savedDeployNotice) {
-      try {
-        setLastDeploy(JSON.parse(savedDeployNotice) as Notice);
-      } catch {
-        window.localStorage.removeItem("bassic-admin-last-deploy");
+    try {
+      const savedDeployNotice = window.localStorage.getItem("bassic-admin-last-deploy");
+      if (savedDeployNotice) {
+        const parsed = JSON.parse(savedDeployNotice) as Partial<Notice> | null;
+        const delivery = parsed?.eventDelivery;
+        const event = delivery?.event;
+        const safeStrings = ["actionsUrl", "requestId", "sectionId", "requestedAt", "sourceLabel"] as const;
+        if (parsed && ["success", "error", "info"].includes(parsed.tone || "") && typeof parsed.message === "string" &&
+            safeStrings.every(key => parsed[key] === undefined || typeof parsed[key] === "string") &&
+            (parsed.confirmationSteps === undefined || (Array.isArray(parsed.confirmationSteps) && parsed.confirmationSteps.every(step => typeof step === "string"))) &&
+            (!delivery || (typeof delivery.calendar === "string" && typeof delivery.social === "string" &&
+              (!event || [event.id, event.title, event.date, event.startTime].every(value => typeof value === "string"))))) {
+          setLastDeploy(parsed as Notice);
+        }
       }
+    } catch {
+      // Browser storage may be disabled or contain an incomplete old value.
+      // Authentication and current CMS data do not depend on that optional copy.
     }
   }, []);
 

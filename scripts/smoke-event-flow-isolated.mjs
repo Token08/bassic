@@ -39,6 +39,7 @@ let calendarItems = [];
 let calendarUnavailable = false;
 let socialUnavailable = false;
 let loseSocialWriteResponse = false;
+let cmsReadMode = "ok";
 let publishRequests = 0;
 let lastPublishId = "";
 const realFetch = globalThis.fetch;
@@ -73,8 +74,12 @@ globalThis.fetch = async (input, init) => {
     const collection = endpoint === "events" ? events : endpoint === "menu" ? notices : endpoint === "hero-slides" ? slides : null;
     assert.ok(collection, "Unexpected fixture CMS endpoint");
     if (method === "GET") {
+      if (cmsReadMode === "unavailable") return new Response(null, { status: 503 });
+      if (cmsReadMode === "malformed") return Response.json({ contents: "invalid" });
       if (id) return Response.json(collection.get(id));
-      return Response.json({ contents: [...collection.values()], totalCount: collection.size });
+      const offset = cmsReadMode === "repeat" ? 0 : Number(url.searchParams.get("offset") || 0);
+      const limit = Number(url.searchParams.get("limit") || 100);
+      return Response.json({ contents: [...collection.values()].slice(offset, offset + limit), totalCount: collection.size });
     }
     const body = init?.body ?? await input.text();
     if (method === "POST") {
@@ -140,6 +145,34 @@ try {
   await post("event-publish-flow", {}, 401);
   const login = await post("login", { password });
   cookie = login.response.headers.get("set-cookie").split(";")[0];
+
+  async function get(path, status = 200) {
+    const response = await realFetch(base + "/api/" + path, { headers: { Cookie: cookie } });
+    const result = await response.json();
+    assert.equal(response.status, status, JSON.stringify(result));
+    return result.data;
+  }
+  for (const mode of ["unavailable", "malformed"]) {
+    cmsReadMode = mode;
+    await get("content/events", 502);
+    await get("content/home", 502);
+  }
+  cmsReadMode = "ok";
+  for (let index = 0; index < 105; index++) {
+    events.set(`pagination-${index}`, { id: `pagination-${index}`, title: `Page test ${index}`, date: "2027-06-01" });
+    notices.set(`pagination-${index}`, { id: `pagination-${index}`, kind: "menu", title: `Menu test ${index}` });
+  }
+  notices.set("pagination-home", { id: "pagination-home", kind: "home", body: JSON.stringify({ heroTitle: "Stored beyond the first page" }) });
+  assert.equal((await get("content/events")).contents.length, 106);
+  assert.equal((await get("content/home")).heroTitle, "Stored beyond the first page");
+  cmsReadMode = "repeat";
+  await get("content/events", 502);
+  await get("content/home", 502);
+  cmsReadMode = "ok";
+  notices.get("pagination-home").body = "invalid JSON";
+  await get("content/home", 502);
+  for (const collection of [events, notices]) for (const id of collection.keys()) if (id.startsWith("pagination-")) collection.delete(id);
+  console.log("CMS read safety passed: errors and malformed data stop editing; events and settings beyond 100 records are loaded.");
 
   const preview = (await post("facebook-event-preview", { url: legacyUrl })).result.data;
   assert.deepEqual([preview.title, preview.date, preview.startTime, preview.imageUrl], ["Fixture live", "2027-05-05", "11:30", ""]);
@@ -314,6 +347,29 @@ try {
       assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 11:30/);
       await page.getByRole("button", { name: "下書き保存", exact: true }).click();
       await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
+      const eventImageField = page.locator(".editable-field-card").filter({ hasText: "イベント画像" });
+      await eventImageField.getByRole("button", { name: "編集", exact: true }).click();
+      let uploadStarted, releaseUpload, uploadHandled;
+      const startedUpload = new Promise(resolve => { uploadStarted = resolve; });
+      const uploadGate = new Promise(resolve => { releaseUpload = resolve; });
+      const handledUpload = new Promise(resolve => { uploadHandled = resolve; });
+      await page.route("**/api/media", async route => {
+        uploadStarted();
+        await uploadGate;
+        try { await route.fulfill({ json: { ok: true, data: { url: "https://images.example.invalid/uploaded-race.png" } } }); }
+        catch { /* Navigating away cancels this upload request. */ }
+        finally { uploadHandled(); }
+      }, { times: 1 });
+      await eventImageField.locator('input[type="file"]').setInputFiles({ name: "fixture.png", mimeType: "image/png", buffer: Buffer.from("isolated upload") });
+      await startedUpload;
+      await page.locator(".item-list").getByRole("button", { name: /^Isolated live/ }).click();
+      releaseUpload();
+      await handledUpload;
+      assert.equal(await page.locator('img[src*="uploaded-race"]').count(), 0);
+      assert.equal(await page.locator(".dirty-pill").count(), 0, "A late upload must not modify the newly selected event");
+      await page.locator(".item-list").getByRole("button", { name: /^Earlier title/ }).click();
+      await page.getByText("このブラウザに保存した下書きを開きました。", { exact: true }).waitFor();
+      console.log("Upload isolation passed: selecting another event cancels the old upload and leaves the new event unchanged.");
       await page.getByLabel("現在の編集場所").waitFor();
       if (process.env.BASSIC_QA_ARTIFACT_DIR) {
         await mkdir(process.env.BASSIC_QA_ARTIFACT_DIR, { recursive: true });

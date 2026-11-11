@@ -8,11 +8,13 @@ const browser = await chromium.launch({ executablePath: process.env.BASSIC_QA_CH
 const page = await browser.newPage({ baseURL, viewport: { width: 1440, height: 900 } });
 page.setDefaultTimeout(10000);
 let writes = 0;
+let failHomeRead = false;
 
 try {
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
+    if (path === "/api/content/home" && failHomeRead) return route.fulfill({ status: 502, json: { ok: false, message: "読み込みテスト用エラー" } });
     if (request.method() !== "GET") {
       writes++;
       return route.fulfill({ status: 403 });
@@ -65,8 +67,30 @@ try {
   await Promise.all([discarded, form.getByRole("button", { name: "TOPへ戻る" }).click()]);
   await target.waitFor();
   assert.equal(await target.evaluate((element) => element.ownerDocument.defaultView.scrollY), scroll);
+  failHomeRead = true;
+  await card(2).click();
+  await page.getByRole("alert").getByText("現在の内容を読み込めませんでした", { exact: true }).waitFor();
+  assert.equal(await form.locator(".edit-form").count(), 0, "No form may save fallback data after a read failure");
+  assert.equal(await page.getByRole("button", { name: "プレビューして公開", exact: true }).count(), 0);
+  failHomeRead = false;
+  await page.getByRole("button", { name: "もう一度読み込む", exact: true }).click();
+  await title.getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
+  const scriptErrors = [];
+  page.on("pageerror", error => scriptErrors.push(error.message));
+  await page.evaluate(() => localStorage.setItem("bassic-admin-last-deploy", JSON.stringify({
+    tone: "success", message: "Invalid stored notice", confirmationSteps: "not an array", eventDelivery: { calendar: {}, social: {} }
+  })));
+  await page.reload();
+  await page.getByRole("navigation", { name: "編集するページ" }).waitFor();
+  assert.equal(await page.getByText("Invalid stored notice", { exact: true }).count(), 0);
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => { throw new DOMException("Storage disabled", "SecurityError"); };
+  });
+  await page.reload();
+  await page.getByRole("navigation", { name: "編集するページ" }).waitFor();
+  assert.deepEqual(scriptErrors, [], "Optional browser storage must not crash the admin");
   assert.equal(writes, 0);
-  console.log("Admin editor preview passed: current text, thumbnails, missing image, selected form, unsaved guard, preserved scroll.");
+  console.log("Admin editor preview passed: current text, thumbnails, selected form, unsaved guard, preserved scroll, failed-read recovery, and disabled/corrupt storage.");
 } finally {
   await browser.close();
 }
