@@ -2450,19 +2450,19 @@ function SectionEditor({
     });
   }, [itemSearch, itemStatusFilter, visibleItems, section]);
   const editableFields = useMemo(() => {
-    if (fieldKeys) return section.fields.filter((field) => fieldKeys.includes(field.key));
+    if (fieldKeys) return section.fields.filter((field) => fieldKeys.includes(field.key) || editingFields.has(field.key));
     if (section.id === "hero-slides" && scopedListPage !== "home") {
-      return section.fields.filter((field) => !["page", "mobileImage", "mobilePosition"].includes(field.key) || (!scopedListPage && field.key === "page"));
+      return section.fields.filter((field) => !["page", "mobileImage", "mobilePosition"].includes(field.key) || (!scopedListPage && field.key === "page") || editingFields.has(field.key));
     }
     if (section.id === "home" && homeGroup) {
-      return section.fields.filter((field) => homeFieldGroups[homeGroup].some((key) => key === field.key));
+      return section.fields.filter((field) => homeFieldGroups[homeGroup].some((key) => key === field.key) || editingFields.has(field.key));
     }
     if (scopedListPage) {
-      return section.fields.filter((field) => field.key !== "page");
+      return section.fields.filter((field) => field.key !== "page" || editingFields.has(field.key));
     }
 
     return section.fields;
-  }, [section, scopedListPage, homeGroup, fieldKeys]);
+  }, [section, scopedListPage, homeGroup, fieldKeys, editingFields]);
   const fieldDefaults = currentFieldDefaults(section.id, draft, previewContext);
   const previewDraft = { ...draft };
   for (const field of editableFields) {

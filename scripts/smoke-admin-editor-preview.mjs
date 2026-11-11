@@ -9,6 +9,7 @@ const page = await browser.newPage({ baseURL, viewport: { width: 1440, height: 9
 page.setDefaultTimeout(10000);
 let writes = 0;
 let failHomeRead = false;
+let invalidHeaderImage = false;
 
 try {
   await page.route("**/api/**", async (route) => {
@@ -27,7 +28,7 @@ try {
       html: '<section class="page-hero" style="height:1800px">Hero</section><section class="intro"><h2>初めての方へ</h2></section>'
     } });
     const objectData = {
-      home: { firstVisitTitle: "現在の見出し", firstVisitDescription: "現在の説明文", firstVisitCard1Title: "現在のカード1", firstVisitCard3Image: { url: "https://www.bassic.jp/assets/missing-fixture.jpg" } },
+      home: { ...(invalidHeaderImage ? { headerLogo: { url: "http://example.invalid/invalid.jpg" } } : {}), firstVisitTitle: "現在の見出し", firstVisitDescription: "現在の説明文", firstVisitCard1Title: "現在のカード1", firstVisitCard3Image: { url: "https://www.bassic.jp/assets/missing-fixture.jpg" } },
       "site-settings": {}
     };
     return route.fulfill({ json: { ok: true, data: objectData[path.split("/").at(-1)] || { contents: [] } } });
@@ -92,6 +93,14 @@ try {
   failHomeRead = false;
   await page.getByRole("button", { name: "もう一度読み込む", exact: true }).click();
   await title.getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
+  invalidHeaderImage = true;
+  await form.getByRole("button", { name: "再読み込み", exact: true }).click();
+  await title.getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
+  await form.getByRole("region", { name: "直す項目" }).getByRole("link", { name: "ヘッダーのロゴ画像", exact: true }).click();
+  await page.waitForFunction(() => Boolean(document.activeElement?.closest("#headerLogo")));
+  assert.equal(await page.locator('#headerLogo input[type="url"]').inputValue(), "http://example.invalid/invalid.jpg", "An error outside the selected card must still open its field");
+  invalidHeaderImage = false;
   const scriptErrors = [];
   page.on("pageerror", error => scriptErrors.push(error.message));
   await page.evaluate(() => localStorage.setItem("bassic-admin-last-deploy", JSON.stringify({
