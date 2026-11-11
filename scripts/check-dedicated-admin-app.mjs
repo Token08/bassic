@@ -1742,7 +1742,7 @@ function checkAdminSupportsPageScopedCustomCopy() {
     "initialDraft: { page: pageKey }",
     "scopedListPage",
     "custom-sections",
-    'section.fields.filter((field) => field.key !== "page")'
+    'section.fields.filter((field) => field.key !== "page" || editingFields.has(field.key))'
   ];
   const missing = requiredTerms.filter((term) => !text.includes(term));
 
@@ -2691,9 +2691,8 @@ function checkPublicCmsFallbackGuards() {
     "const fallbackSiteSettings = fallbackContents.siteSettings as SiteSettings",
     "function mergeSiteSettings",
     "function isGoogleMapUrl",
-    "function isInstagramUrl",
-    "function isFacebookUrl",
-    "function isXUrl",
+    'import { resolveSiteSocialLinks } from "./site-social-links"',
+    "...resolveSiteSocialLinks(settings)",
     "address: nonEmptyString(settings?.address) || fallbackSiteSettings.address",
     "googleMapsUrl,",
     "directionsUrl,",

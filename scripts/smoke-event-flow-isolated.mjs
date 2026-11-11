@@ -159,6 +159,8 @@ try {
     await get("content/home", 502);
   }
   cmsReadMode = "ok";
+  const standardLinksStatus = await get("ops-status");
+  assert.ok(!standardLinksStatus.alerts.some((alert) => alert.id === "site-social-links"), "Public standard SNS links must not be reported as missing");
   for (let index = 0; index < 105; index++) {
     events.set(`pagination-${index}`, { id: `pagination-${index}`, title: `Page test ${index}`, date: "2027-06-01" });
     notices.set(`pagination-${index}`, { id: `pagination-${index}`, kind: "menu", title: `Menu test ${index}` });

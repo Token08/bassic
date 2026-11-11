@@ -22,7 +22,10 @@ try {
     }
     if (path === "/api/session") return route.fulfill({ json: { authenticated: true } });
     if (path === "/api/health") return route.fulfill({ json: { ok: true } });
-    if (path === "/api/ops-status") return route.fulfill({ status: 503 });
+    if (path === "/api/ops-status") return route.fulfill({ json: { ok: true, data: { generatedAt: new Date().toISOString(), alerts: [
+      { id: "fixture-event", severity: "warning", sectionId: "events", title: "イベントの開始時刻を確認", detail: "STARTが未入力" },
+      { id: "fixture-settings", severity: "warning", sectionId: "site-settings", title: "店舗情報を確認", detail: "設定の確認" }
+    ] } } });
     if (path === "/api/site-preview") return route.fulfill({ json: {
       url: "https://www.bassic.jp/",
       html: '<section class="page-hero" style="height:1800px">Hero</section><section class="intro"><h2>初めての方へ</h2></section>'
@@ -39,6 +42,17 @@ try {
   });
 
   await page.goto("/");
+  await page.getByRole("heading", { name: "編集する場所", exact: true }).waitFor();
+  assert.equal(await page.getByRole("region", { name: "運用アラート" }).count(), 0, "TOP must not show unrelated warnings");
+  assert.equal(await page.getByText("保守担当向け設定", { exact: true }).count(), 0);
+  await page.getByRole("button", { name: "イベントスケジュール", exact: true }).click();
+  await page.getByRole("region", { name: "運用アラート" }).getByText("イベントの開始時刻を確認", { exact: true }).waitFor();
+  assert.equal(await page.getByText("店舗情報を確認", { exact: true }).count(), 0, "Events must only show relevant warnings");
+  await page.getByRole("button", { name: "詳細設定", exact: true }).click();
+  await page.getByRole("heading", { name: "詳細設定", exact: true }).waitFor();
+  await page.getByText("店舗情報を確認", { exact: true }).waitFor();
+  await page.getByRole("heading", { name: "ページ構成", exact: true }).waitFor();
+  await page.getByRole("button", { name: "TOPページ", exact: true }).click();
   const target = page.frameLocator("iframe.public-canvas-frame").getByRole("button", { name: "初めての方へを編集" });
   await target.click();
   const scroll = await target.evaluate((element) => element.ownerDocument.defaultView.scrollY);
@@ -78,6 +92,9 @@ try {
   const stayInEditor = page.waitForEvent("dialog").then(dialog => dialog.dismiss());
   await Promise.all([stayInEditor, page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click()]);
   assert.equal(await title.getByRole("textbox").inputValue(), "保存していない編集", "The event shortcut must respect unsaved changes");
+  const stayBeforeSettings = page.waitForEvent("dialog").then(dialog => dialog.dismiss());
+  await Promise.all([stayBeforeSettings, page.getByRole("button", { name: "詳細設定", exact: true }).click()]);
+  assert.equal(await title.getByRole("textbox").inputValue(), "保存していない編集", "Opening settings must respect unsaved changes");
   const cancelled = page.waitForEvent("dialog").then((dialog) => dialog.dismiss());
   await Promise.all([cancelled, card(1).click()]);
   assert.equal(await card(2).getAttribute("aria-pressed"), "true");

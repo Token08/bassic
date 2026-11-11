@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
 import { getContent } from "@/lib/microcms";
+import { resolveSiteSocialLinks } from "../../../../lib/site-social-links";
 
 export const runtime = "nodejs";
 
@@ -215,10 +216,11 @@ function addSocialAlerts(alerts: OpsAlert[], notices: SocialNotice[], now: Date)
 }
 
 function addSiteSettingAlerts(alerts: OpsAlert[], settings: SiteSettings) {
+  const links = resolveSiteSocialLinks(settings);
   const missing = [
-    !getString(settings.facebookUrl) ? "Facebook URL" : "",
-    !getString(settings.instagramUrl) ? "Instagram URL" : "",
-    !getString(settings.xUrl) ? "X URL" : ""
+    !getString(links.facebookUrl) ? "Facebook URL" : "",
+    !getString(links.instagramUrl) ? "Instagram URL" : "",
+    !getString(links.xUrl) ? "X URL" : ""
   ].filter(Boolean);
 
   if (missing.length) {
