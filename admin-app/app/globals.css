@@ -2873,7 +2873,8 @@ a.current-edit-page:hover {
   font-size: 1.1rem;
 }
 
-.admin-page-nav button {
+.admin-page-nav button,
+.admin-page-nav .analytics-link {
   min-height: 44px;
   padding: 8px 10px;
   border: 1px solid transparent;
@@ -2884,7 +2885,17 @@ a.current-edit-page:hover {
   font-weight: 800;
 }
 
-.admin-page-nav button:hover {
+.admin-page-nav .analytics-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.admin-page-nav button:hover,
+.admin-page-nav .analytics-link:hover,
+.admin-page-nav .analytics-link:focus-visible {
   border-color: var(--line);
   background: var(--bg);
 }
