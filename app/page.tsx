@@ -112,7 +112,7 @@ export default async function Home() {
               lead={home.homeHeroLead?.trim() || copy.heroLead || home.heroLead}
               logo={home.heroLogo}
               settings={contents.siteSettings}
-              actionLabels={{ mapLabel: home.heroMapLabel?.trim() || undefined, callLabel: home.heroCallLabel?.trim() || undefined, reserveLabel: home.heroReserveLabel?.trim() || undefined }}
+              actionLabels={{ mapLabel: home.heroMapLabel?.trim() || undefined, callLabel: home.heroCallLabel?.trim() || undefined, reserveLabel: "お問い合わせ" }}
               image={homeHeroImage.src}
               imageAlt={homeHeroImage.alt}
               slides={homeHeroSlides}
