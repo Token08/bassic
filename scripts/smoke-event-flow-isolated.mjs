@@ -4,6 +4,8 @@ import { generateKeyPairSync } from "node:crypto";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
 
 const require = createRequire(new URL("../admin-app/package.json", import.meta.url));
 const next = require("next");
@@ -246,6 +248,7 @@ try {
       const topNav = pageNav.getByRole("button", { name: "TOPページ", exact: true });
       const eventsNav = pageNav.getByRole("button", { name: "イベントスケジュール", exact: true });
       await topNav.waitFor();
+      assert.equal(await page.getByRole("list", { name: "操作の流れ" }).getByRole("listitem").count(), 3);
       assert.equal(await topNav.getAttribute("aria-current"), "page");
       const workspace = page.locator(".admin-workspace-content");
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow in mobile admin");
@@ -263,7 +266,7 @@ try {
       await eventTarget.click();
       await page.getByRole("complementary", { name: "選択箇所の編集" }).getByText("Facebookイベント取り込み", { exact: true }).waitFor();
       await eventCanvas.locator('[data-bassic-edit="event-list"][aria-pressed="true"]').waitFor();
-      await page.locator("article").filter({ hasText: "Facebookイベント取り込み" }).getByRole("button", { name: "選ぶ" }).click();
+      await page.locator("article").filter({ hasText: "Facebookイベント取り込み" }).getByRole("button", { name: "編集する" }).click();
       const panel = page.getByRole("region", { name: "Facebookイベント取り込み" });
       const sourceField = page.locator(".editable-field-card").filter({ hasText: "FacebookイベントURL・詳細URL" });
       await sourceField.getByRole("button", { name: "編集", exact: true }).click();
@@ -311,6 +314,14 @@ try {
       assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 11:30/);
       await page.getByRole("button", { name: "下書き保存", exact: true }).click();
       await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
+      await page.getByLabel("現在の編集場所").waitFor();
+      if (process.env.BASSIC_QA_ARTIFACT_DIR) {
+        await mkdir(process.env.BASSIC_QA_ARTIFACT_DIR, { recursive: true });
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.screenshot({ path: join(process.env.BASSIC_QA_ARTIFACT_DIR, "admin-editor.png") });
+        await page.setViewportSize({ width: 390, height: 844 });
+      }
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow at mobile width");
       console.log("Mobile admin browser passed: login, Facebook import, existing event selection and draft save.");
 
@@ -341,7 +352,7 @@ try {
       await page.getByText("編集箇所一覧", { exact: true }).click();
       await page.getByRole("button", { name: "SNS投稿の下書き", exact: true }).click();
       await eventCanvas.locator('[data-bassic-edit="event-list"][aria-pressed="false"]').waitFor();
-      await page.locator("article").filter({ hasText: "SNS投稿の下書き" }).getByRole("button", { name: "選ぶ" }).click();
+      await page.locator("article").filter({ hasText: "SNS投稿の下書き" }).getByRole("button", { name: "編集する" }).click();
       const socialPanel = page.getByRole("region", { name: "SNSへの投稿準備" });
       for (const [platform, linkName, href] of [
         ["X", "Xの投稿画面を開く", "https://x.com/compose/post"],
@@ -400,7 +411,7 @@ try {
         const topFrame = page.locator("iframe.public-canvas-frame");
         const heroTarget = topFrame.contentFrame().getByRole("button", { name: "メインビジュアルを編集" });
         await heroTarget.click();
-        await page.locator("article").filter({ hasText: "見出し・説明文を変える" }).getByRole("button", { name: "選ぶ" }).click();
+        await page.locator("article").filter({ hasText: "見出し・説明文を変える" }).getByRole("button", { name: "編集する" }).click();
         const heroField = page.locator(".editable-field-card").filter({ hasText: "大きな見出し" });
         await heroField.getByText("Isolated main heading", { exact: true }).waitFor();
         await heroField.getByRole("button", { name: "編集" }).click();
@@ -410,14 +421,14 @@ try {
         await topTarget.click();
         const previewScroll = await topTarget.evaluate((element) => element.ownerDocument.defaultView.scrollY);
         assert.ok(previewScroll > 0, "Selecting a lower section scrolls the preview");
-        await page.locator("article").filter({ hasText: "紹介カード1を変える" }).getByRole("button", { name: "選ぶ" }).click();
+        await page.locator("article").filter({ hasText: "紹介カード1を変える" }).getByRole("button", { name: "編集する" }).click();
         const center = page.locator(".visual-editor-center");
         await center.getByText("初めての方へ：カード1の画像", { exact: true }).waitFor();
         assert.equal(await topFrame.isVisible(), false, "The editor replaces the center preview");
         await center.getByRole("button", { name: "TOPへ戻る" }).click();
         await topTarget.waitFor();
         assert.equal(await topTarget.evaluate((element) => element.ownerDocument.defaultView.scrollY), previewScroll);
-        await page.locator("article").filter({ hasText: "紹介カード1を変える" }).getByRole("button", { name: "選ぶ" }).click();
+        await page.locator("article").filter({ hasText: "紹介カード1を変える" }).getByRole("button", { name: "編集する" }).click();
         const headingCard = page.locator(".editable-field-card").filter({ hasText: "初めての方へ：カード1の見出し" });
         await headingCard.getByRole("button", { name: "編集" }).click();
         await headingCard.getByRole("textbox").fill("Updated First Visit card");

@@ -51,7 +51,8 @@ try {
   await card(2).locator("img").evaluate((image) => image.decode());
   await card(2).click();
   const form = page.locator(".visual-editor-form");
-  await form.getByRole("heading", { name: "TOPページ → 初めての方へ → 紹介カード2を変える" }).waitFor();
+  assert.equal(await page.getByLabel("現在の編集場所").textContent(), "TOPページ → 初めての方へ → 紹介カード2を変える");
+  await form.getByRole("heading", { name: "紹介カード2を変える", exact: true }).waitFor();
   assert.equal(await card(2).getAttribute("aria-pressed"), "true");
   const title = form.locator(".editable-field-card").filter({ hasText: "カード2の見出し" });
   await title.getByRole("button", { name: "編集" }).click();

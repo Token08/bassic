@@ -193,10 +193,6 @@ function visibleEvents(events?: EventItem[]) {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function withFallbackList<T>(items: T[] | undefined, fallback: T[]) {
-  return items?.length ? items : fallback;
-}
-
 function normalizeMenuItem(item: MenuItem): MenuItem {
   return {
     ...item,
@@ -457,15 +453,6 @@ export async function getCmsContents(): Promise<CmsContents> {
   if (!client) {
     return normalizeContents(fallbackContents);
   }
-
-  const getObject = async <T>(endpoint: string, fallback: T): Promise<T> => {
-    try {
-      return await client.get<T>({ endpoint });
-    } catch (error) {
-      console.warn(`microCMS ${endpoint} fetch failed. Falling back to local content.`, error);
-      return fallback;
-    }
-  };
 
   const getList = async <T>(endpoint: string, fallback: T[], queries = {}): Promise<T[]> => {
     try {

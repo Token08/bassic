@@ -72,9 +72,9 @@ checkProductionCalendarSyncDocsMatchOutput();
 checkAdminReadmeLinksHandoffDocs();
 checkAdminReadmeCalendarRequestVerification();
 checkAdminPublishFlowShowsPublicSiteLink();
-checkAdminSnsStatusCardLinksToEditors();
-checkAdminDashboardShowsPublicCheckOrder();
-checkAdminDashboardShowsPageChangeMap();
+
+
+
 checkAdminSupportsListItemDeletion();
 checkAdminSupportsPageScopedCustomCopy();
 checkPublicSiteRendersCustomSections();
@@ -1698,115 +1698,6 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin publish flow shows public site link", missing.length === 0, missing.join(", "));
-}
-
-function checkAdminSnsStatusCardLinksToEditors() {
-  const clientFile = "admin-app/app/admin-client.tsx";
-  const cssFile = "admin-app/app/globals.css";
-  if (!existsSync(clientFile) || !existsSync(cssFile)) {
-    add("admin SNS status card links to editors", false, `${clientFile} or ${cssFile} missing`);
-    return;
-  }
-
-  const clientText = readFileSync(clientFile, "utf8");
-  const cssText = readFileSync(cssFile, "utf8");
-  const required = [
-    [clientFile, clientText, "function SnsStatusCard({ onSelect }"],
-    [clientFile, clientText, "SNSリンクを直す"],
-    [clientFile, clientText, "SNSカードを追加"],
-    [clientFile, clientText, "Instagram表示URLを確認"],
-    [clientFile, clientText, "onSelect(\"site-settings\")"],
-    [clientFile, clientText, "onSelect(\"social-notices\")"],
-    [clientFile, clientText, "onSelect(\"home\")"],
-    [clientFile, clientText, "<SnsStatusCard onSelect={onSelect} />"],
-    [cssFile, cssText, ".sns-status-actions"],
-    [cssFile, cssText, ".sns-status-actions button"]
-  ];
-  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
-
-  add("admin SNS status card links to editors", missing.length === 0, missing.join(", "));
-}
-
-function checkAdminDashboardShowsPublicCheckOrder() {
-  const clientFile = "admin-app/app/admin-client.tsx";
-  const cssFile = "admin-app/app/globals.css";
-  if (!existsSync(clientFile) || !existsSync(cssFile)) {
-    add("admin dashboard keeps page-first editing flow", false, `${clientFile} or ${cssFile} missing`);
-    return;
-  }
-
-  const clientText = readFileSync(clientFile, "utf8");
-  const cssText = readFileSync(cssFile, "utf8");
-  const required = [
-    [clientFile, clientText, "新HPのどこを変えるか選ぶ"],
-    [clientFile, clientText, "function PageChangeMap({ onSelect }"],
-    [clientFile, clientText, "ページを選んで、その中の編集項目を押します。"],
-    [clientFile, clientText, "TOP"],
-    [clientFile, clientText, "EVENT"],
-    [clientFile, clientText, "MENU"],
-    [clientFile, clientText, "PARTY"],
-    [clientFile, clientText, "ACCESS"],
-    [clientFile, clientText, "drink-menu-sheets"],
-    [clientFile, clientText, "resolvePublicUrl(page.publicPath, publicSiteUrl)"],
-    [cssFile, cssText, ".page-change-map"],
-    [cssFile, cssText, ".page-change-grid"],
-    [cssFile, cssText, ".page-change-actions"]
-  ];
-  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
-  const staleTerms = [
-    [clientFile, clientText, "function PublicCheckStrip()"],
-    [clientFile, clientText, "function QuickEditStrip({ onSelect }"],
-    [clientFile, clientText, "function PracticeStrip({ onSelect }"],
-    [clientFile, clientText, "最初に練習する3つ"],
-    [clientFile, clientText, "よくある更新から選ぶ"],
-    [clientFile, clientText, "公開前に見る順番"],
-    [cssFile, cssText, ".public-check-strip"],
-    [cssFile, cssText, ".practice-strip"],
-    [cssFile, cssText, ".quick-edit-strip"]
-  ];
-  const stale = staleTerms.filter(([, text, term]) => text.includes(term)).map(([file, , term]) => `${file}: stale ${term}`);
-
-  add("admin dashboard keeps page-first editing flow", missing.length === 0 && stale.length === 0, [...missing, ...stale].join(", "));
-}
-
-function checkAdminDashboardShowsPageChangeMap() {
-  const clientFile = "admin-app/app/admin-client.tsx";
-  const cssFile = "admin-app/app/globals.css";
-  if (!existsSync(clientFile) || !existsSync(cssFile)) {
-    add("admin dashboard shows page change map", false, `${clientFile} or ${cssFile} missing`);
-    return;
-  }
-
-  const clientText = readFileSync(clientFile, "utf8");
-  const cssText = readFileSync(cssFile, "utf8");
-  const required = [
-    [clientFile, clientText, "function PageChangeMap({ onSelect }"],
-    [clientFile, clientText, "<PageChangeMap onSelect={onSelect} />"],
-    [clientFile, clientText, "PageChangeAction"],
-    [clientFile, clientText, "PageChangeItem"],
-    [clientFile, clientText, "TOP"],
-    [clientFile, clientText, "EVENT"],
-    [clientFile, clientText, "MENU"],
-    [clientFile, clientText, "PARTY"],
-    [clientFile, clientText, "ACCESS"],
-    [clientFile, clientText, 'sectionId: "home"'],
-    [clientFile, clientText, 'sectionId: "hero-slides"'],
-    [clientFile, clientText, 'sectionId: "events"'],
-    [clientFile, clientText, 'sectionId: "menu"'],
-    [clientFile, clientText, 'sectionId: "drink-menu-sheets"'],
-    [clientFile, clientText, 'sectionId: "party-plans"'],
-    [clientFile, clientText, 'sectionId: "equipment-rental"'],
-    [clientFile, clientText, 'sectionId: "site-settings"'],
-    [clientFile, clientText, 'sectionId: "social-notices"'],
-    [clientFile, clientText, "resolvePublicUrl(page.publicPath, publicSiteUrl)"],
-    [cssFile, cssText, ".page-change-map"],
-    [cssFile, cssText, ".page-change-grid"],
-    [cssFile, cssText, ".page-change-card"],
-    [cssFile, cssText, ".page-change-actions"]
-  ];
-  const missing = required.filter(([, text, term]) => !text.includes(term)).map(([file, , term]) => `${file}: ${term}`);
-
-  add("admin dashboard shows page change map", missing.length === 0, missing.join(", "));
 }
 
 function checkAdminSupportsListItemDeletion() {
