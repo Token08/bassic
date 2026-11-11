@@ -11,6 +11,42 @@ function sync(events, entries = [entry]) {
   return upsertCalendarEvents({ calendar: { events }, calendarId: "test-calendar", syncTag, entries });
 }
 
+test("isolated lifecycle adds, reschedules and retries one event without deleting withdrawn or manual events", async () => {
+  const stored = new Map([["manual", { id: "manual", summary: "Staff-created appointment" }]]);
+  const writes = [];
+  const api = {
+    list: async () => ({ data: { items: structuredClone([...stored.values()]) } }),
+    insert: async ({ calendarId, requestBody }) => {
+      assert.equal(calendarId, "test-calendar");
+      assert.ok(!stored.has(requestBody.id));
+      stored.set(requestBody.id, structuredClone(requestBody));
+      writes.push("insert");
+    },
+    patch: async ({ eventId, requestBody }) => {
+      assert.ok(stored.has(eventId));
+      stored.set(eventId, { ...stored.get(eventId), ...structuredClone(requestBody) });
+      writes.push("patch");
+    },
+    delete: async () => assert.fail("withdrawal requires staff action; automatic deletion is forbidden")
+  };
+  const original = structuredClone(entry);
+  original.body.end = { dateTime: "2026-12-01T21:00:00", timeZone: "Asia/Tokyo" };
+  assert.deepEqual(await sync(api, [original]), { inserted: 1, updated: 0, unchanged: 0 });
+  const id = [...stored.keys()].find(key => key !== "manual");
+  const changed = structuredClone(original);
+  changed.body.summary = "Rescheduled test event";
+  changed.body.start.dateTime = "2026-12-02T20:00:00";
+  changed.body.end.dateTime = "2026-12-02T22:00:00";
+  assert.deepEqual(await sync(api, [changed]), { inserted: 0, updated: 1, unchanged: 0 });
+  assert.deepEqual(await sync(api, [changed]), { inserted: 0, updated: 0, unchanged: 1 });
+  assert.equal(stored.size, 2);
+  assert.equal(stored.get(id).start.dateTime, changed.body.start.dateTime);
+  assert.deepEqual(await sync(api, []), { inserted: 0, updated: 0, unchanged: 0 });
+  assert.equal(stored.size, 2);
+  assert.equal(stored.get("manual").summary, "Staff-created appointment");
+  assert.deepEqual(writes, ["insert", "patch"]);
+});
+
 test("updates the legacy synchronized event, preserving its ID and unrelated properties", async () => {
   const calls = [];
   const old = { id: "legacy-id", summary: "Old title", extendedProperties: { private: { syncTag, sourceId: entry.sourceId, unrelated: "keep" }, shared: { note: "keep" } } };
