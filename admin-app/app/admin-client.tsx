@@ -4204,6 +4204,9 @@ export default function AdminClient() {
             <small>FacebookのURLから始める</small>
           </div>
           <div className="admin-shortcuts">
+            <a className="analytics-link" href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer" aria-label="アクセス解析（別タブで開く）">
+              アクセス解析 <ExternalLink size={16} aria-hidden="true" />
+            </a>
             <button type="button" aria-current={dashboardPage === "DETAILS" ? "page" : undefined} disabled={!!activeSection && editorState.busy} onClick={() => {
               if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setActiveSection(null);
