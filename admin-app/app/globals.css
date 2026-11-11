@@ -2803,6 +2803,60 @@ a.current-edit-page:hover {
   gap: 4px;
 }
 
+.admin-shortcuts {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.admin-shortcuts .event-add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+}
+
+.admin-shortcuts .event-add-button:hover {
+  background: var(--accent-dark);
+}
+
+.admin-shortcuts small {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.event-entry-guide {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.event-entry-guide ol {
+  display: grid;
+  gap: 6px;
+  margin-block: 10px;
+  padding-left: 22px;
+}
+
+.event-entry-guide p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.event-entry-heading {
+  margin-block: 12px 4px;
+  font-size: 1.1rem;
+}
+
 .admin-page-nav button {
   min-height: 44px;
   padding: 8px 10px;

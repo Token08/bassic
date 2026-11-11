@@ -60,6 +60,9 @@ try {
   await title.getByRole("button", { name: "編集" }).click();
   assert.equal(await title.getByRole("textbox").inputValue(), "ノンアルコールでも、お食事だけでも。");
   await title.getByRole("textbox").fill("保存していない編集");
+  const stayInEditor = page.waitForEvent("dialog").then(dialog => dialog.dismiss());
+  await Promise.all([stayInEditor, page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click()]);
+  assert.equal(await title.getByRole("textbox").inputValue(), "保存していない編集", "The event shortcut must respect unsaved changes");
   const cancelled = page.waitForEvent("dialog").then((dialog) => dialog.dismiss());
   await Promise.all([cancelled, card(1).click()]);
   assert.equal(await card(2).getAttribute("aria-pressed"), "true");

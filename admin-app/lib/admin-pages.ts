@@ -11,6 +11,8 @@ export type ActiveSectionState = {
   editLabel?: string;
   previewContext?: Draft;
   sourcePage?: string;
+  eventEntry?: boolean;
+  relatedEventId?: string;
 };
 
 export type PageAdminAction = {
