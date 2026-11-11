@@ -46,7 +46,7 @@ type Notice = {
   actionsUrl?: string;
   requestId?: string;
   retryPublish?: boolean;
-  eventDelivery?: { calendar: string; social: string; event?: { id: string; title: string; date: string; startTime: string } };
+  eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialRetryNeeded?: boolean; event?: { id: string; title: string; date: string; startTime: string } };
   sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
@@ -115,6 +115,14 @@ type EventPublishFlowResult = {
   skipped?: string[];
   review?: string[];
 };
+
+function socialDraftResult(data?: EventPublishFlowResult) {
+  if (!Array.isArray(data?.created) || !Array.isArray(data?.skipped) ||
+      !["x", "instagram"].every(platform => data.created!.includes(platform) || data.skipped!.includes(platform))) {
+    throw new Error("SNS下書きの作成結果を確認できませんでした。");
+  }
+  return `作成 ${data.created.length}件・既存 ${data.skipped.length}件。${data.review?.length ? "既存の文面・画像に差分があります。編集済みの内容は残しています。" : ""} SNS欄で確認してください。自動投稿はしていません。`;
+}
 
 const publicSiteUrl = process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/";
 const dailySectionIds = new Set([
@@ -649,10 +657,16 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
   const [retryError, setRetryError] = useState(false);
   const [calendarCheck, setCalendarCheck] = useState("");
   const [checkingCalendar, setCheckingCalendar] = useState(false);
+  const [retryingSocial, setRetryingSocial] = useState(false);
+  const socialRetryRef = useRef(false);
   const { requestId, requestedAt } = notice;
 
   useEffect(() => {
-    if (!requestId || !requestedAt) return;
+    if (!requestId || !requestedAt) {
+      setStatus({ state: "failed" });
+      return;
+    }
+    setStatus({ state: "pending" });
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     const query = new URLSearchParams({ id: requestId, requestedAt });
@@ -726,6 +740,23 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
     }
   }
 
+  async function retrySocial() {
+    if (socialRetryRef.current || !notice.eventDelivery?.socialEventId) return;
+    socialRetryRef.current = true;
+    setRetryingSocial(true);
+    try {
+      const { data } = await requestJson<EventPublishFlowResult>("/api/event-publish-flow", {
+        method: "POST", body: JSON.stringify({ eventId: notice.eventDelivery.socialEventId, platforms: ["x", "instagram"] })
+      });
+      onRetry({ ...notice, eventDelivery: { ...notice.eventDelivery, social: socialDraftResult(data), socialRetryNeeded: false } });
+    } catch (error) {
+      onRetry({ ...notice, eventDelivery: { ...notice.eventDelivery, social: error instanceof Error ? error.message : "SNS下書きの結果を確認できませんでした。", socialRetryNeeded: true } });
+    } finally {
+      socialRetryRef.current = false;
+      setRetryingSocial(false);
+    }
+  }
+
   return (
     <section className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
       <div>
@@ -743,6 +774,11 @@ function DeployStatusCard({ notice, onRetry }: { notice: Notice; onRetry: (notic
         </dl>
       ) : null}
       <div className="deploy-status-actions">
+        {notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery.socialEventId ? (
+          <button className="secondary-button" type="button" disabled={retryingSocial} onClick={() => void retrySocial()}>
+            {retryingSocial ? "SNS下書きを確認中…" : "SNS下書きだけをやり直す"}
+          </button>
+        ) : null}
         {notice.eventDelivery?.event ? (
           <button className="secondary-button" type="button" disabled={checkingCalendar} onClick={() => void checkCalendar()}>
             {checkingCalendar ? "確認中…" : "カレンダーの掲載を確認"}
@@ -2079,6 +2115,19 @@ function FacebookEventImportPanel({
   const [copyMessage, setCopyMessage] = useState("");
   const calendarRequestRef = useRef<HTMLTextAreaElement | null>(null);
   const sourceUrl = getString(draft.sourceUrl).trim();
+  const importSourceRef = useRef(sourceUrl);
+  importSourceRef.current = sourceUrl;
+  const importBusyRef = useRef(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => {
+    if (!preview || getFacebookEventId(preview.sourceUrl) !== getFacebookEventId(sourceUrl)) {
+      setPreview(null);
+      setMessage("");
+      setImageFailed(false);
+    }
+    // Preserve candidates when applying only canonicalizes the same event URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceUrl]);
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
   const previewHasInvalidTime = Boolean(
     preview && ((preview.startTime && !isValidEventTime(preview.startTime)) || (preview.endTime && !isValidEventTime(preview.endTime)))
@@ -2106,31 +2155,31 @@ function FacebookEventImportPanel({
   const currentPublishStatus = draft.isPublished ? "公開するON" : "公開するOFF";
   const calendarRequestMissingLabels = isFacebookEvent
     ? [
-        !currentTitle && !preview?.title ? "イベント名" : "",
-        !currentDate && !preview?.date ? "日付" : "",
-        !currentStartTime && !preview?.startTime ? "START" : "",
-        !sourceUrl && !preview?.sourceUrl ? "FacebookイベントURL" : "",
-        !currentImageUrl && !preview?.imageUrl ? "画像URL" : ""
+        !currentTitle ? "イベント名" : "",
+        !currentDate ? "日付" : "",
+        !currentStartTime ? "START" : "",
+        !sourceUrl ? "FacebookイベントURL" : "",
+        !currentImageUrl ? "画像URL" : ""
       ].filter(Boolean)
     : [];
   const calendarRequestBlockingLabels = isFacebookEvent
     ? [
         !draft.isPublished ? "公開するON" : "",
-        !currentTitle && !preview?.title ? "イベント名" : "",
-        !currentDate && !preview?.date ? "日付" : "",
-        !currentStartTime && !preview?.startTime ? "START" : ""
+        !currentTitle ? "イベント名" : "",
+        !currentDate ? "日付" : "",
+        !currentStartTime ? "START" : ""
       ].filter(Boolean)
     : [];
   const calendarRequestText = isFacebookEvent
     ? [
         "Google Calendarにも反映してください。",
         `公開状態: ${currentPublishStatus}`,
-        `イベント名: ${currentTitle || preview?.title || "未入力"}`,
-        `日付: ${currentDate || preview?.date || "未入力"}`,
-        `START: ${currentStartTime || preview?.startTime || "未入力"}`,
-        `END: ${currentEndTime || preview?.endTime || "未入力"}`,
-        `FacebookイベントURL: ${sourceUrl || preview?.sourceUrl || "未入力"}`,
-        `画像URL: ${currentImageUrl || preview?.imageUrl || "未入力"}`
+        `イベント名: ${currentTitle || "未入力"}`,
+        `日付: ${currentDate || "未入力"}`,
+        `START: ${currentStartTime || "未入力"}`,
+        `END: ${currentEndTime || "未入力"}`,
+        `FacebookイベントURL: ${sourceUrl || "未入力"}`,
+        `画像URL: ${currentImageUrl || "未入力"}`
       ].join("\n")
     : "";
   const calendarRequestHasMissingFields = calendarRequestMissingLabels.length > 0;
@@ -2144,10 +2193,14 @@ function FacebookEventImportPanel({
   }, [calendarRequestText]);
 
   async function importEvent() {
+    if (importBusyRef.current) return;
+    importBusyRef.current = true;
+    const requestedSource = sourceUrl;
     setLoading(true);
     setMessage("");
     setCopyMessage("");
     setPreview(null);
+    setImageFailed(false);
 
     try {
       const result = await requestJson<FacebookEventPreview>("/api/facebook-event-preview", {
@@ -2155,6 +2208,7 @@ function FacebookEventImportPanel({
         body: JSON.stringify({ url: sourceUrl })
       });
       const data = result.data;
+      if (importSourceRef.current !== requestedSource) return;
 
       if (!data) {
         throw new Error("読み取れませんでした。");
@@ -2191,8 +2245,10 @@ function FacebookEventImportPanel({
         : missing.length ? `取得できなかった項目は ${missing.join("・")} です。入力欄で確認してください。`
         : "読み取りました。公開前にイベント名・日付・START・画像を確認してください。");
     } catch (error) {
+      if (importSourceRef.current !== requestedSource) return;
       setMessage(error instanceof Error ? error.message : "Facebookから読み取れませんでした。手入力してください。");
     } finally {
+      importBusyRef.current = false;
       setLoading(false);
     }
   }
@@ -2242,13 +2298,14 @@ function FacebookEventImportPanel({
             : "先に「FacebookイベントURL・詳細URL」へ FacebookイベントURL を入力してください。"}
         </small>
       ) : null}
-      {message ? <small className={preview && !previewNeedsDateInput ? "import-success" : "import-warning"}>{message}</small> : null}
+      {message ? <small role="status" className={preview && previewChecks.every(check => check.ok) ? "import-success" : "import-warning"}>{message}</small> : null}
+      {preview && previewChecks.some(check => !check.ok) ? <p>取得できなかった項目の入力済み内容は残しています。下の入力欄で不足分を補い、プレビューで確認してください。</p> : null}
       {preview ? (
         <div className="facebook-import-preview">
-          {preview.imageUrl ? (
+          {preview.imageUrl && !imageFailed ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview.imageUrl} alt={preview.title || "Facebookイベント画像"} />
-          ) : null}
+            <img src={preview.imageUrl} alt={preview.title || "Facebookイベント画像"} onError={() => setImageFailed(true)} />
+          ) : imageFailed ? <p role="status">画像を表示できません。画像をアップロードし直すか、画像URLを確認してください。</p> : null}
           <div>
             {preview.existingEvents?.length === 1 ? (
               <div>
@@ -2313,6 +2370,7 @@ function FacebookEventImportPanel({
               {copyMessage ? <small>{copyMessage}</small> : null}
               <textarea
                 ref={calendarRequestRef}
+                aria-label="Google Calendar反映依頼メモ"
                 readOnly
                 value={calendarRequestText}
                 rows={7}
@@ -2349,6 +2407,7 @@ function FacebookEventImportPanel({
           {copyMessage ? <small>{copyMessage}</small> : null}
           <textarea
             ref={calendarRequestRef}
+            aria-label="Google Calendar反映依頼メモ"
             readOnly
             value={calendarRequestText}
             rows={7}
@@ -2732,6 +2791,7 @@ function SectionEditor({
   const loadTokenRef = useRef(0);
   const userInteractedRef = useRef(false);
   const draftBaseRef = useRef("");
+  const saveInFlightRef = useRef(false);
   const isMaintenanceSection = !dailySectionIds.has(section.id);
   const isNewListItem = section.kind === "list" && selectedId === "new";
   const listCreateLabel = section.createLabel || `${section.shortTitle}を追加`;
@@ -3199,6 +3259,7 @@ function SectionEditor({
   }
 
   async function save(mode: "draft" | "publish") {
+    if (saveInFlightRef.current) return;
     if (mode === "draft") {
       try {
         const savedAt = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
@@ -3241,6 +3302,7 @@ function SectionEditor({
       return;
     }
 
+    saveInFlightRef.current = true;
     setSaving(true);
     setNotice(null);
 
@@ -3276,6 +3338,7 @@ function SectionEditor({
 
       const facebookId = getFacebookEventId(getString(savedData.sourceUrl));
       const eventDelivery: Notice["eventDelivery"] = section.id === "events" ? {
+        socialEventId: preparedDraft.isPublished ? getString(savedData.id) : undefined,
         calendar: preparedDraft.isPublished
           ? "同期結果は未確認です。掲載が必要な場合は反映依頼メモを使ってください。"
           : "サイトを非公開にしても、カレンダーの予定は残ります。変更は保守担当へ依頼してください。",
@@ -3304,11 +3367,10 @@ function SectionEditor({
             method: "POST",
             body: JSON.stringify({ event: { ...preparedDraft, ...savedData }, platforms: ["x", "instagram"] })
           });
-          const createdCount = flowResult.data?.created?.length || 0;
-          const skippedCount = flowResult.data?.skipped?.length || 0;
-          eventDelivery.social = `作成 ${createdCount}件・既存 ${skippedCount}件。${flowResult.data?.review?.length ? "既存の文面・画像に差分があります。" : ""} SNS欄で確認できます。`;
+          eventDelivery.social = socialDraftResult(flowResult.data);
         } catch {
           eventDelivery.social = "下書きの作成結果を確認できませんでした。SNS欄で確認してください。";
+          eventDelivery.socialRetryNeeded = true;
         }
       }
 
@@ -3324,6 +3386,7 @@ function SectionEditor({
             : "保存できませんでした。時間をおいて再度お試しください。直らない場合は担当者へこの画面の内容を伝えてください。"
       });
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
       setDeploying(false);
       setShowPreview(false);

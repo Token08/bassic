@@ -34,7 +34,9 @@ const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourc
 const notices = new Map();
 const slides = new Map();
 let calendarItems = [];
+let calendarUnavailable = false;
 let socialUnavailable = false;
+let loseSocialWriteResponse = false;
 let publishRequests = 0;
 let lastPublishId = "";
 const realFetch = globalThis.fetch;
@@ -77,6 +79,10 @@ globalThis.fetch = async (input, init) => {
       assert.equal(id, undefined);
       const generatedId = `fixture-${endpoint}-${collection.size + 1}`;
       collection.set(generatedId, { ...JSON.parse(body), id: generatedId });
+      if (endpoint === "menu" && loseSocialWriteResponse) {
+        loseSocialWriteResponse = false;
+        return new Response("Response lost after write", { status: 503 });
+      }
       return Response.json({ id: generatedId });
     }
     assert.equal(method, "PATCH");
@@ -102,6 +108,7 @@ globalThis.fetch = async (input, init) => {
   if (url.hostname === "oauth2.googleapis.com") return Response.json({ access_token: "fixture" });
   if (url.hostname === "www.googleapis.com") {
     assert.equal(method, "GET");
+    if (calendarUnavailable) return new Response("Calendar unavailable", { status: 503 });
     assert.equal(url.searchParams.get("privateExtendedProperty"), "syncKey=facebook-87654321");
     return Response.json({ items: calendarItems });
   }
@@ -127,6 +134,8 @@ try {
   }
 
   await post("facebook-event-preview", { url: legacyUrl }, 401);
+  await post("calendar-status", {}, 401);
+  await post("event-publish-flow", {}, 401);
   const login = await post("login", { password });
   cookie = login.response.headers.get("set-cookie").split(";")[0];
 
@@ -164,6 +173,31 @@ try {
   assert.equal(notices.size, 2);
   assert.equal(xDraft.postText, "Staff edited text");
 
+  // A response may be lost after the first platform was saved. Retry using the
+  // saved event, not the old browser payload, and only create the missing draft.
+  notices.clear();
+  loseSocialWriteResponse = true;
+  await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms }, 502);
+  assert.equal(notices.size, 1);
+  const partial = [...notices.values()][0];
+  const partialId = partial.id;
+  partial.postText = "Staff edited after partial failure";
+  events.get(saved.id).startTime = "20:00";
+  const recovered = (await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms })).result.data;
+  assert.deepEqual(recovered.created, ["instagram"]);
+  assert.deepEqual(recovered.skipped, ["x"]);
+  assert.equal(notices.size, 2);
+  assert.equal(notices.get(partialId).postText, "Staff edited after partial failure");
+  assert.match([...notices.values()].find(item => item.platform === "instagram").postText, /START 20:00/);
+  events.get(saved.id).isPublished = false;
+  await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms }, 409);
+  assert.equal(notices.size, 2);
+  events.get(saved.id).isPublished = true;
+  events.get(saved.id).startTime = event.startTime;
+  // Restore the fixture used later to check preservation of staff text.
+  [...notices.values()].find(item => item.platform === "x").postText = "Staff edited text";
+  console.log("Partial SNS failure passed: retry uses current saved data, preserves staff edits, creates only the missing platform and rejects withdrawn events.");
+
   socialUnavailable = true;
   const [publication] = await Promise.all([post("deploy", {}), post("event-publish-flow", flow, 502)]);
   assert.ok(publication.result.data.requestId);
@@ -178,6 +212,13 @@ try {
   }];
   assert.equal((await post("calendar-status", check)).result.data.state, "matched");
   assert.equal((await post("calendar-status", { ...check, startTime: "20:00" })).result.data.state, "review");
+  calendarUnavailable = true;
+  await post("calendar-status", check, 502);
+  calendarUnavailable = false;
+  calendarItems.push(structuredClone(calendarItems[0]));
+  assert.equal((await post("calendar-status", check)).result.data.state, "review", "Duplicate calendar entries must never be reported as matched");
+  calendarItems = [{ ...calendarItems[0], status: "cancelled" }];
+  assert.equal((await post("calendar-status", check)).result.data.state, "not-found");
   const originalVercelEnv = process.env.VERCEL_ENV;
   process.env.VERCEL_ENV = "preview";
   try {
@@ -224,23 +265,73 @@ try {
       await eventCanvas.locator('[data-bassic-edit="event-list"][aria-pressed="true"]').waitFor();
       await page.locator("article").filter({ hasText: "Facebookイベント取り込み" }).getByRole("button", { name: "選ぶ" }).click();
       const panel = page.getByRole("region", { name: "Facebookイベント取り込み" });
+      const sourceField = page.locator(".editable-field-card").filter({ hasText: "FacebookイベントURL・詳細URL" });
+      await sourceField.getByRole("button", { name: "編集", exact: true }).click();
+      const sourceInput = sourceField.getByRole("textbox");
+      let releaseOldResponse;
+      let requestStarted;
+      const oldResponseGate = new Promise(resolve => { releaseOldResponse = resolve; });
+      const startedGate = new Promise(resolve => { requestStarted = resolve; });
+      await page.route("**/api/facebook-event-preview", async route => {
+        requestStarted();
+        await oldResponseGate;
+        await route.fulfill({ json: { ok: true, data: preview } });
+      }, { times: 1 });
+      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
+      await startedGate;
+      await sourceInput.fill(newUrl);
+      releaseOldResponse();
+      await panel.getByRole("button", { name: "Facebookから読み取る" }).waitFor({ state: "visible" });
+      await page.waitForFunction(() => !document.querySelector('.facebook-import-panel button')?.disabled);
+      assert.equal(await panel.getByText("Fixture live", { exact: true }).count(), 0, "An old URL response must not populate the new event");
+      assert.equal(await sourceInput.inputValue(), newUrl);
+      await sourceInput.fill(legacyUrl);
+      console.log("Facebook race passed: changing the URL discards the previous in-flight result without changing the entered URL.");
+      await page.route("**/api/facebook-event-preview", route => route.fulfill({ json: {
+        ok: true, data: { ...preview, imageUrl: "https://images.example.invalid/broken-image.png" }
+      } }), { times: 1 });
+      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
+      await panel.getByText(/画像を表示できません/).waitFor();
       await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
       await panel.getByText("Fixture live", { exact: true }).waitFor();
       await panel.getByRole("button", { name: "登録済みのイベントを編集" }).click();
+      const startField = page.locator(".editable-field-card").filter({ has: page.getByText("START", { exact: true }) });
+      await startField.getByRole("button", { name: "編集", exact: true }).click();
+      const startInput = startField.getByRole("textbox");
+      await startInput.fill("");
+      assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 未入力/);
+      assert.equal(await panel.getByRole("button", { name: "コピーする", exact: true }).isDisabled(), true);
+      await startInput.fill("11:30");
+      await page.route("**/api/facebook-event-preview", route => route.fulfill({ json: {
+        ok: true, data: { ...preview, title: "", date: "", startTime: "", imageUrl: "", existingEvents: [] }
+      } }), { times: 1 });
+      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
+      await panel.getByText(/取得できなかった項目は/).waitFor();
+      assert.equal(await startInput.inputValue(), "11:30", "Missing import data must not erase staff input");
+      assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 11:30/);
       await page.getByRole("button", { name: "下書き保存", exact: true }).click();
       await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow at mobile width");
       console.log("Mobile admin browser passed: login, Facebook import, existing event selection and draft save.");
 
-      socialUnavailable = false;
+      socialUnavailable = true;
       await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
       await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
+      await page.getByRole("button", { name: "この内容で公開", exact: true }).evaluate(button => { button.click(); button.click(); });
       await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
       assert.equal(publishRequests, 2);
       assert.equal(events.get("legacy").title, "Fixture live");
       assert.equal(events.get("legacy").startTime, "11:30");
       assert.deepEqual(events.get("legacy").image, image);
+      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).waitFor();
+      assert.equal(notices.size, 2);
+      socialUnavailable = false;
+      await page.route("**/api/event-publish-flow", route => route.fulfill({ json: { ok: true, data: { created: [], skipped: [] } } }), { times: 1 });
+      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).click();
+      await page.getByText("SNS下書きの作成結果を確認できませんでした。", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).evaluate(button => { button.click(); button.click(); });
+      await page.getByText(/自動投稿はしていません/).waitFor();
+      assert.equal(publishRequests, 2, "SNS recovery must not republish the site");
       assert.equal(notices.size, 4);
       console.log("Mobile publication passed: existing event updated, missing image preserved, two drafts created, site status verified.");
 
@@ -340,6 +431,9 @@ try {
         const storedHome = [...notices.values()].find((item) => item.kind === "home");
         assert.equal(JSON.parse(storedHome.body).homeHeroTitle, "", "Opening an inherited field does not save an override");
         events.set("unpublished", { ...event, id: "unpublished", title: "Hidden fixture live", isPublished: false });
+        for (const [id, url] of [["portrait", "https://images.example.invalid/portrait.svg"], ["landscape", "https://images.example.invalid/landscape.svg"], ["text-only", ""]]) {
+          events.set(id, { ...event, id, title: id + "-" + "LongEventName".repeat(16), image: url ? { url } : undefined });
+        }
         process.env.NODE_ENV = "development";
         const publicRequire = createRequire(new URL("../package.json", import.meta.url));
         const publicApp = publicRequire("next")({
@@ -358,6 +452,9 @@ try {
           await publicPage.route("**/*", (route) => {
             const requestUrl = route.request().url();
             if (new URL(requestUrl).origin === publicBase) return route.continue();
+            if (/^https:\/\/images\.example\.invalid\/(portrait|landscape)\.svg$/.test(requestUrl)) return route.fulfill({
+              contentType: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg" width="${requestUrl.includes("portrait") ? 300 : 1200}" height="600"><rect width="100%" height="100%" fill="black"/></svg>`
+            });
             if (requestUrl === image.url || requestUrl === mobileImage.url) return route.fulfill({
               contentType: "image/svg+xml",
               body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="black"/></svg>'
@@ -368,12 +465,20 @@ try {
           const upcoming = publicPage.getByRole("region", { name: "開催予定のイベント" });
           await upcoming.getByRole("heading", { name: event.title }).waitFor();
           await upcoming.getByRole("heading", { name: "Fixture live" }).waitFor();
-          assert.equal(await upcoming.getByText("19:00", { exact: true }).count(), 1);
+          assert.equal(await upcoming.locator(".event-card").filter({ has: publicPage.getByRole("heading", { name: event.title, exact: true }) }).getByText("19:00", { exact: true }).count(), 1);
           assert.equal(await upcoming.getByText("Hidden fixture live", { exact: true }).count(), 0);
           const poster = upcoming.getByRole("img", { name: event.title });
           await poster.scrollIntoViewIfNeeded();
           await publicPage.waitForFunction(() => [...document.querySelectorAll(".event-card-image img")].some((element) => element.naturalWidth > 0));
           assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow on public event page");
+          for (const width of [320, 390, 768, 1440]) {
+            await publicPage.setViewportSize({ width, height: 844 });
+            assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Event page overflow at ${width}px`);
+            for (const card of await upcoming.locator(".event-card").all()) {
+              assert.equal(await card.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length), width <= 768 ? 1 : await card.locator(".event-card-image").count() ? 3 : 2);
+            }
+          }
+          await publicPage.setViewportSize({ width: 390, height: 844 });
           console.log("Mobile public preview passed: saved title, START and poster render; unpublished fixture is absent.");
           await publicPage.goto(publicBase + "/");
           for (const heading of ["Short mobile heading", "Isolated business hours", "Isolated First Visit heading", "Updated First Visit card", "Isolated visit information", "Isolated access heading"]) {
@@ -403,7 +508,11 @@ try {
           assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow on public TOP");
           console.log("Mobile TOP preview passed: saved section headings, card text and replacement photo render.");
           await publicPage.close();
+        } catch (error) {
+          console.error("Public preview failed:", error);
+          throw error;
         } finally {
+          await browser.close();
           if (publicServer.listening) {
             publicServer.closeAllConnections();
             await new Promise((resolve) => publicServer.close(resolve));

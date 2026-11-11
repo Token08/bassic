@@ -1,0 +1,44 @@
+name: Event regression
+
+on:
+  pull_request:
+    paths:
+      - "admin-app/**"
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/**"
+      - "package*.json"
+      - ".github/workflows/event-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: event-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-events:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            admin-app/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix admin-app
+      - run: npm run test:events
+      - run: npm run build
+      - run: npm run build:admin-app
+      # All provider writes stay in memory. No CMS or calendar secrets are used.
+      - name: Rehearse isolated event APIs (browser coverage runs locally)
+        run: npm run smoke:events:isolated

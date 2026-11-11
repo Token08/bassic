@@ -135,8 +135,19 @@ export async function POST(request: NextRequest) {
     event?: Draft;
     platforms?: string[];
     allowDraftCreation?: boolean;
+    eventId?: string;
   };
-  const event = payload.event || {};
+  let event = payload.event || {};
+  if (payload.eventId) {
+    try {
+      const stored = (await getStoredItems("events")).find(item => item.id === payload.eventId);
+      if (!stored) return NextResponse.json({ ok: false, message: "イベントが見つかりません。イベント一覧を確認してください。" }, { status: 404 });
+      if (!stored.isPublished) return NextResponse.json({ ok: false, message: "このイベントは非公開です。SNS下書きは作成していません。" }, { status: 409 });
+      event = stored;
+    } catch {
+      return NextResponse.json({ ok: false, message: "保存済みイベントを確認できません。入力を変えずに時間をおいて再確認してください。" }, { status: 502 });
+    }
+  }
   const platforms = getPlatforms(payload.platforms);
 
   if (!payload.allowDraftCreation && !event.isPublished) {
