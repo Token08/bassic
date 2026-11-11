@@ -1,6 +1,7 @@
 import { createClient } from "microcms-js-sdk";
 import { editableMedia } from "./editable-content";
 import { fallbackContents } from "./fallback-data";
+import { resolveSiteSocialLinks } from "./site-social-links";
 import { drinkMenuSheets, defaultMenuItems } from "./menu-data";
 import { equipmentRentalInfo, pageHeroes, socialUpdatesCopy } from "./page-content";
 import type {
@@ -180,9 +181,7 @@ function mergeSiteSettings(settings?: Partial<SiteSettings> | null): SiteSetting
     chargeLabel: nonEmptyString(settings?.chargeLabel) || fallbackSiteSettings.chargeLabel,
     googleMapsUrl,
     directionsUrl,
-    instagramUrl: isInstagramUrl(settings?.instagramUrl) ? settings!.instagramUrl! : fallbackSiteSettings.instagramUrl,
-    facebookUrl: isFacebookUrl(settings?.facebookUrl) ? settings!.facebookUrl! : fallbackSiteSettings.facebookUrl,
-    xUrl: isXUrl(settings?.xUrl) ? settings!.xUrl! : fallbackSiteSettings.xUrl,
+    ...resolveSiteSocialLinks(settings),
     onlineStoreUrl: isManagedUrl(settings?.onlineStoreUrl) ? settings!.onlineStoreUrl : fallbackSiteSettings.onlineStoreUrl
   };
 }
@@ -354,20 +353,6 @@ function getUrlHost(value?: string) {
 function isGoogleMapUrl(value?: string) {
   const host = getUrlHost(value);
   return host === "google.com" || host === "maps.google.com" || host === "maps.app.goo.gl" || host === "goo.gl";
-}
-
-function isInstagramUrl(value?: string) {
-  return getUrlHost(value) === "instagram.com";
-}
-
-function isFacebookUrl(value?: string) {
-  const host = getUrlHost(value);
-  return host === "facebook.com" || host === "m.facebook.com" || host === "mbasic.facebook.com" || host === "fb.me";
-}
-
-function isXUrl(value?: string) {
-  const host = getUrlHost(value);
-  return host === "x.com" || host === "twitter.com";
 }
 
 function hasUsableCustomSectionLink(section: CustomSection) {

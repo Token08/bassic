@@ -880,7 +880,6 @@ function OpsStatusPanel({ status, onSelect }: { status?: OpsStatus; onSelect: (i
       <div className="ops-status-heading">
         <div>
           <strong>要確認</strong>
-          <span>公開中のイベント、SNS投稿、連携設定で確認したい項目です。</span>
         </div>
         <small>
           エラー {errors} / 注意 {warnings}
@@ -3777,6 +3776,12 @@ function PageBasedDashboard({
   const [overviewError, setOverviewError] = useState(false);
   const editing = Boolean(editor);
   const editingArea = useRef<HTMLDivElement>(null);
+  const detailsArea = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (selectedPage !== "DETAILS" || editing || !detailsArea.current) return;
+    detailsArea.current.focus({ preventScroll: true });
+    detailsArea.current.scrollIntoView({ block: "start" });
+  }, [selectedPage, editing]);
   useEffect(() => {
     if (!editing || !editingArea.current) return;
     const area = editingArea.current;
@@ -3869,6 +3874,13 @@ function PageBasedDashboard({
   }, [extraEndpoints, lastDeploy?.requestedAt]);
   const targets = orderedGroups.map(([group, entry]) => ({ key: entry.layout.key, label: entry.layout.key.startsWith("custom-") ? entry.layout.heading || group : group }));
   const selectedKey = selection?.layout.key;
+  const relatedSections = new Set(selection?.actions.map((action) => action.sectionId) || []);
+  if (activePage.page === "EVENT SCHEDULE") {
+    relatedSections.add("events");
+    relatedSections.add("social-notices");
+  }
+  if (activePage.page === "ACCESS") relatedSections.add("site-settings");
+  const relevantStatus = opsStatus ? { ...opsStatus, alerts: opsStatus.alerts.filter((alert) => relatedSections.has(alert.sectionId)) } : undefined;
 
   function selectCanvasSection(key: string) {
     const group = orderedGroups.find(([, entry]) => entry.layout.key === key)?.[0];
@@ -3919,6 +3931,19 @@ function PageBasedDashboard({
     );
   }
 
+  if (selectedPage === "DETAILS") {
+    return (
+      <div className="dashboard" ref={detailsArea} tabIndex={-1} aria-label="詳細設定">
+        {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : <>
+          <div className="page-heading"><h1>詳細設定</h1><p>保守・ページ構成</p></div>
+          {hasSetupProblem ? <SetupStatus health={health} /> : null}
+          <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
+          <DashboardSectionGroup title="ページ構成" description="" sections={maintenanceSections} onSelect={(id) => onSelect({ id })} compact />
+        </>}
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
       <div className="page-heading workspace-heading">
@@ -3958,6 +3983,7 @@ function PageBasedDashboard({
           {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : null}
         </div>
         <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
+            <OpsStatusPanel status={relevantStatus} onSelect={(id) => onSelect({ id })} />
             <section className="page-section-picker" aria-label={activePage.page + "の編集セクション"}>
               <div className="page-section-heading">
                 <div>
@@ -3994,26 +4020,10 @@ function PageBasedDashboard({
       </div>
 
       {hasSetupProblem ? <SetupStatus health={health} /> : null}
-      {opsStatus?.alerts.length ? (
-        <details className="maintenance-tools ops-tools">
-          <summary>公開前に確認したい項目</summary>
-          <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
-        </details>
-      ) : null}
       {!editing && lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
         <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} onOpenSocialDrafts={onOpenSocialDrafts} />
       ) : <NoticeBox notice={lastDeploy} /> : null}
 
-      <details className="maintenance-tools">
-        <summary>保守担当向け設定</summary>
-        <DashboardSectionGroup
-          title="通常は触らない設定"
-          description="ページ文言枠や表示制御など、ページ構造に関わる項目です。"
-          sections={maintenanceSections}
-          onSelect={(id) => onSelect({ id })}
-          compact
-        />
-      </details>
     </div>
   );
 }
@@ -4192,6 +4202,15 @@ export default function AdminClient() {
               setActiveSection({ id: "events", itemId: "new", eventEntry: true, initialDraft: { isPublished: false }, editLabel: "イベント追加", sourcePage: "EVENT SCHEDULE" });
             }}><Plus size={18} /> イベントを追加</button>
             <small>FacebookのURLから始める</small>
+          </div>
+          <div className="admin-shortcuts">
+            <button type="button" aria-current={dashboardPage === "DETAILS" ? "page" : undefined} disabled={!!activeSection && editorState.busy} onClick={() => {
+              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              setActiveSection(null);
+              setExpandedGroup(null);
+              setDashboardPage("DETAILS");
+            }}>詳細設定</button>
+            {opsStatus?.alerts.length ? <small>要確認 {opsStatus.alerts.length}件</small> : null}
           </div>
         </nav>
         <div className="admin-workspace-content">
