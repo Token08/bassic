@@ -52,11 +52,11 @@ export const adminPages: PageAdminItem[] = [
     publicPath: "/events/",
     publicLabel: "EVENT SCHEDULEを確認",
     actions: [
-      { label: "サイトのイベント案内", group: "開催イベント", description: "イベント名、日時、料金、予約方法、案内画像を編集します。", sectionId: "events" },
-      { label: "Facebookイベント取り込み", group: "開催イベント", description: "FacebookイベントURLから下書き作成に使う情報を取り込みます。", sectionId: "events" },
-      { label: "カレンダーの案内文を変える", group: "カレンダー", description: "カレンダーに添える案内文", sectionId: "page-copy", initialDraft: { page: "events" }, fieldKeys: ["calendarNote"] },
-      { label: "SNS投稿の下書き", description: "FacebookイベントからX・Instagram向けの下書きを作ります。投稿する前に各SNSで確認してください。", sectionId: "social-notices" },
-      { label: "メイン画像", group: "メインビジュアル", description: "EVENT SCHEDULEページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "events" } }
+      { label: "サイトのイベント案内", group: "開催イベント", description: "イベント名・日時・料金・画像", sectionId: "events" },
+      { label: "Facebookイベント取り込み", group: "開催イベント", description: "Facebook URLから取得", sectionId: "events" },
+      { label: "カレンダーの案内文", group: "カレンダー", description: "カレンダーに添える案内文", sectionId: "page-copy", initialDraft: { page: "events" }, fieldKeys: ["calendarNote"] },
+      { label: "SNS投稿の下書き", description: "X・Instagramの投稿文", sectionId: "social-notices" },
+      { label: "メイン画像", group: "メインビジュアル", description: "イベントページの写真", sectionId: "hero-slides", initialDraft: { page: "events" } }
     ]
   },
   {
@@ -66,9 +66,9 @@ export const adminPages: PageAdminItem[] = [
     publicPath: "/menu/",
     publicLabel: "MENUページを確認",
     actions: [
-      { label: "メイン画像", group: "メインビジュアル", description: "MENUページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "menu" } },
-      { label: "ドリンク表", description: "ドリンクメニュー画像を追加・削除・並び替えます。", sectionId: "drink-menu-sheets" },
-      { label: "フードメニュー・料金", description: "フード名、料金、写真、表示順を編集します。", sectionId: "menu" }
+      { label: "メイン画像", group: "メインビジュアル", description: "メニューページの写真", sectionId: "hero-slides", initialDraft: { page: "menu" } },
+      { label: "ドリンク表", description: "ドリンク表の画像・表示順", sectionId: "drink-menu-sheets" },
+      { label: "フードメニュー・料金", description: "料理名・料金・写真・表示順", sectionId: "menu" }
     ]
   },
   {
@@ -78,7 +78,7 @@ export const adminPages: PageAdminItem[] = [
     publicPath: "/",
     publicLabel: "公開サイトを確認",
     actions: [
-      { label: "オンラインストアURL", description: "公開サイトから移動するオンラインストアのリンクを編集します。", sectionId: "site-settings" }
+      { label: "オンラインストアURL", description: "ストアのリンク先", sectionId: "site-settings" }
     ]
   },
   {
@@ -89,8 +89,8 @@ export const adminPages: PageAdminItem[] = [
     publicLabel: "PARTY & RENTALを確認",
     actions: [
       { label: "メイン画像", group: "メインビジュアル", description: "PARTY & RENTALページのメイン画像を編集します。", sectionId: "hero-slides", initialDraft: { page: "party" } },
-      { label: "貸切プラン", description: "貸切やパーティープランの料金・説明を編集します。", sectionId: "party-plans" },
-      { label: "機材レンタル・PDF", description: "機材レンタル説明とPDFリンクを編集します。", sectionId: "equipment-rental" }
+      { label: "貸切プラン", description: "人数・料金・プラン", sectionId: "party-plans" },
+      { label: "機材レンタル・PDF", description: "機材・料金・PDF", sectionId: "equipment-rental" }
     ]
   },
   {

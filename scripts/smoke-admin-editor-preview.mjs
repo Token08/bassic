@@ -9,6 +9,7 @@ const page = await browser.newPage({ baseURL, viewport: { width: 1440, height: 9
 page.setDefaultTimeout(10000);
 let writes = 0;
 let failHomeRead = false;
+let invalidHeaderImage = false;
 
 try {
   await page.route("**/api/**", async (route) => {
@@ -27,7 +28,7 @@ try {
       html: '<section class="page-hero" style="height:1800px">Hero</section><section class="intro"><h2>初めての方へ</h2></section>'
     } });
     const objectData = {
-      home: { firstVisitTitle: "現在の見出し", firstVisitDescription: "現在の説明文", firstVisitCard1Title: "現在のカード1", firstVisitCard3Image: { url: "https://www.bassic.jp/assets/missing-fixture.jpg" } },
+      home: { ...(invalidHeaderImage ? { headerLogo: { url: "http://example.invalid/invalid.jpg" } } : {}), firstVisitTitle: "現在の見出し", firstVisitDescription: "現在の説明文", firstVisitCard1Title: "現在のカード1", firstVisitCard3Image: { url: "https://www.bassic.jp/assets/missing-fixture.jpg" } },
       "site-settings": {}
     };
     return route.fulfill({ json: { ok: true, data: objectData[path.split("/").at(-1)] || { contents: [] } } });
@@ -45,7 +46,7 @@ try {
   const sidebar = page.getByRole("complementary", { name: "選択箇所の編集" });
   await sidebar.getByText("現在の見出し", { exact: true }).waitFor();
   await sidebar.getByText("現在の説明文", { exact: true }).waitFor();
-  const card = (number) => sidebar.getByRole("button", { name: new RegExp("紹介カード" + number + "を変える") });
+  const card = (number) => sidebar.getByRole("button", { name: new RegExp("紹介カード" + number) });
   await card(1).getByText("現在のカード1", { exact: true }).waitFor();
   await card(2).getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
   await card(3).getByText("画像を表示できません").waitFor();
@@ -53,13 +54,27 @@ try {
   await card(2).locator("img").evaluate((image) => image.decode());
   await card(2).click();
   const form = page.locator(".visual-editor-form");
-  assert.equal(await page.getByLabel("現在の編集場所").textContent(), "TOPページ → 初めての方へ → 紹介カード2を変える");
-  await form.getByRole("heading", { name: "紹介カード2を変える", exact: true }).waitFor();
+  assert.equal(await page.getByLabel("現在の編集場所").textContent(), "TOPページ → 初めての方へ → 紹介カード2");
+  await form.getByRole("heading", { name: "紹介カード2", exact: true }).waitFor();
   assert.equal(await card(2).getAttribute("aria-pressed"), "true");
   const title = form.locator(".editable-field-card").filter({ hasText: "カード2の見出し" });
   await title.getByRole("button", { name: "編集" }).click();
   assert.equal(await title.getByRole("textbox").inputValue(), "ノンアルコールでも、お食事だけでも。");
   await title.getByRole("textbox").fill("保存していない編集");
+  await page.evaluate(() => {
+    window.__qaOriginalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = () => { throw new DOMException("Save disabled", "QuotaExceededError"); };
+  });
+  await page.getByRole("button", { name: "下書き保存", exact: true }).click();
+  const feedback = form.locator('.editor-feedback[role="alert"]');
+  await feedback.getByText(/下書きを保存できませんでした/).waitFor();
+  await page.waitForFunction(() => document.activeElement?.classList.contains("editor-feedback"));
+  assert.ok((await feedback.boundingBox()).y < 160, "Draft errors must scroll to the top of the editor");
+  await page.getByRole("button", { name: "下書き保存", exact: true }).click();
+  await page.waitForFunction(() => document.activeElement?.classList.contains("editor-feedback"));
+  assert.ok((await feedback.boundingBox()).y < 160, "Repeating the same failure must reveal the error again");
+  assert.equal(await title.getByRole("textbox").inputValue(), "保存していない編集");
+  await page.evaluate(() => { Storage.prototype.setItem = window.__qaOriginalSetItem; });
   const stayInEditor = page.waitForEvent("dialog").then(dialog => dialog.dismiss());
   await Promise.all([stayInEditor, page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click()]);
   assert.equal(await title.getByRole("textbox").inputValue(), "保存していない編集", "The event shortcut must respect unsaved changes");
@@ -78,6 +93,14 @@ try {
   failHomeRead = false;
   await page.getByRole("button", { name: "もう一度読み込む", exact: true }).click();
   await title.getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
+  invalidHeaderImage = true;
+  await form.getByRole("button", { name: "再読み込み", exact: true }).click();
+  await title.getByText("ノンアルコールでも、お食事だけでも。", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
+  await form.getByRole("region", { name: "直す項目" }).getByRole("link", { name: "ヘッダーのロゴ画像", exact: true }).click();
+  await page.waitForFunction(() => Boolean(document.activeElement?.closest("#headerLogo")));
+  assert.equal(await page.locator('#headerLogo input[type="url"]').inputValue(), "http://example.invalid/invalid.jpg", "An error outside the selected card must still open its field");
+  invalidHeaderImage = false;
   const scriptErrors = [];
   page.on("pageerror", error => scriptErrors.push(error.message));
   await page.evaluate(() => localStorage.setItem("bassic-admin-last-deploy", JSON.stringify({
