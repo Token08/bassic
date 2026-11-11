@@ -233,12 +233,7 @@ function compactItemMatches(endpointId: string, item: Record<string, unknown>) {
 }
 
 async function getCompactItems() {
-  const params = new URLSearchParams({
-    limit: "100",
-    orders: "displayOrder"
-  });
-  const data = await microCmsFetch(`/${compactStoreEndpointId}?${params.toString()}`);
-  return Array.isArray(data?.contents) ? (data.contents as Record<string, unknown>[]) : [];
+  return readAllItems(compactStoreEndpointId, "displayOrder");
 }
 
 async function findCompactObject(endpointId: string) {
@@ -257,12 +252,9 @@ function expandCompactObject(endpointId: string, item: Record<string, unknown> |
 
   const body = typeof item.body === "string" ? item.body : "";
 
-  try {
-    const parsed = JSON.parse(body);
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? { ...parsed, id: item.id } : item;
-  } catch {
-    return item;
-  }
+  const parsed = JSON.parse(body);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("保存データの形式を確認してください。");
+  return { ...parsed, id: item.id };
 }
 
 export function getEndpoint(endpoint: string) {
@@ -325,6 +317,7 @@ async function microCmsFetch(path: string, init: RequestInit = {}) {
   }
   const response = await fetch(`${getContentBaseUrl()}${path}`, {
     ...init,
+    signal: init.signal ?? AbortSignal.timeout(8000),
     headers: {
       ...headers(),
       ...(init.headers || {})
@@ -354,6 +347,10 @@ export async function getContent(endpointId: string) {
   const endpoint = getEndpoint(endpointId);
 
   try {
+    if (endpointId === "social-notices") {
+      return { contents: await getStoredItems("social-notices") };
+    }
+
     if (isCompactListEndpoint(endpointId)) {
       const contents = (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
 
@@ -372,31 +369,66 @@ export async function getContent(endpointId: string) {
       return await microCmsFetch(`/${endpoint.id}`);
     }
 
-    const params = new URLSearchParams({
-      limit: "100"
-    });
-
-    if (endpoint.defaultOrders) {
-      params.set("orders", endpoint.defaultOrders);
-    }
-
-    const data = await microCmsFetch(`/${endpoint.id}?${params.toString()}`);
-    const contents = Array.isArray(data?.contents) ? data.contents : [];
+    const contents = await readAllItems(endpoint.id, endpoint.defaultOrders);
 
     if (!contents.length && (endpointId === "menu" || endpointId === "drink-menu-sheets")) {
       return getFallbackContent(endpointId, endpoint);
     }
 
     return endpointId === "hero-slides"
-      ? { ...data, contents: contents.map((slide: Record<string, unknown>) => ({ ...slide, ...unpackSlideTitle(slide.title) })) }
-      : data;
+      ? { contents: contents.map((slide) => ({ ...slide, ...unpackSlideTitle(slide.title) })) }
+      : { contents };
   } catch (error) {
-    if (process.env.ADMIN_ALLOW_CONTENT_FALLBACK === "false") {
+    if (process.env.ADMIN_ALLOW_CONTENT_FALLBACK !== "true" || process.env.NODE_ENV === "production") {
       throw error;
     }
 
     return getFallbackContent(endpointId, endpoint);
   }
+}
+
+async function readAllItems(endpoint: string, orders = "createdAt") {
+  const items: Record<string, unknown>[] = [];
+  const seenIds = new Set<string>();
+  for (let offset = 0; ; offset += 100) {
+    const query = new URLSearchParams({ limit: "100", orders, offset: String(offset) });
+    const data = await microCmsFetch(`/${endpoint}?${query}`);
+    if (!Array.isArray(data?.contents)) throw new Error("CMS一覧を取得できませんでした。");
+    for (const item of data.contents) {
+      if (!item || typeof item.id !== "string" || seenIds.has(item.id)) {
+        throw new Error("CMS一覧を最後まで確認できませんでした。もう一度読み込んでください。");
+      }
+      seenIds.add(item.id);
+    }
+    items.push(...data.contents);
+    if (data.contents.length < 100 || items.length >= data.totalCount) break;
+  }
+  return items;
+}
+
+export async function getStoredItems(endpointId: "events" | "social-notices") {
+  const items = await readAllItems(endpointId === "events" ? "events" : compactStoreEndpointId);
+  return endpointId === "events" ? items : items.filter((item) => compactItemMatches(endpointId, item));
+}
+
+export function facebookEventIdentity(event: Record<string, unknown>) {
+  try {
+    const url = new URL(String(event.sourceUrl || ""));
+    if (["facebook.com", "www.facebook.com", "m.facebook.com", "mbasic.facebook.com", "fb.me"].includes(url.hostname)) {
+      const parts = url.pathname.split("/");
+      const index = parts.indexOf("events");
+      const id = index >= 0 ? parts.slice(index + 1).reverse().find((part) => /^\d{6,}$/.test(part)) : undefined;
+      if (id) return id;
+    }
+  } catch {
+    // Older records may contain only the source ID.
+  }
+  const sourceId = String(event.sourceId || "");
+  return event.sourceType === "facebook" && /^\d{6,}$/.test(sourceId) ? sourceId : "";
+}
+
+export async function findFacebookEvents(sourceId: string) {
+  return (await getStoredItems("events")).filter((event) => facebookEventIdentity(event) === sourceId);
 }
 
 export async function createContent(endpointId: string, draft: Record<string, unknown>) {

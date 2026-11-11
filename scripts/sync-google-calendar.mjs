@@ -5,14 +5,16 @@ import { upsertCalendarEvents } from "./calendar-upsert.mjs";
 
 const root = process.cwd();
 const inputPath = process.env.GOOGLE_CALENDAR_SYNC_INPUT || path.join(root, "public", "data", "facebook-events.json");
+const writeCalendarId = process.env.GOOGLE_CALENDAR_ID?.trim();
 const calendarId =
-  process.env.GOOGLE_CALENDAR_ID ||
+  writeCalendarId ||
   process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID ||
   "bpi41sabm94gp0sni0ps7vajkc@group.calendar.google.com";
 const clearBeforeSync = process.env.GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC === "true";
 const syncTag = process.env.GOOGLE_CALENDAR_SYNC_TAG || "bassic-facebook-sync";
 const timezone = process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Tokyo";
 const dryRun = process.env.GOOGLE_CALENDAR_SYNC_DRY_RUN === "true";
+const cmsOnly = process.env.GOOGLE_CALENDAR_SYNC_CMS_ONLY === "true";
 const failOnWarnings = process.env.GOOGLE_CALENDAR_SYNC_FAIL_ON_WARNINGS === "true";
 const allowSyncWarnings = process.env.GOOGLE_CALENDAR_SYNC_ALLOW_WARNINGS === "true";
 const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp");
@@ -22,6 +24,9 @@ let inputFileWarning = "";
 async function main() {
   if (clearBeforeSync) {
     throw new Error("カレンダーの一括削除は無効です。GOOGLE_CALENDAR_CLEAR_BEFORE_SYNC=false にしてください。");
+  }
+  if (!dryRun && !writeCalendarId) {
+    throw new Error("書き込み先の GOOGLE_CALENDAR_ID を明示してください。");
   }
   const events = await readEvents();
   if (inputFileWarning && dryRun) {
@@ -116,7 +121,7 @@ async function main() {
 
 async function readEvents() {
   const managedEvents = await readManagedFacebookEvents();
-  const fileEvents = await readInputFileEvents();
+  const fileEvents = cmsOnly ? [] : await readInputFileEvents();
   const events = dedupeEvents([...managedEvents, ...fileEvents]);
   skippedSyncEvents = events.filter((event) => event.isPublished && (!event.title || !event.date));
   return events.filter((event) => event.isPublished && event.title && event.date);
@@ -137,28 +142,33 @@ async function readManagedFacebookEvents() {
   const apiKey = process.env.MICROCMS_API_KEY;
 
   if (!serviceDomain || !apiKey) {
+    if (cmsOnly) throw new Error("CMSの接続情報がないため同期を停止しました。");
     return [];
   }
 
-  const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date`, {
-    headers: {
-      "X-MICROCMS-API-KEY": apiKey
-    },
-    cache: "no-store",
-    signal: AbortSignal.timeout(15000)
-  });
+  const contents = [];
+  for (let offset = 0; ; offset += 100) {
+    const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date&offset=${offset}`, {
+      headers: { "X-MICROCMS-API-KEY": apiKey },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000)
+    });
 
-  if (!response.ok) {
-    throw new Error(`CMSイベントを取得できないため、カレンダー同期を停止しました (${response.status})。`);
-  }
+    if (!response.ok) {
+      throw new Error(`CMSイベントを取得できないため、カレンダー同期を停止しました (${response.status})。`);
+    }
 
-  const data = await response.json();
-  if (!Array.isArray(data.contents)) {
-    throw new Error("CMSイベントの応答形式が不正なため、カレンダー同期を停止しました。");
+    const data = await response.json();
+    if (!Array.isArray(data.contents)) {
+      throw new Error("CMSイベントの応答形式が不正なため、カレンダー同期を停止しました。");
+    }
+    contents.push(...data.contents);
+    if (data.contents.length < 100 || contents.length >= data.totalCount) break;
   }
-  return data.contents
+  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: timezone, dateStyle: "short" }).format(new Date());
+  return contents
     .map(normalizeEvent)
-    .filter((event) => event && event.isPublished && isFacebookEvent(event));
+    .filter((event) => event && event.isPublished && isFacebookEvent(event) && (!cmsOnly || !event.date || event.date >= today));
 }
 
 function normalizeEvent(event) {
@@ -275,7 +285,9 @@ function collectEventWarnings(event) {
     warnings.push("FacebookイベントURLが個別イベントURLではない可能性があります。例: https://www.facebook.com/events/1234567890/");
   }
 
-  if (!event.startTime && !event.openTime) {
+  if (cmsOnly && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(event.startTime || "")) {
+    warnings.push("確認済みの開始時刻が必要です。管理画面でSTARTを入力してください。");
+  } else if (!event.startTime && !event.openTime) {
     warnings.push("開始時間が未入力です。Google Calendarには20:00開始として登録されます。");
   }
 
@@ -283,7 +295,7 @@ function collectEventWarnings(event) {
     warnings.push("終了時間から時刻を読み取れません。例: 22:00");
   }
 
-  if (event.sourceType === "facebook" && !event.image?.url) {
+  if (!cmsOnly && event.sourceType === "facebook" && !event.image?.url) {
     warnings.push("画像URLが未入力です。Google Calendarの説明欄に画像リンクは入りません。");
   }
 

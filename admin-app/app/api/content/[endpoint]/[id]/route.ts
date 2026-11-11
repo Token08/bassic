@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
-import { deleteContent, updateContent } from "@/lib/microcms";
+import { deleteContent, facebookEventIdentity, findFacebookEvents, updateContent } from "@/lib/microcms";
 
 export const runtime = "nodejs";
 
@@ -19,6 +19,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { endpoint, id } = await context.params;
     const payload = (await request.json()) as Record<string, unknown>;
+    const sourceId = endpoint === "events" ? facebookEventIdentity(payload) : "";
+    if (sourceId && (await findFacebookEvents(sourceId)).some((item) => item.id !== id)) {
+      return NextResponse.json({ ok: false, message: "同じFacebookイベントが別の項目に登録されています。登録済みのイベントを開いてください。" }, { status: 409 });
+    }
     const data = await updateContent(endpoint, id, payload);
 
     return NextResponse.json({ ok: true, data });

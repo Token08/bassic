@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
-import { createContent, getContent } from "@/lib/microcms";
+import { createContent, facebookEventIdentity, getStoredItems } from "@/lib/microcms";
 
 export const runtime = "nodejs";
 
 type Draft = Record<string, unknown>;
-
-type ListResponse = {
-  contents?: Array<Draft & { id?: string }>;
-};
 
 const targetPlatforms = ["facebook", "instagram", "x"] as const;
 type TargetPlatform = (typeof targetPlatforms)[number];
@@ -30,7 +26,7 @@ function getImageUrl(value: unknown) {
 }
 
 function getEventKey(event: Draft) {
-  return getString(event.sourceId) || getString(event.id) || getString(event.sourceUrl);
+  return facebookEventIdentity(event) || getString(event.sourceId) || getString(event.id) || getString(event.sourceUrl);
 }
 
 function buildBaseEventLines(event: Draft) {
@@ -108,10 +104,12 @@ function buildNotice(event: Draft, platform: TargetPlatform) {
 function alreadyQueued(notice: Draft, event: Draft, platform: string) {
   const eventKey = getEventKey(event);
   const sourceUrl = getString(event.sourceUrl);
+  const facebookId = facebookEventIdentity(event);
 
   return (
     getString(notice.platform) === platform &&
     ((eventKey && getString(notice.sourceEventId) === eventKey) ||
+      (facebookId && [notice.sourceEventUrl, notice.url].some((url) => facebookEventIdentity({ sourceUrl: url }) === facebookId)) ||
       (sourceUrl && (getString(notice.sourceEventUrl) === sourceUrl || getString(notice.url) === sourceUrl)))
   );
 }
@@ -125,7 +123,7 @@ function getPlatforms(values?: string[]) {
     targetPlatforms.includes(platform as TargetPlatform)
   );
 
-  return platforms.length ? platforms : [...targetPlatforms];
+  return [...new Set(platforms.length ? platforms : targetPlatforms)];
 }
 
 export async function POST(request: NextRequest) {
@@ -137,15 +135,26 @@ export async function POST(request: NextRequest) {
     event?: Draft;
     platforms?: string[];
     allowDraftCreation?: boolean;
+    eventId?: string;
   };
-  const event = payload.event || {};
+  let event = payload.event || {};
+  if (payload.eventId) {
+    try {
+      const stored = (await getStoredItems("events")).find(item => item.id === payload.eventId);
+      if (!stored) return NextResponse.json({ ok: false, message: "イベントが見つかりません。イベント一覧を確認してください。" }, { status: 404 });
+      if (!stored.isPublished) return NextResponse.json({ ok: false, message: "このイベントは非公開です。SNS下書きは作成していません。" }, { status: 409 });
+      event = stored;
+    } catch {
+      return NextResponse.json({ ok: false, message: "保存済みイベントを確認できません。入力を変えずに時間をおいて再確認してください。" }, { status: 502 });
+    }
+  }
   const platforms = getPlatforms(payload.platforms);
 
   if (!payload.allowDraftCreation && !event.isPublished) {
     return NextResponse.json({ ok: true, data: { created: [], skipped: ["event is not published"] } });
   }
 
-  if (!getString(event.title) || !getString(event.date) || !getString(event.startTime)) {
+  if (!getEventKey(event) || !getString(event.title) || !getString(event.date) || !getString(event.startTime)) {
     return NextResponse.json(
       { ok: false, message: "SNS下書きを作るには、イベント名・日付・STARTが必要です。" },
       { status: 400 }
@@ -153,27 +162,32 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const existing = (await getContent("social-notices")) as ListResponse;
-    const notices = existing.contents || [];
+    const notices = await getStoredItems("social-notices");
     const created: string[] = [];
     const skipped: string[] = [];
+    const review: string[] = [];
 
     for (const platform of platforms) {
-      if (notices.some((notice) => alreadyQueued(notice, event, platform))) {
+      const existing = notices.find((notice) => alreadyQueued(notice, event, platform));
+      const candidate = buildNotice(event, platform);
+      if (existing) {
         skipped.push(platform);
+        if (getString(existing.postText) !== candidate.postText || getImageUrl(existing.image) !== getImageUrl(candidate.image)) {
+          review.push(platform);
+        }
         continue;
       }
 
-      await createContent("social-notices", buildNotice(event, platform));
+      await createContent("social-notices", candidate);
       created.push(platform);
     }
 
-    return NextResponse.json({ ok: true, data: { created, skipped } });
-  } catch (error) {
+    return NextResponse.json({ ok: true, data: { created, skipped, review } });
+  } catch {
     return NextResponse.json(
       {
         ok: false,
-        message: error instanceof Error ? error.message : "SNS下書きの作成に失敗しました。"
+        message: "SNS下書きの作成結果を確認できませんでした。SNS欄を確認してください。"
       },
       { status: 502 }
     );
