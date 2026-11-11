@@ -31,6 +31,7 @@ import { mobileCrop } from "../../lib/responsive-media";
 import { getSection, homeFieldGroups, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
 import { resolvePublicUrl } from "@/lib/public-site-url";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { useErrorFocus } from "@/lib/use-error-focus";
 
 type Draft = Record<string, unknown>;
 type ApiResult<T = unknown> = {
@@ -571,12 +572,14 @@ function NoticeBox({ notice }: { notice: Notice }) {
       <Icon size={20} />
       <div>
         <span>{notice.message}</span>
-        <small>{helper}</small>
-        {notice.tone === "error" ? (
-          <small className="support-note">
+        {notice.tone === "error" ? <small>入力内容は残っています。</small> : null}
+        <details className="field-help">
+          <summary>詳しく見る</summary>
+          <small>{helper}</small>
+          {notice.tone === "error" ? <small className="support-note">
             直らない場合は、どの画面で何を押したか、表示されたメッセージ、スクリーンショットを保守担当者へ送ってください。
-          </small>
-        ) : null}
+          </small> : null}
+        </details>
         {notice.confirmationSteps?.length ? (
           <ul className="notice-checklist" aria-label="公開後の確認手順">
             {notice.confirmationSteps.map((step) => (
@@ -638,6 +641,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   const [retryingSocial, setRetryingSocial] = useState(false);
   const socialRetryRef = useRef(false);
   const { requestId, requestedAt } = notice;
+  const problemRef = useErrorFocus<HTMLElement>(status.state === "failed" || status.state === "unconfirmed" || retryError, status.state + String(retryError));
 
   useEffect(() => {
     if (!requestId || !requestedAt) {
@@ -736,7 +740,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   }
 
   return (
-    <section className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
+    <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
       <div>
         <strong>最後の公開操作</strong>
         <span>{notice.sourceLabel || "管理画面から公開"}</span>
@@ -989,16 +993,20 @@ function Field({
   field,
   value,
   error,
-  onChange
+  onChange,
+  hideLabel = false
 }: {
   field: FieldDefinition;
   value: unknown;
   error?: string;
   onChange: (value: unknown) => void;
+  hideLabel?: boolean;
 }) {
   const common = {
     id: field.key,
-    name: field.key
+    name: field.key,
+    "aria-invalid": Boolean(error),
+    "aria-describedby": error ? `${field.key}-error` : undefined
   };
   const urlValue = field.type === "url" ? getString(value).trim() : "";
   const canPreviewUrl = Boolean(urlValue) && isPreviewableManagedUrl(field, urlValue);
@@ -1008,11 +1016,11 @@ function Field({
   }
 
   return (
-    <label className={`field field-${field.type}`} htmlFor={field.key}>
-      <span>
+    <div className={`field field-${field.type}`}>
+      <label htmlFor={field.key} className={hideLabel ? "sr-only" : undefined}>
         {field.label}
         {field.required ? <b>必須</b> : null}
-      </span>
+      </label>
       {field.type === "textarea" ? (
         <textarea
           {...common}
@@ -1059,13 +1067,13 @@ function Field({
       ) : null}
       {field.key === "isPublished" ? (
         <small className="field-publish-help">
-          ONにすると「プレビューして公開」後に公開サイトへ表示されます。OFFのまま保存すると下書きとして残ります。
+          ON：掲載 ／ OFF：非公開
         </small>
       ) : null}
-      {field.type === "image" ? <ImageField value={value} onChange={onChange} /> : null}
-      {field.hint ? <small className="field-hint">{field.hint}</small> : null}
-      {error ? <small className="form-error">{error}</small> : null}
-    </label>
+      {field.type === "image" ? <div id={field.key}><ImageField value={value} onChange={onChange} /></div> : null}
+      {field.hint ? <details className="field-help"><summary>入力のヒント</summary><p>{field.hint}</p></details> : null}
+      {error ? <small id={`${field.key}-error`} className="form-error">{error}</small> : null}
+    </div>
   );
 }
 
@@ -1136,9 +1144,7 @@ function EditableFieldCard({
           </span>
           {!isEditing ? (
             <strong className={hasValue ? "" : "empty"}>{getFieldSummaryValue(section, field, displayValue)}</strong>
-          ) : (
-            <strong>下の入力欄で変更できます</strong>
-          )}
+          ) : null}
         </div>
         <button className="secondary-button compact" type="button" onClick={() => {
           setChangedWhileOpen(false);
@@ -1151,7 +1157,7 @@ function EditableFieldCard({
       </div>
 
       {isEditing ? (
-        <Field field={field} value={changedWhileOpen ? value : displayValue} error={error} onChange={(next) => {
+        <Field field={field} hideLabel value={changedWhileOpen ? value : displayValue} error={error} onChange={(next) => {
           setChangedWhileOpen(true);
           onChange(next);
         }} />
@@ -1161,7 +1167,6 @@ function EditableFieldCard({
             // eslint-disable-next-line @next/next/no-img-element
             <AdminImage src={getImageUrl(displayValue)} />
           ) : null}
-          {field.hint ? <small>{field.hint}</small> : null}
           {error ? <small className="form-error">{error}</small> : null}
         </div>
       )}
@@ -1268,7 +1273,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
             onChange={(event) => onChange({ ...image, alt: event.target.value })}
             placeholder="例: ライヴ会場のステージ"
           />
-          <small className="field-hint">画面には大きく表示されません。検索や読み上げ用に、写真に写っている内容を短く書きます。</small>
+          <small className="field-hint">読み上げ用の短い説明</small>
         </label>
         <label className="upload-button">
           {uploading ? <Loader2 className="spin" size={17} /> : <Upload size={17} />}
@@ -1288,7 +1293,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
           />
         </label>
       </div>
-      <p className="field-hint">画像はアップロードするか、https:// または /assets/ から始まるURLを入れてください。公開前に「画像を開いて確認」で正しい画像を確認します。横長画像は1600px以上がおすすめです。</p>
+      <details className="field-help"><summary>画像の選び方</summary><p>画像はアップロードするか、https:// または /assets/ から始まるURLを入れてください。公開前に「画像を開いて確認」で正しい画像を確認します。横長画像は1600px以上がおすすめです。</p></details>
       {uploadMessage ? <small className="form-success">{uploadMessage}</small> : null}
       {error ? <small className="form-error">{error}</small> : null}
     </div>
@@ -1767,7 +1772,7 @@ function SaveChoiceGuide() {
   );
 }
 
-function ValidationSummary({ errors, section }: { errors: Record<string, string>; section: SectionDefinition }) {
+function ValidationSummary({ errors, section, onSelect }: { errors: Record<string, string>; section: SectionDefinition; onSelect: (key: string) => void }) {
   const entries = Object.entries(errors);
 
   if (!entries.length) {
@@ -1778,15 +1783,14 @@ function ValidationSummary({ errors, section }: { errors: Record<string, string>
     <section className="validation-summary" aria-label="直す項目">
       <AlertCircle size={18} />
       <div>
-        <strong>公開前に直す項目があります。</strong>
-        <span>項目名を押すと入力欄へ移動できます。入力を直してから、もう一度「プレビューして公開」を押してください。</span>
+        <strong>要確認：{entries.length}項目</strong>
         <ul>
           {entries.map(([key, message]) => {
             const label = section.fields.find((field) => field.key === key)?.label || key;
 
             return (
               <li key={key}>
-                <a href={`#${key}`}>{label}</a>
+                <a href={`#${key}`} onClick={(event) => { event.preventDefault(); onSelect(key); }}>{label}</a>
                 <small>{message}</small>
               </li>
             );
@@ -2031,9 +2035,10 @@ function FacebookEventImportPanel({
       <div className="facebook-import-heading">
         <div>
           <strong>Facebookイベントを取り込む</strong>
-          <span>詳細URLにFacebookイベントURLを入れてから押すと、タイトル、画像、日付、STARTを読み取ります。</span>
-          <span>公開前に「日付」と「START」が入っているか必ず確認してください。</span>
-          <span>Google Calendarへ載せたい場合は、イベント公開後に「イベント名」「日付」「START」と一緒に保守担当者へ反映依頼してください。</span>
+          <span>イベント名・日時・画像を取得</span>
+          <details className="field-help"><summary>取り込みについて</summary>
+            <p>公開前に「日付」と「START」を確認してください。カレンダーへの掲載は、反映依頼メモを保守担当へ送って依頼します。</p>
+          </details>
         </div>
         <button className="secondary-button" type="button" disabled={!isFacebookEvent || loading} onClick={() => void importEvent()}>
           {loading ? <Loader2 className="spin" size={18} /> : <RefreshCw size={18} />}
@@ -2403,6 +2408,7 @@ function SectionEditor({
   const [draft, setDraft] = useState<Draft>(initialMergedDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<Notice | null>(null);
+  const feedbackRef = useErrorFocus<HTMLDivElement>(notice?.tone === "error", notice);
   const [showPreview, setShowPreview] = useState(false);
   const [socialCopyMessage, setSocialCopyMessage] = useState("");
   const [dirty, setDirty] = useState(false);
@@ -2891,7 +2897,7 @@ function SectionEditor({
 
     if (Object.keys(nextErrors).length) {
       setShowPreview(false);
-      setEditingFields(new Set(Object.keys(nextErrors)));
+      setEditingFields(current => new Set([...current, ...Object.keys(nextErrors)]));
       setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してから確認してください。") });
       return;
     }
@@ -2939,7 +2945,7 @@ function SectionEditor({
 
     const nextErrors = validate(preparedDraft);
     if (Object.keys(nextErrors).length) {
-      setEditingFields(new Set(Object.keys(nextErrors)));
+      setEditingFields(current => new Set([...current, ...Object.keys(nextErrors)]));
       setNotice({ tone: "error", message: getValidationNoticeMessage(nextErrors, "入力内容を直してください。") });
       return;
     }
@@ -3309,8 +3315,30 @@ function SectionEditor({
     );
   }
 
+  function revealErrorField(key: string) {
+    setEditingFields(current => new Set([...current, key]));
+    requestAnimationFrame(() => {
+      const target = document.getElementById(key);
+      if (!target) return;
+      let parent = target.parentElement;
+      while (parent) {
+        if (parent instanceof HTMLDetailsElement) parent.open = true;
+        parent = parent.parentElement;
+      }
+      const input = target.matches("input, textarea, select") ? target : target.querySelector<HTMLElement>("input, textarea, select");
+      input?.focus({ preventScroll: true });
+      target.scrollIntoView({ block: "center", behavior: "auto" });
+    });
+  }
+
   return (
     <div className="editor">
+      {notice ? <div ref={feedbackRef} tabIndex={-1} className="editor-feedback" role={notice.tone === "error" ? "alert" : undefined} aria-label="操作結果">
+        {(notice.requestId || notice.retryPublish) ? (
+          <DeployStatusCard key={notice.requestId || notice.requestedAt} notice={notice} onOpenSocialDrafts={onOpenSocialDrafts} onRetry={(next) => { setNotice(next); onDeployNotice(next); }} />
+        ) : <NoticeBox notice={notice} />}
+        <ValidationSummary errors={errors} section={section} onSelect={revealErrorField} />
+      </div> : null}
       <div className="editor-topbar">
         <button
           className="text-button"
@@ -3352,7 +3380,6 @@ function SectionEditor({
         <div>
           <p className="eyebrow">{section.shortTitle}</p>
           <h1>{editLabel?.split(" → ").at(-1) || section.title}</h1>
-          <p>{section.description}</p>
         </div>
         {section.kind === "list" && !eventEntry && !relatedEventId ? (
           <button className="secondary-button" type="button" onClick={startNewItem}>
@@ -3362,10 +3389,6 @@ function SectionEditor({
         ) : null}
       </div>
 
-      <div className="helper-panel">
-        <Info size={18} />
-        <span>{section.helperText}</span>
-      </div>
       {isMaintenanceSection ? (
         <div className="maintenance-warning">
           <AlertCircle size={18} />
@@ -3373,14 +3396,10 @@ function SectionEditor({
         </div>
       ) : null}
 
-      {notice ? (notice.requestId || notice.retryPublish) ? (
-        <DeployStatusCard key={notice.requestId || notice.requestedAt} notice={notice} onOpenSocialDrafts={onOpenSocialDrafts} onRetry={(next) => {
-          setNotice(next);
-          onDeployNotice(next);
-        }} />
-      ) : <NoticeBox notice={notice} /> : null}
       <details className="editor-help">
         <summary>編集・保存の手順を見る</summary>
+        <p>{section.description}</p>
+        <p>{section.helperText}</p>
         <EditorGuide section={section} dirty={dirty} selectedId={selectedId} />
       </details>
 
@@ -3486,12 +3505,10 @@ function SectionEditor({
           >
             {eventEntry ? (
               <section className="event-entry-guide" aria-label="イベント追加の流れ">
-                <strong>Facebookからイベントを追加</strong>
-                <ol><li>FacebookのURLを貼る</li><li>読み取った内容を確認・修正</li><li>サイトに掲載</li><li>SNS用の文面を使う</li></ol>
-                <p>最後の確認画面で確定するまで、サイトには掲載されません。SNSは文面をコピーしてスタッフが投稿します。</p>
+                <ol><li>URL入力</li><li>内容確認</li><li>サイト掲載</li><li>SNS文面</li></ol>
+                <p>確認後に掲載 ／ SNSは手動投稿</p>
               </section>
             ) : null}
-            <ValidationSummary errors={errors} section={section} />
             {!eventEntry && !(editLabel && section.kind === "object") ? <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} /> : null}
             {!eventEntry ? <RequiredProgress section={section} draft={draft} /> : null}
             {!eventEntry ? <EditorFocusTips section={section} /> : null}
@@ -3626,32 +3643,32 @@ function topPageActions(home: Draft): PageAdminAction[] {
   }
 
   return [
-    fields("ヘッダー", "ロゴ・背景を変える", "ページ上部に表示する画像", ["headerLogo", "headerBackground"]),
-    fields("ヘッダー", "メニューの表示名を変える", "ヘッダーの各ページへのリンク文言", select("headerNav")),
-    { label: "スライド写真を変える", group: "メインビジュアル", description: "共通写真、スマホ用写真、表示順", sectionId: "hero-slides", initialDraft: { page: "home" } },
-    fields("メインビジュアル", "見出し・説明文を変える", "メイン画像に重なる見出しと本文", ["heroEyebrow", "homeHeroTitle", "homeHeroLead", "heroMobileTitle"]),
-    fields("メインビジュアル", "重ねるロゴを変える", "メイン画像に重ねる店のロゴ", ["heroLogo"]),
-    fields("メインビジュアル", "ボタンの文言を変える", "地図・電話・予約のボタン", ["heroMapLabel", "heroCallLabel", "heroReserveLabel"]),
-    fields("初めての方へ", "見出し・説明文を変える", "紹介カードの上に出る文章", ["firstVisitEyebrow", "firstVisitTitle", "firstVisitDescription"]),
+    fields("ヘッダー", "ロゴ・背景", "ページ上部に表示する画像", ["headerLogo", "headerBackground"]),
+    fields("ヘッダー", "メニュー名", "ヘッダーの各ページへのリンク文言", select("headerNav")),
+    { label: "スライド写真", group: "メインビジュアル", description: "共通写真、スマホ用写真、表示順", sectionId: "hero-slides", initialDraft: { page: "home" } },
+    fields("メインビジュアル", "見出し・説明文", "メイン画像に重なる見出しと本文", ["heroEyebrow", "homeHeroTitle", "homeHeroLead", "heroMobileTitle"]),
+    fields("メインビジュアル", "重ねるロゴ", "メイン画像に重ねる店のロゴ", ["heroLogo"]),
+    fields("メインビジュアル", "地図・電話・予約ボタン", "地図・電話・予約のボタン", ["heroMapLabel", "heroCallLabel", "heroReserveLabel"]),
+    fields("初めての方へ", "見出し・説明文", "紹介カードの上に出る文章", ["firstVisitEyebrow", "firstVisitTitle", "firstVisitDescription"]),
     ...firstVisitSection.features.map((feature, index) => {
       const prefix = "firstVisitCard" + (index + 1);
       return {
-        ...fields("初めての方へ", "紹介カード" + (index + 1) + "を変える", getString(home[prefix + "Title"]) || feature.title, select(prefix)),
+        ...fields("初めての方へ", "紹介カード" + (index + 1), getString(home[prefix + "Title"]) || feature.title, select(prefix)),
         thumbnail: overviewImage(home[prefix + "Image"], editableMedia.atmosphereImages[index].src)
       };
     }),
-    fields("来店前の基本情報", "見出し・説明文を変える", "基本情報カードの上に出る文章", ["visitInfoTitle", "visitInfoLead"]),
-    ...visitInfoItems.map((item, index) => fields("来店前の基本情報", item.title + "カードを変える", getString(home["visitInfoCard" + (index + 1) + "Title"]) || item.title, select("visitInfoCard" + (index + 1)))),
-    fields("お店の紹介", "見出し・説明文を変える", "紹介カードの上に出る文章", ["localSearchEyebrow", "localSearchTitle", "localSearchLead"]),
-    ...localSearchSection.cards.map((item, index) => fields("お店の紹介", "紹介カード" + (index + 1) + "を変える", getString(home["localSearchCard" + (index + 1) + "Title"]) || item.title, select("localSearchCard" + (index + 1)))),
-    fields("SNS欄", "見出し・説明文を変える", "SNS欄の上に出る文章", ["socialEyebrow", "socialTitleLine1", "socialTitleLine2", "socialLead"]),
-    ...["Instagram", "Facebook", "X"].map((name) => fields("SNS欄", name + "の表示を変える", "アカウント表記や案内の表示", [...select("social" + name), ...(name === "Instagram" ? ["instagramWidgetSrc"] : [])])),
+    fields("来店前の基本情報", "見出し・説明文", "基本情報カードの上に出る文章", ["visitInfoTitle", "visitInfoLead"]),
+    ...visitInfoItems.map((item, index) => fields("来店前の基本情報", item.title + "カード", getString(home["visitInfoCard" + (index + 1) + "Title"]) || item.title, select("visitInfoCard" + (index + 1)))),
+    fields("お店の紹介", "見出し・説明文", "紹介カードの上に出る文章", ["localSearchEyebrow", "localSearchTitle", "localSearchLead"]),
+    ...localSearchSection.cards.map((item, index) => fields("お店の紹介", "紹介カード" + (index + 1), getString(home["localSearchCard" + (index + 1) + "Title"]) || item.title, select("localSearchCard" + (index + 1)))),
+    fields("SNS欄", "見出し・説明文", "SNS欄の上に出る文章", ["socialEyebrow", "socialTitleLine1", "socialTitleLine2", "socialLead"]),
+    ...["Instagram", "Facebook", "X"].map((name) => fields("SNS欄", name, "アカウント表記や案内の表示", [...select("social" + name), ...(name === "Instagram" ? ["instagramWidgetSrc"] : [])])),
     { label: "サイトに載せるお知らせを編集する", group: "SNS欄", description: "SNS投稿へのリンクとお知らせ文", sectionId: "social-notices" },
-    fields("アクセス", "行き方案内・ボタンを変える", "TOPの案内文やボタン", select("homeAccess")),
-    { label: "店舗情報・リンクを変える", group: "アクセス", description: "住所・電話・営業時間・地図リンク。ほかのページにも反映されます。", sectionId: "site-settings" },
-    fields("フッター", "背景を変える", "ページ最下部の背景画像", ["footerBackground"]),
-    fields("フッター", "店名・著作権表記を変える", "ページ最下部の文章", ["footerStoreName", "footerCopyright"]),
-    fields("スマホ下部の固定ボタン", "固定ボタンを変える", "スマホの画面下に常に表示。文言と表示するボタンを選べます。", select("mobile"))
+    fields("アクセス", "行き方案内・ボタン", "TOPの案内文やボタン", select("homeAccess")),
+    { label: "店舗情報・リンク", group: "アクセス", description: "住所・電話・営業時間・地図リンク。ほかのページにも反映されます。", sectionId: "site-settings" },
+    fields("フッター", "背景", "ページ最下部の背景画像", ["footerBackground"]),
+    fields("フッター", "店名・著作権", "ページ最下部の文章", ["footerStoreName", "footerCopyright"]),
+    fields("スマホ下部の固定ボタン", "固定ボタン", "スマホの画面下に常に表示。文言と表示するボタンを選べます。", select("mobile"))
   ];
 }
 
@@ -3887,7 +3904,7 @@ function PageBasedDashboard({
                 {thumbnail ? <ActionThumbnail key={thumbnail} url={thumbnail} /> : null}
                 <span className="action-preview-copy">
                   <strong>{action.label}</strong>
-                  <small className="action-preview-caption">現在の内容</small>
+                  <small className="action-preview-caption">現在</small>
                   {title ? <span className="action-preview-current">{getString(title.value)}</span> : null}
                   <span className="action-preview-excerpt">{excerpt || (!title ? action.description : "")}</span>
                   {action.sectionId === "site-settings" ? <small>他のページにも反映</small> : null}
@@ -3909,8 +3926,8 @@ function PageBasedDashboard({
           <p className="eyebrow">{activePage.title}</p>
           {editing ? <p className="workspace-location" aria-label="現在の編集場所">{activeEditLabel || activePage.title}</p> : (
             <>
-              <h1>変更したい場所を選んでください</h1>
-              <p>中央のページで場所を選び、右の「編集する」から内容を変更できます。</p>
+              <h1>編集する場所</h1>
+              <p>ページ内の写真・文章を選択</p>
             </>
           )}
         </div>
@@ -3921,9 +3938,9 @@ function PageBasedDashboard({
       </div>
 
       {!activeEditLabel?.startsWith("イベント追加") ? <ol className="workspace-steps" aria-label="操作の流れ">
-        <li><span>1</span>左でページを選ぶ</li>
-        <li aria-current={!editing ? "step" : undefined}><span>2</span>変更する場所・項目を選ぶ</li>
-        <li aria-current={editing ? "step" : undefined}><span>3</span>中央で編集・公開する</li>
+        <li><span>1</span>ページ</li>
+        <li aria-current={!editing ? "step" : undefined}><span>2</span>編集箇所</li>
+        <li aria-current={editing ? "step" : undefined}><span>3</span>編集・掲載</li>
       </ol> : null}
 
       <div className="visual-editor-workspace">
@@ -3945,7 +3962,7 @@ function PageBasedDashboard({
               <div className="page-section-heading">
                 <div>
                   <strong>{selection ? selection.layout.key.startsWith("custom-") ? selection.layout.heading : expandedGroup : "編集する場所を選ぶ"}</strong>
-                  <p>{selection ? "現在の内容を確認し、変更したい行を押してください。" : "中央のページで変更したい場所を押してください。下の一覧からも選べます。"}</p>
+                  <p>{selection ? "" : "写真・文章を選択"}</p>
                 </div>
                 <a className="public-page-link" href={resolvePublicUrl(activePage.publicPath, publicSiteUrl)} target="_blank" rel="noreferrer" aria-label={activePage.publicLabel}>
                   <ExternalLink size={14} />

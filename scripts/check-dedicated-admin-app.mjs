@@ -599,7 +599,7 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
   const required = [
     "aria-label=\"この画像を外す\"",
     "画像を外す",
-    "検索や読み上げ用に、写真に写っている内容を短く書きます。",
+    "読み上げ用の短い説明",
     "画像をアップロードしました。まだ公開サイトには反映されていません。",
     "画像を開いて確認し、下書き保存またはプレビューして公開してください。"
   ];
@@ -1023,13 +1023,13 @@ function checkAdminValidationSummaryLinksFields() {
   const cssText = readFileSync(cssFile, "utf8");
   const required = [
     [clientFile, clientText, "function ValidationSummary"],
-    [clientFile, clientText, "公開前に直す項目があります。"],
-    [clientFile, clientText, "項目名を押すと入力欄へ移動できます。"],
-    [clientFile, clientText, "入力を直してから、もう一度「プレビューして公開」を押してください。"],
+    [clientFile, clientText, "要確認："],
+    [clientFile, clientText, "onSelect(key)"],
+    [clientFile, clientText, "revealErrorField"],
     [clientFile, clientText, "href={`#${key}`}"],
     [clientFile, clientText, "className=\"missing-required-links\""],
     [clientFile, clientText, "href={`#${field.key}`}"],
-    [clientFile, clientText, "<ValidationSummary errors={errors} section={section} />"],
+    [clientFile, clientText, "<ValidationSummary errors={errors} section={section} onSelect={revealErrorField} />"],
     [cssFile, cssText, ".validation-summary"],
     [cssFile, cssText, ".validation-summary a"],
     [cssFile, cssText, ".missing-required-links"],
@@ -1072,7 +1072,7 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "次は画面下の「プレビューして公開」を押してください。",
     "入力内容・リンク先・画像",
     "「公開する」がONの項目",
-    "ONにすると「プレビューして公開」後に公開サイトへ表示されます",
+    "ON：掲載 ／ OFF：非公開",
     "field-publish-help",
     "下書きはこのブラウザに保存します",
     "サイトへ反映する時は「プレビューして公開」で確認画面へ進みます",
@@ -1326,7 +1326,7 @@ function checkFacebookEventImportPanel() {
     "読み取り結果の確認",
     "FacebookイベントURL・詳細URL",
     "sourceId: data.sourceId",
-    "Google Calendarへ載せたい場合",
+    "カレンダーへの掲載",
     "Google Calendar反映依頼メモ",
     "Google Calendarにも反映してください。",
     "公開状態",

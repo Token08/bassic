@@ -129,6 +129,60 @@ summary:focus-visible {
   font-size: 0.85rem;
 }
 
+.editor-feedback,
+.deploy-status {
+  scroll-margin-top: 96px;
+}
+
+.editor-feedback:focus,
+.deploy-status:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.editor-feedback[role="alert"] {
+  margin-bottom: 18px;
+}
+
+.field-help {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.field-help > summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.field-help p {
+  margin: 6px 0;
+}
+
+.editor-help > p {
+  padding-inline: 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.field > label {
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.image-controls .upload-button {
+  order: -1;
+}
+
+.action-preview-current,
+.action-preview-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .editor-help .editor-guide {
   margin: 0;
   border: 0;
