@@ -1100,19 +1100,19 @@ h3 {
   align-items: center;
   gap: 18px;
   min-width: 0;
-  min-height: 132px;
+  min-height: 168px;
   padding: 26px;
   border: 1px solid rgba(255, 247, 217, 0.22);
   border-radius: 8px;
-  background: rgba(255, 247, 217, 0.035);
+  background: var(--red-bright);
   color: var(--ivory);
   text-decoration: none;
   transition: background 160ms ease, border-color 160ms ease;
 }
 
 .social-account-link:hover {
-  background: rgba(255, 247, 217, 0.08);
-  border-color: var(--gold);
+  background: var(--red-bright);
+  border-color: var(--ivory);
 }
 
 .social-account-link:focus-visible {
@@ -1123,12 +1123,15 @@ h3 {
 .social-account-logo {
   display: grid;
   place-items: center;
-  flex: 0 0 58px;
-  height: 58px;
-  border: 1px solid rgba(255, 247, 217, 0.15);
-  border-radius: 50%;
-  color: var(--gold);
-  background: rgba(122, 15, 27, 0.25);
+  flex: 0 0 96px;
+  height: 96px;
+}
+
+.social-account-logo img {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
 }
 
 .social-account-copy {
@@ -1138,7 +1141,7 @@ h3 {
 }
 
 .social-account-name {
-  color: var(--gold);
+  color: var(--ivory);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -1154,12 +1157,14 @@ h3 {
 .social-account-arrow {
   flex-shrink: 0;
   margin-left: auto;
-  color: var(--gold);
+  color: var(--ivory);
 }
 
 @media (max-width: 1000px) {
   .social-account-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
-  .social-account-link { min-height: 106px; padding: 20px; }
+  .social-account-link { min-height: 132px; padding: 20px; }
+  .social-account-logo { flex-basis: 80px; height: 80px; }
+  .social-account-logo img { width: 80px; height: 80px; }
   .social-account-id { font-size: 1.1rem; }
 }
 
