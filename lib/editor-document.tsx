@@ -438,6 +438,10 @@ export function renderVisualTree(
   }
   if (Object.keys(commonMobile).length)
     css.push(`@media(max-width:767px){body{${styleText(commonMobile)}}}`);
+  if (commonMobile.fontSize)
+    css.push(
+      `@media(max-width:767px){html{font-size:${commonMobile.fontSize}}}`,
+    );
   for (const [key, selector] of [
     ["dialogStyle", ".native-image-modal"],
     ["dialogButtonStyle", ".native-image-modal button"],
@@ -742,6 +746,10 @@ export function renderVisualTree(
       const box = Object.keys(override.style || {}).some(
         (key) => key !== "color",
       );
+      if (Object.keys(override.mobile || {}).some((key) => key !== "color"))
+        css.push(
+          `@media(max-width:767px){[data-visual-id="${id}"]{display:inline-flex!important}}`,
+        );
       if (
         override.style?.width ||
         override.style?.height ||

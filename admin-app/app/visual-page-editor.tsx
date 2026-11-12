@@ -1289,6 +1289,36 @@ export function VisualPageEditor({
                       </select>
                     </label>
                     <label>
+                      文字の太さ
+                      <select
+                        value={activeStyle?.fontWeight || ""}
+                        onChange={(e) =>
+                          styleField("fontWeight", e.target.value)
+                        }
+                      >
+                        <option value="">標準</option>
+                        <option value="300">細め</option>
+                        <option value="400">普通</option>
+                        <option value="700">太め</option>
+                        <option value="900">特に太く</option>
+                      </select>
+                    </label>
+                    <label>
+                      影
+                      <select
+                        value={activeStyle?.boxShadow || ""}
+                        onChange={(e) =>
+                          styleField("boxShadow", e.target.value)
+                        }
+                      >
+                        <option value="">標準</option>
+                        <option value="none">なし</option>
+                        <option value="0 4px 12px #0002">小さく</option>
+                        <option value="0 14px 34px #0003">普通</option>
+                        <option value="0 24px 60px #0004">大きく</option>
+                      </select>
+                    </label>
+                    <label>
                       文字の配置
                       <select
                         value={
