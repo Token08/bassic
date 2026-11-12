@@ -1752,6 +1752,19 @@ a.current-edit-page:hover {
   gap: 10px;
 }
 
+.pdf-field {
+  display: grid;
+  gap: 12px;
+}
+
+.pdf-field .upload-button {
+  width: fit-content;
+}
+
+.pdf-field small {
+  color: var(--muted);
+}
+
 .image-empty {
   display: grid;
   min-height: 96px;

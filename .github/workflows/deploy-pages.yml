@@ -55,7 +55,7 @@ jobs:
 
       - name: Check operation failure handling
         if: github.event_name != 'schedule'
-        run: node --experimental-strip-types --test scripts/ops-failure.test.mjs scripts/public-site-url.test.mjs scripts/calendar-upsert.test.mjs scripts/facebook-event-time.test.mjs
+        run: node --experimental-strip-types --test scripts/ops-failure.test.mjs scripts/public-site-url.test.mjs scripts/calendar-upsert.test.mjs scripts/facebook-event-time.test.mjs scripts/pdf-upload.test.mjs
 
       - name: Check microCMS schema
         env:

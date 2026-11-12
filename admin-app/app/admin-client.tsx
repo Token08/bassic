@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
+import { PdfField } from "./components/pdf-field";
 import { SnsPostingPanel } from "./components/sns-posting-panel";
 import { CalendarSyncStatus } from "./components/calendar-sync-status";
 import type { CalendarEventInput } from "@/lib/event-handoff";
@@ -1009,7 +1010,8 @@ function Field({
           placeholder={field.placeholder}
         />
       ) : null}
-      {["text", "url", "date", "number"].includes(field.type) ? (
+      {field.key === "pdfUrl" ? <PdfField id={field.key} value={getString(value)} onChange={onChange} /> : null}
+      {field.key !== "pdfUrl" && ["text", "url", "date", "number"].includes(field.type) ? (
         <input
           {...common}
           type={field.type === "number" ? "number" : field.type}
@@ -1018,7 +1020,7 @@ function Field({
           placeholder={field.placeholder}
         />
       ) : null}
-      {canPreviewUrl ? (
+      {canPreviewUrl && field.key !== "pdfUrl" ? (
         <a className="field-link-check" href={urlValue} target="_blank" rel="noreferrer">
           <ExternalLink size={15} />
           {getUrlPreviewLabel(field)}
