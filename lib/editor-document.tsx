@@ -105,6 +105,24 @@ export function mergeVisualPatch(
     mobile: { ...shared?.mobile, ...local?.mobile },
   };
 }
+export function rebaseVisualPatch(
+  patch: VisualPatch,
+  from: string,
+  to: string,
+): VisualPatch {
+  const rebase = (id: string) =>
+    id === from || id.startsWith(from + ".") ? to + id.slice(from.length) : id;
+  return {
+    ...patch,
+    order: patch.order?.map(rebase),
+    copies: patch.copies?.map((copy) => ({
+      ...copy,
+      id: rebase(copy.id),
+      source: rebase(copy.source),
+    })),
+    blocks: patch.blocks?.map((block) => ({ ...block, id: rebase(block.id) })),
+  };
+}
 export type VisualNode = {
   id: string;
   parent: string;
@@ -118,6 +136,7 @@ export type VisualNode = {
   hidden?: boolean;
   sourceTexts?: Record<string, string>;
   sourceAttrs?: Record<string, string>;
+  inherited?: string;
 };
 export const visualPaths = [
   "/",
@@ -415,6 +434,8 @@ export function renderVisualTree(
   const catalog: VisualNode[] = [],
     css: string[] = [],
     page = settings.pages[path] || { nodes: {} };
+  let desktopNavigation = "",
+    mobileNavigation = "";
   const styleText = (s: VisualStyle) =>
     Object.entries(s)
       .map(
@@ -573,9 +594,33 @@ export function renderVisualTree(
       ? id
       : section;
     record = typeof p["data-record"] === "string" ? p["data-record"] : record;
+    if (tag === "nav" && p["aria-label"] === "主要ナビゲーション")
+      desktopNavigation = id;
+    if (tag === "nav" && p["aria-label"] === "スマートフォン用ナビゲーション")
+      mobileNavigation = id;
+    const mirrorId =
+      desktopNavigation &&
+      mobileNavigation &&
+      (id === mobileNavigation || id.startsWith(mobileNavigation + "."))
+        ? desktopNavigation + id.slice(mobileNavigation.length)
+        : "";
+    const inherited =
+      mirrorId && catalog.some((n) => n.id === mirrorId)
+        ? {
+            source: mirrorId,
+            patch: rebaseVisualPatch(
+              mergeVisualPatch(
+                settings.shared.nodes[mirrorId],
+                page.nodes[mirrorId],
+              ),
+              mirrorId,
+              id,
+            ),
+          }
+        : undefined;
     const override = mergeVisualPatch(
-      settings.shared.nodes[id],
-      page.nodes[id],
+      inherited?.patch,
+      mergeVisualPatch(settings.shared.nodes[id], page.nodes[id]),
     );
     const raw = flatChildren(materialize(p.children as ReactNode));
     const texts: Record<string, string> = {};
@@ -670,6 +715,7 @@ export function renderVisualTree(
       children,
       record,
       hidden: !!override.hidden,
+      inherited: inherited?.source,
       sourceTexts,
       sourceAttrs,
     });
@@ -867,7 +913,9 @@ export function renderVisualTree(
       nextProps.style = {
         ...(nextProps.style as CSSProperties),
         ...(count
-          ? (!override.style?.gridTemplateColumns?{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }:{})
+          ? !override.style?.gridTemplateColumns
+            ? { gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }
+            : {}
           : { display: "none" }),
       };
     }

@@ -3101,6 +3101,7 @@ a.current-edit-page:hover {
 .visual-current-image {max-width:100%;max-height:320px;object-fit:contain;display:block;margin:20px 0}
 .visual-target-choice {display:block;text-align:left;width:100%;padding:12px;margin:7px 0;border:1px solid var(--line);border-radius:7px;background:#fffdf8;font:inherit;cursor:pointer;overflow-wrap:anywhere}
 .visual-target-choice:hover,.visual-target-choice:focus-visible {border-color:var(--red);background:#f8efdf}
+.visual-target-choice[aria-pressed=true] {border-color:var(--red);border-left-width:4px;background:#f8efdf;font-weight:800}
 .visual-target-choice {display:flow-root}
 .visual-target-choice img {float:left;width:72px;height:54px;object-fit:cover;margin-right:10px;border-radius:4px}
 .visual-style-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}

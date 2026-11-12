@@ -6,6 +6,7 @@ import {
   emptyVisualSettings,
   parseVisualSettings,
   mergeVisualPatch,
+  rebaseVisualPatch,
   type VisualSettings,
   type VisualNode,
   type VisualPatch,
@@ -239,6 +240,7 @@ export function VisualPageEditor({
   useEffect(() => {
     if (!loaded) return;
     setDocument(undefined);
+    setCatalog([]);
     setSelected("");
     setEditing(false);
     void refresh(settings).catch((e) => {
@@ -251,8 +253,17 @@ export function VisualPageEditor({
     target = scope === "shared" ? settings.shared : local,
     patch = target.nodes[selected] || {},
     effective = mergeVisualPatch(
-      settings.shared.nodes[selected],
-      local.nodes[selected],
+      node?.inherited
+        ? rebaseVisualPatch(
+            mergeVisualPatch(
+              settings.shared.nodes[node.inherited],
+              local.nodes[node.inherited],
+            ),
+            node.inherited,
+            node.id,
+          )
+        : undefined,
+      mergeVisualPatch(settings.shared.nodes[selected], local.nodes[selected]),
     );
   const displayLabel = (n: VisualNode) => {
     if (n.tag === "header") return "ヘッダー";
@@ -319,13 +330,20 @@ export function VisualPageEditor({
     setFailure(false);
     setNotice("");
   }
-  function update(part: Partial<VisualPatch>) {
+  function update(
+    part: Partial<VisualPatch>,
+    extraNodes: Record<string, VisualPatch> = {},
+  ) {
     if (part.attrs || part.mobileImage !== undefined)
       uploadController.current?.abort();
     if (!node) return;
     const next = {
       ...target,
-      nodes: { ...target.nodes, [node.id]: { ...patch, ...part } },
+      nodes: {
+        ...target.nodes,
+        ...extraNodes,
+        [node.id]: { ...patch, ...part },
+      },
     };
     const merged =
       scope === "shared"
@@ -386,12 +404,44 @@ export function VisualPageEditor({
       }
       return;
     }
-    update({
-      copies: [
-        ...(effective.copies || []),
-        { id: node.id + ".copy-" + crypto.randomUUID(), source: id },
-      ],
-    });
+    const copyId = node.id + ".copy-" + crypto.randomUUID();
+    const snapshots: Record<string, VisualPatch> = {};
+    for (const source of descendants(id)) {
+      const inherited = source.inherited
+        ? rebaseVisualPatch(
+            mergeVisualPatch(
+              settings.shared.nodes[source.inherited],
+              local.nodes[source.inherited],
+            ),
+            source.inherited,
+            source.id,
+          )
+        : undefined;
+      const current = mergeVisualPatch(
+        inherited,
+        mergeVisualPatch(
+          settings.shared.nodes[source.id],
+          local.nodes[source.id],
+        ),
+      );
+      const attrs = { ...source.attrs, ...current.attrs };
+      if (
+        source.attrs.src === "" &&
+        !Object.prototype.hasOwnProperty.call(current.attrs || {}, "src")
+      )
+        delete attrs.src;
+      snapshots[copyId + source.id.slice(id.length)] = rebaseVisualPatch(
+        { ...current, texts: { ...source.texts, ...current.texts }, attrs },
+        id,
+        copyId,
+      );
+    }
+    update(
+      {
+        copies: [...(effective.copies || []), { id: copyId, source: id }],
+      },
+      snapshots,
+    );
   }
   function exportInventory() {
     const rows = [
@@ -407,8 +457,17 @@ export function VisualPageEditor({
       ],
       ...catalog.map((n) => {
         const value = mergeVisualPatch(
-          settings.shared.nodes[n.id],
-          local.nodes[n.id],
+          n.inherited
+            ? rebaseVisualPatch(
+                mergeVisualPatch(
+                  settings.shared.nodes[n.inherited],
+                  local.nodes[n.inherited],
+                ),
+                n.inherited,
+                n.id,
+              )
+            : undefined,
+          mergeVisualPatch(settings.shared.nodes[n.id], local.nodes[n.id]),
         );
         return [
           path,
@@ -865,6 +924,13 @@ export function VisualPageEditor({
               </button>
               <p className="eyebrow">{editLocation}</p>
               <h2>{category}</h2>
+              {node.inherited ? (
+                <p className="eyebrow">
+                  {Object.keys(patch).length
+                    ? "スマホ用に個別設定"
+                    : "PCのメニューを引き継ぎ中"}
+                </p>
+              ) : null}
               <label>
                 反映する範囲
                 <select
@@ -1674,6 +1740,8 @@ export function VisualPageEditor({
                       <button
                         type="button"
                         className="visual-target-choice"
+                        aria-pressed={editing && n.id === selected}
+                        data-visual-target={n.id}
                         key={n.id}
                         onClick={() => open(n.id, cat)}
                       >
