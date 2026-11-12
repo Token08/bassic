@@ -37,6 +37,7 @@ jobs:
       - run: npm ci
       - run: npm ci --prefix admin-app
       - run: npm run test:events
+      - run: npm run test:publish-safety
       - run: npm run build
       - run: npm run build:admin-app
       # All provider writes stay in memory. No CMS or calendar secrets are used.

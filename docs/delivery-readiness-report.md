@@ -131,6 +131,7 @@ npm run check:handoff
 ```
 
 `npm run smoke:cms` と `npm run publish:social` は、ローカルにmicroCMS本番キーが無い場合は安全にスキップされます。
+`npm run smoke:admin-app` は本番の表示・ログイン保護を読み取るだけで、テストデータを作成・削除しません。書込み操作の回帰確認は `npm run smoke:events:isolated` と `npm run smoke:visual-editor` の隔離環境で行います。
 Vercel本番環境とGitHub Secretsには接続情報を設定済みです。
 
 `npm run smoke:handoff-rehearsal` は、TOP保存、EVENT下書き、MENU下書き、画像追加・並び替え・削除、X / Instagram下書き作成、SNS下書き重複防止をまとめて確認します。

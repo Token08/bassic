@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToReadableStream } from "react-dom/server.edge";
 import { isAuthenticatedRequest } from "@/lib/auth";
+import { withVisualHistory } from "@/lib/publish-review";
 import {
   getContent,
   updateObjectContent,
@@ -45,7 +46,8 @@ export async function PUT(r: NextRequest) {
   if (!isAuthenticatedRequest(r)) return reply({ ok: false }, 401);
   try {
     const payload = await r.json();
-    const settings = parseVisualSettings(payload.settings);
+    const { previous: _oldHistory, ...candidate } = payload.settings;
+    let settings = parseVisualSettings(candidate);
     const before = await stored();
     if (payload.baseRevision !== (before.revision || ""))
       return reply(
@@ -56,9 +58,9 @@ export async function PUT(r: NextRequest) {
         },
         409,
       );
-    settings.previous = { ...before };
-    delete settings.previous.previous;
     settings.revision = crypto.randomUUID();
+    settings.savedAt = new Date().toISOString();
+    settings = withVisualHistory(settings, before);
     parseVisualSettings(settings);
     await updateObjectContent(
       "visual-editor",
