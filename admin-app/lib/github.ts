@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { PublishStatus } from "./deploy-status";
 
 function getEnv(name: string, fallback?: string) {
   const value = process.env[name] || fallback;
@@ -50,7 +51,7 @@ export async function triggerDeploy() {
   };
 }
 
-export async function getDeployStatus(requestId: string, requestedAt: number) {
+export async function getDeployStatus(requestId: string, requestedAt: number): Promise<PublishStatus> {
   const owner = getEnv("GITHUB_OWNER", "Token08");
   const repo = getEnv("GITHUB_REPO", "bassic");
   const api = `https://api.github.com/repos/${owner}/${repo}/actions`;

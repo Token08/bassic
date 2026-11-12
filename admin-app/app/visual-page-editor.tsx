@@ -15,6 +15,7 @@ import {
 } from "@public/lib/editor-document";
 import { useErrorFocus } from "@/lib/use-error-focus";
 import { summarizeVisualChanges, visualHistory } from "@/lib/publish-review";
+import type { PublishStatus } from "@/lib/deploy-status";
 const pagePaths: Record<string, string> = {
   TOP: "/",
   "EVENT SCHEDULE": "/events/",
@@ -24,7 +25,7 @@ const pagePaths: Record<string, string> = {
   "FIRST VISIT": "/first-visit/",
   "ONLINE STORE": "/",
 };
-async function api(path: string, init?: RequestInit) {
+async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
@@ -639,9 +640,9 @@ export function VisualPageEditor({
     const until = Date.now() + 15 * 60000;
     async function poll() {
       try {
-        const result = await api("/api/deploy?" + new URLSearchParams(deploy!));
+        const result = await api<PublishStatus>("/api/deploy?" + new URLSearchParams(deploy!));
         if (stopped) return;
-        if (result.state === "success") {
+        if (result.state === "published") {
           const verified = await refresh(savedSettings.current || settings);
           if (
             !verified ||
@@ -663,6 +664,12 @@ export function VisualPageEditor({
         if (result.state === "failed") {
           setFailure(true);
           setNotice("掲載に失敗しました。保存済みの内容を再反映できます。");
+          finishDeployment();
+          return;
+        }
+        if (result.state === "unconfirmed") {
+          setFailure(true);
+          setNotice("公開処理は完了しましたが、サイトへの反映を確認できませんでした。公開サイトを確認してください。");
           finishDeployment();
           return;
         }

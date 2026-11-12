@@ -39,9 +39,18 @@ const originalFetch = globalThis.fetch;
 let writes = 0;
 let failReads = false;
 let servedRevision = "";
+let fixtureRequestId = "";
+let fixtureDeployState = "published";
 globalThis.fetch = async (input, init) => {
   const u = new URL(input instanceof Request ? input.url : input);
   if (u.hostname === "127.0.0.1") return originalFetch(input, init);
+  if (u.hostname === "api.github.com") {
+    assert.equal(init?.method || "GET", "GET", "Deployment checks must not dispatch real builds");
+    if (u.pathname.endsWith("/jobs"))
+      return Response.json({ jobs: [{ name: "publish-lolipop-release", steps: fixtureDeployState === "published" ? [{ name: "Confirm release served by the production site", conclusion: "success" }] : [] }] });
+    assert.ok(u.pathname.endsWith("/workflows/deploy-pages.yml/runs"));
+    return Response.json({ workflow_runs: [{ id: parseInt(fixtureRequestId.slice(0, 8), 16), display_title: "Bassic publish " + fixtureRequestId, status: "completed", conclusion: "success" }] });
+  }
   if (u.hostname === "www.bassic.jp")
     return new Response(
       "<html><head><style>" +
@@ -112,6 +121,15 @@ try {
   await call("visual-editor", "GET", null, 401);
   const login = await call("login", "POST", { password });
   cookie = login.response.headers.get("set-cookie").split(";")[0];
+  fixtureRequestId = crypto.randomUUID();
+  const statusQuery = new URLSearchParams({ id: fixtureRequestId, requestedAt: new Date().toISOString() });
+  assert.equal((await call("deploy?" + statusQuery)).data.state, "published");
+  fixtureDeployState = "unconfirmed";
+  fixtureRequestId = crypto.randomUUID();
+  statusQuery.set("id", fixtureRequestId);
+  statusQuery.set("requestedAt", new Date(Date.now() + 1).toISOString());
+  assert.equal((await call("deploy?" + statusQuery)).data.state, "unconfirmed");
+  fixtureDeployState = "published";
   const initial = (await call("visual-editor")).data;
   assert.equal(initial.version, 1);
   const pages = [
@@ -700,24 +718,20 @@ try {
       await failed.close();
       failReads = false;
       let deployMode = "fail";
-      await page.route("**/api/deploy*", (route) => {
+      await page.route("**/api/deploy*", async (route) => {
         if (route.request().method() === "POST" && deployMode === "fail")
           return route.fulfill({
             status: 502,
             json: { ok: false, message: "隔離テスト：掲載に失敗しました" },
           });
-        return route.fulfill({
-          json: {
-            ok: true,
-            data:
-              route.request().method() === "POST"
-                ? {
-                    requestId: crypto.randomUUID(),
-                    requestedAt: new Date().toISOString(),
-                  }
-                : { state: "success" },
-          },
-        });
+        if (route.request().method() === "POST") {
+          fixtureRequestId = crypto.randomUUID();
+          return route.fulfill({ json: { ok: true, data: { requestId: fixtureRequestId, requestedAt: new Date().toISOString() } } });
+        }
+        // Exercise the real status API and GitHub response parser, rather than
+        // inventing a terminal state in the browser mock.
+        const response = await originalFetch(route.request().url(), { headers: { Cookie: cookie } });
+        return route.fulfill({ status: response.status, json: await response.json() });
       });
       let releaseSave, saveEntered;
       const saveGate = new Promise((resolve) => {
@@ -780,6 +794,11 @@ try {
         "A double click must save one revision only",
       );
       deployMode = "success";
+      fixtureDeployState = "unconfirmed";
+      await page.getByRole("button", { name: "保存済みの内容を再反映", exact: true }).click();
+      await page.getByRole("alert").filter({ hasText: "公開処理は完了しましたが" }).waitFor();
+      assert.equal(writes, writesBeforeBrowser + 1, "Unconfirmed completion must stop polling without saving again");
+      fixtureDeployState = "published";
       await page
         .getByRole("button", { name: "保存済みの内容を再反映", exact: true })
         .click();
