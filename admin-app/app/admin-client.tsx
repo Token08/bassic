@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
 import { PublicPageCanvas } from "./public-page-canvas";
@@ -3875,6 +3875,8 @@ function PageBasedDashboard({
 
 export default function AdminClient() {
   const [editorState, setEditorState] = useState({ dirty: false, busy: false });
+  const editorStateRef=useRef(editorState);
+  const rememberEditorState=useCallback((value:{dirty:boolean;busy:boolean})=>{editorStateRef.current=value;setEditorState(value);},[]);
   const [checking, setChecking] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<ActiveSectionState | null>(null);
@@ -4064,7 +4066,7 @@ export default function AdminClient() {
         <div className="admin-workspace-content">
           <PageBasedDashboard
             onSelect={(next) => {
-              if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              if (!confirmLeavingEditor(editorStateRef.current.dirty, editorStateRef.current.busy)) return;
               setActiveSection(next);
             }}
             selectedPage={dashboardPage}
@@ -4077,7 +4079,7 @@ export default function AdminClient() {
             lastDeploy={lastDeploy}
             onDeployNotice={rememberDeployNotice}
             onOpenSocialDrafts={openRelatedSocialDrafts}
-            onEditorState={setEditorState}
+            onEditorState={rememberEditorState}
             health={health}
             opsStatus={opsStatus}
             activeEditLabel={activeSection?.editLabel}
@@ -4096,7 +4098,7 @@ export default function AdminClient() {
                 relatedEventId={activeSection.relatedEventId}
                 onOpenSocialDrafts={openRelatedSocialDrafts}
                 onBack={() => setActiveSection(null)}
-                onEditorState={setEditorState}
+                onEditorState={rememberEditorState}
                 onDeployNotice={rememberDeployNotice}
               />
             ) : undefined}

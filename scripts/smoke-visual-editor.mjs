@@ -617,10 +617,10 @@ try {
         .locator(".visual-child-row")
         .getByRole("button", { name: "複製", exact: true })
         .click();
-      await clonePage.getByText("複製したカード", { exact: true }).waitFor();
-      await clonePage.locator("#title input").waitFor();
+      await clonePage.getByRole('heading',{name:"複製したカード",exact:true}).waitFor();
+      await clonePage.locator("input#title").waitFor();
       assert.equal(
-        await clonePage.locator("#title input").inputValue(),
+        await clonePage.locator("input#title").inputValue(),
         "Fixture live",
       );
       assert.equal(

@@ -488,6 +488,8 @@ export function renderVisualTree(
     }
     if (type === Image) {
       type = "img";
+      p.loading = p.priority ? "eager" : p.loading || "lazy";
+      if (p.priority) p.fetchPriority = "high";
       const src = p.src as string | { src: string };
       p.src = typeof src === "object" ? src.src : src;
       if (p.fill) {
@@ -737,7 +739,24 @@ export function renderVisualTree(
           alt: override.attrs?.alt || "",
           children: undefined,
         });
-      return createElement(tag, { ...nextProps, children: el.props.children });
+      const box = Object.keys(override.style || {}).some(
+        (key) => key !== "color",
+      );
+      if (
+        override.style?.width ||
+        override.style?.height ||
+        override.mobile?.width ||
+        override.mobile?.height
+      )
+        css.push(`[data-visual-id="${id}"]>svg{width:100%;height:100%}`);
+      return createElement(tag, {
+        ...nextProps,
+        style: {
+          ...(nextProps.style as CSSProperties),
+          display: box ? "inline-flex" : "contents",
+        },
+        children: el.props.children,
+      });
     }
     const desktopIndex = raw.findIndex(
       (x) =>
