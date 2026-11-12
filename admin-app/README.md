@@ -107,6 +107,8 @@ npm run deploy:admin:prod
 
 ## Vercel設定
 
+機材PDFのアップロードは認証付きの `/api/pdf` を使います。既存の `GITHUB_DISPATCH_TOKEN`（対象リポジトリのContents書き込み権限）で、検証済みのPDFを `public/assets/pdf/uploads/<SHA256>.pdf` に保管します。同じファイルは再利用し、既存ファイルを上書きしません。アップロード時点ではCMSの掲載リンクを変更せず、確認後の掲載で切り替えます。配信には公開リポジトリのraw URLを使うため、ファイル自体はアップロード直後から公開されます。3MB以内に制限し、Vercel Previewでは書き込みを禁止しています。microCMSの有料ファイルプランは不要です。
+
 VercelのRoot Directoryを `admin-app` に設定してデプロイします。公開サイト側の `next.config.ts` は `output: "export"` のままなので、GitHub Pages運用には影響しません。
 
 `admin-app/vercel.json` にNext.js用の基本設定を入れています。

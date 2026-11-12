@@ -12,6 +12,9 @@ Object.assign(process.env, {
   ADMIN_SESSION_SECRET: password,
   MICROCMS_SERVICE_DOMAIN: "visual-fixture",
   MICROCMS_API_KEY: password,
+  GITHUB_OWNER: "fixture",
+  GITHUB_REPO: "fixture",
+  GITHUB_DISPATCH_TOKEN: password,
 });
 const menu = new Map([
   [
@@ -41,10 +44,22 @@ let failReads = false;
 let servedRevision = "";
 let fixtureRequestId = "";
 let fixtureDeployState = "published";
+const pdfFiles = new Map();
+let pdfWrites = 0;
 globalThis.fetch = async (input, init) => {
   const u = new URL(input instanceof Request ? input.url : input);
   if (u.hostname === "127.0.0.1") return originalFetch(input, init);
   if (u.hostname === "api.github.com") {
+    if (u.pathname.startsWith("/repos/fixture/fixture/contents/public/assets/pdf/uploads/")) {
+      const key = u.pathname;
+      if (init?.method === "PUT") {
+        const body = JSON.parse(init.body);
+        pdfFiles.set(key, Buffer.from(body.content, "base64"));
+        pdfWrites++;
+        return Response.json({}, { status: 201 });
+      }
+      return pdfFiles.has(key) ? new Response(pdfFiles.get(key)) : new Response(null, { status: 404 });
+    }
     assert.equal(init?.method || "GET", "GET", "Deployment checks must not dispatch real builds");
     if (u.pathname.endsWith("/jobs"))
       return Response.json({ jobs: [{ name: "publish-lolipop-release", steps: fixtureDeployState === "published" ? [{ name: "Confirm release served by the production site", conclusion: "success" }] : [] }] });
@@ -131,6 +146,21 @@ try {
   assert.equal((await call("deploy?" + statusQuery)).data.state, "unconfirmed");
   fixtureDeployState = "published";
   const initial = (await call("visual-editor")).data;
+  const realPdf = await readFile(new URL("../public/assets/pdf/equipment-rental-list.pdf", import.meta.url));
+  async function sendPdf(file, authorized = true) {
+    const body = new FormData();
+    body.set("file", file);
+    return originalFetch(base + "/api/pdf", { method: "POST", body, headers: authorized ? { Cookie: cookie } : {} });
+  }
+  assert.equal((await sendPdf(new File([realPdf], "list.pdf"), false)).status, 401);
+  assert.equal((await sendPdf(new File(["not a pdf"], "list.pdf"))).status, 400);
+  const goodPdf = new File([realPdf], "list.pdf", { type: "application/pdf" });
+  const uploadedPdf = await (await sendPdf(goodPdf)).json();
+  assert.equal(uploadedPdf.ok, true);
+  assert.equal((await sendPdf(goodPdf)).status, 200);
+  assert.equal(pdfWrites, 1);
+  assert.equal(writes, 0, "PDF preparation must not publish CMS content");
+  console.log("PDF API: authenticated upload, invalid-file rejection and duplicate prevention passed in isolation.");
   assert.equal(initial.version, 1);
   const pages = [
     "/",
@@ -977,6 +1007,41 @@ try {
       );
       assert.equal(writes, writesBeforeBrowser + 1);
       await historyPage.close();
+      const pdfPage = await context.newPage();
+      await pdfPage.goto(base);
+      await pdfPage.getByRole("button", { name: "PARTY & RENTAL", exact: true }).click();
+      const pdfFrame = pdfPage.frameLocator("iframe.public-canvas-frame");
+      const pdfNode = docs.get("/party/").catalog.find(n => n.attrs.href?.includes("equipment-rental-list.pdf"));
+      await pdfFrame.locator('[data-bassic-edit="' + pdfNode.id + '"]').click();
+      const pdfSidebar = pdfPage.locator(".visual-editor-sidebar");
+      await pdfSidebar.getByText("ボタン・リンク", { exact: true }).click();
+      await pdfSidebar.getByText("ボタン・リンク", { exact: true }).locator("..").locator('[data-visual-target="' + pdfNode.id + '"]').click();
+      const pdfField = pdfPage.locator(".pdf-field");
+      await pdfField.locator('input[type="file"]').setInputFiles({ name: "updated.pdf", mimeType: "application/pdf", buffer: realPdf });
+      await pdfField.getByRole("status").waitFor();
+      assert.equal(await pdfField.getByRole("link", { name: "PDFを開いて確認" }).getAttribute("href"), uploadedPdf.data.url);
+      await pdfPage.screenshot({ path: process.env.TEMP + "/bassic-pdf-editor.png", fullPage: true });
+      await pdfField.locator('input[type="file"]').setInputFiles({ name: "invalid.pdf", mimeType: "application/pdf", buffer: Buffer.from("not a PDF") });
+      await pdfField.getByRole("alert").waitFor();
+      assert.equal(await pdfField.getByRole("link", { name: "PDFを開いて確認" }).getAttribute("href"), uploadedPdf.data.url, "Failed uploads preserve the current PDF");
+      assert.equal(writes, writesBeforeBrowser + 1, "Selecting PDF must not publish CMS content");
+      await pdfPage.getByRole("button", { name: "掲載前に確認", exact: true }).click();
+      await pdfPage.getByRole("region", { name: "掲載する変更", exact: true }).waitFor();
+      assert.equal(await pdfPage.frameLocator("iframe.public-canvas-frame").locator("a.equipment-rental-link").getAttribute("href"), uploadedPdf.data.url);
+      console.log("PDF browser: choose file, confirm link and unpublished page preview passed.");
+      await pdfPage.close();
+      const legacyPdfPage = await context.newPage();
+      await legacyPdfPage.goto(base);
+      await legacyPdfPage.getByRole("button", { name: "PARTY & RENTAL", exact: true }).click();
+      await legacyPdfPage.locator(".visual-editor-sidebar").getByText("登録情報・非表示の項目", { exact: true }).click();
+      await legacyPdfPage.getByRole("button", { name: "機材・PDF", exact: true }).click();
+      const legacyPdfField = legacyPdfPage.locator(".pdf-field");
+      await legacyPdfField.locator('input[type="file"]').setInputFiles({ name: "list.pdf", mimeType: "application/pdf", buffer: realPdf });
+      await legacyPdfField.getByRole("status").waitFor();
+      assert.equal(await legacyPdfField.getByRole("link", { name: "PDFを開いて確認" }).getAttribute("href"), uploadedPdf.data.url);
+      assert.equal(writes, writesBeforeBrowser + 1);
+      await legacyPdfPage.close();
+      console.log("PDF registration form uses the same upload flow without publishing.");
       console.log(
         "Edited card duplication and history restoration preserve unpublished content without CMS writes.",
       );

@@ -417,14 +417,14 @@ export const sections: SectionDefinition[] = [
     title: "機材レンタル",
     shortTitle: "機材",
     description: "機材レンタルの説明とPDFリンクを更新します。",
-    helperText: "PDFを差し替えた場合は、PDFのURLも新しいものに変えてください。",
+    helperText: "「PDFを選ぶ」で差し替え、開いて確認してから掲載します。",
     kind: "object",
     icon: Music,
     fields: [
       { key: "title", label: "見出し", type: "text", required: true, placeholder: "機材レンタルについて", hint: "6文字以上で、何の案内か分かる見出しにします。" },
       { key: "price", label: "料金", type: "text", placeholder: "料金はPDFをご確認ください" },
       { key: "body", label: "説明", type: "textarea", required: true, rows: 5, placeholder: "レンタル可能な機材や注意点", hint: "20文字以上で、利用内容や注意点が分かる文章にします。" },
-      { key: "pdfUrl", label: "PDFリンク", type: "url", required: true, placeholder: "/assets/pdf/list.pdf または https://...", hint: "詳細リンクを表示するため必須です。PDFのURLは https://...pdf または /assets/pdf/...pdf の形で入れます。入力後は「PDFを開いて確認」で正しいPDFが開くか確認してください。" }
+      { key: "pdfUrl", label: "機材リストPDF", type: "url", required: true, placeholder: "/assets/pdf/list.pdf または https://...", hint: "「PDFを選ぶ」から3MB以内のPDFに差し替えます。URLで指定する場合は https://...pdf または /assets/pdf/...pdf の形で入れます。入力後は「PDFを開いて確認」で正しいPDFが開くか確認してください。" }
     ],
     defaults: {}
   },

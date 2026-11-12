@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PublicPageCanvas } from "./public-page-canvas";
 import { AdminImage } from "./components/admin-image";
+import { PdfField } from "./components/pdf-field";
 import {
   emptyVisualSettings,
   parseVisualSettings,
@@ -1279,11 +1280,14 @@ export function VisualPageEditor({
                       </label>
                     </>
                   ) : null}
+                  {/\.pdf(?:[?#]|$)/i.test(node.attrs.href || "") ? (
+                    <div><h3>機材リストPDF</h3><PdfField key={`${node.id}:${scope}`} id="visual-pdf" value={effective.attrs?.href ?? node.attrs.href ?? ""} onChange={href => update({ attrs: { ...effective.attrs, href } })} /></div>
+                  ) : null}
                   {[
                     node.tag === "iframe" ? "src" : "href",
                     "title",
                     "aria-label",
-                  ].map((key) => (
+                  ].filter(key => key !== "href" || !/\.pdf(?:[?#]|$)/i.test(node.attrs.href || "")).map((key) => (
                     <label key={key}>
                       {key === "src"
                         ? "埋め込み先URL"
