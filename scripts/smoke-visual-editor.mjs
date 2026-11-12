@@ -215,7 +215,11 @@ try {
     "Preview must use the public business-hours default, not an old admin-only fallback",
   );
   const business = (await call("content/site-settings")).data;
-  assert.equal(business.email,'mail@bassic.jp','Shared contact defaults must include the existing public email');
+  assert.equal(
+    business.email,
+    "mail@bassic.jp",
+    "Shared contact defaults must include the existing public email",
+  );
   const hours = home.catalog.find((n) =>
     Object.values(n.sourceTexts || {}).includes("hoursLabel"),
   );
@@ -223,6 +227,74 @@ try {
   assert.ok(
     Object.values(hours.texts).includes(business.hoursLabel),
     "Business information editor and public preview must share defaults",
+  );
+  const nav = home.catalog.find(
+    (n) => n.tag === "nav" && n.attrs["aria-label"] === "主要ナビゲーション",
+  );
+  const phoneNav = home.catalog.find(
+    (n) =>
+      n.tag === "nav" &&
+      n.attrs["aria-label"] === "スマートフォン用ナビゲーション",
+  );
+  const navItems = nav.children.filter(
+    (id) => home.catalog.find((n) => n.id === id)?.tag === "a",
+  );
+  const navItem = home.catalog.find((n) => n.id === navItems[0]);
+  const mobileItem = phoneNav.id + navItem.id.slice(nav.id.length);
+  const navSettings = structuredClone(initial);
+  navSettings.shared.nodes[nav.id] = { order: [...navItems].reverse() };
+  navSettings.shared.nodes[navItem.id] = {
+    texts: { [Object.keys(navItem.texts)[0]]: "Shared navigation fixture" },
+  };
+  navSettings.shared.nodes[navItems[1]] = { hidden: true };
+  const navPreview = (
+    await call("visual-editor", "POST", { path: "/", settings: navSettings })
+  ).data;
+  const navCatalog = JSON.parse(
+    /id="bassic-editor-catalog"[^>]*>([\s\S]*?)<\/script>/.exec(
+      navPreview.html,
+    )[1],
+  );
+  assert.equal(
+    navCatalog.find((n) => n.id === mobileItem).label,
+    "Shared navigation fixture",
+  );
+  assert.equal(
+    navCatalog.find(
+      (n) => n.id === phoneNav.id + navItems[1].slice(nav.id.length),
+    ).hidden,
+    true,
+  );
+  assert.ok(
+    navPreview.html.indexOf(
+      'data-visual-id="' +
+        phoneNav.id +
+        navItems.at(-1).slice(nav.id.length) +
+        '"',
+    ) < navPreview.html.indexOf('data-visual-id="' + mobileItem + '"'),
+    "Mobile menu order follows the desktop menu",
+  );
+  navSettings.shared.nodes[mobileItem] = {
+    texts: { [Object.keys(navItem.texts)[0]]: "Mobile navigation fixture" },
+  };
+  const mobileNavPreview = (
+    await call("visual-editor", "POST", { path: "/", settings: navSettings })
+  ).data;
+  const mobileNavCatalog = JSON.parse(
+    /id="bassic-editor-catalog"[^>]*>([\s\S]*?)<\/script>/.exec(
+      mobileNavPreview.html,
+    )[1],
+  );
+  assert.equal(
+    mobileNavCatalog.find((n) => n.id === navItem.id).label,
+    "Shared navigation fixture",
+  );
+  assert.equal(
+    mobileNavCatalog.find((n) => n.id === mobileItem).label,
+    "Mobile navigation fixture",
+  );
+  console.log(
+    "Navigation text, visibility and ordering inherit to mobile; explicit mobile changes remain separate.",
   );
   assert.equal(
     (await call("visual-editor", "POST", { path: "/", settings: initial })).data
@@ -437,6 +509,16 @@ try {
         })
         .click();
       const form = page.locator(".visual-direct-form");
+      assert.equal(
+        await page
+          .getByRole("complementary")
+          .getByRole("button", {
+            name: editableHeading.label.replace(/\s+/g, " "),
+            exact: true,
+          })
+          .getAttribute("aria-pressed"),
+        "true",
+      );
       await form.locator("textarea").first().fill("未掲載の文章");
       let warned = false;
       page.once("dialog", async (dialog) => {
@@ -649,6 +731,72 @@ try {
         "Duplicating a registered card must open an unpublished draft without saving",
       );
       await clonePage.close();
+      const cardPage = await context.newPage();
+      cardPage.setDefaultTimeout(8000);
+      await cardPage.goto(base);
+      const cardTitle = home.catalog.find(
+        (n) => n.id.startsWith(cards[0] + ".") && n.tag === "h3",
+      );
+      assert.ok(cardTitle);
+      const cardFrame = cardPage.frameLocator("iframe.public-canvas-frame");
+      await cardFrame
+        .locator('[data-bassic-edit="' + cardTitle.id + '"]')
+        .press("Enter");
+      await cardPage
+        .getByRole("complementary")
+        .getByRole("button", { name: cardTitle.label, exact: true })
+        .click();
+      await cardPage
+        .locator(".visual-direct-form textarea")
+        .first()
+        .fill("Edited card snapshot");
+      await cardPage
+        .getByRole("button", { name: "ひとつ上へ", exact: true })
+        .click();
+      await cardPage
+        .getByRole("button", { name: "ひとつ上へ", exact: true })
+        .click();
+      await cardPage
+        .getByRole("complementary")
+        .getByText("カード", { exact: true })
+        .click();
+      await cardPage
+        .getByRole("complementary")
+        .locator('[data-visual-target="' + group.id + '"]:visible')
+        .click();
+      await cardPage
+        .locator(".visual-child-row")
+        .first()
+        .getByRole("button", { name: "複製", exact: true })
+        .click();
+      await cardPage
+        .getByRole("button", { name: "掲載前に確認", exact: true })
+        .click();
+      await cardFrame
+        .getByText("Edited card snapshot", { exact: true })
+        .first()
+        .waitFor();
+      assert.equal(
+        await cardFrame
+          .getByText("Edited card snapshot", { exact: true })
+          .count(),
+        2,
+        "Duplicate cards must retain the edited text",
+      );
+      assert.equal(
+        await cardFrame.locator(".feature-photo img").count(),
+        4,
+        "Duplicate cards retain their photo",
+      );
+      assert.equal(
+        writes,
+        2,
+        "Duplicating static cards and previewing must not save",
+      );
+      await cardPage.close();
+      console.log(
+        "Edited static-card duplication preserves text, photos and independent settings without publication.",
+      );
     } finally {
       await browser.close();
     }
