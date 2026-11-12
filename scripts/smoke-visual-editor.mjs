@@ -509,6 +509,23 @@ try {
         })
         .click();
       const form = page.locator(".visual-direct-form");
+      const advanced = page.locator(".visual-advanced-controls");
+      assert.equal(
+        await advanced.getAttribute("open"),
+        null,
+        "Daily editing hides advanced settings",
+      );
+      await advanced.getByText("詳細な調整", { exact: true }).click();
+      await advanced.getByText("見た目", { exact: true }).click();
+      assert.equal(
+        await advanced
+          .locator('[data-visual-target="' + editableHeading.id + '"]')
+          .first()
+          .isVisible(),
+        true,
+        "Advanced appearance settings remain reachable",
+      );
+      await advanced.getByText("詳細な調整", { exact: true }).click();
       assert.equal(
         await page
           .getByRole("complementary")
@@ -655,12 +672,45 @@ try {
           },
         });
       });
+      let releaseSave, saveEntered;
+      const saveGate = new Promise((resolve) => {
+        releaseSave = resolve;
+      });
+      const saveStarted = new Promise((resolve) => {
+        saveEntered = resolve;
+      });
+      await page.route("**/api/visual-editor", async (route) => {
+        if (route.request().method() === "PUT") {
+          saveEntered();
+          await saveGate;
+        }
+        await route.continue();
+      });
       await page
         .getByRole("button", { name: "サイトに掲載", exact: true })
         .evaluate((button) => {
           button.click();
           button.click();
         });
+      await saveStarted;
+      try {
+        assert.equal(await page.locator('.visual-page-options-fields').evaluate(el=>el.disabled),true,'Global appearance and metadata cannot change during saving');
+        assert.equal(await page.getByRole('button',{name:'端末の下書きを開く',exact:true}).isDisabled(),true,'Draft restoration cannot replace an in-flight save');
+        await page
+          .getByRole("complementary")
+          .getByRole("button", { name: "未掲載の文章", exact: true })
+          .click();
+        assert.equal(
+          await page
+            .locator(".visual-direct-form textarea")
+            .first()
+            .isDisabled(),
+          true,
+          "Saving locks inputs so a late response cannot overwrite new typing",
+        );
+      } finally {
+        releaseSave();
+      }
       await page
         .getByRole("alert")
         .filter({ hasText: "隔離テスト：掲載に失敗しました" })
@@ -682,9 +732,15 @@ try {
         .getByRole("button", { name: "保存済みの内容を再反映", exact: true })
         .click();
       await page
-        .getByRole("status")
+        .getByRole("status", { name: "編集と掲載の状態" })
         .filter({ hasText: "サイトに反映済み" })
         .waitFor();
+      assert.equal(
+        await page
+          .getByRole("link", { name: "掲載したページを確認", exact: true })
+          .getAttribute("href"),
+        "https://www.bassic.jp/",
+      );
       assert.equal(writes, 2);
       console.log(
         "Publication double-click protection, failure recovery, deployment-only retries and served-revision verification passed.",
