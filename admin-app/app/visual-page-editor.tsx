@@ -257,19 +257,23 @@ export function VisualPageEditor({
         ? rebaseVisualPatch(
             mergeVisualPatch(
               settings.shared.nodes[node.inherited],
-              local.nodes[node.inherited],
+              scope === "shared" ? undefined : local.nodes[node.inherited],
             ),
             node.inherited,
             node.id,
           )
         : undefined,
-      mergeVisualPatch(settings.shared.nodes[selected], local.nodes[selected]),
+      mergeVisualPatch(
+        settings.shared.nodes[selected],
+        scope === "shared" ? undefined : local.nodes[selected],
+      ),
     );
   const displayLabel = (n: VisualNode) => {
     if (n.tag === "header") return "ヘッダー";
     if (n.tag === "footer") return "フッター";
     if (n.tag === "main") return "ページ全体";
     if (n.tag === "nav") return "メニュー";
+    if (n.attrs["aria-label"] === "固定アクション") return "スマホ下部のボタン";
     if (["section", "article", "div"].includes(n.tag)) {
       const heading = catalog.find(
         (c) => c.id.startsWith(n.id + ".") && /^h[1-6]$/.test(c.tag),
@@ -321,8 +325,10 @@ export function VisualPageEditor({
     : [];
   const relevant = node
     ? descendants(node.id)
-    : visibleNodes.filter((n) =>
-        ["header", "footer", "section", "main"].includes(n.tag),
+    : visibleNodes.filter(
+        (n) =>
+          ["header", "footer", "section", "main"].includes(n.tag) ||
+          n.attrs["aria-label"] === "固定アクション",
       );
   function change(next: VisualSettings) {
     setSettings(next);
@@ -1560,12 +1566,17 @@ export function VisualPageEditor({
                             ...target,
                             nodes: {
                               ...target.nodes,
-                              [id]: { ...p, hidden: !p.hidden },
+                              [id]: {
+                                ...p,
+                                hidden: !(p.hidden ?? map.get(id)?.hidden),
+                              },
                             },
                           });
                         }}
                       >
-                        {target.nodes[id]?.hidden ? "表示する" : "非表示にする"}
+                        {(target.nodes[id]?.hidden ?? map.get(id)?.hidden)
+                          ? "表示する"
+                          : "非表示にする"}
                       </button>
                       <span>{index + 1}</span>
                     </div>
