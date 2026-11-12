@@ -1,16 +1,19 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, PageHero } from "@/components/content";
-import { MenuContent } from "@/components/menu-content";
-import { PageShell } from "@/components/site-shell";
-import { resolveEditableImage } from "@/lib/editable-content";
-import { getCmsContents } from "@/lib/microcms";
-import { pageHeroes } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
-import { absoluteUrl, site } from "@/lib/site";
-import type { MenuItem, SiteSettings } from "@/lib/types";
+import { CustomSectionBlock, PageHero } from "@public/components/content";
+import { MenuContent } from "@public/components/menu-content";
+import { PageShell } from "@public/components/site-shell";
+import { resolveEditableImage } from "@public/lib/editable-content";
+import { getCmsContents } from "@public/lib/microcms";
+import { pageHeroes } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
+import { absoluteUrl, site } from "@public/lib/site";
+import type { MenuItem, SiteSettings } from "@public/lib/types";
 
-export const metadata: Metadata = buildMetadata("menu");
+const defaultMetadata: Metadata = buildMetadata("menu");
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/menu/');}
 
 function MenuJsonLd({ menu, settings }: { menu: MenuItem[]; settings: SiteSettings }) {
   const data = {
@@ -94,7 +97,7 @@ export default async function MenuPage() {
   ];
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
-  return (
+  return editablePage('/menu/', (
     <PageShell settings={contents.siteSettings}>
       <MenuJsonLd menu={contents.menu} settings={contents.siteSettings} />
       <main>
@@ -105,5 +108,5 @@ export default async function MenuPage() {
         ))}
       </main>
     </PageShell>
-  );
+  ));
 }

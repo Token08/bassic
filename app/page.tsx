@@ -1,3 +1,5 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import {
@@ -8,16 +10,17 @@ import {
   PageHero,
   SocialUpdatesSection,
   VisitInfoCards
-} from "@/components/content";
-import { PageShell } from "@/components/site-shell";
-import { editableMedia, resolveEditableImage, resolveHeroSlides } from "@/lib/editable-content";
-import { getCmsContents } from "@/lib/microcms";
-import { accessRouteTips } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
-import { absoluteUrl, site } from "@/lib/site";
-import type { SiteSettings } from "@/lib/types";
+} from "@public/components/content";
+import { PageShell } from "@public/components/site-shell";
+import { editableMedia, resolveEditableImage, resolveHeroSlides } from "@public/lib/editable-content";
+import { getCmsContents } from "@public/lib/microcms";
+import { accessRouteTips } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
+import { absoluteUrl, site } from "@public/lib/site";
+import type { SiteSettings } from "@public/lib/types";
 
-export const metadata: Metadata = buildMetadata("home");
+const defaultMetadata: Metadata = buildMetadata("home");
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/');}
 
 function JsonLd({ settings }: { settings: SiteSettings }) {
   const data = {
@@ -168,7 +171,7 @@ export default async function Home() {
   ];
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
-  return (
+  return editablePage('/', (
     <PageShell settings={contents.siteSettings} home={home}>
       <JsonLd settings={contents.siteSettings} />
       <main id="top">
@@ -179,5 +182,5 @@ export default async function Home() {
         ))}
       </main>
     </PageShell>
-  );
+  ));
 }

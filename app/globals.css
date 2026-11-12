@@ -2970,3 +2970,7 @@ main > section.visit-info-strip .visit-info-grid article p {
   .home-hero .hero-slide[data-mobile-position="right"],
   .feature-photo img[data-mobile-position="right"] { object-position: right center; }
 }
+
+.native-image-modal {width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border:0;padding:24px}
+.native-image-modal::backdrop {background:rgba(0,0,0,.85)}
+.visual-added-block {min-width:0}

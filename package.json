@@ -7,6 +7,7 @@
   "scripts": {
     "test:events": "node --test scripts/facebook-event-time.test.mjs scripts/ops-failure.test.mjs scripts/calendar-upsert.test.mjs scripts/fetch-with-timeout.test.mjs",
     "smoke:events:isolated": "node scripts/smoke-event-flow-isolated.mjs",
+    "smoke:visual-editor": "node scripts/smoke-visual-editor.mjs",
     "dev": "next dev",
     "dev:admin-app": "npm --prefix admin-app run dev",
     "clean:admin-app": "node scripts/clean-admin-app.mjs",

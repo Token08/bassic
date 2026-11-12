@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { localeCodes } from "@/lib/i18n";
-import { canonicalPath, localizedPath, sitemapPages } from "@/lib/routes";
-import { absoluteUrl } from "@/lib/site";
+import { localeCodes } from "@public/lib/i18n";
+import { canonicalPath, localizedPath, sitemapPages } from "@public/lib/routes";
+import { absoluteUrl } from "@public/lib/site";
 
 export const dynamic = "force-static";
 

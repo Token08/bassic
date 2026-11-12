@@ -1,12 +1,15 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
-import { FirstVisitBlock, PageHero } from "@/components/content";
-import { PageShell } from "@/components/site-shell";
-import { getCmsContents } from "@/lib/microcms";
-import { pageHeroes } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
-import { absoluteUrl, site } from "@/lib/site";
+import { FirstVisitBlock, PageHero } from "@public/components/content";
+import { PageShell } from "@public/components/site-shell";
+import { getCmsContents } from "@public/lib/microcms";
+import { pageHeroes } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
+import { absoluteUrl, site } from "@public/lib/site";
 
-export const metadata: Metadata = buildMetadata("firstVisit");
+const defaultMetadata: Metadata = buildMetadata("firstVisit");
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/first-visit/');}
 
 const faqs = [
   {
@@ -52,7 +55,7 @@ function FaqJsonLd() {
 export default async function FirstVisitPage() {
   const contents = await getCmsContents();
 
-  return (
+  return editablePage('/first-visit/', (
     <PageShell>
       <FaqJsonLd />
       <main>
@@ -84,5 +87,5 @@ export default async function FirstVisitPage() {
         </section>
       </main>
     </PageShell>
-  );
+  ));
 }

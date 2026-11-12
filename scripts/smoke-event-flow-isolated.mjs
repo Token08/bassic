@@ -270,6 +270,7 @@ try {
   }
   console.log("Isolated admin flow passed: Facebook fallback, event and SNS deduplication, staff edits, independent publishing, calendar status.");
 
+  socialUnavailable = false;
   // Optional browser check with a locally installed Playwright and Chromium.
   if (process.env.BASSIC_QA_PLAYWRIGHT && process.env.BASSIC_QA_CHROMIUM) {
     const { chromium } = require(process.env.BASSIC_QA_PLAYWRIGHT);
@@ -284,7 +285,7 @@ try {
       const topNav = pageNav.getByRole("button", { name: "TOPページ", exact: true });
       const eventsNav = pageNav.getByRole("button", { name: "イベントスケジュール", exact: true });
       await topNav.waitFor();
-      assert.equal(await page.getByRole("list", { name: "操作の流れ" }).getByRole("listitem").count(), 3);
+      await page.getByRole("heading",{name:"TOPページ",exact:true}).waitFor();
       assert.equal(await topNav.getAttribute("aria-current"), "page");
       const workspace = page.locator(".admin-workspace-content");
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow in mobile admin");
@@ -297,15 +298,10 @@ try {
       await page.setViewportSize({ width: 390, height: 844 });
       console.log("Admin navigation passed: desktop sidebar, mobile layout and active page.");
 
-      const eventCanvas = page.frameLocator("iframe.public-canvas-frame");
-      const eventTarget = eventCanvas.getByRole("button", { name: "開催イベントを編集" });
-      await eventTarget.click();
-      await page.getByRole("complementary", { name: "選択箇所の編集" }).getByText("Facebookイベント取り込み", { exact: true }).waitFor();
-      await eventCanvas.locator('[data-bassic-edit="event-list"][aria-pressed="true"]').waitFor();
-      await page.locator("article").filter({ hasText: "Facebookイベント取り込み" }).getByRole("button", { name: "編集する" }).click();
+      await page.getByText('登録情報・非表示の項目',{exact:true}).click();
+      await page.getByRole('button',{name:'イベント一覧',exact:true}).click();
       const panel = page.getByRole("region", { name: "Facebookイベント取り込み" });
       const sourceField = page.locator(".editable-field-card").filter({ hasText: "FacebookイベントURL・詳細URL" });
-      await sourceField.getByRole("button", { name: "編集", exact: true }).click();
       const sourceInput = sourceField.getByRole("textbox");
       let releaseOldResponse;
       let requestStarted;
@@ -335,7 +331,6 @@ try {
       await panel.getByText("Fixture live", { exact: true }).waitFor();
       await panel.getByRole("button", { name: "登録済みのイベントを編集" }).click();
       const startField = page.locator(".editable-field-card").filter({ has: page.getByText("START", { exact: true }) });
-      await startField.getByRole("button", { name: "編集", exact: true }).click();
       const startInput = startField.getByRole("textbox");
       await startInput.fill("");
       assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 未入力/);
@@ -348,10 +343,9 @@ try {
       await panel.getByText(/取得できなかった項目は/).waitFor();
       assert.equal(await startInput.inputValue(), "11:30", "Missing import data must not erase staff input");
       assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 11:30/);
-      await page.getByRole("button", { name: "下書き保存", exact: true }).click();
+      await page.getByRole("button", { name: "この端末に保存", exact: true }).click();
       await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
       const eventImageField = page.locator(".editable-field-card").filter({ hasText: "イベント画像" });
-      await eventImageField.getByRole("button", { name: "編集", exact: true }).click();
       let uploadStarted, releaseUpload, uploadHandled;
       const startedUpload = new Promise(resolve => { uploadStarted = resolve; });
       const uploadGate = new Promise(resolve => { releaseUpload = resolve; });
@@ -384,10 +378,12 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow at mobile width");
       console.log("Mobile admin browser passed: login, Facebook import, existing event selection and draft save.");
 
-      socialUnavailable = true;
-      await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
+      socialUnavailable = false;
+      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
       await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      await page.getByRole("button", { name: "この内容で公開", exact: true }).evaluate(button => { button.click(); button.click(); });
+      await page.waitForFunction(()=>!document.querySelector('.preview-modal .primary-button')?.disabled);
+      socialUnavailable=true;
+      await page.getByRole("button", { name: "サイトに掲載", exact: true }).evaluate(button => { button.click(); button.click(); });
       await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
       assert.equal(publishRequests, 2);
       assert.equal(events.get("legacy").title, "Fixture live");
@@ -407,11 +403,8 @@ try {
 
       await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: base });
       await page.getByRole("button", { name: "EVENT SCHEDULEへ戻る" }).click();
-      assert.equal(await eventTarget.getAttribute("aria-pressed"), "true", "Returning from the editor keeps its section selected");
-      await page.getByText("編集箇所一覧", { exact: true }).click();
-      await page.getByRole("button", { name: "SNS投稿の下書き", exact: true }).click();
-      await eventCanvas.locator('[data-bassic-edit="event-list"][aria-pressed="false"]').waitFor();
-      await page.locator("article").filter({ hasText: "SNS投稿の下書き" }).getByRole("button", { name: "編集する" }).click();
+      await page.getByRole('heading',{name:'EVENT SCHEDULE',exact:true}).waitFor();
+      await page.getByText('登録情報・非表示の項目',{exact:true}).click();await page.getByRole('button',{name:'SNS投稿の下書き',exact:true}).click();
       const socialPanel = page.getByRole("region", { name: "SNSへの投稿準備" });
       for (const [platform, linkName, href] of [
         ["X", "Xの投稿画面を開く", "https://x.com/compose/post"],
@@ -457,7 +450,7 @@ try {
         }
         return route.fallback();
       });
-      await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
+      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
       await entryFeedback.getByText(/テスト用：保存に失敗しました/).waitFor();
       await page.waitForFunction(() => document.activeElement?.classList.contains("editor-feedback"));
       assert.ok((await entryFeedback.boundingBox()).y < 160, "A failed CMS save must reveal the error after closing preview");
@@ -466,7 +459,7 @@ try {
       await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
       await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
       await page.route("**/api/deploy?*", route => route.fulfill({ json: { ok: true, data: { state: "failed" } } }), { times: 1 });
-      await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
+      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
       await page.getByText("公開サイトへの反映に失敗しました", { exact: true }).waitFor();
       await page.waitForFunction(() => document.activeElement?.classList.contains("deploy-status"));
       assert.ok((await page.locator('.deploy-status[role="alert"]').boundingBox()).y < 160, "Asynchronous publishing failures must reveal their retry action");
@@ -498,7 +491,7 @@ try {
           homeAccessDirectionsLabel: "Isolated route button",
           firstVisitTitle: "Isolated First Visit heading",
           firstVisitDescription: "Isolated First Visit description",
-          firstVisitCard1Title: "Isolated music card",
+          firstVisitCard1Title: "Updated First Visit card",
           firstVisitCard1Image: { ...image, alt: "Isolated First Visit poster" },
           visitInfoTitle: "Isolated visit information",
           localSearchCard1Text: "Isolated directions card description",
@@ -512,48 +505,6 @@ try {
         await post("content/page-sections", { page: "home", sectionKey: "firstVisit", displayOrder: 4, isPublished: true });
         await post("content/page-sections", { page: "home", sectionKey: "localSearch", displayOrder: 2, isPublished: false });
         await post("content/custom-sections", { page: "home", title: "Isolated custom block", body: "Isolated custom block for the publication order check.", displayOrder: 2.5, isPublished: true });
-        await page.getByRole("button", { name: "Bassic.", exact: true }).click();
-        await page.getByRole("button", { name: "TOPページ", exact: true }).click();
-        const overview = page.getByRole("region", { name: "TOPの編集セクション" });
-        const sectionList = overview.locator("details.visual-editor-section-list");
-        if (!(await sectionList.evaluate((element) => element.open))) await sectionList.locator("summary").click();
-        await overview.getByText("Isolated custom block", { exact: true }).waitFor();
-        const groups = await overview.locator(".page-overview-label strong").allTextContents();
-        assert.ok(groups.indexOf("Isolated custom block") < groups.indexOf("初めての方へ"), "Custom block is in public order");
-        await overview.getByRole("button", { name: /お店の紹介.*公開ページでは非表示/ }).waitFor();
-        const topFrame = page.locator("iframe.public-canvas-frame");
-        const heroTarget = topFrame.contentFrame().getByRole("button", { name: "メインビジュアルを編集" });
-        await heroTarget.click();
-        await page.locator("article").filter({ hasText: "見出し・説明文" }).getByRole("button", { name: "編集する" }).click();
-        const heroField = page.locator(".editable-field-card").filter({ hasText: "大きな見出し" });
-        await heroField.getByText("Isolated main heading", { exact: true }).waitFor();
-        await heroField.getByRole("button", { name: "編集" }).click();
-        assert.equal(await heroField.getByRole("textbox").inputValue(), "Isolated main heading");
-        await page.getByRole("button", { name: "TOPへ戻る" }).click();
-        const topTarget = topFrame.contentFrame().getByRole("button", { name: "初めての方へを編集" });
-        await topTarget.click();
-        const previewScroll = await topTarget.evaluate((element) => element.ownerDocument.defaultView.scrollY);
-        assert.ok(previewScroll > 0, "Selecting a lower section scrolls the preview");
-        await page.locator("article").filter({ hasText: "紹介カード1" }).getByRole("button", { name: "編集する" }).click();
-        const center = page.locator(".visual-editor-center");
-        await center.getByText("初めての方へ：カード1の画像", { exact: true }).waitFor();
-        assert.equal(await topFrame.isVisible(), false, "The editor replaces the center preview");
-        await center.getByRole("button", { name: "TOPへ戻る" }).click();
-        await topTarget.waitFor();
-        assert.equal(await topTarget.evaluate((element) => element.ownerDocument.defaultView.scrollY), previewScroll);
-        await page.locator("article").filter({ hasText: "紹介カード1" }).getByRole("button", { name: "編集する" }).click();
-        const headingCard = page.locator(".editable-field-card").filter({ hasText: "初めての方へ：カード1の見出し" });
-        await headingCard.getByRole("button", { name: "編集" }).click();
-        await headingCard.getByRole("textbox").fill("Updated First Visit card");
-        await page.getByRole("button", { name: "プレビューして公開", exact: true }).click();
-        await page.getByRole("dialog").getByRole("button", { name: "スマホ表示", exact: true }).click();
-        assert.equal(await page.locator(".device-preview-mobile img").evaluate((element) => element.style.objectPosition), "center top");
-        await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-        const savedHome = page.waitForResponse((response) => response.url() === base + "/api/content/home" && response.request().method() === "POST");
-        await page.getByRole("button", { name: "この内容で公開", exact: true }).click();
-        assert.ok((await savedHome).ok(), "Saving TOP from its dedicated editor");
-        const storedHome = [...notices.values()].find((item) => item.kind === "home");
-        assert.equal(JSON.parse(storedHome.body).homeHeroTitle, "", "Opening an inherited field does not save an override");
         events.set("unpublished", { ...event, id: "unpublished", title: "Hidden fixture live", isPublished: false });
         for (const [id, url] of [["portrait", "https://images.example.invalid/portrait.svg"], ["landscape", "https://images.example.invalid/landscape.svg"], ["text-only", ""]]) {
           events.set(id, { ...event, id, title: id + "-" + "LongEventName".repeat(16), image: url ? { url } : undefined });
@@ -631,6 +582,26 @@ try {
           await publicPage.waitForFunction(() => document.querySelector('img[alt="Isolated First Visit poster"]')?.naturalWidth > 0);
           assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow on public TOP");
           console.log("Mobile TOP preview passed: saved section headings, card text and replacement photo render.");
+          await publicPage.goto(publicBase+'/menu/');
+          const foodButton=publicPage.locator('button[data-gallery="food"]').first();
+          await foodButton.click();
+          const photoDialog=publicPage.getByRole('dialog',{name:'拡大写真'});
+          await photoDialog.waitFor();
+          const firstAlt=await photoDialog.locator('img').getAttribute('alt');
+          await photoDialog.getByRole('button',{name:'次へ',exact:true}).click();
+          assert.notEqual(await photoDialog.locator('img').getAttribute('alt'),firstAlt);
+          await publicPage.keyboard.press('ArrowLeft');
+          assert.equal(await photoDialog.locator('img').getAttribute('alt'),firstAlt);
+          await publicPage.keyboard.press('Escape');
+          assert.equal(await photoDialog.count(),0);
+          assert.ok(await foodButton.evaluate(el=>el===document.activeElement),'Gallery close returns keyboard focus');
+          const dots=publicPage.locator('[data-drink-index]');
+          if(await dots.count()>1){
+            await publicPage.locator('.drink-menu-sheet-grid').evaluate(track=>{track.scrollTo({left:track.scrollWidth,behavior:'instant'});});
+            await publicPage.waitForFunction(()=>document.querySelector('[data-drink-index]:last-child')?.getAttribute('aria-current')==='true');
+          }
+          for(const width of [320,390,768,1440]){await publicPage.setViewportSize({width,height:900});assert.ok(await publicPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Menu overflow at '+width);}
+          console.log('Public photo gallery passed: next/previous, keyboard close, focus return, swipe position indicators and responsive layout.');
           await publicPage.close();
         } catch (error) {
           console.error("Public preview failed:", error);

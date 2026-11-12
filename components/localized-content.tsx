@@ -1,15 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Navigation } from "lucide-react";
-import { FeatureCardGrid, PageHero } from "@/components/content";
-import { SocialUpdates } from "@/components/social-updates";
-import { VisitInfoGrid, type VisitInfoGridItem } from "@/components/visit-info";
-import { editableMedia } from "@/lib/editable-content";
-import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@/lib/i18n";
-import { eventScheduleLinkLabels, localizedHomeSections, localizedPageEyebrow, localizedVisitInfoTitles } from "@/lib/localized-content";
-import { localizedPageImages } from "@/lib/page-content";
-import { localizedInternalHref } from "@/lib/path-utils";
-import { mailHref, site } from "@/lib/site";
+import { FeatureCardGrid, PageHero } from "@public/components/content";
+import { SocialUpdates } from "@public/components/social-updates";
+import { VisitInfoGrid, type VisitInfoGridItem } from "@public/components/visit-info";
+import { editableMedia } from "@public/lib/editable-content";
+import { type LocaleCode, type LocalizedPageKey, localizedLabels, localizedPages } from "@public/lib/i18n";
+import { eventScheduleLinkLabels, localizedHomeSections, localizedPageEyebrow, localizedVisitInfoTitles } from "@public/lib/localized-content";
+import { localizedPageImages } from "@public/lib/page-content";
+import { localizedInternalHref } from "@public/lib/path-utils";
+import { mailHref, site } from "@public/lib/site";
 
 function LocalizedVisitInfoCards({ locale, labels }: { locale: LocaleCode; labels: (typeof localizedLabels)[LocaleCode] }) {
   const titles = localizedVisitInfoTitles[locale];

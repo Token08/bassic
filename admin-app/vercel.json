@@ -2,7 +2,7 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "npm ci --prefix .. && npm ci",
   "env": {
     "NEXT_PUBLIC_PUBLIC_SITE_URL": "https://www.bassic.jp/"
   },

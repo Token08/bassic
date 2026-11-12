@@ -1,13 +1,16 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { AccessContent, CustomSectionBlock, PageHero } from "@/components/content";
-import { PageShell } from "@/components/site-shell";
-import { resolveEditableImage } from "@/lib/editable-content";
-import { getCmsContents } from "@/lib/microcms";
-import { pageHeroes } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
+import { AccessContent, CustomSectionBlock, PageHero } from "@public/components/content";
+import { PageShell } from "@public/components/site-shell";
+import { resolveEditableImage } from "@public/lib/editable-content";
+import { getCmsContents } from "@public/lib/microcms";
+import { pageHeroes } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
 
-export const metadata: Metadata = buildMetadata("access");
+const defaultMetadata: Metadata = buildMetadata("access");
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/access/');}
 
 export default async function AccessPage() {
   const contents = await getCmsContents();
@@ -59,7 +62,7 @@ export default async function AccessPage() {
   ];
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
-  return (
+  return editablePage('/access/', (
     <PageShell settings={contents.siteSettings}>
       <main>
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
@@ -69,5 +72,5 @@ export default async function AccessPage() {
         ))}
       </main>
     </PageShell>
-  );
+  ));
 }

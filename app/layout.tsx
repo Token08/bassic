@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { PublicInteractions } from '@public/components/public-interactions';
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
-import { absoluteUrl, site } from "@/lib/site";
-import { languageAlternates } from "@/lib/seo";
-import { assetPath } from "@/lib/assets";
+import { absoluteUrl, site } from "@public/lib/site";
+import { languageAlternates } from "@public/lib/seo";
+import { assetPath } from "@public/lib/assets";
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ["latin"],
@@ -63,7 +64,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
-      <body className={notoSansJp.className}>{children}</body>
+      <body className={notoSansJp.className}>{children}<PublicInteractions /></body>
     </html>
   );
 }

@@ -1,4 +1,4 @@
-import { mobileCrop, type MobileCropPosition } from "@/lib/responsive-media";
+import { mobileCrop, type MobileCropPosition } from "@public/lib/responsive-media";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,8 +13,8 @@ import {
   Utensils,
   UsersRound
 } from "lucide-react";
-import { assetPath } from "@/lib/assets";
-import { editableMedia } from "@/lib/editable-content";
+import { assetPath } from "@public/lib/assets";
+import { editableMedia } from "@public/lib/editable-content";
 import {
   accessRouteTips,
   equipmentRentalInfo,
@@ -25,9 +25,9 @@ import {
   socialUpdatesCopy,
   visitInfoItems,
   type FeatureCardContent
-} from "@/lib/page-content";
-import { mailHref, site, telHref } from "@/lib/site";
-import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings } from "@/lib/types";
+} from "@public/lib/page-content";
+import { site, telHref } from "@public/lib/site";
+import type { CmsImage, CustomSection, EquipmentRental, EventItem, HomeContent, MenuItem, PartyPlan, SiteSettings } from "@public/lib/types";
 import { MenuGallery } from "./menu-gallery";
 import { PrimaryActions } from "./site-shell";
 import { SocialUpdates } from "./social-updates";
@@ -320,7 +320,7 @@ export function formatDate(value: string) {
 
 export function EventCard({ event }: { event: EventItem }) {
   return (
-    <article className="event-card">
+    <article className="event-card" data-record={event.id ? `events:${event.id}` : undefined}>
       {event.image?.url ? (
         <a className="event-card-image" href={event.sourceUrl || "/events"} target={event.sourceUrl ? "_blank" : undefined} rel="noreferrer">
           <img src={imageSrc(event.image.url)} alt={event.image.alt || event.title} loading="lazy" />
@@ -493,7 +493,7 @@ export function PartyContent({
       {showPlans ? (
       <div className="plan-grid">
         {visiblePlans.map((plan) => (
-          <article key={plan.title}>
+          <article key={plan.id || plan.title} data-record={plan.id ? `party-plans:${plan.id}` : undefined}>
             <h3>{plan.title}</h3>
             <strong>{plan.price}</strong>
             <p>{plan.body}</p>

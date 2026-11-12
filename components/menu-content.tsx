@@ -1,9 +1,9 @@
-import { DrinkMenuGallery } from "@/components/drink-menu-gallery";
-import { MenuGallery } from "@/components/menu-gallery";
-import { assetPath } from "@/lib/assets";
-import { editableMedia } from "@/lib/editable-content";
-import { drinkMenuSheets } from "@/lib/menu-data";
-import type { DrinkMenuSheet, MenuItem } from "@/lib/types";
+import { DrinkMenuGallery } from "@public/components/drink-menu-gallery";
+import { MenuGallery } from "@public/components/menu-gallery";
+import { assetPath } from "@public/lib/assets";
+import { editableMedia } from "@public/lib/editable-content";
+import { drinkMenuSheets } from "@public/lib/menu-data";
+import type { DrinkMenuSheet, MenuItem } from "@public/lib/types";
 
 function normalizeMenuItem(item: MenuItem): MenuItem {
   return {
