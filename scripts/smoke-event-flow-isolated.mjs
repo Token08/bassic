@@ -64,6 +64,7 @@ globalThis.fetch = async (input, init) => {
       url: url.href,
       name: url.href === guidedUrl ? "Guided live" : "Fixture live",
       startDate: url.href === guidedUrl ? "2027-07-07T19:00:00+09:00" : "2027-05-04T19:30:00-07:00",
+      ...(url.href === guidedUrl ? { image: image.url } : {}),
       description: "18:00 OPEN / 19:00 START"
     };
     return new Response(`<script type="application/ld+json">${JSON.stringify(event)}</script>`);
@@ -326,15 +327,21 @@ try {
         ok: true, data: { ...preview, imageUrl: "https://images.example.invalid/broken-image.png" }
       } }), { times: 1 });
       await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await panel.getByText(/画像を表示できません/).waitFor();
+      await panel.getByRole("button", { name: "登録済みのイベントを編集" }).waitFor();
+      assert.equal(await panel.getByText(/画像を表示できません/).count(), 0, "Import results do not duplicate image failures");
       await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await panel.getByText("Fixture live", { exact: true }).waitFor();
+      await panel.getByText(/^登録済み：/).waitFor();
       await panel.getByRole("button", { name: "登録済みのイベントを編集" }).click();
-      const startField = page.locator(".editable-field-card").filter({ has: page.getByText("START", { exact: true }) });
+      const startField = panel.locator(".editable-field-card").filter({ has: page.locator("input#startTime") });
       const startInput = startField.getByRole("textbox");
       await startInput.fill("");
-      assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 未入力/);
-      assert.equal(await panel.getByRole("button", { name: "コピーする", exact: true }).isDisabled(), true);
+      assert.equal(await panel.locator("input#startTime").inputValue(), "");
+      assert.equal(await page.locator("input#startTime").count(), 1);
+      assert.equal(await page.locator(".required-progress").count(), 0);
+      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
+      await page.locator('.editor-feedback[role="alert"]').getByRole("link", { name: "START", exact: true }).click();
+      await page.waitForFunction(() => document.activeElement?.id === "startTime");
+      assert.equal(await panel.locator("input#startTime[aria-invalid=true]").count(), 1);
       await startInput.fill("11:30");
       await page.route("**/api/facebook-event-preview", route => route.fulfill({ json: {
         ok: true, data: { ...preview, title: "", date: "", startTime: "", imageUrl: "", existingEvents: [] }
@@ -342,7 +349,7 @@ try {
       await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
       await panel.getByText(/取得できなかった項目は/).waitFor();
       assert.equal(await startInput.inputValue(), "11:30", "Missing import data must not erase staff input");
-      assert.match(await panel.getByRole("textbox", { name: "Google Calendar反映依頼メモ" }).inputValue(), /START: 11:30/);
+      assert.equal(await panel.locator("input#startTime").inputValue(), "11:30");
       await page.getByRole("button", { name: "この端末に保存", exact: true }).click();
       await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
       const eventImageField = page.locator(".editable-field-card").filter({ hasText: "イベント画像" });
@@ -406,20 +413,37 @@ try {
       await page.getByRole('heading',{name:'EVENT SCHEDULE',exact:true}).waitFor();
       await page.getByText('登録情報・非表示の項目',{exact:true}).click();await page.getByRole('button',{name:'SNS投稿の下書き',exact:true}).click();
       const socialPanel = page.getByRole("region", { name: "SNSへの投稿準備" });
-      for (const [platform, linkName, href] of [
-        ["X", "Xの投稿画面を開く", "https://x.com/compose/post"],
-        ["INSTAGRAM", "Instagramを開く", "https://www.instagram.com/"]
-      ]) {
+      for (const platform of ["X", "INSTAGRAM"]) {
         await page.getByRole("button", { name: "Isolated live (" + platform + ")" }).click();
-        assert.equal(await socialPanel.getByRole("link", { name: linkName }).getAttribute("href"), href);
-        assert.equal(await socialPanel.getByRole("link", { name: "画像を確認" }).getAttribute("href"), image.url);
+        if (platform === "X") {
+          const intent = new URL(await socialPanel.getByRole("link", { name: "Xで投稿する" }).getAttribute("href"));
+          assert.equal(intent.origin, "https://x.com");
+          assert.equal(intent.searchParams.get("text"), "Staff edited text");
+        } else {
+          await socialPanel.getByRole("link", { name: "文面をコピーしてInstagramを開く" }).waitFor();
+        }
+        assert.equal(await socialPanel.getByRole("link", { name: "画像を開く" }).getAttribute("href"), image.url);
         await socialPanel.getByRole("button", { name: "投稿文をコピー" }).click();
         await socialPanel.getByText("投稿文をコピーしました。").waitFor();
         const expected = platform === "X" ? "Staff edited text" : [...notices.values()].find((notice) => notice.platform === "instagram").postText;
         const copied = await page.evaluate(() => navigator.clipboard.readText());
         assert.equal(copied.replace(/\r\n/g, "\n"), expected);
       }
-      console.log("Mobile SNS browser passed: X and Instagram clipboard text, poster links and posting destinations.");
+      await page.context().route("https://www.instagram.com/**", route => route.fulfill({ contentType: "text/html", body: "<h1>Isolated Instagram composer</h1>" }));
+      const instagramPopup = page.waitForEvent("popup");
+      await socialPanel.getByRole("link", { name: "文面をコピーしてInstagramを開く" }).click();
+      const instagramPage = await instagramPopup;
+      await instagramPage.waitForURL("https://www.instagram.com/");
+      await socialPanel.getByText(/文面をコピーしました/).waitFor();
+      await instagramPage.close();
+      await page.route("https://images.example.invalid/poster.png", route => route.fulfill({ contentType: "image/png", headers: { "Access-Control-Allow-Origin": "*" }, body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/5B0AAAAASUVORK5CYII=", "base64") }));
+      const imageDownload = page.waitForEvent("download");
+      await socialPanel.getByRole("button", { name: "画像をPCに保存" }).click();
+      assert.equal((await imageDownload).suggestedFilename(), "bassic-event.png");
+      await page.unroute("https://images.example.invalid/poster.png");
+      await socialPanel.getByRole("button", { name: "画像をPCに保存" }).click();
+      await socialPanel.getByText(/名前を付けて画像を保存/).waitFor();
+      console.log("PC posting passed: exact X text, Instagram clipboard and popup, image download and fallback without external posts.");
 
       await page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click();
       const entryGuide = page.getByRole("region", { name: "イベント追加の流れ" });
@@ -439,6 +463,21 @@ try {
       await page.getByRole("region", { name: "Facebookイベント取り込み" }).getByRole("button", { name: "Facebookから読み取る" }).click();
       await page.waitForFunction(() => document.querySelector('input#title')?.value === "Guided live");
       assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Reading alone must not save the event");
+      await entryFeedback.waitFor({ state: "hidden" });
+      const unifiedPanel = page.getByRole("region", { name: "Facebookイベント取り込み" });
+      assert.equal(await unifiedPanel.locator("input#title").count(), 1);
+      assert.equal(await unifiedPanel.locator("input#startTime").count(), 1);
+      assert.equal(await unifiedPanel.getByRole("button", { name: "内容を確認してサイトに掲載" }).count(), 1, "The complete entry flow stays inside one panel");
+      assert.equal(await page.getByRole("complementary", { name: "選択箇所の編集" }).count(), 0, "Event entry has no competing sidebar actions");
+      await unifiedPanel.getByText("画像URLあり", { exact: true }).waitFor();
+      if (process.env.BASSIC_QA_ARTIFACT_DIR) {
+        await mkdir(process.env.BASSIC_QA_ARTIFACT_DIR, { recursive: true });
+        await page.setViewportSize({ width: 1440, height: 1100 });
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.screenshot({ path: join(process.env.BASSIC_QA_ARTIFACT_DIR, "event-editor-desktop.png"), fullPage: true });
+        await page.setViewportSize({ width: 390, height: 844 });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+      }
       await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
       assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Preview alone must not publish the event");
       await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
@@ -465,6 +504,12 @@ try {
       assert.ok((await page.locator('.deploy-status[role="alert"]').boundingBox()).y < 160, "Asynchronous publishing failures must reveal their retry action");
       await page.getByRole("button", { name: "反映だけをやり直す", exact: true }).click();
       await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
+      const calendarLink = new URL(await page.getByRole("link", { name: "Googleカレンダーで確認・保存" }).getAttribute("href"));
+      assert.equal(calendarLink.origin, "https://calendar.google.com");
+      assert.equal(calendarLink.searchParams.get("text"), "Guided live");
+      assert.match(calendarLink.searchParams.get("details"), /画像: https:/);
+      assert.match(calendarLink.searchParams.get("dates"), /^20270707T100000Z/);
+      await page.getByText(/Google側で保存先を「Bassic」に選んで/).waitFor();
       assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl && item.isPublished).length, 1);
       const guidedDrafts = [...notices.values()].filter(item => item.sourceEventId === "77777777");
       assert.equal(guidedDrafts.length, 2);

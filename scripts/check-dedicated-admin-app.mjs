@@ -1316,40 +1316,8 @@ function checkFacebookEventImportPanel() {
 
   const text = readFileSync(file, "utf8");
   const cssText = readFileSync(cssFile, "utf8");
-  const requiredTerms = [
-    "Facebookイベントを取り込む",
-    "Facebookから読み取る",
-    "読み取り結果の確認",
-    "FacebookイベントURL・詳細URL",
-    "sourceId: data.sourceId",
-    "カレンダーへの掲載",
-    "Google Calendar反映依頼メモ",
-    "Google Calendarにも反映してください。",
-    "公開状態",
-    "公開するON",
-    "Google Calendarへ依頼する前に、「公開する」をONにして公開してください。",
-    "公開するONになるまで「コピーする」は押せません。",
-    "Facebook読み取りを使わず手入力した場合も",
-    "!draft.isPublished ? \"公開するON\" : \"\"",
-    "コピーする",
-    "メモを選択",
-    "calendarRequestRef",
-    "コピーしました。担当者へのメッセージに貼り付けてください。",
-    "メモを選択しました。コピーして担当者へのメッセージに貼り付けてください。",
-    "calendarRequestMissingLabels",
-    "calendarRequestBlockingLabels",
-    "calendarRequestCannotCopy",
-    "コピー前に",
-    "未入力があります。コピーする前に、",
-    "event.currentTarget.select()",
-    "イベント名",
-    "日付",
-    "日付またはSTARTが自動取得できませんでした",
-    "START",
-    "Facebookイベントを公開する前に日付を入力してください。",
-    "イベントを公開する前にSTARTを入力してください。"
-  ];
-  const requiredCssTerms = [".calendar-request-actions", ".calendar-request-actions button"];
+  const requiredTerms = ["Facebookから読み取る", "sourceId: data.sourceId", "この枠内で確認・修正", "開始時刻（START）", "sourceField", "children", "Googleカレンダーで確認・保存", "自動同期は未接続", "calendarDraftUrl", "SnsPostingPanel", "イベントを公開する前にSTARTを入力してください。"];
+  const requiredCssTerms = [".event-core-fields", ".event-extra-fields", ".event-entry-workspace"];
   const missing = [
     ...requiredTerms.filter((term) => !text.includes(term)),
     ...requiredCssTerms.filter((term) => !cssText.includes(term))
@@ -1359,48 +1327,10 @@ function checkFacebookEventImportPanel() {
 }
 
 function checkFacebookEventHandoffDocs() {
-  const manualFile = "docs/delivery-admin-manual.md";
-  const checklistFile = "docs/production-handoff-checklist.md";
-  if (!existsSync(manualFile) || !existsSync(checklistFile)) {
-    add("Facebook event handoff docs explain import checks", false, `${manualFile} or ${checklistFile} missing`);
-    return;
-  }
-
-  const manualText = readFileSync(manualFile, "utf8");
-  const checklistText = readFileSync(checklistFile, "utf8");
-  const syncDocText = existsSync("docs/facebook-event-sync.md") ? readFileSync("docs/facebook-event-sync.md", "utf8") : "";
-  const requiredManualTerms = [
-    "読み取り結果のチェックリスト",
-    "タイトル、画像、日付、STARTが入ったか確認",
-    "個別イベントページのURL",
-    "日付とSTARTの両方が入っていないと保存時に確認メッセージ",
-    "Google Calendar反映依頼メモ",
-    "Facebookから読み取れない場合でも",
-    "コピーする",
-    "空欄の場合は「コピーする」が押せません",
-    "公開するONになるまで「コピーする」は押せません",
-    "公開状態"
-  ];
-  const requiredChecklistTerms = ["FacebookイベントURL", "タイトル、画像、日付、STARTを確認", "Google Calendar反映依頼メモ", "コピーする", "sync:calendar:check", "公開するON"];
-  const requiredSyncDocTerms = [
-    "## 読み取りに失敗した時",
-    "イベント名、日付、STARTを手入力する",
-    "画像が取れない場合",
-    "管理画面で確認・修正した内容を正として扱います",
-    "Google Calendar反映依頼メモ",
-    "コピーする",
-    "依頼メモの `コピーする` は押せません",
-    "`公開状態`",
-    "`公開状態: 公開するON`"
-  ];
-  const staleTerms = ["ライヴ取得"];
-  const missing = [
-    ...requiredManualTerms.filter((term) => !manualText.includes(term)).map((term) => `${manualFile}: ${term}`),
-    ...requiredChecklistTerms.filter((term) => !checklistText.includes(term)).map((term) => `${checklistFile}: ${term}`),
-    ...requiredSyncDocTerms.filter((term) => !syncDocText.includes(term)).map((term) => `docs/facebook-event-sync.md: ${term}`),
-    ...staleTerms.filter((term) => syncDocText.includes(term)).map((term) => `docs/facebook-event-sync.md stale: ${term}`)
-  ];
-
+  const file = "docs/Bassic_README_納品用.txt";
+  const text = existsSync(file) ? readFileSync(file, "utf8") : "";
+  const terms = ["同じ枠内", "開始時刻", "Googleカレンダーで確認・保存", "Bassic", "Xで投稿する", "Instagram", "自動同期は未接続", "画像をPCに保存"];
+  const missing = terms.filter(term => !text.includes(term));
   add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
 }
 
@@ -1447,14 +1377,13 @@ function checkAdminEventTimeValidation() {
   ].join("\n");
   const required = [
     "function isValidEventTime",
-    "previewHasInvalidTime",
     "^(\\d{1,2}):(\\d{2})$",
     "hours <= 23",
     "minutes <= 59",
     "OPENやSTARTの文字は不要です",
     "公開する場合は必ず入れます",
     "公開するイベントは、日付とSTART",
-    "START/ENDは「19:00」の形で手入力してください",
+    "19:00 のように半角数字",
     "placeholder: \"18:30\"",
     "placeholder: \"19:00\"",
     "placeholder: \"22:00\"",
