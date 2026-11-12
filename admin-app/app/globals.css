@@ -3095,6 +3095,10 @@ a.current-edit-page:hover {
 .visual-workspace-heading h1 {font-size:2rem;margin:0}
 .visual-workspace-heading label {display:grid;gap:5px}
 .visual-direct-form {padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fffdf8);scroll-margin-top:100px}
+.visual-direct-form {min-width:0;margin:0}
+.visual-direct-form:disabled {opacity:.7}
+.visual-page-options-fields {border:0;padding:0;margin:0;min-width:0}
+.visual-advanced-controls>summary {color:var(--muted)}
 .visual-direct-form>label,.visual-editor-sidebar>details label {display:grid;gap:8px;margin:18px 0}
 .visual-direct-form input,.visual-direct-form textarea,.visual-direct-form select,.visual-editor-sidebar input,.visual-editor-sidebar textarea,.visual-workspace-heading select {width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:white;font:inherit;box-sizing:border-box}
 .visual-direct-form input[type=checkbox] {width:auto}

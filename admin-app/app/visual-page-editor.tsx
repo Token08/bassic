@@ -143,7 +143,7 @@ export function VisualPageEditor({
   const baseRevision = useRef(""),
     requestRef = useRef(0),
     savedSettings = useRef<VisualSettings | undefined>(undefined),
-    formTop = useRef<HTMLDivElement>(null);
+    formTop = useRef<HTMLFieldSetElement>(null);
   const errorRef = useErrorFocus<HTMLDivElement>(
     failure,
     notice + String(retry) + String(errorTick),
@@ -327,7 +327,7 @@ export function VisualPageEditor({
     ? descendants(node.id)
     : visibleNodes.filter(
         (n) =>
-          ["header", "footer", "section", "main"].includes(n.tag) ||
+          ["header", "footer", "section"].includes(n.tag) ||
           n.attrs["aria-label"] === "固定アクション",
       );
   function change(next: VisualSettings) {
@@ -792,10 +792,55 @@ export function VisualPageEditor({
           : cat === "ボタン・リンク"
             ? "href" in n.attrs || n.tag === "iframe"
             : cat === "カード"
-              ? ["article", "section", "nav", "main", "div"].includes(n.tag) &&
-                n.children.some((id) => map.has(id))
+              ? ["article", "figure"].includes(n.tag) ||
+                n.children.some((id) =>
+                  ["article", "figure", "picture", "li", "a"].includes(
+                    map.get(id)?.tag || "",
+                  ),
+                )
               : true,
     );
+  const publicUrl = new URL(
+    path,
+    process.env.NEXT_PUBLIC_PUBLIC_SITE_URL || "https://www.bassic.jp/",
+  ).href;
+  const reflected =
+    !!settings.revision && document?.publishedRevision === settings.revision;
+  const statusText = deploy
+    ? "サイト反映中"
+    : dirty
+      ? JSON.stringify(settings) === localSignature
+        ? "この端末に保存済み・未掲載"
+        : "編集中"
+      : settings.revision
+        ? reflected
+          ? "サイトに反映済み"
+          : "保存済み・未反映"
+        : document
+          ? "公開中の内容"
+          : "読み込み中";
+  const renderCategory = (cat: string) =>
+    categoryNodes(cat).length ? (
+      <details key={cat} open={category === cat}>
+        <summary>{cat}</summary>
+        {categoryNodes(cat).map((n) => (
+          <button
+            type="button"
+            className="visual-target-choice"
+            aria-pressed={editing && n.id === selected && category === cat}
+            data-visual-target={n.id}
+            key={n.id}
+            onClick={() => open(n.id, cat)}
+          >
+            {cat === "写真・ロゴ" && n.attrs.src ? (
+              <AdminImage src={n.attrs.src} compact />
+            ) : null}
+            {displayLabel(n)}
+            {n.record ? "（登録情報）" : ""}
+          </button>
+        ))}
+      </details>
+    ) : null;
   if (!loaded)
     return (
       <section className="loading-panel">
@@ -823,6 +868,16 @@ export function VisualPageEditor({
           }
         >
           <strong>{notice}</strong>
+          {!failure && reflected && !dirty && !deploy ? (
+            <a
+              className="secondary-button"
+              href={publicUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              掲載したページを確認
+            </a>
+          ) : null}
           {failure && canRetryDeployment ? (
             <button
               type="button"
@@ -877,15 +932,8 @@ export function VisualPageEditor({
                 ? "TOPページ"
                 : page}
           </h1>
-          <span>
-            {dirty
-              ? JSON.stringify(settings) === localSignature
-                ? "この端末に保存済み・未掲載"
-                : "編集中"
-              : settings.revision &&
-                  document?.publishedRevision !== settings.revision
-                ? "保存済み・未反映"
-                : "保存済みの設定"}
+          <span role="status" aria-label="編集と掲載の状態">
+            {statusText}
           </span>
         </div>
         <label>
@@ -912,7 +960,12 @@ export function VisualPageEditor({
           </select>
         </label>
         {hasLocalDraft ? (
-          <button type="button" className="text-button" onClick={restore}>
+          <button
+            type="button"
+            className="text-button"
+            disabled={busy || !!deploy}
+            onClick={restore}
+          >
             端末の下書きを開く
           </button>
         ) : null}
@@ -920,7 +973,12 @@ export function VisualPageEditor({
       <div className="visual-editor-grid">
         <div className="visual-editor-main">
           {editing && node ? (
-            <div ref={formTop} tabIndex={-1} className="visual-direct-form">
+            <fieldset
+              ref={formTop}
+              tabIndex={-1}
+              disabled={busy || !!deploy}
+              className="visual-direct-form"
+            >
               <button
                 className="text-button"
                 type="button"
@@ -1643,13 +1701,19 @@ export function VisualPageEditor({
                   この項目を標準に戻す
                 </button>
               </details>
-            </div>
+            </fieldset>
           ) : null}
           {document ? (
             <div hidden={editing}>
               <PublicPageCanvas
                 path={path}
-                title={review ? "変更後・未掲載" : "保存済みのページ"}
+                title={
+                  review
+                    ? "変更後・未掲載"
+                    : dirty
+                      ? "編集前のページ"
+                      : "公開中のページ"
+                }
                 document={document}
                 precise
                 suspended={editing}
@@ -1735,36 +1799,16 @@ export function VisualPageEditor({
               >
                 ひとつ上へ
               </button>
-              {[
-                "文章",
-                "写真・ロゴ",
-                "ボタン・リンク",
-                "カード",
-                "見た目",
-                "表示・並び順",
-              ]
-                .filter((cat) => categoryNodes(cat).length > 0)
-                .map((cat) => (
-                  <details key={cat} open={category === cat}>
-                    <summary>{cat}</summary>
-                    {categoryNodes(cat).map((n) => (
-                      <button
-                        type="button"
-                        className="visual-target-choice"
-                        aria-pressed={editing && n.id === selected}
-                        data-visual-target={n.id}
-                        key={n.id}
-                        onClick={() => open(n.id, cat)}
-                      >
-                        {cat === "写真・ロゴ" && n.attrs.src ? (
-                          <AdminImage src={n.attrs.src} />
-                        ) : null}
-                        {displayLabel(n)}
-                        {n.record ? "（登録情報）" : ""}
-                      </button>
-                    ))}
-                  </details>
-                ))}
+              {["文章", "写真・ロゴ", "ボタン・リンク", "カード"].map(
+                renderCategory,
+              )}
+              <details
+                className="visual-advanced-controls"
+                open={editing && ["見た目", "表示・並び順"].includes(category)}
+              >
+                <summary>詳細な調整</summary>
+                {["見た目", "表示・並び順"].map(renderCategory)}
+              </details>
             </>
           ) : (
             relevant.map((n) => (
@@ -1781,130 +1825,212 @@ export function VisualPageEditor({
           )}
           <details>
             <summary>ページ全体・検索表示</summary>
-            <button
-              type="button"
-              className="text-button"
-              onClick={exportInventory}
+            <fieldset
+              className="visual-page-options-fields"
+              disabled={busy || !!deploy}
             >
-              編集対象一覧を保存
-            </button>
-            <h3>共通・ページの見た目</h3>
-            <label>
-              対象
-              <select
-                value={baseStyleGroup}
-                onChange={(e) =>
-                  setBaseStyleGroup(e.target.value as typeof baseStyleGroup)
-                }
+              <button
+                type="button"
+                className="text-button"
+                onClick={exportInventory}
               >
-                <option value="baseStyle">ページ全体</option>
-                <option value="mobileBaseStyle">スマホのページ全体</option>
-                <option value="dialogStyle">拡大写真の背景・枠</option>
-                <option value="dialogButtonStyle">拡大写真のボタン</option>
-                <option value="dialogCaptionStyle">拡大写真の説明</option>
-              </select>
-            </label>
-            {(
-              [
-                "color",
-                "backgroundColor",
-                "fontFamily",
-                "fontSize",
-                "lineHeight",
-                "padding",
-                "gap",
-                "borderRadius",
-                "boxShadow",
-                "width",
-                "height",
-                "maxWidth",
-              ] as const
-            ).map((key) => {
-              const value =
-                (themeScope === "shared" ? settings.shared : local).baseStyle?.[
-                  key
-                ] || "";
-              return (
+                編集対象一覧を保存
+              </button>
+              <h3>共通・ページの見た目</h3>
+              <label>
+                対象
+                <select
+                  value={baseStyleGroup}
+                  onChange={(e) =>
+                    setBaseStyleGroup(e.target.value as typeof baseStyleGroup)
+                  }
+                >
+                  <option value="baseStyle">ページ全体</option>
+                  <option value="mobileBaseStyle">スマホのページ全体</option>
+                  <option value="dialogStyle">拡大写真の背景・枠</option>
+                  <option value="dialogButtonStyle">拡大写真のボタン</option>
+                  <option value="dialogCaptionStyle">拡大写真の説明</option>
+                </select>
+              </label>
+              {(
+                [
+                  "color",
+                  "backgroundColor",
+                  "fontFamily",
+                  "fontSize",
+                  "lineHeight",
+                  "padding",
+                  "gap",
+                  "borderRadius",
+                  "boxShadow",
+                  "width",
+                  "height",
+                  "maxWidth",
+                ] as const
+              ).map((key) => {
+                const value =
+                  (themeScope === "shared" ? settings.shared : local)
+                    .baseStyle?.[key] || "";
+                return (
+                  <label key={key}>
+                    {
+                      (
+                        {
+                          color: "文字色",
+                          backgroundColor: "背景色",
+                          width: "幅",
+                          height: "高さ",
+                          maxWidth: "最大幅",
+                          fontFamily: "書体",
+                          fontSize: "文字の基準サイズ",
+                          lineHeight: "行間",
+                          padding: "ページの余白",
+                          gap: "間隔",
+                          borderRadius: "角丸",
+                          boxShadow: "影",
+                        } as Record<string, string>
+                      )[key]
+                    }
+                    {key === "fontFamily" || key === "boxShadow" ? (
+                      <select
+                        value={value}
+                        onChange={(e) => updateBaseStyle(key, e.target.value)}
+                      >
+                        <option value="">標準</option>
+                        {key === "fontFamily" ? (
+                          <>
+                            <option value="sans-serif">ゴシック</option>
+                            <option value="serif">明朝</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="none">なし</option>
+                            <option value="0 4px 14px rgba(0,0,0,0.12)">
+                              控えめ
+                            </option>
+                            <option value="0 12px 32px rgba(0,0,0,0.24)">
+                              はっきり
+                            </option>
+                          </>
+                        )}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        placeholder="標準"
+                        value={value.replace(/px$/, "")}
+                        onChange={(e) =>
+                          updateBaseStyle(
+                            key,
+                            e.target.value === ""
+                              ? ""
+                              : e.target.value +
+                                  (key === "lineHeight" ? "" : "px"),
+                          )
+                        }
+                      />
+                    )}
+                  </label>
+                );
+              })}
+              <h3>写真を拡大したときの表示</h3>
+              {(["close", "previous", "next", "title"] as const).map((key) => (
                 <label key={key}>
                   {
                     (
                       {
-                        color: "文字色",
-                        backgroundColor: "背景色",
-                        width: "幅",
-                        height: "高さ",
-                        maxWidth: "最大幅",
-                        fontFamily: "書体",
-                        fontSize: "文字の基準サイズ",
-                        lineHeight: "行間",
-                        padding: "ページの余白",
-                        gap: "間隔",
-                        borderRadius: "角丸",
-                        boxShadow: "影",
+                        close: "閉じる",
+                        previous: "前へ",
+                        next: "次へ",
+                        title: "拡大写真の見出し",
                       } as Record<string, string>
                     )[key]
                   }
-                  {key === "fontFamily" || key === "boxShadow" ? (
-                    <select
-                      value={value}
-                      onChange={(e) => updateBaseStyle(key, e.target.value)}
-                    >
-                      <option value="">標準</option>
-                      {key === "fontFamily" ? (
-                        <>
-                          <option value="sans-serif">ゴシック</option>
-                          <option value="serif">明朝</option>
-                        </>
-                      ) : (
-                        <>
-                          <option value="none">なし</option>
-                          <option value="0 4px 14px rgba(0,0,0,0.12)">
-                            控えめ
-                          </option>
-                          <option value="0 12px 32px rgba(0,0,0,0.24)">
-                            はっきり
-                          </option>
-                        </>
-                      )}
-                    </select>
-                  ) : (
-                    <input
-                      type="number"
-                      placeholder="標準"
-                      value={value.replace(/px$/, "")}
-                      onChange={(e) =>
-                        updateBaseStyle(
-                          key,
-                          e.target.value === ""
-                            ? ""
-                            : e.target.value +
-                                (key === "lineHeight" ? "" : "px"),
-                        )
-                      }
-                    />
-                  )}
+                  <input
+                    placeholder="標準"
+                    value={
+                      local.interactions?.[key] ??
+                      settings.shared.interactions?.[key] ??
+                      ""
+                    }
+                    onChange={(e) =>
+                      change({
+                        ...settings,
+                        pages: {
+                          ...settings.pages,
+                          [path]: {
+                            ...local,
+                            interactions: {
+                              ...local.interactions,
+                              [key]: e.target.value,
+                            },
+                          },
+                        },
+                      })
+                    }
+                  />
                 </label>
-              );
-            })}
-            <h3>写真を拡大したときの表示</h3>
-            {(["close", "previous", "next", "title"] as const).map((key) => (
-              <label key={key}>
-                {
-                  (
-                    {
-                      close: "閉じる",
-                      previous: "前へ",
-                      next: "次へ",
-                      title: "拡大写真の見出し",
-                    } as Record<string, string>
-                  )[key]
-                }
+              ))}
+              {settings.previous ? (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "前回の保存内容を下書きとして開きますか？掲載するまでサイトは変わりません。",
+                      )
+                    ) {
+                      try {
+                        change(parseVisualSettings(settings.previous));
+                      } catch {
+                        setFailure(true);
+                        setNotice("前回の設定を読み込めませんでした。");
+                      }
+                    }
+                  }}
+                >
+                  前回の設定を開く
+                </button>
+              ) : null}
+              <h3>検索・共有表示</h3>
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  const next = { ...local };
+                  delete next.meta;
+                  change({
+                    ...settings,
+                    pages: { ...settings.pages, [path]: next },
+                  });
+                }}
+              >
+                検索・共有を標準に戻す
+              </button>
+              <label>
+                検索タイトル
                 <input
-                  placeholder="標準"
+                  value={local.meta?.title ?? document?.meta?.title ?? ""}
+                  onChange={(e) =>
+                    change({
+                      ...settings,
+                      pages: {
+                        ...settings.pages,
+                        [path]: {
+                          ...local,
+                          meta: { ...local.meta, title: e.target.value },
+                        },
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                説明
+                <textarea
                   value={
-                    local.interactions?.[key] ??
-                    settings.shared.interactions?.[key] ??
-                    ""
+                    local.meta?.description ?? document?.meta?.description ?? ""
                   }
                   onChange={(e) =>
                     change({
@@ -1913,158 +2039,63 @@ export function VisualPageEditor({
                         ...settings.pages,
                         [path]: {
                           ...local,
-                          interactions: {
-                            ...local.interactions,
-                            [key]: e.target.value,
-                          },
+                          meta: { ...local.meta, description: e.target.value },
                         },
                       },
                     })
                   }
                 />
               </label>
-            ))}
-            {settings.previous ? (
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => {
-                  if (
-                    confirm(
-                      "前回の保存内容を下書きとして開きますか？掲載するまでサイトは変わりません。",
-                    )
-                  ) {
-                    try {
-                      change(parseVisualSettings(settings.previous));
-                    } catch {
-                      setFailure(true);
-                      setNotice("前回の設定を読み込めませんでした。");
-                    }
+              <label>
+                共有画像URL
+                <input
+                  value={local.meta?.image ?? document?.meta?.image ?? ""}
+                  onChange={(e) =>
+                    change({
+                      ...settings,
+                      pages: {
+                        ...settings.pages,
+                        [path]: {
+                          ...local,
+                          meta: { ...local.meta, image: e.target.value },
+                        },
+                      },
+                    })
                   }
-                }}
-              >
-                前回の設定を開く
-              </button>
-            ) : null}
-            <h3>検索・共有表示</h3>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => {
-                const next = { ...local };
-                delete next.meta;
-                change({
-                  ...settings,
-                  pages: { ...settings.pages, [path]: next },
-                });
-              }}
-            >
-              検索・共有を標準に戻す
-            </button>
-            <label>
-              検索タイトル
-              <input
-                value={local.meta?.title ?? document?.meta?.title ?? ""}
-                onChange={(e) =>
-                  change({
-                    ...settings,
-                    pages: {
-                      ...settings.pages,
-                      [path]: {
-                        ...local,
-                        meta: { ...local.meta, title: e.target.value },
-                      },
-                    },
-                  })
-                }
-              />
-            </label>
-            <label>
-              説明
-              <textarea
-                value={
-                  local.meta?.description ?? document?.meta?.description ?? ""
-                }
-                onChange={(e) =>
-                  change({
-                    ...settings,
-                    pages: {
-                      ...settings.pages,
-                      [path]: {
-                        ...local,
-                        meta: { ...local.meta, description: e.target.value },
-                      },
-                    },
-                  })
-                }
-              />
-            </label>
-            <label>
-              共有画像URL
-              <input
-                value={local.meta?.image ?? document?.meta?.image ?? ""}
-                onChange={(e) =>
-                  change({
-                    ...settings,
-                    pages: {
-                      ...settings.pages,
-                      [path]: {
-                        ...local,
-                        meta: { ...local.meta, image: e.target.value },
-                      },
-                    },
-                  })
-                }
-              />
-            </label>
-            <label>
-              色の反映範囲
-              <select
-                value={themeScope}
-                onChange={(e) =>
-                  setThemeScope(e.target.value as "shared" | "page")
-                }
-              >
-                <option value="page">このページ</option>
-                <option value="shared">全ページ</option>
-              </select>
-            </label>
-            {Object.entries(themeNames).map(([key, label]) => {
-              const current = themeScope === "shared" ? settings.shared : local;
-              const value = current.theme?.[key];
-              return (
-                <label key={key}>
-                  {label}
-                  <input
-                    type="color"
-                    value={colorHex(
-                      value ||
-                        settings.shared.theme?.[key] ||
-                        computedStyles.__theme?.[key] ||
-                        "#fff7d9",
-                    )}
-                    onChange={(e) => {
-                      const theme = { ...current.theme, [key]: e.target.value };
-                      change(
-                        themeScope === "shared"
-                          ? { ...settings, shared: { ...current, theme } }
-                          : {
-                              ...settings,
-                              pages: {
-                                ...settings.pages,
-                                [path]: { ...current, theme },
-                              },
-                            },
-                      );
-                    }}
-                  />
-                  {value ? (
-                    <button
-                      className="text-button"
-                      type="button"
-                      onClick={() => {
-                        const theme = { ...current.theme };
-                        delete theme[key];
+                />
+              </label>
+              <label>
+                色の反映範囲
+                <select
+                  value={themeScope}
+                  onChange={(e) =>
+                    setThemeScope(e.target.value as "shared" | "page")
+                  }
+                >
+                  <option value="page">このページ</option>
+                  <option value="shared">全ページ</option>
+                </select>
+              </label>
+              {Object.entries(themeNames).map(([key, label]) => {
+                const current =
+                  themeScope === "shared" ? settings.shared : local;
+                const value = current.theme?.[key];
+                return (
+                  <label key={key}>
+                    {label}
+                    <input
+                      type="color"
+                      value={colorHex(
+                        value ||
+                          settings.shared.theme?.[key] ||
+                          computedStyles.__theme?.[key] ||
+                          "#fff7d9",
+                      )}
+                      onChange={(e) => {
+                        const theme = {
+                          ...current.theme,
+                          [key]: e.target.value,
+                        };
                         change(
                           themeScope === "shared"
                             ? { ...settings, shared: { ...current, theme } }
@@ -2077,24 +2108,45 @@ export function VisualPageEditor({
                               },
                         );
                       }}
-                    >
-                      標準に戻す
-                    </button>
-                  ) : (
-                    <small>標準・共通の色</small>
-                  )}
-                </label>
-              );
-            })}
+                    />
+                    {value ? (
+                      <button
+                        className="text-button"
+                        type="button"
+                        onClick={() => {
+                          const theme = { ...current.theme };
+                          delete theme[key];
+                          change(
+                            themeScope === "shared"
+                              ? { ...settings, shared: { ...current, theme } }
+                              : {
+                                  ...settings,
+                                  pages: {
+                                    ...settings.pages,
+                                    [path]: { ...current, theme },
+                                  },
+                                },
+                          );
+                        }}
+                      >
+                        標準に戻す
+                      </button>
+                    ) : (
+                      <small>標準・共通の色</small>
+                    )}
+                  </label>
+                );
+              })}
+            </fieldset>
           </details>
         </aside>
       </div>
       <div className="visual-savebar">
-        <span>{dirty ? "未掲載の変更あり" : notice || "変更なし"}</span>
+        <span>{statusText}</span>
         <button
           type="button"
           className="secondary-button"
-          disabled={busy}
+          disabled={busy || !!deploy}
           onClick={saveLocal}
         >
           この端末に保存
