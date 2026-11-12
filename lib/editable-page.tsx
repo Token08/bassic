@@ -1,5 +1,6 @@
 import { createElement, type ReactNode } from "react";
 import { getCmsContents } from "./microcms";
+import { previewContents } from './preview-context';
 import {
   renderVisualTree,
   emptyVisualSettings,
@@ -33,12 +34,12 @@ export async function editablePage(path: string, tree: ReactNode) {
         }).replaceAll("<", "\\u003c"),
       },
     }),
-    createElement("script", {
+    previewContents.getStore()?createElement("script", {
       id: "bassic-editor-catalog",
       type: "application/json",
       dangerouslySetInnerHTML: {
         __html: JSON.stringify(rendered.catalog).replaceAll("<", "\\u003c"),
       },
-    }),
+    }):null,
   );
 }

@@ -489,6 +489,13 @@ export function renderVisualTree(
     if (type === Link) {
       type = "a";
       delete p.prefetch;
+      if (typeof p.href === "string" && /^\/(?!\/)/.test(p.href)) {
+        const at = p.href.search(/[?#]/);
+        const pathname = at < 0 ? p.href : p.href.slice(0, at),
+          suffix = at < 0 ? "" : p.href.slice(at);
+        if (!pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(pathname))
+          p.href = pathname + "/" + suffix;
+      }
     }
     if (type === Image) {
       type = "img";
@@ -851,6 +858,19 @@ export function renderVisualTree(
         ...children.filter((x) => !ordered.includes(x)),
       ].map((x) => rendered[children.indexOf(x)]);
     }
+    if (cls === "mobile-cta") {
+      const count = rendered.filter(
+        (x) =>
+          isValidElement(x) &&
+          (x.props as { style?: CSSProperties }).style?.display !== "none",
+      ).length;
+      nextProps.style = {
+        ...(nextProps.style as CSSProperties),
+        ...(count
+          ? (!override.style?.gridTemplateColumns?{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }:{})
+          : { display: "none" }),
+      };
+    }
     if (p["data-visual-icon"]) {
       const iconSrc = override.attrs?.src;
       if (iconSrc)
@@ -898,7 +918,11 @@ export function renderVisualTree(
                         style: {
                           ...((n.props as Record<string, unknown>)
                             .style as CSSProperties),
-                          animation: `${name} ${total}s linear ${index * seconds}s infinite`,
+                          animation:
+                            visible.length === 1
+                              ? "none"
+                              : `${name} ${total}s linear ${index * seconds}s infinite`,
+                          ...(visible.length === 1 ? { opacity: 1 } : {}),
                         },
                       }
                     : {}),

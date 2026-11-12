@@ -5,6 +5,7 @@ export const fallbackContents = {
   siteSettings: {
     address: site.address,
     phone: site.phone,
+    email: site.email,
     hoursLabel: site.hoursLabel,
     eventHoursNote: site.eventHoursNote,
     smokingLabel: site.smokingLabel,
