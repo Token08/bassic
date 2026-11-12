@@ -14,6 +14,7 @@ import {
   type VisualStyle,
 } from "@public/lib/editor-document";
 import { useErrorFocus } from "@/lib/use-error-focus";
+import { summarizeVisualChanges, visualHistory } from "@/lib/publish-review";
 const pagePaths: Record<string, string> = {
   TOP: "/",
   "EVENT SCHEDULE": "/events/",
@@ -151,6 +152,20 @@ export function VisualPageEditor({
   const path = (locale ? "/" + locale : "") + (pagePaths[page] || "/");
   const draftKey = "bassic-visual-draft-v1";
   const dirty = loaded && JSON.stringify(settings) !== baseline;
+  const changes = useMemo(() => {
+    if (!review || !baseline) return [];
+    try {
+      return summarizeVisualChanges(
+        JSON.parse(baseline),
+        settings,
+        catalog,
+        path,
+      );
+    } catch {
+      return [];
+    }
+  }, [review, baseline, settings, catalog, path]);
+  const history = visualHistory(settings);
   useEffect(() => {
     onState({ dirty, busy: busy || !!deploy });
   }, [dirty, busy, deploy, onState]);
@@ -996,6 +1011,61 @@ export function VisualPageEditor({
       </div>
       <div className="visual-editor-grid">
         <div className="visual-editor-main">
+          {review ? (
+            <section
+              className="publish-review-summary"
+              aria-label="掲載する変更"
+            >
+              <h2>今回の変更</h2>
+              {changes.length ? (
+                <>
+                  <ul>
+                    {changes.slice(0, 4).map((group) => (
+                      <li key={group.path}>
+                        <strong>{group.label}</strong>
+                        <span>
+                          {[...new Set(group.details.map((item) => item.kind))]
+                            .map(
+                              (kind) =>
+                                `${kind} ${group.details.filter((item) => item.kind === kind).length}件`,
+                            )
+                            .join("・")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {changes.length > 4 ? (
+                    <p>ほか{changes.length - 4}ページ。内訳で確認できます。</p>
+                  ) : null}
+                  <details>
+                    <summary>変更内容を見る</summary>
+                    {changes.map((group) => (
+                      <div key={group.path}>
+                        <h3>{group.label}</h3>
+                        <ul>
+                          {group.details.map((item, index) => (
+                            <li key={index}>
+                              <strong>
+                                {item.label}：{item.kind}
+                              </strong>
+                              {item.before !== undefined ? (
+                                <div className="publish-change-values">
+                                  <span>変更前：{item.before}</span>
+                                  <span>変更後：{item.after}</span>
+                                </div>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </details>
+                </>
+              ) : (
+                <p>設定内容の変更はありません。</p>
+              )}
+            </section>
+          ) : null}
           {editing && node ? (
             <fieldset
               ref={formTop}
@@ -1594,7 +1664,7 @@ export function VisualPageEditor({
               ) : null}
               {category === "カード" || category === "表示・並び順" ? (
                 <>
-                  <label>
+                  <label className="visual-toggle">
                     <input
                       type="checkbox"
                       checked={!!effective.hidden}
@@ -1664,39 +1734,41 @@ export function VisualPageEditor({
                     </div>
                   ))}
                   <h3>案内を追加</h3>
-                  {(["text", "photo", "card", "button"] as const).map(
-                    (kind, index) => (
-                      <button
-                        type="button"
-                        key={kind}
-                        onClick={() =>
-                          update({
-                            blocks: [
-                              ...(effective.blocks || []),
-                              {
-                                id: node.id + ".added-" + crypto.randomUUID(),
-                                kind,
-                                title: [
-                                  "案内",
-                                  "写真の案内",
-                                  "新しいカード",
-                                  "詳しく見る",
-                                ][index],
-                                body: "",
-                                image:
-                                  kind === "photo"
-                                    ? "/assets/brand/index-logo.png"
-                                    : undefined,
-                                href: kind === "button" ? "/" : undefined,
-                              },
-                            ],
-                          })
-                        }
-                      >
-                        {["文章", "写真付き案内", "カード", "ボタン"][index]}
-                      </button>
-                    ),
-                  )}
+                  <div className="visual-add-choices">
+                    {(["text", "photo", "card", "button"] as const).map(
+                      (kind, index) => (
+                        <button
+                          type="button"
+                          key={kind}
+                          onClick={() =>
+                            update({
+                              blocks: [
+                                ...(effective.blocks || []),
+                                {
+                                  id: node.id + ".added-" + crypto.randomUUID(),
+                                  kind,
+                                  title: [
+                                    "案内",
+                                    "写真の案内",
+                                    "新しいカード",
+                                    "詳しく見る",
+                                  ][index],
+                                  body: "",
+                                  image:
+                                    kind === "photo"
+                                      ? "/assets/brand/index-logo.png"
+                                      : undefined,
+                                  href: kind === "button" ? "/" : undefined,
+                                },
+                              ],
+                            })
+                          }
+                        >
+                          {["文章", "写真付き案内", "カード", "ボタン"][index]}
+                        </button>
+                      ),
+                    )}
+                  </div>
                 </>
               ) : null}
               <details>
@@ -1995,27 +2067,48 @@ export function VisualPageEditor({
                   />
                 </label>
               ))}
-              {settings.previous ? (
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "前回の保存内容を下書きとして開きますか？掲載するまでサイトは変わりません。",
-                      )
-                    ) {
-                      try {
-                        change(parseVisualSettings(settings.previous));
-                      } catch {
-                        setFailure(true);
-                        setNotice("前回の設定を読み込めませんでした。");
-                      }
-                    }
-                  }}
-                >
-                  前回の設定を開く
-                </button>
+              {history.length ? (
+                <details className="visual-history">
+                  <summary>以前のページ設定を開く（最大3回）</summary>
+                  {history.map((previous, index) => (
+                    <button
+                      key={previous.revision || index}
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => {
+                        if (
+                          !confirm(
+                            "以前の設定を下書きとして開きますか？掲載するまでサイトは変わりません。",
+                          )
+                        )
+                          return;
+                        try {
+                          change(parseVisualSettings(previous));
+                          setNotice(
+                            "以前の設定を開きました。まだ掲載されていません。",
+                          );
+                        } catch {
+                          setFailure(true);
+                          setNotice("以前の設定を読み込めませんでした。");
+                        }
+                      }}
+                    >
+                      {index + 1}回前
+                      {previous.savedAt &&
+                      Number.isFinite(Date.parse(previous.savedAt))
+                        ? "（" +
+                          new Intl.DateTimeFormat("ja-JP", {
+                            timeZone: "Asia/Tokyo",
+                            month: "numeric",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }).format(new Date(previous.savedAt)) +
+                          "）"
+                        : ""}
+                    </button>
+                  ))}
+                </details>
               ) : null}
               <h3>検索・共有表示</h3>
               <button

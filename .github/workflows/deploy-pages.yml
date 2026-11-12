@@ -194,3 +194,10 @@ jobs:
           done
           echo "The signed build has not been confirmed on the production domain." >&2
           exit 1
+      - name: Read-only production checks
+        if: vars.LOLIPOP_PULL_ENABLED == 'true'
+        env:
+          PUBLIC_EXPECT_COMMIT: ${{ github.sha }}
+        run: |
+          node scripts/check-public-readonly.mjs
+          node scripts/smoke-admin-app-production.mjs

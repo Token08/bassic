@@ -1808,14 +1808,11 @@ function checkAdminAppProductionSmokeScript() {
   const packageJson = JSON.parse(readFileSync(packageFile, "utf8"));
   const requiredTerms = [
     "ADMIN_APP_URL",
-    "ADMIN_PASSWORD",
-    "/api/login",
-    "/api/health",
-    "/api/content/custom-sections",
-    'method: "DELETE"',
-    "Created and deleted custom-sections item"
+    "checkAdminSite",
+    "read-only check passed"
   ];
   const missing = requiredTerms.filter((term) => !script.includes(term));
+  if(/method:\s*["'](?:POST|PUT|PATCH|DELETE)["']/.test(script))missing.push('Production smoke must be read-only');
 
   if (packageJson.scripts?.["smoke:admin-app"] !== "node scripts/smoke-admin-app-production.mjs") {
     missing.push("package script smoke:admin-app");

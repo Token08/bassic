@@ -83,6 +83,7 @@ export type VisualPage = {
 export type VisualSettings = {
   version: 1;
   revision?: string;
+  savedAt?: string;
   previous?: VisualSettings;
   shared: VisualPage;
   pages: Record<string, VisualPage>;
@@ -200,6 +201,7 @@ export function parseVisualSettings(value: unknown): VisualSettings {
   )
     throw Error("設定のバージョンを確認してください。");
   if (JSON.stringify(data).length > 500000) throw Error("設定が大きすぎます。");
+  if(data.savedAt!==undefined&&(typeof data.savedAt!=='string'||data.savedAt.length>40||!Number.isFinite(Date.parse(data.savedAt))))throw Error('保存日時を確認してください。');
   const check = (page: VisualPage) => {
     if (
       !page.nodes ||

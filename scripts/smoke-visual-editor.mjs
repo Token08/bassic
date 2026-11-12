@@ -465,6 +465,31 @@ try {
   console.log(
     "Empty text, responsive styles, invalid URL rejection, read-only previews, and revision conflict protection passed.",
   );
+  assert.ok(Number.isFinite(Date.parse(saved.savedAt)));
+  let latest = saved;
+  const versions = [saved.revision];
+  for (let index = 0; index < 4; index++) {
+    const next = structuredClone(latest);
+    next.previous={version:99}; // Client-supplied history must never replace stored snapshots.
+    next.pages["/"].nodes[heading.id].texts[key] = "History fixture " + index;
+    latest = (
+      await call("visual-editor", "PUT", {
+        settings: next,
+        baseRevision: latest.revision,
+      })
+    ).data;
+    versions.push(latest.revision);
+  }
+  const previous = [];
+  for (let prior = latest.previous; prior; prior = prior.previous) {
+    previous.push(prior.revision);
+    assert.ok(previous.length <= 3);
+  }
+  assert.deepEqual(previous, versions.slice(-4, -1).reverse());
+  const writesBeforeBrowser = writes;
+  console.log(
+    "Three previous revisions round-trip through the isolated save API.",
+  );
   if (process.env.BASSIC_QA_PLAYWRIGHT) {
     const { chromium } = require(process.env.BASSIC_QA_PLAYWRIGHT);
     const browser = await chromium.launch({
@@ -565,6 +590,24 @@ try {
         .getByRole("button", { name: "サイトに掲載", exact: true })
         .waitFor();
       await frame.getByText("未掲載の文章", { exact: true }).waitFor();
+      const changeSummary = page.getByRole("region", {
+        name: "掲載する変更",
+        exact: true,
+      });
+      await changeSummary
+        .getByRole("heading", { name: "今回の変更", exact: true })
+        .waitFor();
+      await changeSummary.locator('li > strong').filter({hasText:'TOPページ'}).first().waitFor();
+      await changeSummary.getByText("変更内容を見る", { exact: true }).click();
+      await changeSummary
+        .getByText("変更後：未掲載の文章", { exact: true })
+        .waitFor();
+      assert.equal(
+        writes,
+        writesBeforeBrowser,
+        "Reviewing differences must not save",
+      );
+      await changeSummary.getByText("変更内容を見る", { exact: true }).click();
       await page.waitForFunction((expected) => {
         const frame = document.querySelector("iframe.public-canvas-frame");
         return (
@@ -584,7 +627,7 @@ try {
       await page.getByRole("button", { name: "PC表示", exact: true }).click();
       assert.equal(
         writes,
-        1,
+        writesBeforeBrowser,
         "UI preview and local saves must not touch the CMS",
       );
       await page.screenshot({
@@ -632,7 +675,11 @@ try {
         0,
         "Failed preview must not enable publishing",
       );
-      assert.equal(writes, 1, "Restore and failed previews must not write");
+      assert.equal(
+        writes,
+        writesBeforeBrowser,
+        "Restore and failed previews must not write",
+      );
       console.log(
         "Unsaved navigation, device switching, local draft restoration and preview failure focus passed.",
       );
@@ -694,8 +741,20 @@ try {
         });
       await saveStarted;
       try {
-        assert.equal(await page.locator('.visual-page-options-fields').evaluate(el=>el.disabled),true,'Global appearance and metadata cannot change during saving');
-        assert.equal(await page.getByRole('button',{name:'端末の下書きを開く',exact:true}).isDisabled(),true,'Draft restoration cannot replace an in-flight save');
+        assert.equal(
+          await page
+            .locator(".visual-page-options-fields")
+            .evaluate((el) => el.disabled),
+          true,
+          "Global appearance and metadata cannot change during saving",
+        );
+        assert.equal(
+          await page
+            .getByRole("button", { name: "端末の下書きを開く", exact: true })
+            .isDisabled(),
+          true,
+          "Draft restoration cannot replace an in-flight save",
+        );
         await page
           .getByRole("complementary")
           .getByRole("button", { name: "未掲載の文章", exact: true })
@@ -715,7 +774,11 @@ try {
         .getByRole("alert")
         .filter({ hasText: "隔離テスト：掲載に失敗しました" })
         .waitFor();
-      assert.equal(writes, 2, "A double click must save one revision only");
+      assert.equal(
+        writes,
+        writesBeforeBrowser + 1,
+        "A double click must save one revision only",
+      );
       deployMode = "success";
       await page
         .getByRole("button", { name: "保存済みの内容を再反映", exact: true })
@@ -724,7 +787,11 @@ try {
         .getByRole("alert")
         .filter({ hasText: "保存した版の表示を確認できませんでした" })
         .waitFor();
-      assert.equal(writes, 2, "A deployment retry must not save again");
+      assert.equal(
+        writes,
+        writesBeforeBrowser + 1,
+        "A deployment retry must not save again",
+      );
       servedRevision = JSON.parse(
         [...menu.values()].find((item) => item.kind === "visual-editor").body,
       ).revision;
@@ -741,7 +808,7 @@ try {
           .getAttribute("href"),
         "https://www.bassic.jp/",
       );
-      assert.equal(writes, 2);
+      assert.equal(writes, writesBeforeBrowser + 1);
       console.log(
         "Publication double-click protection, failure recovery, deployment-only retries and served-revision verification passed.",
       );
@@ -783,7 +850,7 @@ try {
       );
       assert.equal(
         writes,
-        2,
+        writesBeforeBrowser + 1,
         "Duplicating a registered card must open an unpublished draft without saving",
       );
       await clonePage.close();
@@ -846,12 +913,53 @@ try {
       );
       assert.equal(
         writes,
-        2,
+        writesBeforeBrowser + 1,
         "Duplicating static cards and previewing must not save",
       );
       await cardPage.close();
+      const historyPage = await context.newPage();
+      historyPage.setDefaultTimeout(8000);
+      await historyPage.goto(base);
+      await historyPage
+        .getByText("ページ全体・検索表示", { exact: true })
+        .click();
+      await historyPage
+        .getByText("以前のページ設定を開く（最大3回）", { exact: true })
+        .click();
+      assert.equal(
+        await historyPage.locator(".visual-history button").count(),
+        3,
+      );
+      historyPage.once("dialog", (dialog) => dialog.accept());
+      await historyPage.locator(".visual-history button").first().click();
+      await historyPage
+        .getByText("以前の設定を開きました。まだ掲載されていません。", {
+          exact: true,
+        })
+        .waitFor();
+      assert.equal(
+        writes,
+        writesBeforeBrowser + 1,
+        "Opening history must not save or publish",
+      );
+      await historyPage
+        .getByRole("button", { name: "掲載前に確認", exact: true })
+        .click();
+      await historyPage
+        .getByRole("region", { name: "掲載する変更", exact: true })
+        .waitFor();
+      assert.equal(
+        await historyPage
+          .frameLocator("iframe.public-canvas-frame")
+          .getByText("未掲載の文章", { exact: true })
+          .count(),
+        0,
+        "The previous saved text is restored in the unpublished preview",
+      );
+      assert.equal(writes, writesBeforeBrowser + 1);
+      await historyPage.close();
       console.log(
-        "Edited static-card duplication preserves text, photos and independent settings without publication.",
+        "Edited card duplication and history restoration preserve unpublished content without CMS writes.",
       );
     } finally {
       await browser.close();
