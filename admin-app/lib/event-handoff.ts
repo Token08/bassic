@@ -1,3 +1,5 @@
+import { calendarDescription } from "../../lib/calendar-event-content.mjs";
+
 export type CalendarEventInput = {
   title: string;
   date: string;
@@ -31,14 +33,7 @@ export function calendarDraftUrl(event: CalendarEventInput) {
   let end = endTime ? new Date(event.date + "T" + endTime + ":00+09:00") : new Date(start.getTime() + 2 * 3600000);
   if (end <= start) end = new Date(end.getTime() + 86400000);
   const stamp = (date: Date) => date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const safeLink = (value?: string) => value && /^https:\/\//i.test(value) ? value : "";
-  const details = [
-    event.openTime ? "OPEN " + event.openTime : "",
-    "START " + startTime,
-    event.performers, event.price, event.reservation,
-    safeLink(event.sourceUrl),
-    safeLink(event.imageUrl) ? "画像: " + safeLink(event.imageUrl) : "",
-  ].filter(Boolean).join("\n");
+  const details = calendarDescription({ ...event, startTime });
   return "https://calendar.google.com/calendar/r/eventedit?" + new URLSearchParams({
     action: "TEMPLATE", text: event.title, dates: stamp(start) + "/" + stamp(end),
     stz: "Asia/Tokyo", etz: "Asia/Tokyo", details, location: "public bar Bassic.",

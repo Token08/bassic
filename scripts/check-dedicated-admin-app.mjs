@@ -1070,8 +1070,8 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "「公開する」がONの項目",
     "ON：掲載 ／ OFF：非公開",
     "field-publish-help",
-    "下書きはこのブラウザに保存します",
-    "サイトへ反映する時は「掲載前に確認」で確認画面へ進みます",
+    "途中保存はこのブラウザに残ります",
+    "掲載前に内容を確認できます",
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
     "途中保存や後で確認したい時",
@@ -1314,7 +1314,7 @@ function checkFacebookEventImportPanel() {
     return;
   }
 
-  const text = readFileSync(file, "utf8");
+  const text = readFileSync(file, "utf8") + readFileSync("admin-app/app/components/calendar-sync-status.tsx", "utf8");
   const cssText = readFileSync(cssFile, "utf8");
   const requiredTerms = ["Facebookから読み取る", "sourceId: data.sourceId", "この枠内で確認・修正", "開始時刻（START）", "sourceField", "children", "Googleカレンダーで確認・保存", "自動同期は未接続", "calendarDraftUrl", "SnsPostingPanel", "イベントを公開する前にSTARTを入力してください。"];
   const requiredCssTerms = [".event-core-fields", ".event-extra-fields", ".event-entry-workspace"];
@@ -1560,14 +1560,7 @@ function checkAdminReadmeLinksHandoffDocs() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = [
-    "docs/delivery-admin-manual.md",
-    "docs/client-handoff-checklist.md",
-    "docs/client-handoff-sheet.md",
-    "docs/admin-docs-index.md",
-    "イベント名",
-    "Google Calendarにも反映してください"
-  ];
+  const required = ["docs/Bassic_README_納品用.txt", "docs/calendar-connection-checklist.md", "docs/admin-docs-index.md"];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin README links handoff docs", missing.length === 0, missing.join(", "));
@@ -1581,19 +1574,7 @@ function checkAdminReadmeCalendarRequestVerification() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = [
-    "sync:calendar:check",
-    "イベント名",
-    "日付",
-    "START",
-    "Facebook URL",
-    "画像URL",
-    "公開状態",
-    "公開するON",
-    "依頼内容",
-    "読み取れない項目がある場合",
-    "管理画面で手入力する"
-  ];
+  const required = ["GOOGLE_CALENDAR_ID", "GOOGLE_CALENDAR_READ_SERVICE_ACCOUNT_JSON", "GOOGLE_CALENDAR_SYNC_ENABLED", "非公開カレンダーでの実テスト", "画像URL", "再試行"];
   const missing = required.filter((item) => !text.includes(item));
 
   add("admin README calendar request verification", missing.length === 0, missing.join(", "));

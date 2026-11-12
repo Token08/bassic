@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { google } from "googleapis";
 import { upsertCalendarEvents } from "./calendar-upsert.mjs";
+import { calendarDescription } from "../lib/calendar-event-content.mjs";
 
 const root = process.cwd();
 const inputPath = process.env.GOOGLE_CALENDAR_SYNC_INPUT || path.join(root, "public", "data", "facebook-events.json");
@@ -168,7 +169,7 @@ async function readManagedFacebookEvents() {
   const today = new Intl.DateTimeFormat("sv-SE", { timeZone: timezone, dateStyle: "short" }).format(new Date());
   return contents
     .map(normalizeEvent)
-    .filter((event) => event && event.isPublished && isFacebookEvent(event) && (!cmsOnly || !event.date || event.date >= today));
+    .filter((event) => event && event.isPublished === true && isFacebookEvent(event) && (!cmsOnly || !event.date || event.date >= today));
 }
 
 function normalizeEvent(event) {
@@ -353,7 +354,7 @@ function toGoogleCalendarEvent(event) {
 
   return {
     summary: event.title,
-    description: buildDescription(event),
+    description: calendarDescription(event, siteUrl),
     location: "public bar Bassic.",
     start: {
       dateTime: startDateTime,
@@ -377,19 +378,6 @@ function toGoogleCalendarEvent(event) {
       }
     }
   };
-}
-
-function buildDescription(event) {
-  const imageUrl = resolveCalendarUrl(event.image?.url);
-  const reservation = event.sourceUrl && event.reservation?.includes(event.sourceUrl) ? "" : event.reservation;
-  return [
-    event.performers,
-    reservation,
-    event.sourceUrl ? `Facebookイベント: ${event.sourceUrl}` : "",
-    imageUrl ? `画像: ${imageUrl}` : ""
-  ]
-    .filter(Boolean)
-    .join("\n\n");
 }
 
 function extractTime(value) {
@@ -419,27 +407,6 @@ function isValidClockTime(hour, minute) {
 
 function normalizeSiteUrl(value) {
   return String(value || "").trim().replace(/\/+$/, "");
-}
-
-function resolveCalendarUrl(value) {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  const imageUrl = value.trim();
-  if (!imageUrl) {
-    return "";
-  }
-
-  if (imageUrl.startsWith("https://")) {
-    return imageUrl;
-  }
-
-  if (imageUrl.startsWith("/")) {
-    return siteUrl ? `${siteUrl}${imageUrl}` : imageUrl;
-  }
-
-  return imageUrl;
 }
 
 function getEventLabel(event) {

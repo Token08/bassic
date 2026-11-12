@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { calendarDraftUrl, xPostUrl } from "../admin-app/lib/event-handoff.ts";
+import { calendarDescription } from "../lib/calendar-event-content.mjs";
 
 test("calendar draft preserves Japanese content, JST and image links without making writes", () => {
   const url = new URL(calendarDraftUrl({ title: "Bassic ライヴ & DJ", date: "2026-12-12", startTime: "19:00", endTime: "22:00", imageUrl: "https://example.com/poster.png?a=1&b=2", sourceUrl: "https://www.facebook.com/events/12345678/", price: "3,000円", reservation: "メール予約" }));
@@ -31,4 +32,16 @@ test("X opens the user's exact edited text without posting or changing URL param
   assert.equal(url.pathname, "/intent/tweet");
   assert.equal(url.searchParams.get("text"), text);
   assert.equal([...url.searchParams].length, 1);
+});
+
+test("calendar descriptions share confirmed content and preserve public URL prefixes", () => {
+  const details = calendarDescription({ sourceUrl: "https://m.facebook.com/events/12345678/?ref=share", image: { url: "/assets/poster.jpg" }, startTime: "9:00", openTime: "08:30", performers: "Artist A", price: "3,000円", reservation: "メール予約" }, "https://example.com/bassic/");
+  assert.match(details, /START 09:00/);
+  assert.match(details, /OPEN 08:30/);
+  assert.match(details, /Artist A/);
+  assert.match(details, /3,000円/);
+  assert.match(details, /メール予約/);
+  assert.match(details, /イベント詳細: https:\/\/www.facebook.com\/events\/12345678\//);
+  assert.match(details, /画像: https:\/\/example.com\/bassic\/assets\/poster.jpg/);
+  assert.doesNotMatch(details, /ref=share/);
 });
