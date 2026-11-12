@@ -1,3 +1,6 @@
+import { fallbackContents as adminFallbackContents } from "../../lib/fallback-data";
+import { defaultMenuItems as adminDefaultMenuItems, drinkMenuSheets as adminDrinkMenuSheets } from "../../lib/menu-data";
+import {equipmentRentalInfo} from "../../lib/page-content";
 import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
 
 export type AdminEndpointType = "object" | "list";
@@ -81,54 +84,6 @@ export const endpointMap = {
     defaultOrders: "page,displayOrder"
   }
 } satisfies Record<string, AdminEndpoint>;
-
-const adminFallbackContents = {
-  siteSettings: {
-    address: "福岡市中央区天神3丁目4-19 WITH天神ビル5F",
-    phone: "092-713-1040",
-    hoursLabel: "20:00-2:00",
-    eventHoursNote: "イベント日は営業時間が変わる場合があります。",
-    smokingLabel: "喫煙可",
-    chargeLabel: "チャージあり",
-    googleMapsUrl: "https://maps.google.com/?q=public+bar+Bassic.",
-    directionsUrl: "",
-    instagramUrl: "",
-    facebookUrl: "",
-    xUrl: "",
-    onlineStoreUrl: ""
-  },
-  home: {
-    heroTitle: "public bar Bassic.",
-    heroLead: "福岡・天神のミュージックバーです。",
-    firstVisitLead: "初めての方も、ライブ後の一杯も、お気軽にお越しください。",
-    accessNote: "天神駅から徒歩圏内、WITH天神ビル5Fです。"
-  },
-  events: [],
-  partyPlans: [],
-  socialNotices: []
-};
-
-const adminDefaultMenuItems = [
-  {
-    category: "food",
-    name: "Fuzz Curry",
-    price: "¥1,200",
-    image: { url: "/assets/menu-refresh/fuzz-curry.jpg", alt: "Fuzz Curry" }
-  },
-  {
-    category: "food",
-    name: "Tacos & Potato",
-    price: "¥900",
-    image: { url: "/assets/menu-refresh/tacos-potato.jpg", alt: "Tacos & Potato" }
-  }
-];
-
-const adminDrinkMenuSheets = [
-  { title: "DRINK MENU 1", src: "/assets/menu-refresh/drinks/drink-menu-2026-01.webp" },
-  { title: "DRINK MENU 2", src: "/assets/menu-refresh/drinks/drink-menu-2026-02.webp" },
-  { title: "DRINK MENU 3", src: "/assets/menu-refresh/drinks/drink-menu-2026-03.webp" },
-  { title: "DRINK MENU 4", src: "/assets/menu-refresh/drinks/drink-menu-2026-04.webp" }
-];
 
 export type EndpointId = keyof typeof endpointMap;
 
@@ -285,7 +240,7 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
     },
     events: adminFallbackContents.events || [],
     menu: withFallbackMeta(adminDefaultMenuItems.filter((item) => item.category === "food"), "menu"),
-    "party-plans": adminFallbackContents.partyPlans || [],
+    "party-plans": withFallbackMeta(adminFallbackContents.partyPlans || [],"party-plan"),
     "social-notices": adminFallbackContents.socialNotices || [],
     "hero-slides": [],
     "drink-menu-sheets": withFallbackMeta(
@@ -297,7 +252,7 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
       })),
       "drink-menu-sheet"
     ),
-    "equipment-rental": {},
+    "equipment-rental": { ...equipmentRentalInfo, pdfUrl: "/assets/pdf/equipment-rental-list.pdf" },
     "page-copy": [],
     "page-sections": [],
     "custom-sections": []
@@ -396,10 +351,10 @@ export async function getContent(endpointId: string) {
 export async function readEditorSnapshot(){
   const [compact,events,slides]=await Promise.all([getCompactItems(),readAllItems('events','-date'),readAllItems('hero-slides','page,displayOrder')]);
   const data:Record<string,unknown>={events,'hero-slides':slides.map(slide=>({...slide,...unpackSlideTitle(slide.title)}))};
-  for(const id of ['site-settings','home','equipment-rental','visual-editor'])data[id]=expandCompactObject(id,compact.find(item=>compactItemMatches(id,item)))||getFallbackContent(id,getEndpoint(id));
+  for(const id of ['site-settings','home','equipment-rental','visual-editor'])data[id]=expandCompactObject(id,compact.find(item=>compactItemMatches(id,item)));
   for(const id of ['menu','drink-menu-sheets','party-plans','page-copy','page-sections','custom-sections']){
     const items=compact.filter(item=>compactItemMatches(id,item));
-    data[id]=items.length?items:(getFallbackContent(id,getEndpoint(id)) as {contents?:unknown[]}).contents||[];
+    data[id]=items;
   }
   data['social-notices']=[];
   return data;

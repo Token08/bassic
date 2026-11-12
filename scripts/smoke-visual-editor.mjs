@@ -206,6 +206,24 @@ try {
     "Text, photo, link, appearance and search preview changes passed on every page.",
   );
   const home = docs.get("/");
+  assert.ok(
+    home.html.includes('href="/events/"'),
+    "Public internal links must retain Next trailing-slash behavior",
+  );
+  assert.ok(
+    home.html.includes("通常営業 20:00 OPEN"),
+    "Preview must use the public business-hours default, not an old admin-only fallback",
+  );
+  const business = (await call("content/site-settings")).data;
+  assert.equal(business.email,'mail@bassic.jp','Shared contact defaults must include the existing public email');
+  const hours = home.catalog.find((n) =>
+    Object.values(n.sourceTexts || {}).includes("hoursLabel"),
+  );
+  assert.ok(hours);
+  assert.ok(
+    Object.values(hours.texts).includes(business.hoursLabel),
+    "Business information editor and public preview must share defaults",
+  );
   assert.equal(
     (await call("visual-editor", "POST", { path: "/", settings: initial })).data
       .html,
@@ -617,7 +635,9 @@ try {
         .locator(".visual-child-row")
         .getByRole("button", { name: "複製", exact: true })
         .click();
-      await clonePage.getByRole('heading',{name:"複製したカード",exact:true}).waitFor();
+      await clonePage
+        .getByRole("heading", { name: "複製したカード", exact: true })
+        .waitFor();
       await clonePage.locator("input#title").waitFor();
       assert.equal(
         await clonePage.locator("input#title").inputValue(),

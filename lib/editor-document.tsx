@@ -489,6 +489,12 @@ export function renderVisualTree(
     if (type === Link) {
       type = "a";
       delete p.prefetch;
+      if (typeof p.href === "string" && /^\/(?!\/)/.test(p.href)) {
+        const at=p.href.search(/[?#]/);
+        const pathname=at<0?p.href:p.href.slice(0,at),suffix=at<0?'':p.href.slice(at);
+        if (!pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(pathname))
+          p.href = pathname + "/" + suffix;
+      }
     }
     if (type === Image) {
       type = "img";
