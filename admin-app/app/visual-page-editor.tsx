@@ -272,8 +272,32 @@ export function VisualPageEditor({
     if (n.tag === "header") return "ヘッダー";
     if (n.tag === "footer") return "フッター";
     if (n.tag === "main") return "ページ全体";
-    if (n.tag === "nav") return "メニュー";
+    if (n.tag === "nav")
+      return n.attrs["aria-label"] === "スマートフォン用ナビゲーション"
+        ? "メニュー（スマホ）"
+        : "メニュー";
     if (n.attrs["aria-label"] === "固定アクション") return "スマホ下部のボタン";
+    const cards = n.children
+      .map((id) => catalog.find((child) => child.id === id))
+      .filter(
+        (child) =>
+          child && ["article", "figure", "picture"].includes(child.tag),
+      );
+    if (cards.length > 1) {
+      const names: Record<string, string> = {
+        "feature-grid": "紹介カード",
+        "menu-card-grid": "フードメニュー",
+        "plan-grid": "貸切プラン",
+        "drink-menu-sheet-grid": "ドリンク表",
+      };
+      return `${names[n.label] || "カード一覧"}（${cards.length}件）`;
+    }
+    if (n.tag === "figure") {
+      const photo = catalog.find(
+        (child) => child.id.startsWith(n.id + ".") && child.tag === "img",
+      );
+      return photo?.attrs.alt ? `写真：${photo.attrs.alt}` : "写真";
+    }
     if (["section", "article", "div"].includes(n.tag)) {
       const heading = catalog.find(
         (c) => c.id.startsWith(n.id + ".") && /^h[1-6]$/.test(c.tag),
