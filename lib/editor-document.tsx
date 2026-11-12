@@ -867,7 +867,7 @@ export function renderVisualTree(
       nextProps.style = {
         ...(nextProps.style as CSSProperties),
         ...(count
-          ? { gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }
+          ? (!override.style?.gridTemplateColumns?{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }:{})
           : { display: "none" }),
       };
     }
