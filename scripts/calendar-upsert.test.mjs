@@ -97,6 +97,42 @@ test("pagination failure aborts before any write", async () => {
   }), /unavailable/);
 });
 
+test("manual Facebook events are not duplicated or silently adopted, including rescheduled dates", async () => {
+  const sourceUrl = "https://www.facebook.com/events/1234567890/";
+  for (const manual of [
+    { id: "manual-url", summary: "Old title", description: sourceUrl, start: { dateTime: "2020-01-01T19:00:00+09:00" } },
+    { id: "manual-title", summary: "Test event", start: { dateTime: "2026-12-01T10:00:00Z" } },
+  ]) {
+    await assert.rejects(sync({
+      list: async () => ({ data: { items: [manual] } }),
+      insert: async () => assert.fail("must not duplicate a manually registered event"),
+      patch: async () => assert.fail("must not adopt a manually registered event"),
+    }), /手動登録済み/);
+  }
+});
+
+test("a conflict in a later event prevents changes to earlier events too", async () => {
+  const later = { ...entry, key: "facebook-22222222", body: { ...entry.body, summary: "Later event" } };
+  await assert.rejects(sync({
+    list: async () => ({ data: { items: [{ id: "manual", description: "https://www.facebook.com/events/22222222/" }] } }),
+    insert: async () => assert.fail("preflight must finish before any write"),
+  }, [entry, later]), /手動登録済み/);
+});
+
+test("repeated calendar pagination aborts before writing", async () => {
+  await assert.rejects(sync({
+    list: async () => ({ data: { items: [], nextPageToken: "repeated" } }),
+    insert: async () => assert.fail("must not write with a repeated page"),
+  }), /ページが重複/);
+});
+
+test("malformed event identities abort before writing", async () => {
+  await assert.rejects(sync({
+    list: async () => ({ data: { items: [{ summary: "Missing provider ID" }] } }),
+    insert: async () => assert.fail("must not write when the existing identities are unknown"),
+  }), /IDを確認/);
+});
+
 test("duplicate legacy identities abort before any write", async () => {
   const owned = id => ({ id, extendedProperties: { private: { syncTag, sourceId: entry.sourceId } } });
   await assert.rejects(sync({

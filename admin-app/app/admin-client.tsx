@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
 import { SnsPostingPanel } from "./components/sns-posting-panel";
-import { calendarDraftUrl, type CalendarEventInput } from "@/lib/event-handoff";
+import { CalendarSyncStatus } from "./components/calendar-sync-status";
+import type { CalendarEventInput } from "@/lib/event-handoff";
 import { PublicPageCanvas } from "./public-page-canvas";
 import { VisualPageEditor } from './visual-page-editor';
 import { currentFieldDefaults } from "../lib/current-field-values";
@@ -54,7 +55,7 @@ type Notice = {
   actionsUrl?: string;
   requestId?: string;
   retryPublish?: boolean;
-  eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialSourceId?: string; socialRetryNeeded?: boolean; event?: CalendarEventInput & { id: string } };
+  eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialSourceId?: string; socialRetryNeeded?: boolean; event?: CalendarEventInput & { id: string; syncKey?: string } };
   sectionId?: string;
   requestedAt?: string;
   sourceLabel?: string;
@@ -733,11 +734,10 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
       </div>
       {notice.eventDelivery ? (
         <dl>
-          <dt>Googleカレンダー</dt><dd role="status">{notice.eventDelivery.calendar}</dd>
+          <dt>Googleカレンダー</dt><dd>{notice.eventDelivery.event ? <CalendarSyncStatus event={notice.eventDelivery.event} eventId={notice.eventDelivery.socialEventId} active={status.state === "published"} autoEligible={isFacebookEventUrl(notice.eventDelivery.event.sourceUrl || "")} /> : notice.eventDelivery.calendar}</dd>
           <dt>SNS下書き</dt><dd>{notice.eventDelivery.social}</dd>
         </dl>
       ) : null}
-      {notice.eventDelivery?.event ? <p className="calendar-handoff-note">初回追加用です。Google側で保存先を「Bassic」に選んで保存してください。変更・中止は既存の予定を編集します。ボタンを開いただけでは保存されません。</p> : null}
       <div className="deploy-status-actions">
         {status.state === "published" && !notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery?.socialSourceId && onOpenSocialDrafts ? (
           <button className="primary-button" type="button" onClick={() => onOpenSocialDrafts(notice.eventDelivery!.socialSourceId!)}>SNS用の文面を開く</button>
@@ -747,7 +747,6 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
             {retryingSocial ? "SNS下書きを確認中…" : "SNS下書きだけをやり直す"}
           </button>
         ) : null}
-        {status.state === "published" && notice.eventDelivery?.event && calendarDraftUrl(notice.eventDelivery.event) ? <a className="secondary-button" href={calendarDraftUrl(notice.eventDelivery.event)} target="_blank" rel="noreferrer">Googleカレンダーで確認・保存</a> : null}
         {status.state === "failed" ? (
           <button className="secondary-button" type="button" disabled={retrying} onClick={() => void retry()}>
             {retrying ? "反映を依頼中…" : "反映だけをやり直す"}
@@ -2612,6 +2611,7 @@ function SectionEditor({
         social: preparedDraft.isPublished ? "下書きの作成結果は未確認です。" : "非公開のため投稿下書きの作成対象外です。",
         event: preparedDraft.isPublished ? {
           id: facebookId || getString(savedData.id), title: getString(savedData.title), date: getString(savedData.date).slice(0, 10), startTime: getString(savedData.startTime),
+          syncKey: facebookId ? `facebook-${facebookId}` : getString(savedData.sourceId) ? `source-${getString(savedData.sourceId)}` : getString(savedData.sourceUrl).trim().replace(/\/$/, "") || getString(savedData.id),
           endTime: getString(savedData.endTime), openTime: getString(savedData.openTime), sourceUrl: getString(savedData.sourceUrl),
           imageUrl: getImageUrl(savedData.image) ? resolvePublicUrl(getImageUrl(savedData.image), publicSiteUrl) : "",
           performers: getString(savedData.performers), price: getString(savedData.price), reservation: getString(savedData.reservation)
@@ -3565,7 +3565,13 @@ function PageBasedDashboard({
     );
   }
 
-  if (!editor) return <VisualPageEditor page={selectedPage} onLegacySelect={value=>onSelect({...value,sourcePage:selectedPage})} onState={onEditorState} />;
+  if (!editor) return <>
+    {lastDeploy?.sectionId === "events" && Date.parse(lastDeploy.requestedAt || "") > Date.now() - 86400000 ? <details className="last-event-publication">
+      <summary>前回のイベント掲載を確認：{lastDeploy.eventDelivery?.event?.title || lastDeploy.sourceLabel}</summary>
+      <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} onOpenSocialDrafts={onOpenSocialDrafts} />
+    </details> : null}
+    <VisualPageEditor page={selectedPage} onLegacySelect={value=>onSelect({...value,sourcePage:selectedPage})} onState={onEditorState} />
+  </>;
 
   return (
     <div className="dashboard">
@@ -3715,7 +3721,8 @@ export default function AdminClient() {
             safeStrings.every(key => parsed[key] === undefined || typeof parsed[key] === "string") &&
             (parsed.confirmationSteps === undefined || (Array.isArray(parsed.confirmationSteps) && parsed.confirmationSteps.every(step => typeof step === "string"))) &&
             (!delivery || (typeof delivery.calendar === "string" && typeof delivery.social === "string" &&
-              (!event || [event.id, event.title, event.date, event.startTime].every(value => typeof value === "string"))))) {
+              (!event || ([event.id, event.title, event.date, event.startTime].every(value => typeof value === "string") &&
+                [event.endTime, event.sourceUrl, event.imageUrl, event.performers, event.price, event.reservation, event.openTime, event.syncKey].every(value => value === undefined || typeof value === "string")))))) {
           setLastDeploy(parsed as Notice);
         }
       }

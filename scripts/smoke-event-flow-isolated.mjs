@@ -21,6 +21,7 @@ Object.assign(process.env, {
   GITHUB_REPO: "fixture",
   GITHUB_DISPATCH_TOKEN: password,
   GOOGLE_CALENDAR_ID: "isolated-calendar",
+  GOOGLE_CALENDAR_SYNC_ENABLED: "false",
   GOOGLE_CALENDAR_READ_SERVICE_ACCOUNT_JSON: JSON.stringify({
     client_email: "fixture@example.invalid",
     private_key: privateKey.export({ type: "pkcs8", format: "pem" })
@@ -42,6 +43,7 @@ let socialUnavailable = false;
 let loseSocialWriteResponse = false;
 let cmsReadMode = "ok";
 let publishRequests = 0;
+let calendarRequests = 0;
 let lastPublishId = "";
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (input, init) => {
@@ -103,8 +105,9 @@ globalThis.fetch = async (input, init) => {
   if (url.hostname === "api.github.com") {
     if (url.pathname === "/repos/fixture/fixture/dispatches") {
       assert.equal(method, "POST");
-      lastPublishId = JSON.parse(init?.body ?? await input.text()).client_payload.requestId;
-      publishRequests += 1;
+      const dispatch = JSON.parse(init?.body ?? await input.text());
+      if (dispatch.event_type === "bassic_calendar_sync") calendarRequests += 1;
+      else { lastPublishId = dispatch.client_payload.requestId; publishRequests += 1; }
       return new Response(null, { status: 204 });
     }
     assert.equal(method, "GET");
@@ -118,7 +121,7 @@ globalThis.fetch = async (input, init) => {
   if (url.hostname === "www.googleapis.com") {
     assert.equal(method, "GET");
     if (calendarUnavailable) return new Response("Calendar unavailable", { status: 503 });
-    assert.equal(url.searchParams.get("privateExtendedProperty"), "syncKey=facebook-87654321");
+    assert.ok(["syncKey=facebook-87654321", "syncKey=facebook-77777777"].includes(url.searchParams.get("privateExtendedProperty")));
     return Response.json({ items: calendarItems });
   }
   throw new Error(`Unexpected external request to ${url.hostname}`);
@@ -144,6 +147,8 @@ try {
 
   await post("facebook-event-preview", { url: legacyUrl }, 401);
   await post("calendar-status", {}, 401);
+  assert.equal((await realFetch(base + "/api/calendar-status")).status, 401);
+  await post("calendar-sync", { eventId: "legacy" }, 401);
   await post("event-publish-flow", {}, 401);
   const login = await post("login", { password });
   cookie = login.response.headers.get("set-cookie").split(";")[0];
@@ -242,14 +247,38 @@ try {
   assert.ok(publication.result.data.requestId);
   assert.equal(publishRequests, 1);
 
+  assert.equal((await get("calendar-status")).configured, false);
+  await post("calendar-sync", { eventId: saved.id }, 403);
+  process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "true";
+  assert.equal((await get("calendar-status")).configured, true);
+  await post("calendar-sync", { eventId: "missing" }, 409);
+  await post("calendar-sync", null, 400);
+  await post("calendar-sync", { eventId: "../other" }, 400);
+  await post("calendar-sync", { eventId: saved.id });
+  assert.equal(calendarRequests, 1);
+  const syncPreviewEnv = process.env.VERCEL_ENV;
+  process.env.VERCEL_ENV = "preview";
+  await post("calendar-sync", { eventId: saved.id }, 403);
+  if (syncPreviewEnv === undefined) delete process.env.VERCEL_ENV; else process.env.VERCEL_ENV = syncPreviewEnv;
+  events.get(saved.id).isPublished = false;
+  await post("calendar-sync", { eventId: saved.id }, 409);
+  events.get(saved.id).isPublished = true;
+  process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "false";
   const check = { id: "87654321", title: event.title, date: event.date, startTime: event.startTime };
   assert.equal((await post("calendar-status", check)).result.data.state, "not-found");
   calendarItems = [{
     summary: event.title,
     start: { dateTime: "2027-05-05T10:00:00Z" },
+    end: { dateTime: "2027-05-05T12:00:00Z" },
     extendedProperties: { private: { syncTag: "bassic-facebook-sync" } }
   }];
   assert.equal((await post("calendar-status", check)).result.data.state, "matched");
+  const fullCheck = { ...check, syncKey: "facebook-87654321", sourceUrl: newUrl, imageUrl: image.url };
+  assert.equal((await post("calendar-status", fullCheck)).result.data.state, "review");
+  calendarItems[0].description = "START 19:00\n\nイベント詳細: " + newUrl + "\n\n画像: " + image.url;
+  assert.equal((await post("calendar-status", fullCheck)).result.data.state, "matched");
+  assert.equal((await post("calendar-status", { ...fullCheck, imageUrl: "https://images.example.invalid/replaced.png" })).result.data.state, "review", "A changed image URL must not be reported as synced before the calendar updates");
+  assert.equal((await post("calendar-status", { ...fullCheck, endTime: "22:00" })).result.data.state, "review");
   assert.equal((await post("calendar-status", { ...check, startTime: "20:00" })).result.data.state, "review");
   calendarUnavailable = true;
   await post("calendar-status", check, 502);
@@ -519,6 +548,38 @@ try {
       assert.match(await page.evaluate(() => navigator.clipboard.readText()), /Guided live/);
       assert.equal(await page.locator(".item-list").getByRole("button", { name: /Isolated live|Fixture live/ }).count(), 0, "The SNS handoff must show only this event's drafts");
       console.log("Guided event entry passed: sidebar shortcut, blank URL, reviewed publication, and related SNS drafts with clipboard copy.");
+      process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "true";
+      calendarUnavailable = true;
+      await pageNav.getByRole("button", { name: "イベントスケジュール", exact: true }).click();
+      await page.getByText('登録情報・非表示の項目', { exact: true }).click();
+      await page.getByRole('button', { name: 'イベント一覧', exact: true }).click();
+      await page.locator(".item-list").getByRole("button", { name: /^Guided live/ }).click();
+      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
+      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
+      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
+      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
+      const calendarStatus = page.getByRole("region", { name: "Googleカレンダーの反映状況" });
+      await calendarStatus.getByText(/カレンダーへの反映を確認中/).waitFor();
+      assert.equal(await calendarStatus.getByRole("link", { name: "Googleカレンダーで確認・保存" }).count(), 0);
+      await page.clock.install();
+      await page.clock.fastForward(16 * 60000);
+      await calendarStatus.getByText(/カレンダーへの反映を確認できませんでした/).waitFor();
+      calendarUnavailable = false;
+      calendarItems = [{ summary: "Guided live", start: { dateTime: "2027-07-07T10:00:00Z" }, end: { dateTime: "2027-07-07T12:00:00Z" }, description: "START 19:00\n\nイベント詳細: " + guidedUrl + "\n\n画像: " + image.url, extendedProperties: { private: { syncTag: "bassic-facebook-sync" } } }];
+      const savedEventsBeforeCalendarRetry = JSON.stringify([...events]);
+      const calendarRetryCount = calendarRequests;
+      await calendarStatus.getByRole("button", { name: "カレンダーだけ再反映" }).click();
+      await calendarStatus.getByText(/反映済み。予定の内容が保存したイベントと一致/).waitFor();
+      assert.equal(calendarRequests, calendarRetryCount + 1);
+      assert.equal(JSON.stringify([...events]), savedEventsBeforeCalendarRetry, "Calendar retries never resave the event or republish the site");
+      assert.equal([...notices.values()].filter(item => item.sourceEventId === "77777777").length, 2);
+      await page.clock.resume();
+      await page.reload();
+      await page.locator("details.last-event-publication > summary").click();
+      await page.getByRole("region", { name: "Googleカレンダーの反映状況" }).getByText(/反映済み。予定の内容が保存したイベントと一致/).waitFor();
+      assert.equal(JSON.stringify([...events]), savedEventsBeforeCalendarRetry, "Reopening the previous result is read-only");
+      process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "false";
+      console.log("Automatic calendar handoff passed: site publication survives read failures, bounded waiting and calendar-only retries verify the saved content without CMS writes or duplicate SNS drafts.");
 
       if (process.env.BASSIC_QA_PUBLIC_SITE === "1") {
         socialUnavailable = false;

@@ -1407,6 +1407,9 @@ a.current-edit-page:hover {
 .image-url-ready { padding: 6px; font-weight: 700; }
 .existing-event-choice { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
 .calendar-handoff-note { max-width: 65ch; line-height: 1.7; }
+.last-event-publication { margin-bottom: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 12px; }
+.last-event-publication > summary { cursor: pointer; font-weight: 700; }
+.last-event-publication > .deploy-status { margin-top: 12px; }
 .visual-editor-workspace.event-entry-workspace { grid-template-columns: minmax(0,1fr); max-width: 960px; }
 
 .sns-draft-panel {

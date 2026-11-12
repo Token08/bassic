@@ -11,10 +11,10 @@ function getEnv(name: string, fallback?: string) {
   return value;
 }
 
-export async function triggerDeploy() {
+export async function triggerDeploy(calendarEventType?: "bassic_calendar_sync") {
   const owner = getEnv("GITHUB_OWNER", "Token08");
   const repo = getEnv("GITHUB_REPO", "bassic");
-  const eventType = getEnv("GITHUB_DISPATCH_EVENT_TYPE", "microcms_publish");
+  const eventType = calendarEventType || getEnv("GITHUB_DISPATCH_EVENT_TYPE", "microcms_publish");
   const token = getEnv("GITHUB_DISPATCH_TOKEN");
   const requestId = randomUUID();
   const requestedAt = new Date().toISOString();
@@ -59,7 +59,10 @@ export async function getDeployStatus(requestId: string, requestedAt: number): P
   const query = new URLSearchParams({ event: "repository_dispatch", branch: "main", created: `>=${created}`, per_page: "100" });
   const read = async (url: string) => {
     const response = await fetch(url, {
-      headers: { Accept: "application/vnd.github+json" },
+      headers: {
+        Accept: "application/vnd.github+json",
+        ...(process.env.GITHUB_DISPATCH_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_DISPATCH_TOKEN}` } : {}),
+      },
       signal: AbortSignal.timeout(5000),
       next: { revalidate: 15 }
     });
