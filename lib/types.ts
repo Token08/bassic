@@ -39,6 +39,7 @@ export type EventItem = {
 };
 
 export type MenuItem = {
+  id?: string;
   name: string;
   englishName?: string;
   price?: string;
@@ -50,6 +51,7 @@ export type MenuItem = {
 };
 
 export type PartyPlan = {
+  id?: string;
   title: string;
   price: string;
   body: string;
@@ -225,6 +227,7 @@ export type HomeContent = {
   & Partial<Record<`firstVisitCard${1 | 2 | 3}Image`, CmsImage>>;
 
 export type CmsContents = {
+  visualEditor?: import('./editor-document').VisualSettings;
   siteSettings: SiteSettings;
   home: HomeContent;
   heroSlides: Record<HeroSlide["page"], HeroSlide[]>;

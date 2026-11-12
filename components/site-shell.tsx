@@ -1,14 +1,11 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { CalendarDays, Instagram, Mail, MapPin, Menu, Phone } from "lucide-react";
-import { assetPath } from "@/lib/assets";
-import { type LocaleCode } from "@/lib/i18n";
-import { currentLocale, localizedInternalHref } from "@/lib/path-utils";
-import { mailHref, navItems, site, telHref } from "@/lib/site";
-import type { HomeContent, SiteSettings } from "@/lib/types";
+import { assetPath } from "@public/lib/assets";
+import { type LocaleCode } from "@public/lib/i18n";
+import { currentLocale, localizedInternalHref } from "@public/lib/path-utils";
+import { mailHref, navItems, site, telHref } from "@public/lib/site";
+import type { HomeContent, SiteSettings } from "@public/lib/types";
 import { LanguageSwitcher } from "./language-switcher";
 
 function HeaderNavLinks({ locale, home, settings }: { locale?: LocaleCode; home?: HomeContent; settings?: SiteSettings }) {
@@ -31,8 +28,7 @@ function HeaderNavLinks({ locale, home, settings }: { locale?: LocaleCode; home?
   );
 }
 
-export function SiteHeader({ home, settings }: { home?: HomeContent; settings?: SiteSettings } = {}) {
-  const pathname = usePathname() || "/";
+export function SiteHeader({ home, settings, pathname = "/" }: { home?: HomeContent; settings?: SiteSettings; pathname?: string } = {}) {
   const locale = currentLocale(pathname);
   const homeHref = localizedInternalHref("/", locale);
 
@@ -45,14 +41,14 @@ export function SiteHeader({ home, settings }: { home?: HomeContent; settings?: 
       <nav className="desktop-nav" aria-label="主要ナビゲーション">
         <HeaderNavLinks locale={locale} home={home} settings={settings} />
       </nav>
-      <LanguageSwitcher />
+      <LanguageSwitcher pathname={pathname} />
       <details className="mobile-menu">
         <summary aria-label="メニューを開く">
           <Menu size={24} />
         </summary>
         <nav aria-label="スマートフォン用ナビゲーション">
           <HeaderNavLinks locale={locale} home={home} settings={settings} />
-          <LanguageSwitcher compact />
+          <LanguageSwitcher compact pathname={pathname} />
         </nav>
       </details>
     </header>
@@ -95,10 +91,10 @@ export function MobileCta({ settings, home }: { settings?: SiteSettings; home?: 
   ) : null;
 }
 
-export function PageShell({ children, settings, home }: { children: React.ReactNode; settings?: SiteSettings; home?: HomeContent }) {
+export function PageShell({ children, settings, home, pathname = "/" }: { children: React.ReactNode; settings?: SiteSettings; home?: HomeContent; pathname?: string }) {
   return (
     <>
-      <SiteHeader home={home} settings={settings} />
+      <SiteHeader home={home} settings={settings} pathname={pathname} />
       {children}
       <SiteFooter settings={settings} home={home} />
       <MobileCta settings={settings} home={home} />

@@ -1,4 +1,7 @@
+import {cache} from "react";
 import { createClient } from "microcms-js-sdk";
+import { previewContents } from './preview-context';
+import { emptyVisualSettings, parseVisualSettings } from './editor-document';
 import { editableMedia } from "./editable-content";
 import { fallbackContents } from "./fallback-data";
 import { resolveSiteSocialLinks } from "./site-social-links";
@@ -414,8 +417,9 @@ function customSectionsByPage(sections?: CustomSection[]): CmsContents["customSe
   }, {} as CmsContents["customSections"]);
 }
 
-function normalizeContents(contents: Partial<CmsContents>, rawPageSections?: PageSection[]): CmsContents {
+export function normalizeContents(contents: Partial<CmsContents>, rawPageSections?: PageSection[]): CmsContents {
   return {
+    visualEditor: contents.visualEditor || emptyVisualSettings(),
     siteSettings: mergeSiteSettings(contents.siteSettings),
     home: mergeHomeContent(contents.home),
     heroSlides: heroSlidesByPage(contents.heroSlides ? (Object.values(contents.heroSlides).flat() as HeroSlide[]) : undefined),
@@ -434,7 +438,9 @@ function normalizeContents(contents: Partial<CmsContents>, rawPageSections?: Pag
   };
 }
 
-export async function getCmsContents(): Promise<CmsContents> {
+async function readCmsContents(): Promise<CmsContents> {
+  const preview = previewContents.getStore();
+  if (preview) return preview;
   if (!client) {
     return normalizeContents(fallbackContents);
   }
@@ -462,7 +468,7 @@ export async function getCmsContents(): Promise<CmsContents> {
       console.warn("microCMS events fetch failed. Falling back to local content.", error);
       return fallbackContents.events!;
     }),
-    getList<CompactCmsItem>("menu", defaultMenuItems as CompactCmsItem[], { orders: "displayOrder", limit: 100 })
+    client.getAllContents<CompactCmsItem>({endpoint:"menu",queries:{orders:"displayOrder"}})
   ]);
 
   const siteSettings = compactJsonObject<SiteSettings>(compactStore, "site-settings", fallbackSiteSettings);
@@ -477,6 +483,7 @@ export async function getCmsContents(): Promise<CmsContents> {
   const customSections = compactItemsFor<CustomSection>(compactStore, "custom-sections");
 
   return normalizeContents({
+    visualEditor: (()=>{const record=compactStore.find(item=>item.kind==='visual-editor');return record?parseVisualSettings(JSON.parse(String(record.body))):emptyVisualSettings();})(),
     siteSettings,
     home,
     heroSlides: heroSlidesByPage(heroSlides),
@@ -490,3 +497,5 @@ export async function getCmsContents(): Promise<CmsContents> {
     customSections: customSectionsByPage(customSections)
   }, pageSections);
 }
+
+export const getCmsContents=cache(readCmsContents);

@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
-import { assetPath } from "@/lib/assets";
-import { editableSocialLinks } from "@/lib/editable-content";
-import type { HomeContent, SiteSettings } from "@/lib/types";
+import { assetPath } from "@public/lib/assets";
+import { editableSocialLinks } from "@public/lib/editable-content";
+import type { HomeContent, SiteSettings } from "@public/lib/types";
 
 type SocialUpdatesProps = {
   title: React.ReactNode;

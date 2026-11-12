@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
 import { PublicPageCanvas } from "./public-page-canvas";
+import { VisualPageEditor } from './visual-page-editor';
 import { currentFieldDefaults } from "../lib/current-field-values";
 import {
   AlertCircle,
@@ -27,7 +28,7 @@ import {
 import { editableMedia } from "../../lib/editable-content";
 import { fallbackContents } from "../../lib/fallback-data";
 import { firstVisitSection, localSearchSection, pageHeroes, socialUpdatesCopy, visitInfoItems, type PageHeroContent } from "../../lib/page-content";
-import { mobileCrop } from "../../lib/responsive-media";
+
 import { getSection, homeFieldGroups, sections, type FieldDefinition, type SectionDefinition } from "@/lib/admin-schema";
 import { resolvePublicUrl } from "@/lib/public-site-url";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -1104,73 +1105,11 @@ function getFieldSummaryValue(section: SectionDefinition, field: FieldDefinition
   return field.type !== "textarea" && text.length > 120 ? `${text.slice(0, 120)}...` : text;
 }
 
-function EditableFieldCard({
-  section,
-  field,
-  value,
-  fallbackValue,
-  error,
-  isEditing,
-  onEdit,
-  onClose,
-  onChange
-}: {
-  section: SectionDefinition;
-  field: FieldDefinition;
-  value: unknown;
-  fallbackValue?: unknown;
-  error?: string;
-  isEditing: boolean;
-  onEdit: () => void;
-  onClose: () => void;
-  onChange: (value: unknown) => void;
-}) {
-  const [changedWhileOpen, setChangedWhileOpen] = useState(false);
-  if (field.type === "hidden") {
-    return null;
-  }
-
-  const displayValue = fieldHasValue(field, value) ? value : fallbackValue ?? value;
-  const hasValue = fieldHasValue(field, displayValue);
-
-  return (
-    <section className={`editable-field-card${isEditing ? " editing" : ""}${error ? " has-error" : ""}`} id={isEditing ? undefined : field.key}>
-      <div className="editable-field-heading">
-        <div>
-          <span>
-            {field.label}
-            {field.required ? <b>必須</b> : null}
-          </span>
-          {!isEditing ? (
-            <strong className={hasValue ? "" : "empty"}>{getFieldSummaryValue(section, field, displayValue)}</strong>
-          ) : null}
-        </div>
-        <button className="secondary-button compact" type="button" onClick={() => {
-          setChangedWhileOpen(false);
-          if (isEditing) onClose();
-          else onEdit();
-        }}>
-          {isEditing ? <CheckCircle2 size={16} /> : <Pencil size={16} />}
-          {isEditing ? "閉じる" : "編集"}
-        </button>
-      </div>
-
-      {isEditing ? (
-        <Field field={field} hideLabel value={changedWhileOpen ? value : displayValue} error={error} onChange={(next) => {
-          setChangedWhileOpen(true);
-          onChange(next);
-        }} />
-      ) : (
-        <div className="editable-field-preview">
-          {field.type === "image" && getImageUrl(displayValue) ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <AdminImage src={getImageUrl(displayValue)} />
-          ) : null}
-          {error ? <small className="form-error">{error}</small> : null}
-        </div>
-      )}
-    </section>
-  );
+function EditableFieldCard({ section, field, value, fallbackValue, error, onChange }: {section:SectionDefinition;field:FieldDefinition;value:unknown;fallbackValue?:unknown;error?:string;isEditing:boolean;onEdit:()=>void;onClose:()=>void;onChange:(value:unknown)=>void}) {
+ const [changed,setChanged]=useState(false);
+ if(field.type==='hidden')return null;
+ const current=changed?value:fieldHasValue(field,value)?value:fallbackValue??value;
+ return <section className={`editable-field-card editing${error?' has-error':''}`} aria-label={getFieldSummaryValue(section,field,current)}><div className="editable-field-heading"><span>{field.label}{field.required?<b>必須</b>:null}</span></div><Field field={field} value={current} error={error} hideLabel onChange={next=>{setChanged(true);onChange(next);}}/></section>;
 }
 
 function ImageField({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
@@ -1190,7 +1129,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
   const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedImageUrl(trimmedUrl);
 
   function removeImage() {
-    if (!window.confirm("この画像を外しますか？下書き保存または公開するまではサイトには反映されません。")) {
+    if (!window.confirm("この画像を外しますか？この端末に保存または公開するまではサイトには反映されません。")) {
       return;
     }
 
@@ -1227,7 +1166,7 @@ function ImageField({ value, onChange }: { value: unknown; onChange: (value: unk
       }
 
       onChange({ url: result.data.url, alt: latestImage.current.alt || "" });
-      setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、下書き保存またはプレビューして公開してください。");
+      setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、この端末に保存または掲載前に確認してください。");
     } catch (uploadError) {
       if (controller.signal.aborted) return;
       setError(uploadError instanceof Error ? uploadError.message : "画像をアップロードできませんでした。");
@@ -1324,7 +1263,7 @@ function RequiredProgress({ section, draft }: { section: SectionDefinition; draf
           ))}
         </small>
       ) : null}
-      {remaining === 0 ? <small>次は画面下の「プレビューして公開」を押してください。</small> : null}
+      {remaining === 0 ? <small>次は画面下の「掲載前に確認」を押してください。</small> : null}
     </div>
   );
 }
@@ -1482,140 +1421,34 @@ function EditorFocusTips({ section }: { section: SectionDefinition }) {
   );
 }
 
-function getVisualPreviewTitle(section: SectionDefinition, draft: Draft) {
-  return (
-    getString(draft.heroTitle).trim() ||
-    getString(draft.title).trim() ||
-    getString(draft.name).trim() ||
-    getString(draft.label).trim() ||
-    section.title
-  );
-}
-
-function getVisualPreviewLead(draft: Draft) {
-  return (
-    getString(draft.heroLead).trim() ||
-    getString(draft.body).trim() ||
-    getString(draft.description).trim() ||
-    getString(draft.firstVisitLead).trim() ||
-    getString(draft.accessNote).trim()
-  );
-}
-
-function getVisualPreviewImage(draft: Draft) {
-  const directImage =
-    getImageUrl(draft.image).trim() ||
-    getImageUrl(draft.heroImage).trim() ||
-    getImageUrl(draft.backgroundImage).trim() ||
-    getImageUrl(draft.mainImage).trim();
-
-  if (directImage) {
-    return directImage;
-  }
-
-  const slides = Array.isArray(draft.heroSlides) ? draft.heroSlides : Array.isArray(draft.slides) ? draft.slides : [];
-  const firstSlide = slides.find((slide) => getImageUrl(slide).trim());
-  return firstSlide ? getImageUrl(firstSlide).trim() : "";
-}
-
 function isMobileAppearanceField(key: string) {
   return key === "mobileImage" || key === "mobilePosition" || key === "heroMobileTitle" || key.endsWith("MobilePosition");
 }
 
-function AdminSitePreview({ draft, section, previewContext }: { draft: Draft; section: SectionDefinition; previewContext?: Draft }) {
-  const [mobile, setMobile] = useState(false);
-  const keys = section.fields.map((field) => field.key);
-  const card = keys.map((key) => /^firstVisitCard([123])Image$/.exec(key)?.[1]).find(Boolean);
-  const cardIndex = card ? Number(card) - 1 : -1;
-  const cardPrefix = card ? "firstVisitCard" + card : "";
-  const homeSlide = section.id === "hero-slides" && draft.page === "home";
-  const homeHero = section.id === "home" && keys.some((key) => /^(homeHero|hero)/.test(key));
-  const fixedButtons = section.id === "home" && keys.some((key) => key.startsWith("mobileHide"));
-  const isHero = homeSlide || homeHero;
-  const home = homeSlide ? previewContext || {} : draft;
-  const copy = (previewContext?.copy || {}) as Draft;
-  const slide = homeSlide ? draft : (previewContext?.slide || {}) as Draft;
-  const slideIndex = Math.max(0, getOrderNumber(slide.displayOrder) - 1);
-  const desktopPositions = ["44% center", "50% center", "50% 58%", "50% 48%", "50% 52%", "50% 54%", "50% 46%", "50% 52%", "50% 52%", "50% 52%"];
-  const defaultSlidePosition = (mobile ? ["34% center", "58% center", "center"][slideIndex] : undefined) || desktopPositions[slideIndex];
-  const crop = mobile ? mobileCrop(isHero ? slide.mobilePosition : draft[cardPrefix + "MobilePosition"]) : undefined;
-  const position = crop || (isHero ? defaultSlidePosition : undefined);
-  const heroTitle = (mobile && getString(home.heroMobileTitle).trim()) || getString(home.homeHeroTitle).trim() || getString(copy.heroTitle).trim() || fallbackContents.home.heroTitle;
-  const scopedTitle = keys.filter((key) => /(?:title|label|eyebrow|name)$/i.test(key)).map((key) => getString(draft[key]).trim()).find(Boolean);
-  const scopedLead = keys.filter((key) => /(?:lead|description|note|text|copyright)$/i.test(key)).map((key) => getString(draft[key]).trim()).find(Boolean);
-  const scopedImage = section.fields.filter((field) => field.type === "image").map((field) => overviewImage(draft[field.key])).find(Boolean);
-  const title = isHero ? heroTitle : card ? getString(draft[cardPrefix + "Title"]).trim() || firstVisitSection.features[cardIndex].title : fixedButtons ? "スマホ下部の固定ボタン" : scopedTitle || getVisualPreviewTitle(section, draft);
-  const lead = isHero ? getString(home.homeHeroLead).trim() || getString(copy.heroLead).trim() || fallbackContents.home.heroLead : card ? getString(draft[cardPrefix + "Text"]).trim() || firstVisitSection.features[cardIndex].text : scopedLead || getVisualPreviewLead(draft);
-  const imageUrl = isHero
-    ? (mobile && overviewImage(slide.mobileImage)) || overviewImage(slide.image, editableMedia.homeHeroImage.src)
-    : card ? overviewImage(draft[cardPrefix + "Image"], editableMedia.atmosphereImages[cardIndex].src) : scopedImage || overviewImage(getVisualPreviewImage(draft));
-  const buttons = [["Call", "電話"], ["Map", "地図"], ["Instagram", "Instagram"], ["Reserve", "予約"]].flatMap(([key, label]) =>
-    draft["mobileHide" + key] === true ? [] : [getString(draft["mobile" + key + "Label"]).trim() || label]
-  );
-  const price = getString(draft.price).trim();
-  const date = getString(draft.date).trim();
-  const startTime = getString(draft.startTime).trim();
-
-  return (
-    <section className="visual-preview" aria-label="公開サイトの見え方イメージ">
-      <div className="visual-preview-heading">
-        <span>公開サイトの見え方</span>
-        <strong>実際のページでは、だいたいこの雰囲気で表示されます。</strong>
-      </div>
-      <div className="preview-device-controls" role="group" aria-label="表示する端末">
-        <button type="button" className="secondary-button compact" aria-pressed={!mobile} onClick={() => setMobile(false)}>PC表示</button>
-        <button type="button" className="secondary-button compact" aria-pressed={mobile} onClick={() => setMobile(true)}>スマホ表示</button>
-      </div>
-      {fixedButtons ? (
-        <div className="fixed-button-preview">
-          <strong>{title}</strong>
-          {mobile && buttons.length ? <div>{buttons.map((label, index) => <span key={index}>{label}</span>)}</div> : <p>{mobile ? "表示するボタンはありません。" : "スマホ表示で確認できます。"}</p>}
-        </div>
-      ) : (
-      <div className={`site-preview-card device-preview ${mobile ? "device-preview-mobile" : ""} ${isHero ? "device-preview-hero" : ""}`}>
-        <div className="site-preview-media">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" style={{ objectPosition: position }} />
-          ) : (
-            <div className="site-preview-placeholder">Bassic.</div>
-          )}
-        </div>
-        <div className="site-preview-body">
-          <p className="eyebrow">{section.shortTitle}</p>
-          <h3>{title}</h3>
-          {lead ? <p>{lead}</p> : <p>入力した内容が、公開ページの見出しや本文として表示されます。</p>}
-          <div className="site-preview-tags">
-            {price ? <span>{price}</span> : null}
-            {date ? <span>{date}</span> : null}
-            {startTime ? <span>START {startTime}</span> : null}
-            {isHero ? <>
-              <span>{getString(home.heroMapLabel) || "Google Mapで開く"}</span>
-              <span>{getString(home.heroCallLabel) || "電話する"}</span>
-              <span>{getString(home.heroReserveLabel) || "メール予約"}</span>
-            </> : null}
-          </div>
-        </div>
-      </div>
-      )}
-    </section>
-  );
+function ActualDraftPreview({draft,section,onReady,pathOverride}:{draft:Draft;section:SectionDefinition;onReady:(ready:boolean)=>void;pathOverride?:string}) {
+ const [document,setDocument]=useState<{html:string;url:string}>(),[error,setError]=useState('');
+ const page=section.id==='hero-slides'?getString(draft.page):section.id==='page-copy'?getString(draft.page):'';
+ const path=pathOverride||(page?({home:'/',events:'/events/',menu:'/menu/',party:'/party/',access:'/access/'} as Record<string,string>)[page]||'/':new URL(getPublicPageUrl(section)||publicSiteUrl).pathname);
+ useEffect(()=>{const controller=new AbortController();onReady(false);void fetch('/api/visual-editor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,sectionId:section.id,draft}),signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok||!result.ok)throw Error(result.message||'プレビューを取得できませんでした。');if(!controller.signal.aborted){setDocument(result.data);onReady(true);}}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>controller.abort();},[path,section.id,draft,onReady]);
+ return error?<p role="alert">{error} 入力内容は残っています。戻って再試行してください。</p>:document?<PublicPageCanvas path={path} title="変更後・未掲載" document={document} targets={[]} onSelect={()=>{}}/>:<p role="status">変更後のページを読み込み中</p>;
 }
 
 function PreviewModal({
   draft,
   section,
-  previewContext,
   onClose,
-  onPublish
+  onPublish,
+  pathOverride
 }: {
   draft: Draft;
   section: SectionDefinition;
   previewContext?: Draft;
   onClose: () => void;
   onPublish: () => void;
+  pathOverride?:string;
 }) {
   const [confirmed, setConfirmed] = useState(false);
+  const [previewReady,setPreviewReady]=useState(false);
   const hasPublishToggle = section.fields.some((field) => field.key === "isPublished");
   const publishToggleOff = hasPublishToggle && !Boolean(draft.isPublished);
   const sectionPublicUrl = getPublicPageUrl(section);
@@ -1635,8 +1468,8 @@ function PreviewModal({
             <X size={20} />
           </button>
         </div>
-        <AdminSitePreview draft={draft} section={section} previewContext={previewContext} />
-        <dl className="preview-list">
+        <ActualDraftPreview draft={draft} section={section} onReady={setPreviewReady} pathOverride={pathOverride} />
+        <details><summary>入力内容を確認</summary><dl className="preview-list">
           {section.fields.filter((field) => field.type !== "hidden").map((field) => {
             const value = draft[field.key];
             const text = getPreviewText(field, value);
@@ -1664,7 +1497,7 @@ function PreviewModal({
               </div>
             );
           })}
-        </dl>
+        </dl></details>
         {publishToggleOff ? (
           <div className="preview-warning" role="status">
             <AlertCircle size={18} />
@@ -1711,9 +1544,9 @@ function PreviewModal({
           <button className="secondary-button" type="button" onClick={onClose}>
             戻って直す
           </button>
-          <button className="primary-button" type="button" disabled={!confirmed} onClick={onPublish}>
+          <button className="primary-button" type="button" disabled={!confirmed || !previewReady} onClick={onPublish}>
             <CheckCircle2 size={18} />
-            {publishToggleOff ? "保存して反映（この項目は非表示）" : "この内容で公開"}
+            {publishToggleOff ? "保存して反映（この項目は非表示）" : "サイトに掲載"}
           </button>
         </div>
       </div>
@@ -1734,11 +1567,11 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
       </div>
       <div>
         <strong>2. 見え方を確認</strong>
-        <span>「プレビューして公開」でPC・スマホの表示を確認します。</span>
+        <span>「掲載前に確認」でPC・スマホの表示を確認します。</span>
       </div>
       <div>
         <strong>3. 公開を確定</strong>
-        <span>{dirty ? "変更はまだ公開されていません。途中でやめる場合は「下書き保存」。" : "確認画面で確定するまで、公開サイトは変わりません。"}</span>
+        <span>{dirty ? "変更はまだ公開されていません。途中でやめる場合は「この端末に保存」。" : "確認画面で確定するまで、公開サイトは変わりません。"}</span>
       </div>
       {sectionPublicUrl ? (
         <div className="public-page-guide">
@@ -1758,12 +1591,12 @@ function SaveChoiceGuide() {
   return (
     <div className="save-choice-guide" aria-label="保存方法の違い">
       <div>
-        <strong>下書き保存</strong>
+        <strong>この端末に保存</strong>
         <span>途中保存。公開サイトには出ません。</span>
         <span className="sr-only">途中保存や後で確認したい時に使います。</span>
       </div>
       <div>
-        <strong>プレビューして公開</strong>
+        <strong>掲載前に確認</strong>
         <span>見え方を確認してから反映します。</span>
         <span className="sr-only">入力内容・リンク先・画像を確認します。「公開する」がONの項目だけ公開サイトへ反映します。公開後はPCだけでなくスマホでも見てください。最後にスマホでも表示を確認します。</span>
       </div>
@@ -2356,7 +2189,7 @@ function getHeroSlidePageLabel(page: string) {
 function confirmLeavingEditor(dirty: boolean, busy: boolean) {
   if (busy) return false;
   return !dirty || window.confirm(
-    "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、下書き保存またはプレビューして公開を押してください。"
+    "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、この端末に保存または掲載前に確認を押してください。"
   );
 }
 
@@ -2413,6 +2246,7 @@ function SectionEditor({
   const [dirty, setDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState("");
   const [itemSearch, setItemSearch] = useState("");
+  const [eventPeriod,setEventPeriod]=useState("upcoming");
   const [itemStatusFilter, setItemStatusFilter] = useState<"all" | "public" | "draft">("all");
   const [editingFields, setEditingFields] = useState<Set<string>>(new Set());
   const loadTokenRef = useRef(0);
@@ -2440,6 +2274,8 @@ function SectionEditor({
     const query = itemSearch.trim().toLowerCase();
 
     return visibleItems.filter((item) => {
+      if(section.id==='events'&&eventPeriod!=='all'){const day=getString(item.date).slice(0,10);const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());if(eventPeriod==='upcoming'&&day&&day<today)return false;if(eventPeriod==='past'&&(!day||day>=today))return false;}
+
       const statusMatches =
         itemStatusFilter === "all" || (itemStatusFilter === "public" ? isPublished(item) : !isPublished(item));
       const searchableText = [getItemTitle(section, item), getItemMeta(section, item)].join(" ").toLowerCase();
@@ -2447,7 +2283,7 @@ function SectionEditor({
 
       return statusMatches && textMatches;
     });
-  }, [itemSearch, itemStatusFilter, visibleItems, section]);
+  }, [itemSearch, itemStatusFilter, visibleItems, section, eventPeriod]);
   const editableFields = useMemo(() => {
     if (fieldKeys) return section.fields.filter((field) => fieldKeys.includes(field.key) || editingFields.has(field.key));
     if (section.id === "hero-slides" && scopedListPage !== "home") {
@@ -2507,7 +2343,7 @@ function SectionEditor({
       const saved = JSON.parse(raw) as { content: Draft; savedAt: string; base: string };
       if (!saved.content || typeof saved.content !== "object" || typeof saved.savedAt !== "string") return;
       if (saved.base !== draftBaseRef.current) {
-        setNotice({ tone: "error", message: "下書き保存の後に公開データが更新されました。最新の内容を表示しています。" });
+        setNotice({ tone: "error", message: "この端末に保存の後に公開データが更新されました。最新の内容を表示しています。" });
         return;
       }
       setDraft(mergeDefaults(section, saved.content));
@@ -2886,6 +2722,7 @@ function SectionEditor({
   }
 
   function openPreview() {
+    if(section.id==='social-notices'){void save('publish');return;}
     userInteractedRef.current = true;
     const nextDraft = eventEntry ? { ...draft, isPublished: true } : draft;
     if (eventEntry) {
@@ -2942,6 +2779,7 @@ function SectionEditor({
       preparedDraft.lastPublishError = "";
     }
 
+    if(section.id==='social-notices'){preparedDraft.deliveryStatus='draft';preparedDraft.isPublished=false;preparedDraft.scheduledAt='';}
     const nextErrors = validate(preparedDraft);
     if (Object.keys(nextErrors).length) {
       setEditingFields(current => new Set([...current, ...Object.keys(nextErrors)]));
@@ -2984,6 +2822,7 @@ function SectionEditor({
       }
 
       const facebookId = getFacebookEventId(getString(savedData.sourceUrl));
+      if(section.id==='social-notices'){setNotice({tone:'success',message:'SNS用の下書きを保存しました。投稿文をコピーして各SNSで投稿してください。'});return;}
       const eventDelivery: Notice["eventDelivery"] = section.id === "events" ? {
         socialEventId: preparedDraft.isPublished ? getString(savedData.id) : undefined,
         socialSourceId: facebookId || getString(savedData.sourceId) || getString(savedData.id),
@@ -3134,7 +2973,7 @@ function SectionEditor({
         setDraft(initialMergedDraft);
       }
 
-      setNotice({ tone: "success", message: "項目を削除しました。公開サイトへ反映する場合は、必要に応じて「プレビューして公開」を押してください。" });
+      setNotice({ tone: "success", message: "項目を削除しました。公開サイトへ反映する場合は、必要に応じて「掲載前に確認」を押してください。" });
     } catch (error) {
       setNotice({
         tone: "error",
@@ -3259,7 +3098,7 @@ function SectionEditor({
       );
       setDraft((current) => ({ ...current, displayOrder: targetOrder }));
       setDirty(false);
-      setNotice({ tone: "success", message: "画像の並び順を変更しました。公開サイトへ反映する時はプレビューして公開を押してください。" });
+      setNotice({ tone: "success", message: "画像の並び順を変更しました。公開サイトへ反映する時は掲載前に確認を押してください。" });
     } catch (error) {
       setNotice({
         tone: "error",
@@ -3274,7 +3113,7 @@ function SectionEditor({
       return;
     }
 
-    if (!window.confirm("この画像をスライドショーから外しますか？公開サイトへ反映する時は最後に「プレビューして公開」を押してください。")) {
+    if (!window.confirm("この画像をスライドショーから外しますか？公開サイトへ反映する時は最後に「掲載前に確認」を押してください。")) {
       return;
     }
 
@@ -3422,7 +3261,7 @@ function SectionEditor({
                 <Plus size={18} />
                 {listCreateLabel}
               </button> : null}
-              <div className="item-list-tools" aria-label="一覧の絞り込み">
+              <div className="item-list-tools" aria-label="一覧の絞り込み">{section.id==="events"?<label>開催日<select value={eventPeriod} onChange={e=>setEventPeriod(e.target.value)}><option value="upcoming">開催予定</option><option value="past">過去のイベント</option><option value="all">すべて</option></select></label>:null}
                 <div className="item-counts">
                   <span>全部 {visibleItems.length}</span>
                   <span>公開 {publishedCount}</span>
@@ -3474,7 +3313,7 @@ function SectionEditor({
                           setDirty(false);
                         }}
                       >
-                        {section.id === "hero-slides" && getImageUrl(item.image) ? (
+                        {["hero-slides","events","menu"].includes(section.id) && getImageUrl(item.image) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img className="item-list-thumb" src={getImageUrl(item.image)} alt="" />
                         ) : null}
@@ -3586,26 +3425,26 @@ function SectionEditor({
                   <Trash2 size={18} />
                   この項目を削除
                 </button>
-                <small>表示だけ止めたい場合は、公開をOFFにして「プレビューして公開」へ進んでください。</small>
+                <small>表示だけ止めたい場合は、公開をOFFにして「掲載前に確認」へ進んでください。</small>
               </div>
             ) : null}
             <div className="form-actions">
               <button className="secondary-button" type="button" disabled={saving || deploying} onClick={() => void save("draft")}>
                 {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
-                下書き保存
+                この端末に保存
               </button>
               <button className="primary-button" type="button" disabled={saving || deploying} onClick={openPreview}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
-                {eventEntry ? "内容を確認してサイトに掲載" : "プレビューして公開"}
+                {section.id === "social-notices" ? "SNS下書きを保存" : eventEntry ? "内容を確認してサイトに掲載" : "掲載前に確認"}
               </button>
-              <small className="action-note">下書きはこのブラウザに保存します。サイトへ反映する時は「プレビューして公開」で確認画面へ進みます。</small>
+              <small className="action-note">下書きはこのブラウザに保存します。サイトへ反映する時は「掲載前に確認」で確認画面へ進みます。</small>
             </div>
           </form>
         </div>
       )}
 
       {showPreview ? (
-        <PreviewModal draft={previewDraft} previewContext={previewContext} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
+        <PreviewModal pathOverride={sourcePage?adminPages.find(page=>page.page===sourcePage)?.publicPath:undefined} draft={previewDraft} previewContext={previewContext} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
       ) : null}
     </div>
   );
@@ -3750,7 +3589,8 @@ function PageBasedDashboard({
   opsStatus,
   editor,
   activeEditLabel,
-  onOpenSocialDrafts
+  onOpenSocialDrafts,
+  onEditorState
 }: {
   onSelect: (nextSection: ActiveSectionState) => void;
   selectedPage: string;
@@ -3763,6 +3603,7 @@ function PageBasedDashboard({
   editor?: ReactNode;
   activeEditLabel?: string;
   onOpenSocialDrafts: (sourceId: string) => void;
+  onEditorState: (state: {dirty:boolean;busy:boolean}) => void;
 }) {
   const activePage = adminPages.find((page) => page.page === selectedPage) || adminPages[0];
   const maintenanceSections = sections.filter((section) => !dailySectionIds.has(section.id));
@@ -3946,6 +3787,8 @@ function PageBasedDashboard({
     );
   }
 
+  if (!editor) return <VisualPageEditor page={selectedPage} onLegacySelect={value=>onSelect({...value,sourcePage:selectedPage})} onState={onEditorState} />;
+
   return (
     <div className="dashboard">
       <div className="page-heading workspace-heading">
@@ -4032,6 +3875,8 @@ function PageBasedDashboard({
 
 export default function AdminClient() {
   const [editorState, setEditorState] = useState({ dirty: false, busy: false });
+  const editorStateRef=useRef(editorState);
+  const rememberEditorState=useCallback((value:{dirty:boolean;busy:boolean})=>{editorStateRef.current=value;setEditorState(value);},[]);
   const [checking, setChecking] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState<ActiveSectionState | null>(null);
@@ -4109,7 +3954,7 @@ export default function AdminClient() {
   }, [authenticated, activeSection]);
 
   async function logout() {
-    if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+    if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
     await fetch("/api/logout", { method: "POST" });
     setAuthenticated(false);
     setActiveSection(null);
@@ -4127,7 +3972,7 @@ export default function AdminClient() {
   }
 
   function openRelatedSocialDrafts(sourceId: string) {
-    if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+    if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
     setDashboardPage("EVENT SCHEDULE");
     setExpandedGroup("SNS投稿の下書き");
     setActiveSection({ id: "social-notices", relatedEventId: sourceId, editLabel: "イベント追加 → SNS用の文面を使う", sourcePage: "EVENT SCHEDULE" });
@@ -4164,12 +4009,12 @@ export default function AdminClient() {
   return (
     <main className="admin-shell">
       <header className="app-header">
-        <button className="brand-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => {
+        <button className="brand-button" type="button" disabled={editorState.busy} onClick={() => {
           if (!activeSection || confirmLeavingEditor(editorState.dirty, editorState.busy)) setActiveSection(null);
         }}>
           Bassic.
         </button>
-        <button className="text-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => void logout()}>
+        <button className="text-button" type="button" disabled={editorState.busy} onClick={() => void logout()}>
           <LogOut size={18} />
           ログアウト
         </button>
@@ -4183,9 +4028,9 @@ export default function AdminClient() {
                 key={page.page}
                 type="button"
                 aria-current={dashboardPage === page.page ? "page" : undefined}
-                disabled={!!activeSection && editorState.busy}
+                disabled={editorState.busy}
                 onClick={() => {
-                  if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+                  if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
                   setActiveSection(null);
                   if (page.page !== dashboardPage) setExpandedGroup(null);
                   setDashboardPage(page.page);
@@ -4197,8 +4042,8 @@ export default function AdminClient() {
           </div>
           <div className="admin-shortcuts">
             <p>イベントの更新</p>
-            <button className="event-add-button" type="button" disabled={!!activeSection && editorState.busy} onClick={() => {
-              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+            <button className="event-add-button" type="button" disabled={editorState.busy} onClick={() => {
+              if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setDashboardPage("EVENT SCHEDULE");
               setExpandedGroup("開催イベント");
               setActiveSection({ id: "events", itemId: "new", eventEntry: true, initialDraft: { isPublished: false }, editLabel: "イベント追加", sourcePage: "EVENT SCHEDULE" });
@@ -4209,8 +4054,8 @@ export default function AdminClient() {
             <a className="analytics-link" href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer" aria-label="アクセス解析（別タブで開く）">
               アクセス解析 <ExternalLink size={16} aria-hidden="true" />
             </a>
-            <button type="button" aria-current={dashboardPage === "DETAILS" ? "page" : undefined} disabled={!!activeSection && editorState.busy} onClick={() => {
-              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+            <button type="button" aria-current={dashboardPage === "DETAILS" ? "page" : undefined} disabled={editorState.busy} onClick={() => {
+              if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setActiveSection(null);
               setExpandedGroup(null);
               setDashboardPage("DETAILS");
@@ -4221,19 +4066,20 @@ export default function AdminClient() {
         <div className="admin-workspace-content">
           <PageBasedDashboard
             onSelect={(next) => {
-              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              if (!confirmLeavingEditor(editorStateRef.current.dirty, editorStateRef.current.busy)) return;
               setActiveSection(next);
             }}
             selectedPage={dashboardPage}
             expandedGroup={expandedGroup}
             onGroupChange={(group) => {
-              if (activeSection && !confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setActiveSection(null);
               setExpandedGroup(group);
             }}
             lastDeploy={lastDeploy}
             onDeployNotice={rememberDeployNotice}
             onOpenSocialDrafts={openRelatedSocialDrafts}
+            onEditorState={rememberEditorState}
             health={health}
             opsStatus={opsStatus}
             activeEditLabel={activeSection?.editLabel}
@@ -4252,7 +4098,7 @@ export default function AdminClient() {
                 relatedEventId={activeSection.relatedEventId}
                 onOpenSocialDrafts={openRelatedSocialDrafts}
                 onBack={() => setActiveSection(null)}
-                onEditorState={setEditorState}
+                onEditorState={rememberEditorState}
                 onDeployNotice={rememberDeployNotice}
               />
             ) : undefined}

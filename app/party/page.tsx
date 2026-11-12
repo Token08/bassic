@@ -1,13 +1,16 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, PageHero, PartyContent } from "@/components/content";
-import { PageShell } from "@/components/site-shell";
-import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
-import { getCmsContents } from "@/lib/microcms";
-import { pageHeroes } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
+import { CustomSectionBlock, PageHero, PartyContent } from "@public/components/content";
+import { PageShell } from "@public/components/site-shell";
+import { editableMedia, resolveHeroSlides } from "@public/lib/editable-content";
+import { getCmsContents } from "@public/lib/microcms";
+import { pageHeroes } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
 
-export const metadata: Metadata = buildMetadata("party");
+const defaultMetadata: Metadata = buildMetadata("party");
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/party/');}
 
 export default async function PartyPage() {
   const contents = await getCmsContents();
@@ -58,7 +61,7 @@ export default async function PartyPage() {
   ];
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
-  return (
+  return editablePage('/party/', (
     <PageShell settings={contents.siteSettings}>
       <main>
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
@@ -68,5 +71,5 @@ export default async function PartyPage() {
         ))}
       </main>
     </PageShell>
-  );
+  ));
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import AdminLoginGate from "./admin-login-gate";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl } from "@public/lib/site";
 
 export const metadata: Metadata = {
   title: "Bassic. 管理画面ログイン",

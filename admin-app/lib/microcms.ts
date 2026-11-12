@@ -10,6 +10,7 @@ export type AdminEndpoint = {
 };
 
 export const endpointMap = {
+  'visual-editor': { id: 'visual-editor', label: 'ページ編集設定', type: 'object' },
   "site-settings": {
     id: "site-settings",
     label: "店舗情報",
@@ -140,8 +141,8 @@ const compactListEndpointIds = new Set([
   "page-sections",
   "custom-sections"
 ]);
-const compactObjectEndpointIds = new Set(["site-settings", "home", "equipment-rental"]);
-const compactJsonObjectEndpointIds = new Set(["site-settings", "home"]);
+const compactObjectEndpointIds = new Set(["site-settings", "home", "equipment-rental", "visual-editor"]);
+const compactJsonObjectEndpointIds = new Set(["site-settings", "home", "visual-editor"]);
 
 function isCompactListEndpoint(endpointId: string) {
   return compactListEndpointIds.has(endpointId);
@@ -347,6 +348,10 @@ export async function getContent(endpointId: string) {
   const endpoint = getEndpoint(endpointId);
 
   try {
+    if(endpointId==='menu'){
+      const contents=(await getCompactItems()).filter(item=>compactItemMatches('menu',item));
+      return contents.length?{contents}:getFallbackContent(endpointId,endpoint);
+    }
     if (endpointId === "social-notices") {
       return { contents: await getStoredItems("social-notices") };
     }
@@ -385,6 +390,19 @@ export async function getContent(endpointId: string) {
 
     return getFallbackContent(endpointId, endpoint);
   }
+}
+
+/** One strict, paginated read of each physical endpoint per page preview. */
+export async function readEditorSnapshot(){
+  const [compact,events,slides]=await Promise.all([getCompactItems(),readAllItems('events','-date'),readAllItems('hero-slides','page,displayOrder')]);
+  const data:Record<string,unknown>={events,'hero-slides':slides.map(slide=>({...slide,...unpackSlideTitle(slide.title)}))};
+  for(const id of ['site-settings','home','equipment-rental','visual-editor'])data[id]=expandCompactObject(id,compact.find(item=>compactItemMatches(id,item)))||getFallbackContent(id,getEndpoint(id));
+  for(const id of ['menu','drink-menu-sheets','party-plans','page-copy','page-sections','custom-sections']){
+    const items=compact.filter(item=>compactItemMatches(id,item));
+    data[id]=items.length?items:(getFallbackContent(id,getEndpoint(id)) as {contents?:unknown[]}).contents||[];
+  }
+  data['social-notices']=[];
+  return data;
 }
 
 async function readAllItems(endpoint: string, orders = "createdAt") {

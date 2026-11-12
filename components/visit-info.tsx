@@ -1,5 +1,5 @@
 import { CalendarDays, Cigarette, CircleDollarSign, Clock3 } from "lucide-react";
-import type { VisitInfoIcon } from "@/lib/page-content";
+import type { VisitInfoIcon } from "@public/lib/page-content";
 
 export type VisitInfoGridItem = {
   icon: VisitInfoIcon;

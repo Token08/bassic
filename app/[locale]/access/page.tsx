@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import type { LocaleCode } from "@/lib/i18n";
-import { buildLocalizedPageMetadata, localizedStaticParams, renderLocalizedPage } from "@/lib/localized-page";
+import type { LocaleCode } from "@public/lib/i18n";
+import { buildLocalizedPageMetadata, localizedStaticParams, renderLocalizedPage } from "@public/lib/localized-page";
 
 export const dynamicParams = false;
 

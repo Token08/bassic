@@ -1,6 +1,8 @@
+import {visualMetadata} from './visual-metadata';
 import type { Metadata } from "next";
-import { LocalizedPage } from "@/components/localized-content";
-import { PageShell } from "@/components/site-shell";
+import { editablePage } from './editable-page';
+import { LocalizedPage } from "@public/components/localized-content";
+import { PageShell } from "@public/components/site-shell";
 import { isLocale, localeCodes, type LocaleCode, type LocalizedPageKey } from "./i18n";
 import { localizedMetadata } from "./localized-seo";
 
@@ -16,18 +18,18 @@ export async function buildLocalizedPageMetadata(
   params: MetadataLocaleParams
 ): Promise<Metadata> {
   const { locale } = await params;
-  return localizedMetadata(locale, pageKey);
+  return visualMetadata(localizedMetadata(locale, pageKey), `/${locale}/${pageKey === 'home' ? '' : pageKey + '/'}`);
 }
 
 export async function renderLocalizedPage(pageKey: LocalizedPageKey, params: LocaleParams) {
   const { locale: localeParam } = await params;
   const locale = isLocale(localeParam) ? localeParam : "en";
 
-  return (
+  return editablePage(`/${locale}/${pageKey === 'home' ? '' : pageKey + '/'}`, (
     <PageShell>
       <main>
         <LocalizedPage locale={locale} pageKey={pageKey} />
       </main>
     </PageShell>
-  );
+  ));
 }

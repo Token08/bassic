@@ -42,3 +42,5 @@ jobs:
       # All provider writes stay in memory. No CMS or calendar secrets are used.
       - name: Rehearse isolated event APIs (browser coverage runs locally)
         run: npm run smoke:events:isolated
+      - name: Rehearse full-site editing without provider writes
+        run: npm run smoke:visual-editor

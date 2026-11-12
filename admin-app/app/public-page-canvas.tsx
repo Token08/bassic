@@ -44,7 +44,7 @@ function makeFrameHtml(html: string, url: string) {
 }
 
 export function PublicPageCanvas({
-  path, title, targets, selected, onSelect, revision
+  path, title, targets, selected, onSelect, revision, document: supplied, precise, suspended, onStyles
 }: {
   path: string;
   title: string;
@@ -52,6 +52,10 @@ export function PublicPageCanvas({
   selected?: string;
   onSelect: (key: string) => void;
   revision?: string;
+  document?: {html:string;url:string};
+  precise?: boolean;
+  suspended?: boolean;
+  onStyles?:(values:Record<string,Record<string,string>>)=>void;
 }) {
   const [device, setDevice] = useState<"desktop" | "phone">();
   const [retry, setRetry] = useState(0);
@@ -59,12 +63,16 @@ export function PublicPageCanvas({
   const [loadedFrame, setLoadedFrame] = useState("");
   const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const frame = useRef<HTMLIFrameElement>(null);
+  const scrollPosition = useRef(0);
+  const suspendedRef=useRef(suspended);suspendedRef.current=suspended;
   const wrapper = useRef<HTMLDivElement>(null);
   const selectRef = useRef(onSelect);
   selectRef.current = onSelect;
-  const request = JSON.stringify([path, retry, revision]);
+  const request = JSON.stringify([path, retry, revision, supplied?.html]);
+  useEffect(()=>{if(!suspended)frame.current?.contentWindow?.scrollTo(0,scrollPosition.current);},[suspended]);
 
   useEffect(() => {
+    if (supplied) { scrollPosition.current = frame.current?.contentDocument?.documentElement.scrollTop || scrollPosition.current; setResult({ request, html: makeFrameHtml(supplied.html, supplied.url) }); return; }
     const controller = new AbortController();
     void (async () => {
       try {
@@ -77,7 +85,7 @@ export function PublicPageCanvas({
       }
     })();
     return () => controller.abort();
-  }, [path, request]);
+  }, [path, request, supplied]);
 
   useEffect(() => {
     if (!wrapper.current) return;
@@ -95,6 +103,7 @@ export function PublicPageCanvas({
     const restore: Array<() => void> = [];
     for (const target of targets) {
       let element = [...doc.querySelectorAll("[data-public-section]")].find((node) => node.getAttribute("data-public-section") === target.key);
+      if (precise) element = [...doc.querySelectorAll('[data-visual-id]')].find(node=>node.getAttribute('data-visual-id')===target.key);
       if (!element && sectionSelectors[target.key]) element = doc.querySelector(sectionSelectors[target.key]) || undefined;
       if (!element && target.key.startsWith("custom-")) {
         const matches = [...doc.querySelectorAll(".custom-section")].filter((section) => section.querySelector("h2")?.textContent?.trim() === target.label);
@@ -117,6 +126,7 @@ export function PublicPageCanvas({
       element.setAttribute("aria-pressed", String(target.key === selected));
     }
     function handleClick(event: Event) {
+      scrollPosition.current=doc?.documentElement.scrollTop||scrollPosition.current;
       event.preventDefault();
       event.stopPropagation();
       const target = event.target as Element | null;
@@ -130,10 +140,13 @@ export function PublicPageCanvas({
     doc.addEventListener("click", handleClick, true);
     doc.addEventListener("submit", handleClick, true);
     doc.addEventListener("keydown", handleKey);
+    function rememberScroll(){if(!suspendedRef.current)scrollPosition.current=doc?.defaultView?.scrollY||0;}
+    doc.defaultView?.addEventListener('scroll',rememberScroll,{passive:true});
     return () => {
       doc.removeEventListener("click", handleClick, true);
       doc.removeEventListener("submit", handleClick, true);
       doc.removeEventListener("keydown", handleKey);
+      doc.defaultView?.removeEventListener('scroll',rememberScroll);
       restore.forEach((restoreAttributes) => restoreAttributes());
     };
   }, [loadedFrame, request, result, selected, targets]);
@@ -160,7 +173,7 @@ export function PublicPageCanvas({
             sandbox="allow-same-origin"
             referrerPolicy="no-referrer"
             srcDoc={result.html}
-            onLoad={() => setLoadedFrame(result.html || "")}
+            onLoad={() => {setLoadedFrame(result.html || ""); frame.current?.contentWindow?.scrollTo(0,scrollPosition.current);const doc=frame.current?.contentDocument;if(doc&&onStyles){const values:Record<string,Record<string,string>>={};const rootStyle=doc.defaultView?.getComputedStyle(doc.documentElement);values.__theme=Object.fromEntries(['ink','paper','paper-strong','muted','gold','red','red-bright','ivory','night','night-soft'].map(key=>[key,rootStyle?.getPropertyValue('--'+key).trim()||'']));doc.querySelectorAll<HTMLElement>('[data-visual-id]').forEach(node=>{const computed=doc.defaultView?.getComputedStyle(node);if(computed)values[node.dataset.visualId!]=Object.fromEntries(['color','backgroundColor','fontSize','padding','gap','lineHeight','borderRadius','borderColor'].map(key=>[key,String(computed[key as keyof CSSStyleDeclaration])]));});onStyles(values);}}}
           />
         </div>
       ) : (

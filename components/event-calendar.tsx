@@ -1,6 +1,6 @@
 import { CalendarDays, Clock, Mail, Sparkles } from "lucide-react";
-import { externalEmbeds } from "@/lib/editable-content";
-import { mailHref, site } from "@/lib/site";
+import { externalEmbeds } from "@public/lib/editable-content";
+import { mailHref, site } from "@public/lib/site";
 
 export function EventCalendarSection({ note }: { note?: string }) {
   return (

@@ -1,11 +1,7 @@
-"use client";
+import { languageOptions } from "@public/lib/i18n";
+import { localizedLanguageHref } from "@public/lib/path-utils";
 
-import { usePathname } from "next/navigation";
-import { languageOptions } from "@/lib/i18n";
-import { localizedLanguageHref } from "@/lib/path-utils";
-
-export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
-  const pathname = usePathname() || "/";
+export function LanguageSwitcher({ compact = false, pathname = "/" }: { compact?: boolean; pathname?: string }) {
 
   return (
     <details className={compact ? "language-switcher language-switcher-compact" : "language-switcher"}>

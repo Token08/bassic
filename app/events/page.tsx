@@ -1,18 +1,21 @@
+import { visualMetadata } from '@public/lib/visual-metadata';
+import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, EventList, PageHero } from "@/components/content";
-import { EventCalendarSection } from "@/components/event-calendar";
-import { PageShell } from "@/components/site-shell";
-import { editableMedia, resolveHeroSlides } from "@/lib/editable-content";
-import { getCmsContents } from "@/lib/microcms";
-import { pageHeroes } from "@/lib/page-content";
-import { buildMetadata } from "@/lib/seo";
-import { absoluteUrl, site } from "@/lib/site";
-import type { SiteSettings } from "@/lib/types";
+import { CustomSectionBlock, EventList, PageHero } from "@public/components/content";
+import { EventCalendarSection } from "@public/components/event-calendar";
+import { PageShell } from "@public/components/site-shell";
+import { editableMedia, resolveHeroSlides } from "@public/lib/editable-content";
+import { getCmsContents } from "@public/lib/microcms";
+import { pageHeroes } from "@public/lib/page-content";
+import { buildMetadata } from "@public/lib/seo";
+import { absoluteUrl, site } from "@public/lib/site";
+import type { SiteSettings } from "@public/lib/types";
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   ...buildMetadata("events")
 };
+export function generateMetadata(){return visualMetadata(defaultMetadata,'/events/');}
 
 function extractTime(value?: string) {
   const match = value?.match(/(\d{1,2})\s*(?::|：|時)?\s*(\d{2})?/);
@@ -146,7 +149,7 @@ export default async function EventsPage() {
   ];
   const managedSections = managedSectionItems.filter((section): section is NonNullable<typeof section> => section !== null);
 
-  return (
+  return editablePage('/events/', (
     <PageShell settings={contents.siteSettings}>
       <EventsJsonLd events={visibleSections.has("event-list") ? upcomingEvents : []} settings={contents.siteSettings} />
       <main>
@@ -157,5 +160,5 @@ export default async function EventsPage() {
         ))}
       </main>
     </PageShell>
-  );
+  ));
 }

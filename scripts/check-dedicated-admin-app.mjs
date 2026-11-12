@@ -403,8 +403,8 @@ function checkAdminDocsUseCurrentPublishButtonCopy() {
     }
 
     const text = readFileSync(file, "utf8");
-    if (!text.includes("プレビューして公開")) {
-      problems.push(`${file}: プレビューして公開`);
+    if (!text.includes("掲載前に確認")) {
+      problems.push(`${file}: 掲載前に確認`);
     }
     if (text.includes("公開して反映")) {
       problems.push(`${file}: stale 公開して反映`);
@@ -502,7 +502,7 @@ function checkClientDocsMentionSectionPublicPageLinks() {
   const files = [
     { path: "docs/delivery-admin-manual.md", terms: ["確認するページ", "変更したページを開く", "イベントならイベントページ", "メニューならメニューページ", "「公開する」ONは、サイトへ出す準備ができた印です", "公開後はサイトに表示されます", "まだサイトには出ません"] },
     { path: "docs/client-handoff-checklist.md", terms: ["確認するページ", "該当ページを開き", "反映を確認する", "「公開する」ONは表示許可", "公開後はサイトに表示されます", "まだサイトには出ません"] },
-    { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか", "この内容で公開"] }
+    { path: "docs/client-handoff-sheet.md", terms: ["確認するページ", "公開ページを開き", "該当ページを開いたか", "サイトに掲載"] }
   ];
   const missing = [];
 
@@ -531,11 +531,7 @@ function checkClientManualUsesPublishButtonForPublicUpdates() {
   }
 
   const text = readFileSync(file, "utf8");
-  const required = [
-    "6. プレビューして公開する",
-    "5. プレビューして公開する",
-    "7. プレビューして公開する"
-  ];
+  const required = ["掲載前に確認","サイトに掲載","同じ端末・ブラウザ"];
   const stale = [
     "6. 保存する",
     "5. 保存する",
@@ -601,7 +597,7 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
     "画像を外す",
     "読み上げ用の短い説明",
     "画像をアップロードしました。まだ公開サイトには反映されていません。",
-    "画像を開いて確認し、下書き保存またはプレビューして公開してください。"
+    "画像を開いて確認し、この端末に保存または掲載前に確認してください。"
   ];
   const stale = [">削除<"].filter((term) => text.includes(term));
   const missing = required.filter((term) => !text.includes(term));
@@ -621,7 +617,7 @@ function checkImageRemoveRequiresConfirmation() {
   const required = [
     "function removeImage()",
     "この画像を外しますか？",
-    "下書き保存または公開するまではサイトには反映されません",
+    "この端末に保存または公開するまではサイトには反映されません",
     "onClick={removeImage}"
   ];
   const missing = required.filter((term) => !text.includes(term));
@@ -786,9 +782,9 @@ function checkSocialNoticeUrlValidation() {
     [file, text, "instagram.com"],
     [file, text, "facebook.com"],
     [file, text, "x.com"],
-    [manualFile, manualText, "タイトルと説明は、TOPページのSNSカードにそのまま表示されます。"],
+    [manualFile, manualText, "下書きを保存してもサイトの掲載処理や自動投稿は動きません。"],
     [manualFile, manualText, "URLを貼るとSNS種別は自動で合います。"],
-    [manualFile, manualText, "長い投稿本文を丸ごと貼らず"]
+    [manualFile, manualText, "投稿文をコピー"]
   ];
   const missing = requiredTerms.filter(([, sourceText, term]) => !sourceText.includes(term)).map(([sourceFile, , term]) => `${sourceFile}: ${term}`);
 
@@ -1069,13 +1065,13 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const text = readFileSync(file, "utf8");
   const required = [
     "プレビュー確認へ進めます",
-    "次は画面下の「プレビューして公開」を押してください。",
+    "次は画面下の「掲載前に確認」を押してください。",
     "入力内容・リンク先・画像",
     "「公開する」がONの項目",
     "ON：掲載 ／ OFF：非公開",
     "field-publish-help",
     "下書きはこのブラウザに保存します",
-    "サイトへ反映する時は「プレビューして公開」で確認画面へ進みます",
+    "サイトへ反映する時は「掲載前に確認」で確認画面へ進みます",
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
     "途中保存や後で確認したい時",
@@ -1088,7 +1084,7 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "まだサイトには出ません",
     "current-publish-state",
     "window.addEventListener(\"beforeunload\"",
-    "下書き保存またはプレビューして公開を押してください",
+    "この端末に保存または掲載前に確認を押してください",
     "event.returnValue = \"\""
   ];
   const missing = required.filter((term) => !text.includes(term));
@@ -1149,7 +1145,7 @@ function checkAdminPreviewRequiresConfirmation() {
     [clientFile, clientText, "preview-public-link"],
     [clientFile, clientText, "post-publish-link"],
     [clientFile, clientText, "sectionPublicUrl"],
-    [clientFile, clientText, "disabled={!confirmed}"],
+    [clientFile, clientText, "disabled={!confirmed || !previewReady}"],
     [cssFile, cssText, ".publish-confirmation"],
     [cssFile, cssText, ".preview-public-link"],
     [cssFile, cssText, ".post-publish-link"]
@@ -2534,7 +2530,7 @@ function checkDocsExplainPublishedTextDepth() {
   const fieldDocsText = readFileSync(fieldDocsFile, "utf8");
   const setupText = readFileSync(setupFile, "utf8");
   const required = [
-    [deliveryFile, deliveryText, "タイトルは6文字以上、説明は10文字以上"],
+    [deliveryFile, deliveryText, "投稿用の下書き"],
     [deliveryFile, deliveryText, "何のお知らせか"],
     [fieldDocsFile, fieldDocsText, "プラン名を4文字以上、説明を12文字以上"],
     [fieldDocsFile, fieldDocsText, "表示タイトルを6文字以上、説明を10文字以上"],
