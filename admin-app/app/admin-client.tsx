@@ -6,6 +6,7 @@ import { AdminImage } from "./components/admin-image";
 import { PublicPageCanvas } from "./public-page-canvas";
 import { VisualPageEditor } from './visual-page-editor';
 import { currentFieldDefaults } from "../lib/current-field-values";
+import type { PublishStatus } from "@/lib/deploy-status";
 import {
   AlertCircle,
   ArrowDown,
@@ -622,7 +623,6 @@ function formatDeployTime(value?: string) {
   });
 }
 
-type PublishStatus = { state: "pending" | "published" | "failed" | "unconfirmed"; actionsUrl?: string };
 
 async function requestPublication(notice: Notice): Promise<Notice> {
   const { data } = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/deploy", {
