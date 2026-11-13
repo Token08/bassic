@@ -328,6 +328,7 @@ try {
       const panel=page.getByRole("region",{name:"Facebookイベント取り込み"});
       await panel.locator("input#sourceUrl").fill(guidedUrl);
       await panel.getByRole("button",{name:"Facebookから読み取る",exact:true}).click();
+      await page.waitForFunction(() => document.querySelector("input#title")?.value === "Guided live");
       await panel.locator("input#title").fill("Compact calendar fixture");
       await panel.locator("input#date").fill("2027-07-07");
       await panel.locator("input#startTime").fill("19:00");
