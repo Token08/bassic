@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { packEventRecord, mergeEventRecords } from "../lib/event-storage.mjs";
 
 const require = createRequire(new URL("../admin-app/package.json", import.meta.url));
 const next = require("next");
@@ -36,6 +37,14 @@ const bassicArchiveUrl = "https://www.facebook.com/events/5208864859197487/";
 const image = { url: "https://images.example.invalid/poster.png" };
 const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl, image, isPublished: true }]]);
 const notices = new Map();
+const compactEvents = new Map();
+let nextMenuId = 1;
+function changeEvent(id, patch) {
+  const item = mergeEventRecords([...events.values()], [...compactEvents.values()]).find(item => item.id === id);
+  assert.ok(item);
+  if (compactEvents.has(id)) compactEvents.set(id, { ...packEventRecord({ ...item, ...patch }), id });
+  else events.set(id, { ...item, ...patch });
+}
 const slides = new Map();
 let calendarItems = [];
 let calendarUnavailable = false;
@@ -75,11 +84,12 @@ globalThis.fetch = async (input, init) => {
   if (url.hostname === "bassic-fixture.microcms.io") {
     const [endpoint, id] = url.pathname.split("/").slice(3);
     if (endpoint === "menu" && socialUnavailable) return new Response(null, { status: 503 });
-    const collection = endpoint === "events" ? events : endpoint === "menu" ? notices : endpoint === "hero-slides" ? slides : null;
+    let collection = endpoint === "events" ? events : endpoint === "menu" ? notices : endpoint === "hero-slides" ? slides : null;
     assert.ok(collection, "Unexpected fixture CMS endpoint");
     if (method === "GET") {
       if (cmsReadMode === "unavailable") return new Response(null, { status: 503 });
       if (cmsReadMode === "malformed") return Response.json({ contents: "invalid" });
+      if (endpoint === "menu") collection = new Map([...notices, ...compactEvents]);
       if (id) return Response.json(collection.get(id));
       const offset = cmsReadMode === "repeat" ? 0 : Number(url.searchParams.get("offset") || 0);
       const limit = Number(url.searchParams.get("limit") || 100);
@@ -87,14 +97,16 @@ globalThis.fetch = async (input, init) => {
     }
     const body = init?.body ?? await input.text();
     const storedPayload = JSON.parse(body);
+    if (endpoint === "menu" && (storedPayload.kind === "events" || compactEvents.has(id))) collection = compactEvents;
+    if (endpoint === "events") return Response.json({ message: "Legacy event writes timed out" }, { status: 504 });
     if (endpoint === "events" && ((storedPayload.image !== undefined && storedPayload.image !== null && (typeof storedPayload.image !== "string" || !storedPayload.image.startsWith("https://images.microcms-assets.io/"))) || (storedPayload.date !== undefined && !/^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/.test(storedPayload.date)))) {
       return Response.json({ message: "Invalid microCMS image or date write format" }, { status: 400 });
     }
     if (method === "POST") {
       assert.equal(id, undefined);
-      const generatedId = `fixture-${endpoint}-${collection.size + 1}`;
+      const generatedId = endpoint === "menu" ? `fixture-menu-${nextMenuId++}` : `fixture-${endpoint}-${collection.size + 1}`;
       collection.set(generatedId, { ...JSON.parse(body), id: generatedId });
-      if (endpoint === "menu" && loseSocialWriteResponse) {
+      if (endpoint === "menu" && storedPayload.kind !== "events" && loseSocialWriteResponse) {
         loseSocialWriteResponse = false;
         return new Response("Response lost after write", { status: 503 });
       }
@@ -138,9 +150,9 @@ try {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   let cookie = "";
-  async function post(path, body, status = 200) {
+  async function post(path, body, status = 200, method = "POST") {
     const response = await realFetch(base + "/api/" + path, {
-      method: "POST",
+      method,
       headers: { "Content-Type": "application/json", Cookie: cookie },
       body: JSON.stringify(body)
     });
@@ -204,15 +216,36 @@ try {
   const event = { title: "Isolated live", date: "2027-05-05", startTime: "19:00", image, sourceUrl: newUrl, isPublished: true };
   await post("content/events", { ...event, sourceUrl: legacyUrl }, 409);
   const saved = (await post("content/events", event)).result.data;
-  assert.equal(events.get(saved.id)?.sourceUrl, newUrl);
-  assert.equal(events.get(saved.id)?.image,null,"External poster must not be sent to the CMS image field");
-  assert.equal(events.get(saved.id)?.date,"2027-05-05T00:00:00.000Z");
+  assert.equal(events.size, 1, "The failing legacy endpoint must not receive new event writes");
+  assert.equal(compactEvents.get(saved.id)?.kind, "events");
+  assert.equal(compactEvents.get(saved.id)?.image, undefined, "Posters stay in the JSON body, never a physical CMS image field");
   const canonical=(await get("content/events")).contents.find(item=>item.id===saved.id);
-  assert.deepEqual(canonical.image,{...image,alt:""});
+  assert.deepEqual(canonical.image,image);
   assert.equal(canonical.date,event.date);
-  assert.equal(canonical.sourceType,"");
+  assert.equal(canonical.sourceType,undefined);
   await post("content/events", event, 409);
-  assert.equal(events.size, 2);
+  assert.equal(events.size + compactEvents.size, 2);
+  await post(`content/events/${saved.id}`, { startTime: "20:00" }, 200, "PATCH");
+  const edited = (await get("content/events")).contents.find(item => item.id === saved.id);
+  assert.equal(edited.startTime, "20:00");
+  assert.equal(edited.title, event.title);
+  assert.deepEqual(edited.image, image, "A partial edit must preserve the poster");
+  await post(`content/events/${saved.id}`, { startTime: event.startTime }, 200, "PATCH");
+
+  const migrationUrl = "https://www.facebook.com/events/99999999/";
+  const migration = { ...event, id: "legacy-migration", sourceUrl: migrationUrl };
+  events.set(migration.id, migration);
+  const migrated = (await post(`content/events/${migration.id}`, { startTime: "21:00" }, 200, "PATCH")).result.data;
+  assert.notEqual(migrated.id, migration.id);
+  assert.equal(events.get(migration.id).startTime, event.startTime, "Migrating must not write to the legacy endpoint");
+  const migrationMatches = (await get("content/events")).contents.filter(item => item.sourceUrl === migrationUrl);
+  assert.equal(migrationMatches.length, 1);
+  assert.equal(migrationMatches[0].startTime, "21:00");
+  assert.deepEqual(migrationMatches[0].image, image);
+  await post(`content/events/${migrated.id}`, {}, 200, "DELETE");
+  assert.equal((await get("content/events")).contents.filter(item => item.sourceUrl === migrationUrl).length, 0, "Deleting a migrated record must not resurrect the legacy event");
+  assert.ok(events.has(migration.id), "No legacy record is destroyed during migration/removal");
+  events.delete(migration.id); compactEvents.delete(migrated.id);
 
   const flow = { event: { ...event, ...saved }, platforms: ["x", "instagram"] };
   const first = (await post("event-publish-flow", flow)).result.data;
@@ -236,18 +269,17 @@ try {
   const partial = [...notices.values()][0];
   const partialId = partial.id;
   partial.postText = "Staff edited after partial failure";
-  events.get(saved.id).startTime = "20:00";
+  changeEvent(saved.id, { startTime: "20:00" });
   const recovered = (await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms })).result.data;
   assert.deepEqual(recovered.created, ["instagram"]);
   assert.deepEqual(recovered.skipped, ["x"]);
   assert.equal(notices.size, 2);
   assert.equal(notices.get(partialId).postText, "Staff edited after partial failure");
   assert.match([...notices.values()].find(item => item.platform === "instagram").postText, /START 20:00/);
-  events.get(saved.id).isPublished = false;
+  changeEvent(saved.id, { isPublished: false });
   await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms }, 409);
   assert.equal(notices.size, 2);
-  events.get(saved.id).isPublished = true;
-  events.get(saved.id).startTime = event.startTime;
+  changeEvent(saved.id, { isPublished: true, startTime: event.startTime });
   // Restore the fixture used later to check preservation of staff text.
   [...notices.values()].find(item => item.platform === "x").postText = "Staff edited text";
   console.log("Partial SNS failure passed: retry uses current saved data, preserves staff edits, creates only the missing platform and rejects withdrawn events.");
@@ -256,6 +288,7 @@ try {
   const [publication] = await Promise.all([post("deploy", {}), post("event-publish-flow", flow, 502)]);
   assert.ok(publication.result.data.requestId);
   assert.equal(publishRequests, 1);
+  socialUnavailable = false;
 
   assert.equal((await get("calendar-status")).configured, false);
   await post("calendar-sync", { eventId: saved.id }, 403);
@@ -270,9 +303,9 @@ try {
   process.env.VERCEL_ENV = "preview";
   await post("calendar-sync", { eventId: saved.id }, 403);
   if (syncPreviewEnv === undefined) delete process.env.VERCEL_ENV; else process.env.VERCEL_ENV = syncPreviewEnv;
-  events.get(saved.id).isPublished = false;
+  changeEvent(saved.id, { isPublished: false });
   await post("calendar-sync", { eventId: saved.id }, 409);
-  events.get(saved.id).isPublished = true;
+  changeEvent(saved.id, { isPublished: true });
   process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "false";
   const check = { id: "87654321", title: event.title, date: event.date, startTime: event.startTime };
   assert.equal((await post("calendar-status", check)).result.data.state, "not-found");
@@ -301,7 +334,7 @@ try {
   process.env.VERCEL_ENV = "preview";
   try {
     await post("content/events", { ...event, sourceUrl: "https://www.facebook.com/events/66666666/" }, 502);
-    assert.equal(events.size, 2);
+    assert.equal(events.size + compactEvents.size, 2);
     await post("deploy", {}, 403);
     assert.equal(publishRequests, 1);
   } finally {
@@ -351,7 +384,7 @@ try {
       assert.equal(publishRequests,beforePublish,"Events must not dispatch a site build");
       assert.equal(calendarRequests,beforeCalendar+1,"Events must dispatch calendar only");
       await page.getByRole("button",{name:"SNS用の文面を開く"}).waitFor();
-      const saved=[...events.values()].find(item=>item.title==="Compact calendar fixture");
+      const saved=mergeEventRecords([...events.values()],[...compactEvents.values()]).find(item=>item.title==="Compact calendar fixture");
       assert.ok(saved?.id,"Confirmed event must be stored canonically");
       await page.reload();
       await page.getByRole("button",{name:"イベントを追加",exact:true}).click();

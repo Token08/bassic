@@ -4,7 +4,7 @@ export const CMS_WRITE_TIMEOUT_MS = 30000;
 export class ContentStorageError extends Error {
   status: number;
   constructor(status: number, message?: string) {
-    super(message || (status === 400 ? "保存先が入力形式を受け付けませんでした（CMS 400）。" :
+    super(message || (status === 504 ? "保存先の処理が時間切れになりました（CMS 504）。登録結果は未確認です。続けて登録せず、担当者に連絡してください。" : status === 400 ? "保存先が入力形式を受け付けませんでした（CMS 400）。" :
       status === 401 || status === 403 ? "保存先への書き込み権限を確認する必要があります。" : "保存先に接続できませんでした。時間をおいて再度お試しください。"));
     this.name = "ContentStorageError";
     this.status = status;

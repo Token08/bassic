@@ -2,7 +2,7 @@ import { fallbackContents as adminFallbackContents } from "../../lib/fallback-da
 import { defaultMenuItems as adminDefaultMenuItems, drinkMenuSheets as adminDrinkMenuSheets } from "../../lib/menu-data";
 import {equipmentRentalInfo} from "../../lib/page-content";
 import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
-import { decodeEventFromStorage, encodeEventForStorage } from "../../lib/event-storage.mjs";
+import { mergeEventRecords, packEventRecord } from "../../lib/event-storage.mjs";
 import { cmsRequest } from "./cms-request";
 export { ContentStorageError } from "./cms-request";
 
@@ -92,6 +92,7 @@ export type EndpointId = keyof typeof endpointMap;
 
 const compactStoreEndpointId = "menu";
 const compactListEndpointIds = new Set([
+  "events",
   "drink-menu-sheets",
   "party-plans",
   "social-notices",
@@ -147,7 +148,7 @@ function sanitizeDraft(draft: Record<string, unknown>) {
 
 function compactDraft(endpointId: string, draft: Record<string, unknown>) {
   const sanitized = sanitizeDraft(draft);
-  if (endpointId === "events") return encodeEventForStorage(sanitized);
+  if (endpointId === "events") return packEventRecord(sanitized);
 
   if (endpointId === "hero-slides") {
     const { mobileImage, mobilePosition, title, ...slide } = sanitized;
@@ -335,7 +336,8 @@ export async function getContent(endpointId: string) {
 
 /** One strict, paginated read of each physical endpoint per page preview. */
 export async function readEditorSnapshot(){
-  const [compact,events,slides]=await Promise.all([getCompactItems(),getStoredItems('events'),readAllItems('hero-slides','page,displayOrder')]);
+  const [compact,legacyEvents,slides]=await Promise.all([getCompactItems(),readAllItems('events'),readAllItems('hero-slides','page,displayOrder')]);
+  const events=mergeEventRecords(legacyEvents,compact);
   const data:Record<string,unknown>={events,'hero-slides':slides.map(slide=>({...slide,...unpackSlideTitle(slide.title)}))};
   for(const id of ['site-settings','home','equipment-rental','visual-editor'])data[id]=expandCompactObject(id,compact.find(item=>compactItemMatches(id,item)));
   for(const id of ['menu','drink-menu-sheets','party-plans','page-copy','page-sections','custom-sections']){
@@ -366,8 +368,11 @@ async function readAllItems(endpoint: string, orders = "createdAt") {
 }
 
 export async function getStoredItems(endpointId: "events" | "social-notices") {
-  const items = await readAllItems(endpointId === "events" ? "events" : compactStoreEndpointId);
-  return endpointId === "events" ? items.map(decodeEventFromStorage) : items.filter((item) => compactItemMatches(endpointId, item));
+  if (endpointId === "events") {
+    const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);
+    return mergeEventRecords(legacy, compact);
+  }
+  return (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
 }
 
 export function facebookEventIdentity(event: Record<string, unknown>) {
@@ -410,8 +415,9 @@ export async function createContent(endpointId: string, draft: Record<string, un
   });
 }
 
-export async function updateObjectContent(endpointId: string, draft: Record<string, unknown>) {
+export async function updateObjectContent(endpointId: string, draft: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   const endpoint = getEndpoint(endpointId);
+  if (endpointId === "events" && typeof draft.id === "string") return updateContent(endpointId, draft.id, draft);
 
   if (isCompactObjectEndpoint(endpointId)) {
     const existing = await findCompactObject(endpointId);
@@ -439,6 +445,17 @@ export async function updateObjectContent(endpointId: string, draft: Record<stri
 export async function updateContent(endpointId: string, contentId: string, draft: Record<string, unknown>) {
   const endpoint = getEndpoint(endpointId);
 
+  if (endpointId === "events") {
+    const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);
+    const existing = mergeEventRecords(legacy, compact).find(item => item.id === contentId);
+    if (!existing) throw new Error("イベントが見つかりません。");
+    const stored = compact.find(item => item.id === contentId && item.kind === "events");
+    return microCmsFetch(stored ? `/${compactStoreEndpointId}/${encodeURIComponent(contentId)}` : `/${compactStoreEndpointId}`, {
+      method: stored ? "PATCH" : "POST",
+      body: JSON.stringify(packEventRecord({ ...existing, ...sanitizeDraft(draft) }, { legacyId: stored ? JSON.parse(String(stored.body)).legacyId : contentId }))
+    });
+  }
+
   if (endpoint.type === "object") {
     return updateObjectContent(endpointId, draft);
   }
@@ -453,6 +470,18 @@ export async function updateContent(endpointId: string, contentId: string, draft
 
 export async function deleteContent(endpointId: string, contentId: string) {
   const endpoint = getEndpoint(endpointId);
+
+  if (endpointId === "events") {
+    const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);
+    const existing = mergeEventRecords(legacy, compact).find(item => item.id === contentId);
+    if (!existing) throw new Error("イベントが見つかりません。");
+    const stored = compact.find(item => item.id === contentId && item.kind === "events");
+    // Keep a tombstone so removing a migrated item never resurrects its old copy.
+    return microCmsFetch(stored ? `/${compactStoreEndpointId}/${encodeURIComponent(contentId)}` : `/${compactStoreEndpointId}`, {
+      method: stored ? "PATCH" : "POST",
+      body: JSON.stringify(packEventRecord({ ...existing, isPublished: false }, { legacyId: stored ? JSON.parse(String(stored.body)).legacyId : contentId, removed: true }))
+    });
+  }
 
   if (endpoint.type === "object") {
     throw new Error("Object endpoint cannot be deleted.");
