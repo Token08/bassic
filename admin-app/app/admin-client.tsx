@@ -733,7 +733,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   }
 
   return (
-    <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
+    <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}${notice.calendarOnly ? " event-registration-status" : ""}`} aria-label="最後の反映状況">
       <div>
         <strong>{notice.calendarOnly ? "イベント登録" : "最後の公開操作"}</strong>
         <span>{notice.sourceLabel || "管理画面から公開"}</span>
@@ -762,11 +762,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
         {!notice.calendarOnly ? <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
           {pageUrl ? "変更したページを開く" : "公開サイトを開く"}
         </a> : null}
-        {actionsUrl ? (
-          <a href={actionsUrl} target="_blank" rel="noreferrer">
-            担当者向けの実行ログ
-          </a>
-        ) : null}
+        {actionsUrl ? notice.calendarOnly ? <details className="field-help"><summary>担当者向け</summary><a href={actionsUrl} target="_blank" rel="noreferrer">実行ログ</a></details> : <a href={actionsUrl} target="_blank" rel="noreferrer">担当者向けの実行ログ</a> : null}
       </div>
       {status.state === "published" && !notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery?.socialSourceId ? <EventSocialActions sourceId={notice.eventDelivery.socialSourceId} revision={notice.eventDelivery.social} onEdit={onOpenSocialDrafts ? () => onOpenSocialDrafts(notice.eventDelivery!.socialSourceId!) : undefined} /> : null}
       {retryError ? <p role="alert">反映を依頼できませんでした。この表示を担当者に伝えてください。</p> : null}
