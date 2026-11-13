@@ -552,7 +552,7 @@ async function requestJson<T>(url: string, init?: RequestInit) {
       "Content-Type": "application/json",
       ...(init?.headers || {})
     }
-  });
+  }, url.startsWith("/api/content/") && init?.method && init.method !== "GET" ? 45000 : 12000);
   const body = (await response.json().catch(() => ({ ok: false }))) as ApiResult<T>;
 
   if (!response.ok || !body.ok) {
@@ -568,7 +568,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
     notice.tone === "error"
       ? notice.requestedAt
         ? "保存した内容はそのままです。この表示を担当者に伝えてください。"
-        : "入力内容は画面に残っています。赤い表示を確認して、直してからもう一度押してください。"
+        : "直らない場合は、表示されたメッセージを保守担当者に伝えてください。"
       : notice.tone === "info"
         ? "変更した内容は、公開を確定するまでサイトに反映されません。"
         : "反映には数分かかります。少し待ってから公開サイトを開き、再読み込みして確認してください。";
@@ -578,7 +578,7 @@ function NoticeBox({ notice }: { notice: Notice }) {
       <Icon size={20} />
       <div>
         <span>{notice.message}</span>
-        {notice.tone === "error" ? <small>入力内容は残っています。</small> : null}
+        {notice.tone === "error" && !notice.message.includes("入力内容は残っています") ? <small>入力内容は残っています。</small> : null}
         <details className="field-help">
           <summary>詳しく見る</summary>
           <small>{helper}</small>

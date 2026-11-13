@@ -3,6 +3,8 @@ import { defaultMenuItems as adminDefaultMenuItems, drinkMenuSheets as adminDrin
 import {equipmentRentalInfo} from "../../lib/page-content";
 import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
 import { decodeEventFromStorage, encodeEventForStorage } from "../../lib/event-storage.mjs";
+import { cmsRequest } from "./cms-request";
+export { ContentStorageError } from "./cms-request";
 
 export type AdminEndpointType = "object" | "list";
 
@@ -269,43 +271,17 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
   return fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {};
 }
 
-export class ContentStorageError extends Error {
-  constructor(public readonly status: number) {
-    super(status === 400 ? "保存先が入力形式を受け付けませんでした（CMS 400）。" :
-      status === 401 || status === 403 ? "保存先への書き込み権限を確認する必要があります。" : "保存先に接続できませんでした。時間をおいて再度お試しください。");
-  }
-}
-
 async function microCmsFetch(path: string, init: RequestInit = {}) {
   if (init.method && init.method !== "GET" && process.env.VERCEL_ENV === "preview") {
     throw new Error("Preview CMS access is read-only.");
   }
-  const response = await fetch(`${getContentBaseUrl()}${path}`, {
+  return cmsRequest(`${getContentBaseUrl()}${path}`, {
     ...init,
-    signal: init.signal ?? AbortSignal.timeout(8000),
     headers: {
       ...headers(),
       ...(init.headers || {})
-    },
-    cache: "no-store"
-  });
-
-  if (!response.ok) {
-    console.error("CMS request rejected", { status: response.status, endpoint: path.split("?")[0], method: init.method || "GET" });
-    throw new ContentStorageError(response.status);
-  }
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  const contentType = response.headers.get("content-type") || "";
-
-  if (contentType.includes("application/json")) {
-    return response.json();
-  }
-
-  return { message: await response.text() };
+    }
+  }, path);
 }
 
 export async function getContent(endpointId: string) {
