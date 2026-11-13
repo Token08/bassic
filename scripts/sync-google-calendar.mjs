@@ -70,6 +70,7 @@ async function main() {
         JSON.stringify(
           {
             summary: googleEvent.summary,
+            visibility: googleEvent.visibility,
             start: googleEvent.start,
             end: googleEvent.end,
             source: googleEvent.source,
@@ -364,6 +365,7 @@ function toGoogleCalendarEvent(event) {
 
   return {
     summary: event.title,
+    visibility: "public",
     description: calendarDescription(event, siteUrl),
     location: "public bar Bassic.",
     start: {

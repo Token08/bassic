@@ -324,6 +324,8 @@ try {
   const fullCheck = { ...check, syncKey: "facebook-87654321", sourceUrl: newUrl, imageUrl: image.url };
   assert.equal((await post("calendar-status", fullCheck)).result.data.state, "review");
   calendarItems[0].description = "START 19:00\n\nイベント詳細: " + newUrl + "\n\n画像: " + image.url;
+  assert.equal((await post("calendar-status", fullCheck)).result.data.state, "review", "Calendar-only details cannot confirm public visibility");
+  calendarItems[0].visibility = "public";
   assert.equal((await post("calendar-status", fullCheck)).result.data.state, "matched");
   assert.equal((await post("calendar-status", { ...fullCheck, imageUrl: "https://images.example.invalid/replaced.png" })).result.data.state, "review", "A changed image URL must not be reported as synced before the calendar updates");
   assert.equal((await post("calendar-status", { ...fullCheck, endTime: "22:00" })).result.data.state, "review");
