@@ -1,5 +1,6 @@
 import { loadLocalEnv } from "./load-local-env.mjs";
 import { decodeEventFromStorage, mergeEventRecords } from "../lib/event-storage.mjs";
+import { decodeSocialNoticeRecord } from "../lib/social-notice-storage.mjs";
 
 loadLocalEnv();
 loadLocalEnv("admin-app/.env.local");
@@ -211,6 +212,7 @@ try {
   for (const check of compactChecks) {
     const contents = compactContents
       .filter((item) => item.kind === check.label)
+      .map(item => check.label === "social-notices" ? decodeSocialNoticeRecord(item) : item)
       .map((item) => (check.label === "page-sections" && !item.sectionKey ? { ...item, sectionKey: item.section } : item));
 
     for (const item of contents) {

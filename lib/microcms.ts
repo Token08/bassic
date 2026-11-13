@@ -1,5 +1,6 @@
 import {cache} from "react";
 import { decodeEventFromStorage, mergeEventRecords } from "./event-storage.mjs";
+import { decodeSocialNoticeRecord } from "./social-notice-storage.mjs";
 import { createClient } from "microcms-js-sdk";
 import { previewContents } from './preview-context';
 import { emptyVisualSettings, parseVisualSettings } from './editor-document';
@@ -479,7 +480,7 @@ async function readCmsContents(): Promise<CmsContents> {
   const drinkSheets = compactItemsFor<DrinkMenuSheet>(compactStore, "drink-menu-sheets");
   const partyPlans = compactItemsFor<PartyPlan>(compactStore, "party-plans");
   const equipmentRental = compactEquipmentRental(compactStore);
-  const socialNotices = compactItemsFor<SocialNotice>(compactStore, "social-notices");
+  const socialNotices = compactItemsFor<SocialNotice>(compactStore, "social-notices").map(decodeSocialNoticeRecord);
   const pageCopy = compactItemsFor<PageCopy>(compactStore, "page-copy");
   const pageSections = compactPageSections(compactStore);
   const customSections = compactItemsFor<CustomSection>(compactStore, "custom-sections");

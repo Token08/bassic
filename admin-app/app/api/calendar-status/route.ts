@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const state = nextPageToken || matches.length > 1 ? "review" : matches.length === 0 ? "not-found" :
       matches[0].summary === title && Date.parse(matches[0].start?.dateTime) === expected &&
       Date.parse(matches[0].end?.dateTime) === expectedEnd &&
-      (suppliedKey === undefined || (matches[0].description || "") === calendarDescription(input, process.env.NEXT_PUBLIC_PUBLIC_SITE_URL)) ? "matched" : "review";
+      (suppliedKey === undefined || (matches[0].visibility === "public" && (matches[0].description || "") === calendarDescription(input, process.env.NEXT_PUBLIC_PUBLIC_SITE_URL))) ? "matched" : "review";
     return NextResponse.json({ ok: true, data: { state, ...(state === "review" ? { reason: nextPageToken || matches.length > 1 ? "duplicate" : "different" } : {}) } });
   } catch {
     return NextResponse.json({ ok: false, message: "カレンダーの掲載結果を確認できませんでした。" }, { status: 502 });

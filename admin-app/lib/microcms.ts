@@ -3,6 +3,7 @@ import { defaultMenuItems as adminDefaultMenuItems, drinkMenuSheets as adminDrin
 import {equipmentRentalInfo} from "../../lib/page-content";
 import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
 import { mergeEventRecords, packEventRecord } from "../../lib/event-storage.mjs";
+import { decodeSocialNoticeRecord, packSocialNoticeRecord } from "../../lib/social-notice-storage.mjs";
 import { cmsRequest } from "./cms-request";
 export { ContentStorageError } from "./cms-request";
 
@@ -149,6 +150,7 @@ function sanitizeDraft(draft: Record<string, unknown>) {
 function compactDraft(endpointId: string, draft: Record<string, unknown>) {
   const sanitized = sanitizeDraft(draft);
   if (endpointId === "events") return packEventRecord(sanitized);
+  if (endpointId === "social-notices") return packSocialNoticeRecord(sanitized);
 
   if (endpointId === "hero-slides") {
     const { mobileImage, mobilePosition, title, ...slide } = sanitized;
@@ -372,7 +374,7 @@ export async function getStoredItems(endpointId: "events" | "social-notices") {
     const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);
     return mergeEventRecords(legacy, compact);
   }
-  return (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
+  return (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item)).map(decodeSocialNoticeRecord);
 }
 
 export function facebookEventIdentity(event: Record<string, unknown>) {
@@ -417,7 +419,7 @@ export async function createContent(endpointId: string, draft: Record<string, un
 
 export async function updateObjectContent(endpointId: string, draft: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   const endpoint = getEndpoint(endpointId);
-  if (endpointId === "events" && typeof draft.id === "string") return updateContent(endpointId, draft.id, draft);
+  if ((endpointId === "events" || endpointId === "social-notices") && typeof draft.id === "string") return updateContent(endpointId, draft.id, draft);
 
   if (isCompactObjectEndpoint(endpointId)) {
     const existing = await findCompactObject(endpointId);
@@ -444,6 +446,14 @@ export async function updateObjectContent(endpointId: string, draft: Record<stri
 
 export async function updateContent(endpointId: string, contentId: string, draft: Record<string, unknown>) {
   const endpoint = getEndpoint(endpointId);
+
+  if (endpointId === "social-notices") {
+    const existing = (await getStoredItems("social-notices")).find(item => item.id === contentId);
+    if (!existing) throw new Error("SNS下書きが見つかりません。");
+    return microCmsFetch(`/${compactStoreEndpointId}/${encodeURIComponent(contentId)}`, {
+      method: "PATCH", body: JSON.stringify(packSocialNoticeRecord({ ...existing, ...sanitizeDraft(draft) }))
+    });
+  }
 
   if (endpointId === "events") {
     const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);

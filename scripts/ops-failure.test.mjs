@@ -53,6 +53,7 @@ test("calendar reads the new JSON record and prefers it over the migrated legacy
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /確認のみ: 1 件/);
   assert.match(result.stdout, /Updated JSON live/);
+  assert.match(result.stdout, /"visibility": "public"/);
   assert.match(result.stdout, /https:\/\/images.example.invalid\/poster.png/);
   assert.doesNotMatch(result.stdout, /Old legacy live/);
 });
@@ -113,7 +114,7 @@ test("SNS delivery failure records the failure and fails the job", () => {
   const result = run("publish-social-notices.mjs", `globalThis.fetch = async (url, init = {}) => {
     if (String(url).includes('api.x.com')) return Response.json({ detail: 'Test delivery failed' }, { status: 503 });
     if (init.method === 'PATCH') {
-      const data = JSON.parse(init.body);
+      const data = JSON.parse(JSON.parse(init.body).body).notice;
       if (data.deliveryStatus !== 'failed') throw Error('Failure was not recorded');
       return Response.json({ id: 'test-notice' });
     }
