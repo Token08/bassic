@@ -407,6 +407,7 @@ try {
       await post(`content/social-notices/${currentX.id}`, { postText: "Staff latest direct-post text" }, 200, "PATCH");
       await page.evaluate(() => window.dispatchEvent(new Event("bassic-social-draft-saved")));
       await page.waitForFunction(() => [...document.querySelectorAll('a')].some(link => link.textContent === "Xの投稿画面を開く" && link.href.includes("Staff+latest+direct-post+text")));
+      await directSocial.scrollIntoViewIfNeeded();
       await page.screenshot({path:join(shots,"direct-social-desktop.png")});
       assert.equal(calendarRequests,beforeCalendar+1,"Reading saved SNS drafts must not re-register a calendar event");
       const saved=mergeEventRecords([...events.values()],[...compactEvents.values()]).find(item=>item.title==="Compact calendar fixture");
@@ -423,6 +424,11 @@ try {
       await page.getByRole("dialog",{name:"イベントの登録内容を確認"}).waitFor();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
       await page.screenshot({path:join(shots,"calendar-confirmation-mobile.png")});
+      await page.getByRole("button", { name: "この内容で登録", exact: true }).click();
+      await page.getByRole("region", { name: "SNSで使う", exact: true }).getByRole("link", { name: "Xの投稿画面を開く", exact: true }).waitFor();
+      await page.getByRole("region", { name: "SNSで使う", exact: true }).scrollIntoViewIfNeeded();
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+      await page.screenshot({path:join(shots,"direct-social-mobile.png")});
       console.log("Simplified event UI passed: compact review, calendar-only dispatch, no device save, independent SNS, clean new event, mobile layout.");
     } finally {await browser.close();}
   }
