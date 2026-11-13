@@ -456,7 +456,7 @@ export async function updateObjectContent(endpointId: string, draft: Record<stri
 
   return microCmsFetch(`/${endpoint.id}`, {
     method: "PATCH",
-    body: JSON.stringify(sanitizeDraft(draft))
+    body: JSON.stringify(compactDraft(endpointId, draft))
   });
 }
 
