@@ -480,7 +480,7 @@ async function readCmsContents(): Promise<CmsContents> {
   const drinkSheets = compactItemsFor<DrinkMenuSheet>(compactStore, "drink-menu-sheets");
   const partyPlans = compactItemsFor<PartyPlan>(compactStore, "party-plans");
   const equipmentRental = compactEquipmentRental(compactStore);
-  const socialNotices = compactItemsFor<SocialNotice>(compactStore, "social-notices").map(decodeSocialNoticeRecord);
+  const socialNotices = compactItemsFor<SocialNotice>(compactStore, "social-notices").map(decodeSocialNoticeRecord).filter(item => !("__removed" in item && item.__removed));
   const pageCopy = compactItemsFor<PageCopy>(compactStore, "page-copy");
   const pageSections = compactPageSections(compactStore);
   const customSections = compactItemsFor<CustomSection>(compactStore, "custom-sections");

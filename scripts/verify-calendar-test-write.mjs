@@ -35,7 +35,7 @@ const key = "facebook-9000000000000001";
 const timeZone = "Asia/Tokyo";
 const date = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 const dateTime = (hour) => `${date}T${hour}:00:00`;
-const sync = (hour, endHour) => {
+const sync = (hour, endHour, sourceUpdatedAt) => {
   const [event] = mergeEventRecords([], [{ ...packEventRecord({
     title: "[Bassic QA] Calendar sync", date, startTime: `${hour}:00`, endTime: `${endHour}:00`,
     sourceUrl: "https://www.facebook.com/events/9000000000000001/", image: { url: "https://images.example.invalid/poster.png" }
@@ -45,6 +45,7 @@ const sync = (hour, endHour) => {
   entries: [{
     key,
     sourceId: "9000000000000001",
+    sourceUpdatedAt,
     body: {
       summary: event.title,
       description: calendarDescription(event),
@@ -76,6 +77,13 @@ try {
   assert.equal(updated.length, 1);
   assert.equal(updated[0].id, first[0].id);
   assert.equal(Date.parse(updated[0].start.dateTime), Date.parse(dateTime("20") + "+09:00"));
+  await calendar.events.delete({ calendarId, eventId: updated[0].id, sendUpdates: "none" });
+  const { data: deleted } = await calendar.events.get({ calendarId, eventId: updated[0].id });
+  assert.equal(deleted.status, "cancelled");
+  await assert.rejects(sync("20", "21"), "A scheduled run must not restore a cancelled event");
+  const republishedAt = new Date(Date.parse(deleted.updated) + 1000).toISOString();
+  assert.deepEqual(await sync("20", "21", republishedAt), { inserted: 0, updated: 1, unchanged: 0 });
+  assert.equal((await listRunEvents())[0].id, updated[0].id, "Re-registration must restore the same managed event");
 } finally {
   for (const item of await listRunEvents()) {
     await calendar.events.delete({ calendarId, eventId: item.id, sendUpdates: "none" });

@@ -43,7 +43,7 @@ async function fetchApprovedNotices() {
   });
   const data = await microCmsRequest(`/menu?${params.toString()}`);
 
-  const notices = (data.contents || []).filter(notice => notice.kind === "social-notices").map(decodeSocialNoticeRecord);
+  const notices = (data.contents || []).filter(notice => notice.kind === "social-notices").map(decodeSocialNoticeRecord).filter(notice => !notice.__removed);
   for (const notice of notices) storedNotices.set(notice.id, notice);
   return notices.filter(
     (notice) => notice.deliveryStatus === "approved" && !notice.externalPostId && notice.isPublished !== false

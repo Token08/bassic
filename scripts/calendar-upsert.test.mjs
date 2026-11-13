@@ -154,3 +154,20 @@ test("an insert collision is reconciled only when the existing event belongs to 
   api.get = async () => ({ data: { id: requested.id, extendedProperties: { private: { syncTag: "someone-else" } } } });
   await assert.rejects(sync(api), /conflict/);
 });
+
+test("only a newer staff save may restore an owned cancelled event", async () => {
+  let requested, restored;
+  const conflict = Object.assign(Error("conflict"), { code: 409 });
+  const api = {
+    list: async () => ({ data: { items: [] } }),
+    insert: async ({ requestBody }) => { requested = requestBody; throw conflict; },
+    get: async () => ({ data: { ...requested, status: "cancelled", updated: "2026-11-13T10:00:00Z" } }),
+    patch: async ({ requestBody }) => { restored = requestBody; }
+  };
+  for (const sourceUpdatedAt of [undefined, "invalid", "2026-11-13T09:59:59Z"]) {
+    await assert.rejects(sync(api, [{ ...entry, sourceUpdatedAt }]), /conflict/);
+    assert.equal(restored, undefined);
+  }
+  assert.equal((await sync(api, [{ ...entry, sourceUpdatedAt: "2026-11-13T10:00:01Z" }])).updated, 1);
+  assert.equal(restored.status, "confirmed");
+});

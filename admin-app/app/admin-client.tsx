@@ -6,6 +6,7 @@ import { AdminImage } from "./components/admin-image";
 import { PdfField } from "./components/pdf-field";
 import { SnsPostingPanel } from "./components/sns-posting-panel";
 import { CalendarSyncStatus } from "./components/calendar-sync-status";
+import { EventSocialActions } from "./components/event-social-actions";
 import type { CalendarEventInput } from "@/lib/event-handoff";
 import { PublicPageCanvas } from "./public-page-canvas";
 import { VisualPageEditor } from './visual-page-editor';
@@ -732,7 +733,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   }
 
   return (
-    <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
+    <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}${notice.calendarOnly ? " event-registration-status" : ""}`} aria-label="最後の反映状況">
       <div>
         <strong>{notice.calendarOnly ? "イベント登録" : "最後の公開操作"}</strong>
         <span>{notice.sourceLabel || "管理画面から公開"}</span>
@@ -748,9 +749,6 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
         </dl>
       ) : null}
       <div className="deploy-status-actions">
-        {status.state === "published" && !notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery?.socialSourceId && onOpenSocialDrafts ? (
-          <button className="primary-button" type="button" onClick={() => onOpenSocialDrafts(notice.eventDelivery!.socialSourceId!)}>SNS用の文面を開く</button>
-        ) : null}
         {notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery.socialEventId ? (
           <button className="secondary-button" type="button" disabled={retryingSocial} onClick={() => void retrySocial()}>
             {retryingSocial ? "SNS下書きを確認中…" : "SNS下書きだけをやり直す"}
@@ -764,12 +762,9 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
         {!notice.calendarOnly ? <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
           {pageUrl ? "変更したページを開く" : "公開サイトを開く"}
         </a> : null}
-        {actionsUrl ? (
-          <a href={actionsUrl} target="_blank" rel="noreferrer">
-            担当者向けの実行ログ
-          </a>
-        ) : null}
+        {actionsUrl ? notice.calendarOnly ? <details className="field-help"><summary>担当者向け</summary><a href={actionsUrl} target="_blank" rel="noreferrer">実行ログ</a></details> : <a href={actionsUrl} target="_blank" rel="noreferrer">担当者向けの実行ログ</a> : null}
       </div>
+      {status.state === "published" && !notice.eventDelivery?.socialRetryNeeded && notice.eventDelivery?.socialSourceId ? <EventSocialActions sourceId={notice.eventDelivery.socialSourceId} revision={notice.eventDelivery.social} onEdit={onOpenSocialDrafts ? () => onOpenSocialDrafts(notice.eventDelivery!.socialSourceId!) : undefined} /> : null}
       {retryError ? <p role="alert">反映を依頼できませんでした。この表示を担当者に伝えてください。</p> : null}
       {!notice.calendarOnly && status.state === "published" && notice.confirmationSteps?.length ? (
         <details>
@@ -1098,7 +1093,7 @@ function EditableFieldCard({ section, field, value, fallbackValue, error, onChan
  const [changed,setChanged]=useState(false);
  if(field.type==='hidden')return null;
  const current=changed?value:fieldHasValue(field,value)?value:fallbackValue??value;
- return <section className={`editable-field-card editing${error?' has-error':''}`} aria-label={getFieldSummaryValue(section,field,current)}><div className="editable-field-heading"><span>{field.label}{field.required?<b>必須</b>:null}</span></div><Field field={field} value={current} error={error} imageUrlOnly={section.id === "events"} hideLabel onChange={next=>{setChanged(true);onChange(next);}}/></section>;
+ return <section className={`editable-field-card editing${error?' has-error':''}`} aria-label={getFieldSummaryValue(section,field,current)}><div className="editable-field-heading"><span>{field.label}{field.required?<b>必須</b>:null}</span></div><Field field={field} value={current} error={error} imageUrlOnly={section.id === "events" || section.id === "social-notices"} hideLabel onChange={next=>{setChanged(true);onChange(next);}}/></section>;
 }
 
 function ImageField({ value, onChange, urlOnly = false }: { value: unknown; onChange: (value: unknown) => void; urlOnly?: boolean }) {
@@ -1423,13 +1418,15 @@ function ActualDraftPreview({draft,section,onReady,pathOverride}:{draft:Draft;se
 }
 
 function EventRegistrationReview({ draft, onClose, onPublish }: { draft: Draft; onClose: () => void; onPublish: () => void }) {
-  const rows = [["イベント名", getString(draft.title)], ["日付", getString(draft.date).slice(0,10)], ["開始時刻", getString(draft.startTime)], ["開場", getString(draft.openTime)], ["終了", getString(draft.endTime)], ["出演者", getString(draft.performers)], ["料金", getString(draft.price)], ["予約", getString(draft.reservation)]];
+  const date = getString(draft.date).slice(0,10);
+  const dateLabel = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "short" }).format(new Date(date + "T00:00:00+09:00")) : date;
+  const rows = [["イベント名", getString(draft.title)], ["日付", dateLabel], ["開始時刻", getString(draft.startTime)], ["開場", getString(draft.openTime)], ["終了時刻", getString(draft.endTime) || "未定（カレンダーは仮の2時間枠）"], ["出演者", getString(draft.performers)], ["料金", getString(draft.price)], ["予約", getString(draft.reservation)]];
   const image = getImageUrl(draft.image);
   return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="イベントの登録内容を確認"><div className="preview-modal event-registration-review">
     <div className="modal-heading"><h2>この内容で登録します</h2><button className="icon-button" type="button" aria-label="閉じる" onClick={onClose}><X size={20}/></button></div>
     <p>Googleカレンダーに登録し、X・Instagram用の文面を用意します。</p>
     <dl className="preview-list">{rows.filter(([,value])=>value).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}<div><dt>イベント画像</dt><dd>{image ? <a href={resolvePublicUrl(image,publicSiteUrl)} target="_blank" rel="noreferrer">画像を開いて確認</a> : "画像なし"}</dd></div></dl>
-    <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>戻って直す</button><button className="primary-button" type="button" onClick={onPublish}>Googleカレンダーに登録</button></div>
+    <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>戻って直す</button><button className="primary-button" type="button" onClick={onPublish}>この内容で登録</button></div>
   </div></div>;
 }
 
@@ -1695,6 +1692,8 @@ function FacebookEventImportPanel({ draft, onApply, sourceField, children }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceUrl]);
   const isFacebookEvent = isFacebookEventUrl(sourceUrl);
+  const missingRequired = [["イベント名", getString(draft.title)], ["日付", getString(draft.date)], ["開始時刻", isValidEventTime(getString(draft.startTime)) ? "valid" : ""]].filter(([, value]) => !value).map(([label]) => label);
+  const currentMessage = preview && !preview.existingEvents?.length ? missingRequired.length ? `未入力：${missingRequired.join("・")}` : "内容を確認して登録できます。" : message;
   async function importEvent() {
     if (importBusyRef.current) return;
     importBusyRef.current = true;
@@ -1765,7 +1764,7 @@ function FacebookEventImportPanel({ draft, onApply, sourceField, children }: {
         </button>
         <small>URLがなくても、この下から手入力できます。</small>
       </section>
-      {message ? <p role="status" className="import-message">{message}</p> : null}
+      {currentMessage ? <p role="status" className="import-message">{currentMessage}</p> : null}
       {preview?.existingEvents?.length === 1 ? <div className="existing-event-choice">
         <strong>登録済み：{getString(preview.existingEvents[0].title)}</strong>
         <button type="button" className="secondary-button" onClick={() => onApply({
@@ -2577,7 +2576,7 @@ function SectionEditor({
       }
 
       const facebookId = getFacebookEventId(getString(savedData.sourceUrl));
-      if(section.id==='social-notices'){setNotice({tone:'success',message:'SNS用の下書きを保存しました。投稿文をコピーして各SNSで投稿してください。'});return;}
+      if(section.id==='social-notices'){window.dispatchEvent(new Event('bassic-social-draft-saved'));setNotice({tone:'success',message:'SNS用の下書きを保存しました。投稿文をコピーして各SNSで投稿してください。'});return;}
       const eventDelivery: Notice["eventDelivery"] = section.id === "events" ? {
         socialEventId: preparedDraft.isPublished ? getString(savedData.id) : undefined,
         socialSourceId: facebookId || getString(savedData.sourceId) || getString(savedData.id),
@@ -2713,6 +2712,8 @@ function SectionEditor({
       await requestJson<{ id: string }>(`/api/content/${section.id}/${selectedId}`, {
         method: "DELETE"
       });
+      if (section.id === "events") window.dispatchEvent(new CustomEvent("bassic-event-removed", { detail: selectedId }));
+      if (section.id === "social-notices") window.dispatchEvent(new Event("bassic-social-draft-saved"));
       const remainingItems = items.filter((item) => item.id !== selectedId);
       const remainingVisibleItems = scopedListPage
         ? remainingItems.filter((item) => getString(item.page).trim() === scopedListPage)
@@ -2920,6 +2921,7 @@ function SectionEditor({
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
                 {section.id === "social-notices" ? "SNS下書きを保存" : section.id === "events" ? "登録内容を確認" : "掲載前に確認"}
               </button>
+              {section.id === "events" && !getString(draft.endTime) ? <small className="action-note">終了時刻：未定（カレンダーは仮の2時間枠）</small> : null}
               <small className="action-note">{section.id === "social-notices" ? "下書きの保存だけではSNSに投稿されません。" : section.id === "events" ? "確認画面からGoogleカレンダーに登録します。SNSは下書きまで。" : "確認画面で確定するまで公開されません。"}</small>
             </div>
     );
@@ -3115,7 +3117,7 @@ function SectionEditor({
           >
             {eventEntry ? (
               <section className="event-entry-guide" aria-label="イベント追加の流れ">
-                <ol><li>URL入力</li><li>確認・修正</li><li>カレンダー登録</li><li>SNS文面</li></ol>
+                <ol><li>Facebookから取り込む</li><li>内容を確認して登録</li><li>SNSで使う</li></ol>
                 <p>SNSは文面を確認して各サービスで投稿</p>
               </section>
             ) : null}
@@ -3639,6 +3641,15 @@ export default function AdminClient() {
   const [dashboardPage, setDashboardPage] = useState(adminPages[0].page);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [lastDeploy, setLastDeploy] = useState<Notice | undefined>();
+  useEffect(() => {
+    const removed = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== lastDeploy?.eventDelivery?.socialEventId) return;
+      setLastDeploy(undefined);
+      try { window.localStorage.removeItem("bassic-admin-last-deploy"); } catch { /* The visible result is still cleared. */ }
+    };
+    window.addEventListener("bassic-event-removed", removed);
+    return () => window.removeEventListener("bassic-event-removed", removed);
+  }, [lastDeploy]);
   const [sessionError, setSessionError] = useState("");
   const [health, setHealth] = useState<HealthState | undefined>();
   const [opsStatus, setOpsStatus] = useState<OpsStatus | undefined>();
