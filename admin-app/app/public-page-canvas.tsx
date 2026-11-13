@@ -27,6 +27,13 @@ type Target = { key: string; label: string };
 function makeFrameHtml(html: string, url: string) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   doc.querySelectorAll("script, base, meta[http-equiv], link[rel='preload'][as='script'], link[rel='modulepreload']").forEach((node) => node.remove());
+  doc.querySelectorAll("iframe[src*='calendar.google.com']").forEach((frame) => {
+    const box = doc.createElement("div");
+    box.setAttribute("role", "note");
+    box.style.cssText = "padding:40px 24px;border:1px solid #d8c8ad;border-radius:8px;background:#fff8eb;color:#241c16;text-align:center";
+    box.textContent = "Googleカレンダーの予定は公開サイトで確認できます。ここでは配置だけを表示しています。";
+    frame.replaceWith(box);
+  });
   const base = doc.createElement("base");
   base.href = url;
   doc.head.prepend(base);

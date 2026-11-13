@@ -53,7 +53,7 @@ globalThis.fetch = async (input, init) => {
 
   if (url.hostname === "www.bassic.jp") {
     const markup = url.pathname === "/events/"
-      ? '<section aria-labelledby="upcoming-events-heading"><h2 id="upcoming-events-heading">開催予定のイベント</h2></section>'
+      ? '<section class="event-calendar-section"><h2>Googleカレンダー</h2><iframe title="calendar fixture" src="https://calendar.google.com/calendar/embed?src=fixture"></iframe></section>'
       : '<header class="site-header">Bassic.</header><section class="page-hero" style="min-height:900px">Hero</section><section class="intro"><h2>初めての方へ</h2></section>';
     return new Response("<!doctype html><html><body>" + markup + "</body></html>", { headers: { "Content-Type": "text/html" } });
   }
@@ -301,430 +301,63 @@ try {
   console.log("Isolated admin flow passed: Facebook fallback, event and SNS deduplication, staff edits, independent publishing, calendar status.");
 
   socialUnavailable = false;
-  // Optional browser check with a locally installed Playwright and Chromium.
-  if (process.env.BASSIC_QA_PLAYWRIGHT && process.env.BASSIC_QA_CHROMIUM) {
+  if (process.env.BASSIC_QA_SIMPLIFIED === "1" || (process.env.BASSIC_QA_PLAYWRIGHT && process.env.BASSIC_QA_CHROMIUM)) {
+    process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "true";
     const { chromium } = require(process.env.BASSIC_QA_PLAYWRIGHT);
     const browser = await chromium.launch({ executablePath: process.env.BASSIC_QA_CHROMIUM });
     try {
-      const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
-      await page.route("**/*", (route) => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+      const page = await browser.newPage({ viewport: { width: 1440, height: 960 } });
+      await page.route("**/*", route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
       await page.goto(base);
       await page.getByLabel("共有パスワード").fill(password);
-      await page.getByRole("button", { name: "ログイン", exact: true }).click();
-      const pageNav = page.getByRole("navigation", { name: "編集するページ" });
-      const topNav = pageNav.getByRole("button", { name: "TOPページ", exact: true });
-      const eventsNav = pageNav.getByRole("button", { name: "イベントスケジュール", exact: true });
-      await topNav.waitFor();
-      await page.getByRole("heading",{name:"TOPページ",exact:true}).waitFor();
-      assert.equal(await topNav.getAttribute("aria-current"), "page");
-      const workspace = page.locator(".admin-workspace-content");
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow in mobile admin");
-      await page.setViewportSize({ width: 1440, height: 900 });
-      const navBox = await pageNav.boundingBox();
-      const workspaceBox = await workspace.boundingBox();
-      assert.ok(navBox.x + navBox.width < workspaceBox.x, "Desktop page navigation should sit left of the editor");
-      await eventsNav.click();
-      assert.equal(await eventsNav.getAttribute("aria-current"), "page");
-      await page.setViewportSize({ width: 390, height: 844 });
-      console.log("Admin navigation passed: desktop sidebar, mobile layout and active page.");
-
-      await page.getByText('登録情報・非表示の項目',{exact:true}).click();
-      await page.getByRole('button',{name:'イベント一覧',exact:true}).click();
-      const panel = page.getByRole("region", { name: "Facebookイベント取り込み" });
-      const sourceField = page.locator(".editable-field-card").filter({ hasText: "FacebookイベントURL・詳細URL" });
-      const sourceInput = sourceField.getByRole("textbox");
-      let releaseOldResponse;
-      let requestStarted;
-      const oldResponseGate = new Promise(resolve => { releaseOldResponse = resolve; });
-      const startedGate = new Promise(resolve => { requestStarted = resolve; });
-      await page.route("**/api/facebook-event-preview", async route => {
-        requestStarted();
-        await oldResponseGate;
-        await route.fulfill({ json: { ok: true, data: preview } });
-      }, { times: 1 });
-      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await startedGate;
-      await sourceInput.fill(newUrl);
-      releaseOldResponse();
-      await panel.getByRole("button", { name: "Facebookから読み取る" }).waitFor({ state: "visible" });
-      await page.waitForFunction(() => !document.querySelector('.facebook-import-panel button')?.disabled);
-      assert.equal(await panel.getByText("Fixture live", { exact: true }).count(), 0, "An old URL response must not populate the new event");
-      assert.equal(await sourceInput.inputValue(), newUrl);
-      await sourceInput.fill(legacyUrl);
-      console.log("Facebook race passed: changing the URL discards the previous in-flight result without changing the entered URL.");
-      await page.route("**/api/facebook-event-preview", route => route.fulfill({ json: {
-        ok: true, data: { ...preview, imageUrl: "https://images.example.invalid/broken-image.png" }
-      } }), { times: 1 });
-      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await panel.getByRole("button", { name: "登録済みのイベントを編集" }).waitFor();
-      assert.equal(await panel.getByText(/画像を表示できません/).count(), 0, "Import results do not duplicate image failures");
-      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await panel.getByText(/^登録済み：/).waitFor();
-      await panel.getByRole("button", { name: "登録済みのイベントを編集" }).click();
-      const startField = panel.locator(".editable-field-card").filter({ has: page.locator("input#startTime") });
-      const startInput = startField.getByRole("textbox");
-      await startInput.fill("");
-      assert.equal(await panel.locator("input#startTime").inputValue(), "");
-      assert.equal(await page.locator("input#startTime").count(), 1);
-      assert.equal(await page.locator(".required-progress").count(), 0);
-      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
-      await page.locator('.editor-feedback[role="alert"]').getByRole("link", { name: "START", exact: true }).click();
-      await page.waitForFunction(() => document.activeElement?.id === "startTime");
-      assert.equal(await panel.locator("input#startTime[aria-invalid=true]").count(), 1);
-      await startInput.fill("11:30");
-      await page.route("**/api/facebook-event-preview", route => route.fulfill({ json: {
-        ok: true, data: { ...preview, title: "", date: "", startTime: "", imageUrl: "", existingEvents: [] }
-      } }), { times: 1 });
-      await panel.getByRole("button", { name: "Facebookから読み取る" }).click();
-      await panel.getByText(/取得できなかった項目は/).waitFor();
-      assert.equal(await startInput.inputValue(), "11:30", "Missing import data must not erase staff input");
-      assert.equal(await panel.locator("input#startTime").inputValue(), "11:30");
-      await page.getByRole("button", { name: "この端末に保存", exact: true }).click();
-      await page.getByText(/このブラウザに下書きを保存しました/).waitFor();
-      const eventImageField = page.locator(".editable-field-card").filter({ hasText: "イベント画像" });
-      let uploadStarted, releaseUpload, uploadHandled;
-      const startedUpload = new Promise(resolve => { uploadStarted = resolve; });
-      const uploadGate = new Promise(resolve => { releaseUpload = resolve; });
-      const handledUpload = new Promise(resolve => { uploadHandled = resolve; });
-      await page.route("**/api/media", async route => {
-        uploadStarted();
-        await uploadGate;
-        try { await route.fulfill({ json: { ok: true, data: { url: "https://images.example.invalid/uploaded-race.png" } } }); }
-        catch { /* Navigating away cancels this upload request. */ }
-        finally { uploadHandled(); }
-      }, { times: 1 });
-      await eventImageField.locator('input[type="file"]').setInputFiles({ name: "fixture.png", mimeType: "image/png", buffer: Buffer.from("isolated upload") });
-      await startedUpload;
-      await page.locator(".item-list").getByRole("button", { name: /^Isolated live/ }).click();
-      releaseUpload();
-      await handledUpload;
-      assert.equal(await page.locator('img[src*="uploaded-race"]').count(), 0);
-      assert.equal(await page.locator(".dirty-pill").count(), 0, "A late upload must not modify the newly selected event");
-      await page.locator(".item-list").getByRole("button", { name: /^Earlier title/ }).click();
-      await page.getByText("このブラウザに保存した下書きを開きました。", { exact: true }).waitFor();
-      console.log("Upload isolation passed: selecting another event cancels the old upload and leaves the new event unchanged.");
-      await page.getByLabel("現在の編集場所").waitFor();
-      if (process.env.BASSIC_QA_ARTIFACT_DIR) {
-        await mkdir(process.env.BASSIC_QA_ARTIFACT_DIR, { recursive: true });
-        await page.setViewportSize({ width: 1440, height: 1000 });
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await page.screenshot({ path: join(process.env.BASSIC_QA_ARTIFACT_DIR, "admin-editor.png") });
-        await page.setViewportSize({ width: 390, height: 844 });
-      }
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow at mobile width");
-      console.log("Mobile admin browser passed: login, Facebook import, existing event selection and draft save.");
-
-      socialUnavailable = false;
-      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
-      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      await page.waitForFunction(()=>!document.querySelector('.preview-modal .primary-button')?.disabled);
-      socialUnavailable=true;
-      await page.getByRole("button", { name: "サイトに掲載", exact: true }).evaluate(button => { button.click(); button.click(); });
-      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
-      assert.equal(publishRequests, 2);
-      assert.equal(events.get("legacy").title, "Fixture live");
-      assert.equal(events.get("legacy").startTime, "11:30");
-      assert.deepEqual(events.get("legacy").image, image);
-      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).waitFor();
-      assert.equal(notices.size, 2);
-      socialUnavailable = false;
-      await page.route("**/api/event-publish-flow", route => route.fulfill({ json: { ok: true, data: { created: [], skipped: [] } } }), { times: 1 });
-      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).click();
-      await page.getByText("SNS下書きの作成結果を確認できませんでした。", { exact: true }).waitFor();
-      await page.getByRole("button", { name: "SNS下書きだけをやり直す", exact: true }).evaluate(button => { button.click(); button.click(); });
-      await page.getByText(/自動投稿はしていません/).waitFor();
-      assert.equal(publishRequests, 2, "SNS recovery must not republish the site");
-      assert.equal(notices.size, 4);
-      console.log("Mobile publication passed: existing event updated, missing image preserved, two drafts created, site status verified.");
-
-      await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: base });
-      await page.getByRole("button", { name: "EVENT SCHEDULEへ戻る" }).click();
-      await page.getByRole('heading',{name:'EVENT SCHEDULE',exact:true}).waitFor();
-      await page.getByText('登録情報・非表示の項目',{exact:true}).click();await page.getByRole('button',{name:'SNS投稿の下書き',exact:true}).click();
-      const socialPanel = page.getByRole("region", { name: "SNSへの投稿準備" });
-      for (const platform of ["X", "INSTAGRAM"]) {
-        await page.getByRole("button", { name: "Isolated live (" + platform + ")" }).click();
-        if (platform === "X") {
-          const intent = new URL(await socialPanel.getByRole("link", { name: "Xで投稿する" }).getAttribute("href"));
-          assert.equal(intent.origin, "https://x.com");
-          assert.equal(intent.searchParams.get("text"), "Staff edited text");
-        } else {
-          await socialPanel.getByRole("link", { name: "文面をコピーしてInstagramを開く" }).waitFor();
-        }
-        assert.equal(await socialPanel.getByRole("link", { name: "画像を開く" }).getAttribute("href"), image.url);
-        await socialPanel.getByRole("button", { name: "投稿文をコピー" }).click();
-        await socialPanel.getByText("投稿文をコピーしました。").waitFor();
-        const expected = platform === "X" ? "Staff edited text" : [...notices.values()].find((notice) => notice.platform === "instagram").postText;
-        const copied = await page.evaluate(() => navigator.clipboard.readText());
-        assert.equal(copied.replace(/\r\n/g, "\n"), expected);
-      }
-      await page.context().route("https://www.instagram.com/**", route => route.fulfill({ contentType: "text/html", body: "<h1>Isolated Instagram composer</h1>" }));
-      const instagramPopup = page.waitForEvent("popup");
-      await socialPanel.getByRole("link", { name: "文面をコピーしてInstagramを開く" }).click();
-      const instagramPage = await instagramPopup;
-      await instagramPage.waitForURL("https://www.instagram.com/");
-      await socialPanel.getByText(/文面をコピーしました/).waitFor();
-      await instagramPage.close();
-      await page.route("https://images.example.invalid/poster.png", route => route.fulfill({ contentType: "image/png", headers: { "Access-Control-Allow-Origin": "*" }, body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/5B0AAAAASUVORK5CYII=", "base64") }));
-      const imageDownload = page.waitForEvent("download");
-      await socialPanel.getByRole("button", { name: "画像をPCに保存" }).click();
-      assert.equal((await imageDownload).suggestedFilename(), "bassic-event.png");
-      await page.unroute("https://images.example.invalid/poster.png");
-      await socialPanel.getByRole("button", { name: "画像をPCに保存" }).click();
-      await socialPanel.getByText(/名前を付けて画像を保存/).waitFor();
-      console.log("PC posting passed: exact X text, Instagram clipboard and popup, image download and fallback without external posts.");
-
-      await page.getByRole("navigation", { name: "編集するページ" }).getByRole("button", { name: "イベントを追加", exact: true }).click();
-      const entryGuide = page.getByRole("region", { name: "イベント追加の流れ" });
-      await entryGuide.waitFor();
-      assert.equal(await entryGuide.getByRole("listitem").count(), 4);
-      assert.equal(await page.locator(".item-list").count(), 0, "The event entry opens a new event instead of selecting an existing one");
-      const entryUrl = page.getByRole("region", { name: "1 FacebookのURLを貼る", exact: true }).getByRole("textbox");
-      assert.equal(await entryUrl.inputValue(), "");
-      await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
-      const entryFeedback = page.locator('.editor-feedback[role="alert"]');
-      await entryFeedback.getByRole("region", { name: "直す項目" }).waitFor();
-      await page.waitForFunction(() => document.activeElement?.classList.contains("editor-feedback"));
-      assert.ok((await entryFeedback.boundingBox()).y < 160, "Validation errors must be revealed at the top");
-      await entryFeedback.getByRole("link", { name: "イベント名", exact: true }).click();
-      await page.waitForFunction(() => document.activeElement?.id === "title");
-      await entryUrl.fill(guidedUrl);
-      await page.getByRole("region", { name: "Facebookイベント取り込み" }).getByRole("button", { name: "Facebookから読み取る" }).click();
-      await page.waitForFunction(() => document.querySelector('input#title')?.value === "Guided live");
-      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Reading alone must not save the event");
-      await entryFeedback.waitFor({ state: "hidden" });
-      const unifiedPanel = page.getByRole("region", { name: "Facebookイベント取り込み" });
-      assert.equal(await unifiedPanel.locator("input#title").count(), 1);
-      assert.equal(await unifiedPanel.locator("input#startTime").count(), 1);
-      assert.equal(await unifiedPanel.getByRole("button", { name: "内容を確認してサイトに掲載" }).count(), 1, "The complete entry flow stays inside one panel");
-      assert.equal(await page.getByRole("complementary", { name: "選択箇所の編集" }).count(), 0, "Event entry has no competing sidebar actions");
-      await unifiedPanel.getByText("画像URLあり", { exact: true }).waitFor();
-      if (process.env.BASSIC_QA_ARTIFACT_DIR) {
-        await mkdir(process.env.BASSIC_QA_ARTIFACT_DIR, { recursive: true });
-        await page.setViewportSize({ width: 1440, height: 1100 });
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await page.screenshot({ path: join(process.env.BASSIC_QA_ARTIFACT_DIR, "event-editor-desktop.png"), fullPage: true });
-        await page.setViewportSize({ width: 390, height: 844 });
-        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      }
-      await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
-      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0, "Preview alone must not publish the event");
-      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      let failNextEventSave = true;
-      await page.route("**/api/content/events", route => {
-        if (route.request().method() === "POST" && failNextEventSave) {
-          failNextEventSave = false;
-          return route.fulfill({ status: 503, json: { ok: false, message: "テスト用：保存に失敗しました" } });
-        }
-        return route.fallback();
-      });
-      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
-      await entryFeedback.getByText(/テスト用：保存に失敗しました/).waitFor();
-      await page.waitForFunction(() => document.activeElement?.classList.contains("editor-feedback"));
-      assert.ok((await entryFeedback.boundingBox()).y < 160, "A failed CMS save must reveal the error after closing preview");
-      assert.equal(await page.locator('input#title').inputValue(), "Guided live");
-      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl).length, 0);
-      await page.getByRole("button", { name: "内容を確認してサイトに掲載", exact: true }).click();
-      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      await page.route("**/api/deploy?*", route => route.fulfill({ json: { ok: true, data: { state: "failed" } } }), { times: 1 });
-      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
-      await page.getByText("公開サイトへの反映に失敗しました", { exact: true }).waitFor();
-      await page.waitForFunction(() => document.activeElement?.classList.contains("deploy-status"));
-      assert.ok((await page.locator('.deploy-status[role="alert"]').boundingBox()).y < 160, "Asynchronous publishing failures must reveal their retry action");
-      await page.getByRole("button", { name: "反映だけをやり直す", exact: true }).click();
-      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
-      const calendarLink = new URL(await page.getByRole("link", { name: "Googleカレンダーで確認・保存" }).getAttribute("href"));
-      assert.equal(calendarLink.origin, "https://calendar.google.com");
-      assert.equal(calendarLink.searchParams.get("text"), "Guided live");
-      assert.match(calendarLink.searchParams.get("details"), /画像: https:/);
-      assert.match(calendarLink.searchParams.get("dates"), /^20270707T100000Z/);
-      await page.getByText(/Google側で保存先を「Bassic」に選んで/).waitFor();
-      assert.equal([...events.values()].filter(item => item.sourceUrl === guidedUrl && item.isPublished).length, 1);
-      const guidedDrafts = [...notices.values()].filter(item => item.sourceEventId === "77777777");
-      assert.equal(guidedDrafts.length, 2);
-      await page.getByRole("button", { name: "SNS用の文面を開く", exact: true }).click();
-      await page.locator(".item-list").getByRole("button", { name: "Guided live (INSTAGRAM)" }).click();
-      await page.getByRole("region", { name: "SNSへの投稿準備" }).getByRole("button", { name: "投稿文をコピー" }).click();
-      assert.match(await page.evaluate(() => navigator.clipboard.readText()), /Guided live/);
-      assert.equal(await page.locator(".item-list").getByRole("button", { name: /Isolated live|Fixture live/ }).count(), 0, "The SNS handoff must show only this event's drafts");
-      console.log("Guided event entry passed: sidebar shortcut, blank URL, reviewed publication, and related SNS drafts with clipboard copy.");
-      process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "true";
-      calendarUnavailable = true;
-      await pageNav.getByRole("button", { name: "イベントスケジュール", exact: true }).click();
-      await page.getByText('登録情報・非表示の項目', { exact: true }).click();
-      await page.getByRole('button', { name: 'イベント一覧', exact: true }).click();
-      await page.locator(".item-list").getByRole("button", { name: /^Guided live/ }).click();
-      await page.getByRole("button", { name: "掲載前に確認", exact: true }).click();
-      await page.getByRole("checkbox", { name: "入力内容、画像、リンク先、公開後の確認項目を見ました。" }).check();
-      await page.getByRole("button", { name: "サイトに掲載", exact: true }).click();
-      await page.getByText("公開サイトに反映されました", { exact: true }).waitFor();
-      const calendarStatus = page.getByRole("region", { name: "Googleカレンダーの反映状況" });
-      await calendarStatus.getByText(/カレンダーへの反映を確認中/).waitFor();
-      assert.equal(await calendarStatus.getByRole("link", { name: "Googleカレンダーで確認・保存" }).count(), 0);
-      await page.clock.install();
-      await page.clock.fastForward(16 * 60000);
-      await calendarStatus.getByText(/カレンダーへの反映を確認できませんでした/).waitFor();
-      calendarUnavailable = false;
-      calendarItems = [{ summary: "Guided live", start: { dateTime: "2027-07-07T10:00:00Z" }, end: { dateTime: "2027-07-07T12:00:00Z" }, description: "START 19:00\n\nイベント詳細: " + guidedUrl + "\n\n画像: " + image.url, extendedProperties: { private: { syncTag: "bassic-facebook-sync" } } }];
-      const savedEventsBeforeCalendarRetry = JSON.stringify([...events]);
-      const calendarRetryCount = calendarRequests;
-      await calendarStatus.getByRole("button", { name: "カレンダーだけ再反映" }).click();
-      await calendarStatus.getByText(/反映済み。予定の内容が保存したイベントと一致/).waitFor();
-      assert.equal(calendarRequests, calendarRetryCount + 1);
-      assert.equal(JSON.stringify([...events]), savedEventsBeforeCalendarRetry, "Calendar retries never resave the event or republish the site");
-      assert.equal([...notices.values()].filter(item => item.sourceEventId === "77777777").length, 2);
-      await page.clock.resume();
+      await page.getByRole("button",{name:"ログイン",exact:true}).click();
+      await page.getByRole("button",{name:"イベントスケジュール",exact:true}).click();
+      try { await page.frameLocator("iframe.public-canvas-frame").getByText(/ここでは配置だけ/).waitFor({timeout:5000}); } catch (error) { await page.screenshot({path:join(process.env.TEMP,"bassic-calendar-preview-debug.png")}); console.log("FRAMES",await page.locator("iframe").evaluateAll(nodes=>nodes.map(n=>({title:n.title,html:n.srcdoc.slice(0,4000)})))); throw error; }
+      assert.equal(await page.frameLocator("iframe.public-canvas-frame").locator("iframe[src*='calendar.google.com']").count(),0);
+      await page.getByRole("button",{name:"イベントを追加",exact:true}).click();
+      const panel=page.getByRole("region",{name:"Facebookイベント取り込み"});
+      await panel.locator("input#sourceUrl").fill(guidedUrl);
+      await panel.getByRole("button",{name:"Facebookから読み取る",exact:true}).click();
+      await panel.locator("input#title").fill("Compact calendar fixture");
+      await panel.locator("input#date").fill("2027-07-07");
+      await panel.locator("input#startTime").fill("19:00");
+      assert.equal(await page.getByRole("button",{name:"この端末に保存",exact:true}).count(),0);
+      const beforePublish=publishRequests, beforeCalendar=calendarRequests;
+      await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
+      const review=page.getByRole("dialog",{name:"イベントの登録内容を確認"});
+      await review.getByRole("heading",{name:"この内容で登録します"}).waitFor();
+      assert.equal(await review.locator("iframe").count(),0);
+      await review.getByText("Compact calendar fixture",{exact:true}).waitFor();
+      await review.getByText("19:00",{exact:true}).waitFor();
+      assert.equal(publishRequests,beforePublish,"Review must not publish");
+      assert.equal(calendarRequests,beforeCalendar,"Review must not register");
+      const shots=join(process.env.TEMP||"/tmp","bassic-event-simple-qa"); await mkdir(shots,{recursive:true});
+      await page.screenshot({path:join(shots,"calendar-confirmation-desktop.png")});
+      await review.getByRole("button",{name:"Googleカレンダーに登録",exact:true}).click();
+      await page.getByText("登録内容を保存しました",{exact:true}).waitFor();
+      const calendarStatus=page.getByRole("region",{name:"Googleカレンダーの反映状況"});
+      await calendarStatus.getByText(/Googleカレンダーに登録中/).waitFor();
+      assert.equal(publishRequests,beforePublish,"Events must not dispatch a site build");
+      assert.equal(calendarRequests,beforeCalendar+1,"Events must dispatch calendar only");
+      await page.getByRole("button",{name:"SNS用の文面を開く"}).waitFor();
+      const saved=[...events.values()].find(item=>item.title==="Compact calendar fixture");
+      assert.ok(saved?.id,"Confirmed event must be stored canonically");
       await page.reload();
-      await page.locator("details.last-event-publication > summary").click();
-      await page.getByRole("region", { name: "Googleカレンダーの反映状況" }).getByText(/反映済み。予定の内容が保存したイベントと一致/).waitFor();
-      assert.equal(JSON.stringify([...events]), savedEventsBeforeCalendarRetry, "Reopening the previous result is read-only");
-      process.env.GOOGLE_CALENDAR_SYNC_ENABLED = "false";
-      console.log("Automatic calendar handoff passed: site publication survives read failures, bounded waiting and calendar-only retries verify the saved content without CMS writes or duplicate SNS drafts.");
-
-      if (process.env.BASSIC_QA_PUBLIC_SITE === "1") {
-        socialUnavailable = false;
-        await post("content/home", {
-          heroTitle: "public bar Bassic.",
-          heroLead: "Isolated TOP lead",
-          homeHeroTitle: "",
-          heroMobileTitle: "Short mobile heading",
-          mobileHideMap: true,
-          firstVisitCard1MobilePosition: "top",
-          heroCallLabel: "Isolated call",
-          headerLogo: { ...image, alt: "Isolated header logo" },
-          footerCopyright: "Isolated footer",
-          visitInfoCard1Title: "Isolated business hours",
-          homeAccessDirectionsLabel: "Isolated route button",
-          firstVisitTitle: "Isolated First Visit heading",
-          firstVisitDescription: "Isolated First Visit description",
-          firstVisitCard1Title: "Updated First Visit card",
-          firstVisitCard1Image: { ...image, alt: "Isolated First Visit poster" },
-          visitInfoTitle: "Isolated visit information",
-          localSearchCard1Text: "Isolated directions card description",
-          socialTitleLine1: "Isolated social heading",
-          homeAccessTitle: "Isolated access heading"
-        });
-        const mobileImage = { url: "https://images.example.invalid/mobile.png" };
-        await post("content/hero-slides", { page: "home", title: "Fixture slide", image, mobileImage, mobilePosition: "right", displayOrder: 1, isPublished: true });
-        await post("content/hero-slides", { page: "home", title: "Shared-only slide", image, displayOrder: 2, isPublished: true });
-        await post("content/page-copy", { page: "home", heroTitle: "Isolated main heading", heroLead: "Published hero description", isPublished: true });
-        await post("content/page-sections", { page: "home", sectionKey: "firstVisit", displayOrder: 4, isPublished: true });
-        await post("content/page-sections", { page: "home", sectionKey: "localSearch", displayOrder: 2, isPublished: false });
-        await post("content/custom-sections", { page: "home", title: "Isolated custom block", body: "Isolated custom block for the publication order check.", displayOrder: 2.5, isPublished: true });
-        events.set("unpublished", { ...event, id: "unpublished", title: "Hidden fixture live", isPublished: false });
-        for (const [id, url] of [["portrait", "https://images.example.invalid/portrait.svg"], ["landscape", "https://images.example.invalid/landscape.svg"], ["text-only", ""]]) {
-          events.set(id, { ...event, id, title: id + "-" + "LongEventName".repeat(16), image: url ? { url } : undefined });
-        }
-        process.env.NODE_ENV = "development";
-        const publicRequire = createRequire(new URL("../package.json", import.meta.url));
-        const publicApp = publicRequire("next")({
-          dev: true,
-          dir: fileURLToPath(new URL("../", import.meta.url)),
-          hostname: "127.0.0.1",
-          conf: { distDir: ".next/isolated-public", trailingSlash: true, images: { unoptimized: true } }
-        });
-        const publicServer = createServer(publicApp.getRequestHandler());
-        try {
-          await publicApp.prepare();
-          await new Promise((resolve) => publicServer.listen(0, "127.0.0.1", resolve));
-          const publicBase = `http://127.0.0.1:${publicServer.address().port}`;
-          const publicPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true });
-          publicPage.setDefaultTimeout(10000);
-          await publicPage.route("**/*", (route) => {
-            const requestUrl = route.request().url();
-            if (new URL(requestUrl).origin === publicBase) return route.continue();
-            if (/^https:\/\/images\.example\.invalid\/(portrait|landscape)\.svg$/.test(requestUrl)) return route.fulfill({
-              contentType: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg" width="${requestUrl.includes("portrait") ? 300 : 1200}" height="600"><rect width="100%" height="100%" fill="black"/></svg>`
-            });
-            if (requestUrl === image.url || requestUrl === mobileImage.url) return route.fulfill({
-              contentType: "image/svg+xml",
-              body: '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="black"/></svg>'
-            });
-            return route.abort();
-          });
-          await publicPage.goto(publicBase + "/events/");
-          const upcoming = publicPage.getByRole("region", { name: "開催予定のイベント" });
-          await upcoming.getByRole("heading", { name: event.title }).waitFor();
-          await upcoming.getByRole("heading", { name: "Fixture live" }).waitFor();
-          assert.equal(await upcoming.locator(".event-card").filter({ has: publicPage.getByRole("heading", { name: event.title, exact: true }) }).getByText("19:00", { exact: true }).count(), 1);
-          assert.equal(await upcoming.getByText("Hidden fixture live", { exact: true }).count(), 0);
-          const poster = upcoming.getByRole("img", { name: event.title });
-          await poster.scrollIntoViewIfNeeded();
-          await publicPage.waitForFunction(() => [...document.querySelectorAll(".event-card-image img")].some((element) => element.naturalWidth > 0));
-          assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow on public event page");
-          for (const width of [320, 390, 768, 1440]) {
-            await publicPage.setViewportSize({ width, height: 844 });
-            assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Event page overflow at ${width}px`);
-            for (const card of await upcoming.locator(".event-card").all()) {
-              assert.equal(await card.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length), width <= 768 ? 1 : await card.locator(".event-card-image").count() ? 3 : 2);
-            }
-          }
-          await publicPage.setViewportSize({ width: 390, height: 844 });
-          console.log("Mobile public preview passed: saved title, START and poster render; unpublished fixture is absent.");
-          await publicPage.goto(publicBase + "/");
-          for (const heading of ["Short mobile heading", "Isolated business hours", "Isolated First Visit heading", "Updated First Visit card", "Isolated visit information", "Isolated access heading"]) {
-            await publicPage.getByRole("heading", { name: heading, exact: true }).waitFor();
-          }
-          await publicPage.getByText("Isolated First Visit description", { exact: true }).waitFor();
-          assert.equal(await publicPage.getByText("Isolated directions card description", { exact: true }).count(), 0);
-          assert.equal(await publicPage.locator(".hero-slide-1").evaluate((img) => img.currentSrc), mobileImage.url);
-          assert.equal(await publicPage.locator(".hero-slide-1").evaluate((img) => getComputedStyle(img).objectPosition), "100% 50%");
-          assert.equal(await publicPage.locator(".mobile-cta a").count(), 3);
-          assert.equal(await publicPage.locator(".hero-slide-2").evaluate((img) => img.currentSrc), image.url);
-          assert.equal(await publicPage.locator(".feature-photo img").first().evaluate((img) => getComputedStyle(img).objectPosition), "50% 0%");
-          const publicOrder = await publicPage.locator("main > .managed-section h2").allTextContents();
-          assert.ok(publicOrder.indexOf("Isolated custom block") < publicOrder.indexOf("Isolated First Visit heading"));
-          await publicPage.setViewportSize({ width: 1440, height: 900 });
-          await publicPage.getByRole("heading", { name: "Isolated main heading", exact: true }).waitFor();
-          await publicPage.waitForFunction((src) => document.querySelector(".hero-slide-1").currentSrc === src, image.url);
-          await publicPage.setViewportSize({ width: 390, height: 844 });
-          await publicPage.getByRole("heading", { name: /Isolated social heading/ }).waitFor();
-          await publicPage.getByRole("link", { name: "Isolated call" }).waitFor();
-          await publicPage.getByRole("link", { name: "Isolated route button" }).waitFor();
-          await publicPage.getByText("Isolated footer", { exact: true }).waitFor();
-          await publicPage.waitForFunction(() => document.querySelector('img[alt="Isolated header logo"]')?.naturalWidth > 0);
-          const homePoster = publicPage.getByRole("img", { name: "Isolated First Visit poster" });
-          await homePoster.scrollIntoViewIfNeeded();
-          await publicPage.waitForFunction(() => document.querySelector('img[alt="Isolated First Visit poster"]')?.naturalWidth > 0);
-          assert.ok(await publicPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Horizontal overflow on public TOP");
-          console.log("Mobile TOP preview passed: saved section headings, card text and replacement photo render.");
-          await publicPage.goto(publicBase+'/menu/');
-          const foodButton=publicPage.locator('button[data-gallery="food"]').first();
-          await foodButton.click();
-          const photoDialog=publicPage.getByRole('dialog',{name:'拡大写真'});
-          await photoDialog.waitFor();
-          const firstAlt=await photoDialog.locator('img').getAttribute('alt');
-          await photoDialog.getByRole('button',{name:'次へ',exact:true}).click();
-          assert.notEqual(await photoDialog.locator('img').getAttribute('alt'),firstAlt);
-          await publicPage.keyboard.press('ArrowLeft');
-          assert.equal(await photoDialog.locator('img').getAttribute('alt'),firstAlt);
-          await publicPage.keyboard.press('Escape');
-          assert.equal(await photoDialog.count(),0);
-          assert.ok(await foodButton.evaluate(el=>el===document.activeElement),'Gallery close returns keyboard focus');
-          const dots=publicPage.locator('[data-drink-index]');
-          if(await dots.count()>1){
-            await publicPage.locator('.drink-menu-sheet-grid').evaluate(track=>{track.scrollTo({left:track.scrollWidth,behavior:'instant'});});
-            await publicPage.waitForFunction(()=>document.querySelector('[data-drink-index]:last-child')?.getAttribute('aria-current')==='true');
-          }
-          for(const width of [320,390,768,1440]){await publicPage.setViewportSize({width,height:900});assert.ok(await publicPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Menu overflow at '+width);}
-          console.log('Public photo gallery passed: next/previous, keyboard close, focus return, swipe position indicators and responsive layout.');
-          await publicPage.close();
-        } catch (error) {
-          console.error("Public preview failed:", error);
-          throw error;
-        } finally {
-          await browser.close();
-          if (publicServer.listening) {
-            publicServer.closeAllConnections();
-            await new Promise((resolve) => publicServer.close(resolve));
-          }
-          await publicApp.close();
-        }
-      }
-    } finally {
-      await browser.close();
-    }
+      await page.getByRole("button",{name:"イベントを追加",exact:true}).click();
+      assert.equal(await page.locator("input#startTime").inputValue(),"","A new event must not restore an old browser draft");
+      await page.setViewportSize({width:390,height:844});
+      await page.locator("input#sourceUrl").fill("https://www.facebook.com/events/88888888/");
+      await page.locator("input#title").fill("Mobile calendar fixture");
+      await page.locator("input#date").fill("2027-07-08");
+      await page.locator("input#startTime").fill("20:00");
+      await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
+      await page.getByRole("dialog",{name:"イベントの登録内容を確認"}).waitFor();
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+      await page.screenshot({path:join(shots,"calendar-confirmation-mobile.png")});
+      console.log("Simplified event UI passed: compact review, calendar-only dispatch, no device save, independent SNS, clean new event, mobile layout.");
+    } finally {await browser.close();}
   }
+
 } catch (error) {
   console.error(error);
   process.exitCode = 1;

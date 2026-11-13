@@ -2,107 +2,21 @@ import { visualMetadata } from '@public/lib/visual-metadata';
 import { editablePage } from '@public/lib/editable-page';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CustomSectionBlock, EventList, PageHero } from "@public/components/content";
+import { CustomSectionBlock, PageHero } from "@public/components/content";
 import { EventCalendarSection } from "@public/components/event-calendar";
 import { PageShell } from "@public/components/site-shell";
 import { editableMedia, resolveHeroSlides } from "@public/lib/editable-content";
 import { getCmsContents } from "@public/lib/microcms";
 import { pageHeroes } from "@public/lib/page-content";
 import { buildMetadata } from "@public/lib/seo";
-import { absoluteUrl, site } from "@public/lib/site";
-import type { SiteSettings } from "@public/lib/types";
 
 const defaultMetadata: Metadata = {
   ...buildMetadata("events")
 };
 export function generateMetadata(){return visualMetadata(defaultMetadata,'/events/');}
 
-function extractTime(value?: string) {
-  const match = value?.match(/(\d{1,2})\s*(?::|：|時)?\s*(\d{2})?/);
-  return match ? `${match[1].padStart(2, "0")}:${(match[2] || "00").padStart(2, "0")}` : "";
-}
-
-function addHours(date: string, time: string, hours: number) {
-  const next = new Date(`${date}T${time}:00+09:00`);
-  next.setHours(next.getHours() + hours);
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  })
-    .format(next)
-    .replace(" ", "T");
-}
-
-function resolveEndDate(date: string, startTime: string, endTime?: string) {
-  const parsedEndTime = extractTime(endTime);
-  if (!parsedEndTime) {
-    return `${addHours(date, startTime, 2)}+09:00`;
-  }
-
-  const start = new Date(`${date}T${startTime}:00+09:00`);
-  const end = new Date(`${date}T${parsedEndTime}:00+09:00`);
-  if (end <= start) {
-    end.setDate(end.getDate() + 1);
-  }
-
-  return `${new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  })
-    .format(end)
-    .replace(" ", "T")}+09:00`;
-}
-
-function EventsJsonLd({ events, settings }: { events: Awaited<ReturnType<typeof getCmsContents>>["events"]; settings: SiteSettings }) {
-  const data = events.slice(0, 8).map((event) => {
-    const startTime = extractTime(event.startTime) || extractTime(event.openTime) || "20:00";
-
-    return {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      name: event.title,
-      startDate: `${event.date}T${startTime}:00+09:00`,
-      endDate: resolveEndDate(event.date, startTime, event.endTime),
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      location: {
-        "@type": "Place",
-        name: site.name,
-        address: settings.address
-      },
-      image: [event.image?.url ? (event.image.url.startsWith("/") ? absoluteUrl(event.image.url) : event.image.url) : absoluteUrl("/ogp.png")],
-      description: [event.performers, event.price, event.reservation].filter(Boolean).join(" / "),
-      url: event.sourceUrl || absoluteUrl("/events/"),
-      organizer: {
-        "@type": "Organization",
-        name: site.name,
-        url: site.siteUrl
-      }
-    };
-  });
-
-  if (!data.length) {
-    return null;
-  }
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
-}
-
 export default async function EventsPage() {
   const contents = await getCmsContents();
-  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", dateStyle: "short" }).format(new Date());
-  const upcomingEvents = contents.events.filter((event) => event.date.slice(0, 10) >= today);
   const copy = contents.pageCopy.events;
   const pageSections = contents.pageSections.events;
   const sectionOrder = (key: string, fallback: number) => pageSections.find((section) => section.sectionKey === key)?.displayOrder ?? fallback;
@@ -125,21 +39,6 @@ export default async function EventsPage() {
           )
         }
       : null,
-    visibleSections.has("event-list") && upcomingEvents.length > 0
-      ? {
-          key: "event-list",
-          order: sectionOrder("event-list", 2),
-          node: (
-            <section className="section" aria-labelledby="upcoming-events-heading">
-              <div className="section-heading narrow-copy">
-                <p className="eyebrow">Upcoming Events</p>
-                <h2 id="upcoming-events-heading">開催予定のイベント</h2>
-              </div>
-              <EventList events={upcomingEvents} includePoster={false} />
-            </section>
-          )
-        }
-      : null,
     visibleSections.has("calendar") ? { key: "calendar", order: sectionOrder("calendar", 3), node: <EventCalendarSection note={copy.calendarNote} /> } : null,
     ...contents.customSections.events.map((section) => ({
       key: `custom-${section.id || section.title}`,
@@ -151,7 +50,6 @@ export default async function EventsPage() {
 
   return editablePage('/events/', (
     <PageShell settings={contents.siteSettings}>
-      <EventsJsonLd events={visibleSections.has("event-list") ? upcomingEvents : []} settings={contents.siteSettings} />
       <main>
         {managedSections.sort((a, b) => a.order - b.order).map((section) => (
           <div className="managed-section" data-public-section={section.key} key={section.key}>

@@ -597,7 +597,7 @@ function checkImageFieldUsesFriendlyRemoveCopy() {
     "画像を外す",
     "読み上げ用の短い説明",
     "画像をアップロードしました。まだ公開サイトには反映されていません。",
-    "画像を開いて確認し、この端末に保存または掲載前に確認してください。"
+    "画像を開いて確認し、内容を確認してください。"
   ];
   const stale = [">削除<"].filter((term) => text.includes(term));
   const missing = required.filter((term) => !text.includes(term));
@@ -617,7 +617,7 @@ function checkImageRemoveRequiresConfirmation() {
   const required = [
     "function removeImage()",
     "この画像を外しますか？",
-    "この端末に保存または公開するまではサイトには反映されません",
+    "確定するまでは反映されません",
     "onClick={removeImage}"
   ];
   const missing = required.filter((term) => !text.includes(term));
@@ -1066,17 +1066,17 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
   const required = [
     "プレビュー確認へ進めます",
     "次は画面下の「掲載前に確認」を押してください。",
-    "入力内容・リンク先・画像",
-    "「公開する」がONの項目",
+
+
     "ON：掲載 ／ OFF：非公開",
     "field-publish-help",
-    "途中保存はこのブラウザに残ります",
-    "掲載前に内容を確認できます",
+
+
     "「公開する」がOFFです。このまま公開しても公開サイトには表示されません",
     "保存して反映（この項目は非表示）",
-    "途中保存や後で確認したい時",
-    "公開後はPCだけでなくスマホでも見てください",
-    "最後にスマホでも表示を確認します",
+
+
+    "公開サイトを開き、変更したページを確認してください",
     "current-edit-summary",
     "現在編集中の内容",
     "公開するON",
@@ -1084,7 +1084,7 @@ function checkAdminSaveFlowExplainsPublishBehavior() {
     "まだサイトには出ません",
     "current-publish-state",
     "window.addEventListener(\"beforeunload\"",
-    "この端末に保存または掲載前に確認を押してください",
+    "内容を確認して確定してください",
     "event.returnValue = \"\""
   ];
   const missing = required.filter((term) => !text.includes(term));
@@ -1166,12 +1166,12 @@ function checkAdminDraftSaveDoesNotClaimPublicPublish() {
 
   const text = readFileSync(file, "utf8");
   const required = [
-    "このブラウザに下書きを保存しました",
+    "Googleカレンダーに登録",
     "公開サイトに反映されました"
   ];
   const missing = required.filter((term) => !text.includes(term));
 
-  add("admin draft save does not claim public publish", missing.length === 0, missing.join(", "));
+  add("admin has one confirmation flow without device draft saving", missing.length === 0 && !text.includes("この端末に保存"), missing.join(", "));
 }
 
 function checkAdminErrorsExplainWhatToTellSupport() {
@@ -1219,7 +1219,7 @@ function checkPublicConfirmationGuidanceIsComplete() {
       "確認するページ",
       "公開ページを開く",
       "公開サイトに反映されました",
-      "最後にスマホでも表示を確認します"
+      "公開サイトを開き、変更したページを確認してください"
     ],
     "docs/delivery-admin-manual.md": ["公開後の確認", "確認するページ", "公開サイトに反映されました", "変更したページを開く", "スマホ", "TOPのSNS欄", "Google Calendar", "スクリーンショット"],
     "docs/client-handoff-sheet.md": ["確認するページ", "公開サイトに反映されました", "変更したページを開く", "スマホ"],

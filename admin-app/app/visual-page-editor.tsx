@@ -117,8 +117,6 @@ export function VisualPageEditor({
     [retry, setRetry] = useState(0),
     [canRetryDeployment, setCanRetryDeployment] = useState(false),
     [themeScope, setThemeScope] = useState<"page" | "shared">("page"),
-    [localSignature, setLocalSignature] = useState(""),
-    [hasLocalDraft, setHasLocalDraft] = useState(false),
     [stylePart, setStylePart] = useState<"self" | "before" | "after">("self"),
     [baseStyleGroup, setBaseStyleGroup] = useState<
       | "baseStyle"
@@ -127,11 +125,6 @@ export function VisualPageEditor({
       | "dialogButtonStyle"
       | "dialogCaptionStyle"
     >("baseStyle");
-  useEffect(() => {
-    try {
-      setHasLocalDraft(!!localStorage.getItem("bassic-visual-draft-v1"));
-    } catch {}
-  }, []);
   const uploadController = useRef<AbortController | null>(null);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -688,51 +681,6 @@ export function VisualPageEditor({
       clearTimeout(timer);
     };
   }, [deploy]);
-  function saveLocal() {
-    setErrorTick((value) => value + 1);
-    try {
-      localStorage.setItem(
-        draftKey,
-        JSON.stringify({
-          settings,
-          baseRevision: baseRevision.current,
-          path,
-          savedAt: new Date().toISOString(),
-        }),
-      );
-      setNotice("この端末に保存済み・未掲載");
-      setLocalSignature(JSON.stringify(settings));
-      setHasLocalDraft(true);
-      setFailure(false);
-    } catch {
-      setFailure(true);
-      setNotice("この端末に保存できませんでした。入力内容は残っています。");
-    }
-  }
-  function restore() {
-    setErrorTick((value) => value + 1);
-    try {
-      const saved = JSON.parse(localStorage.getItem(draftKey) || "null");
-      if (!saved) return;
-      if (
-        saved.baseRevision !== baseRevision.current &&
-        !confirm(
-          "保存後にサイトが更新されています。この端末の下書きを開きますか？",
-        )
-      )
-        return;
-      const restored = parseVisualSettings(saved.settings);
-      change(restored);
-      void refresh(restored).catch((e) => {
-        setFailure(true);
-        setNotice(e.message);
-      });
-      setNotice("端末の下書きを開きました。まだ掲載されていません。");
-    } catch {
-      setFailure(true);
-      setNotice("下書きを読み込めませんでした。");
-    }
-  }
   async function upload(file: File, id: string, mobileImage = false) {
     uploadController.current?.abort();
     const controller = new AbortController();
@@ -856,9 +804,7 @@ export function VisualPageEditor({
   const statusText = deploy
     ? "サイト反映中"
     : dirty
-      ? JSON.stringify(settings) === localSignature
-        ? "この端末に保存済み・未掲載"
-        : "編集中"
+      ? "編集中"
       : settings.revision
         ? reflected
           ? "サイトに反映済み"
@@ -1006,16 +952,6 @@ export function VisualPageEditor({
             <option value="zh-hans">简体中文</option>
           </select>
         </label>
-        {hasLocalDraft ? (
-          <button
-            type="button"
-            className="text-button"
-            disabled={busy || !!deploy}
-            onClick={restore}
-          >
-            端末の下書きを開く
-          </button>
-        ) : null}
       </div>
       <div className="visual-editor-grid">
         <div className="visual-editor-main">
@@ -2271,14 +2207,6 @@ export function VisualPageEditor({
       </div>
       <div className="visual-savebar">
         <span>{statusText}</span>
-        <button
-          type="button"
-          className="secondary-button"
-          disabled={busy || !!deploy}
-          onClick={saveLocal}
-        >
-          この端末に保存
-        </button>
         <button
           type="button"
           className="primary-button"
