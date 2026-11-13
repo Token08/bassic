@@ -3,6 +3,7 @@ import path from "node:path";
 import { google } from "googleapis";
 import { upsertCalendarEvents } from "./calendar-upsert.mjs";
 import { calendarDescription } from "../lib/calendar-event-content.mjs";
+import { decodeEventFromStorage } from "../lib/event-storage.mjs";
 
 const root = process.cwd();
 const inputPath = process.env.GOOGLE_CALENDAR_SYNC_INPUT || path.join(root, "public", "data", "facebook-events.json");
@@ -173,6 +174,7 @@ async function readManagedFacebookEvents() {
 }
 
 function normalizeEvent(event) {
+  event = decodeEventFromStorage(event);
   if (!event || event.sourceType === "google_calendar") {
     return null;
   }

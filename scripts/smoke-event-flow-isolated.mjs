@@ -86,6 +86,10 @@ globalThis.fetch = async (input, init) => {
       return Response.json({ contents: [...collection.values()].slice(offset, offset + limit), totalCount: collection.size });
     }
     const body = init?.body ?? await input.text();
+    const storedPayload = JSON.parse(body);
+    if (endpoint === "events" && ((storedPayload.image !== undefined && storedPayload.image !== null && (typeof storedPayload.image !== "string" || !storedPayload.image.startsWith("https://images.microcms-assets.io/"))) || (storedPayload.date !== undefined && !/^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/.test(storedPayload.date)))) {
+      return Response.json({ message: "Invalid microCMS image or date write format" }, { status: 400 });
+    }
     if (method === "POST") {
       assert.equal(id, undefined);
       const generatedId = `fixture-${endpoint}-${collection.size + 1}`;
@@ -201,6 +205,12 @@ try {
   await post("content/events", { ...event, sourceUrl: legacyUrl }, 409);
   const saved = (await post("content/events", event)).result.data;
   assert.equal(events.get(saved.id)?.sourceUrl, newUrl);
+  assert.equal(events.get(saved.id)?.image,null,"External poster must not be sent to the CMS image field");
+  assert.equal(events.get(saved.id)?.date,"2027-05-05T00:00:00.000Z");
+  const canonical=(await get("content/events")).contents.find(item=>item.id===saved.id);
+  assert.deepEqual(canonical.image,{...image,alt:""});
+  assert.equal(canonical.date,event.date);
+  assert.equal(canonical.sourceType,"");
   await post("content/events", event, 409);
   assert.equal(events.size, 2);
 

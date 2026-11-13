@@ -2,6 +2,7 @@ import { fallbackContents as adminFallbackContents } from "../../lib/fallback-da
 import { defaultMenuItems as adminDefaultMenuItems, drinkMenuSheets as adminDrinkMenuSheets } from "../../lib/menu-data";
 import {equipmentRentalInfo} from "../../lib/page-content";
 import { packSlideTitle, unpackSlideTitle } from "../../lib/responsive-media";
+import { decodeEventFromStorage, encodeEventForStorage } from "../../lib/event-storage.mjs";
 
 export type AdminEndpointType = "object" | "list";
 
@@ -144,6 +145,7 @@ function sanitizeDraft(draft: Record<string, unknown>) {
 
 function compactDraft(endpointId: string, draft: Record<string, unknown>) {
   const sanitized = sanitizeDraft(draft);
+  if (endpointId === "events") return encodeEventForStorage(sanitized);
 
   if (endpointId === "hero-slides") {
     const { mobileImage, mobilePosition, title, ...slide } = sanitized;
@@ -267,6 +269,13 @@ function getFallbackContent(endpointId: string, endpoint: AdminEndpoint) {
   return fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {};
 }
 
+export class ContentStorageError extends Error {
+  constructor(public readonly status: number) {
+    super(status === 400 ? "保存先が入力形式を受け付けませんでした（CMS 400）。" :
+      status === 401 || status === 403 ? "保存先への書き込み権限を確認する必要があります。" : "保存先に接続できませんでした。時間をおいて再度お試しください。");
+  }
+}
+
 async function microCmsFetch(path: string, init: RequestInit = {}) {
   if (init.method && init.method !== "GET" && process.env.VERCEL_ENV === "preview") {
     throw new Error("Preview CMS access is read-only.");
@@ -282,8 +291,8 @@ async function microCmsFetch(path: string, init: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `microCMS request failed: ${response.status}`);
+    console.error("CMS request rejected", { status: response.status, endpoint: path.split("?")[0], method: init.method || "GET" });
+    throw new ContentStorageError(response.status);
   }
 
   if (response.status === 204) {
@@ -310,6 +319,7 @@ export async function getContent(endpointId: string) {
     if (endpointId === "social-notices") {
       return { contents: await getStoredItems("social-notices") };
     }
+    if (endpointId === "events") return { contents: await getStoredItems("events") };
 
     if (isCompactListEndpoint(endpointId)) {
       const contents = (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item));
@@ -349,7 +359,7 @@ export async function getContent(endpointId: string) {
 
 /** One strict, paginated read of each physical endpoint per page preview. */
 export async function readEditorSnapshot(){
-  const [compact,events,slides]=await Promise.all([getCompactItems(),readAllItems('events','-date'),readAllItems('hero-slides','page,displayOrder')]);
+  const [compact,events,slides]=await Promise.all([getCompactItems(),getStoredItems('events'),readAllItems('hero-slides','page,displayOrder')]);
   const data:Record<string,unknown>={events,'hero-slides':slides.map(slide=>({...slide,...unpackSlideTitle(slide.title)}))};
   for(const id of ['site-settings','home','equipment-rental','visual-editor'])data[id]=expandCompactObject(id,compact.find(item=>compactItemMatches(id,item)));
   for(const id of ['menu','drink-menu-sheets','party-plans','page-copy','page-sections','custom-sections']){
@@ -381,7 +391,7 @@ async function readAllItems(endpoint: string, orders = "createdAt") {
 
 export async function getStoredItems(endpointId: "events" | "social-notices") {
   const items = await readAllItems(endpointId === "events" ? "events" : compactStoreEndpointId);
-  return endpointId === "events" ? items : items.filter((item) => compactItemMatches(endpointId, item));
+  return endpointId === "events" ? items.map(decodeEventFromStorage) : items.filter((item) => compactItemMatches(endpointId, item));
 }
 
 export function facebookEventIdentity(event: Record<string, unknown>) {
@@ -446,7 +456,7 @@ export async function updateObjectContent(endpointId: string, draft: Record<stri
 
   return microCmsFetch(`/${endpoint.id}`, {
     method: "PATCH",
-    body: JSON.stringify(sanitizeDraft(draft))
+    body: JSON.stringify(compactDraft(endpointId, draft))
   });
 }
 

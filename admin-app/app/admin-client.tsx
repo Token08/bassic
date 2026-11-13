@@ -600,9 +600,9 @@ function NoticeBox({ notice }: { notice: Notice }) {
             担当者向けの実行ログ
           </a>
         ) : null}
-        <a href={publicSiteUrl} target="_blank" rel="noreferrer">
+        {notice.tone !== "error" ? <a href={publicSiteUrl} target="_blank" rel="noreferrer">
           公開サイトを開く
-        </a>
+        </a> : null}
       </div>
     </div>
   );
@@ -2629,7 +2629,7 @@ function SectionEditor({
         tone: "error",
         message:
           saveError instanceof Error
-            ? `${saveError.message} もう一度試しても直らない場合は、担当者へこの画面の内容を伝えてください。`
+            ? saveError.message
             : "保存できませんでした。時間をおいて再度お試しください。直らない場合は担当者へこの画面の内容を伝えてください。"
       });
     } finally {

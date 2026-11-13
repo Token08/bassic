@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
-import { createContent, facebookEventIdentity, findFacebookEvents, getContent, updateObjectContent } from "@/lib/microcms";
+import { ContentStorageError, createContent, facebookEventIdentity, findFacebookEvents, getContent, updateObjectContent } from "@/lib/microcms";
 
 export const runtime = "nodejs";
 
@@ -21,9 +21,9 @@ function loadFailed() {
   );
 }
 
-function saveFailed() {
+function saveFailed(error: unknown) {
   return NextResponse.json(
-    { ok: false, message: "保存できませんでした。時間をおいて再度お試しください。直らない場合は担当者へ連絡してください。" },
+    { ok: false, message: error instanceof ContentStorageError ? error.message : "保存できませんでした。入力内容は残っています。" },
     { status: 502 }
   );
 }
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const data = payload.id ? await updateObjectContent(endpoint, payload) : await createContent(endpoint, payload);
 
     return NextResponse.json({ ok: true, data });
-  } catch {
-    return saveFailed();
+  } catch (error) {
+    return saveFailed(error);
   }
 }
