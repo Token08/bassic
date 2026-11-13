@@ -39,6 +39,8 @@ TOP画像は `home` ではなく `hero-slides` の `page = home` で管理しま
 
 ## events
 
+2026-11-13以降の管理画面は、イベントも既存のJSON共通保存（物理API `/menu`、`kind=events`）を使います。下記は旧 `/events` の互換フィールドです。新しいフィールドをmicroCMSに追加する操作は不要です。保守時は [イベント保存の保守メモ](event-storage-operations.md) を参照してください。
+
 種類: リスト形式
 
 | フィールドID | 表示名 | 種類 | 必須 | 備考 |

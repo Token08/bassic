@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { google } from "googleapis";
 import { upsertCalendarEvents } from "./calendar-upsert.mjs";
+import { packEventRecord, mergeEventRecords } from "../lib/event-storage.mjs";
+import { calendarDescription } from "../lib/calendar-event-content.mjs";
 
 const productionCalendar = "bpi41sabm94gp0sni0ps7vajkc@group.calendar.google.com";
 const testCalendarName = "Bassic QA (private)";
@@ -33,19 +35,26 @@ const key = "facebook-9000000000000001";
 const timeZone = "Asia/Tokyo";
 const date = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 const dateTime = (hour) => `${date}T${hour}:00:00`;
-const sync = (hour, endHour) => upsertCalendarEvents({
+const sync = (hour, endHour) => {
+  const [event] = mergeEventRecords([], [{ ...packEventRecord({
+    title: "[Bassic QA] Calendar sync", date, startTime: `${hour}:00`, endTime: `${endHour}:00`,
+    sourceUrl: "https://www.facebook.com/events/9000000000000001/", image: { url: "https://images.example.invalid/poster.png" }
+  }), id: "private-qa-record" }]);
+  return upsertCalendarEvents({
   calendar, calendarId, syncTag,
   entries: [{
     key,
     sourceId: "9000000000000001",
     body: {
-      summary: "[Bassic QA] Calendar sync",
-      start: { dateTime: dateTime(hour), timeZone },
-      end: { dateTime: dateTime(endHour), timeZone },
+      summary: event.title,
+      description: calendarDescription(event),
+      start: { dateTime: `${event.date}T${event.startTime}:00`, timeZone },
+      end: { dateTime: `${event.date}T${event.endTime}:00`, timeZone },
       visibility: "private"
     }
   }]
-});
+  });
+};
 
 async function listRunEvents() {
   const { data } = await calendar.events.list({ calendarId, privateExtendedProperty: `syncTag=${syncTag}`, showDeleted: false });
@@ -59,6 +68,7 @@ try {
   const first = await listRunEvents();
   assert.equal(first.length, 1);
   assert.ok(first[0].id);
+  assert.match(first[0].description, /画像: https:\/\/images.example.invalid\/poster.png/);
   assert.equal(Date.parse(first[0].start.dateTime), Date.parse(dateTime("19") + "+09:00"));
   assert.deepEqual(await sync("20", "21"), { inserted: 0, updated: 1, unchanged: 0 });
   assert.deepEqual(await sync("20", "21"), { inserted: 0, updated: 0, unchanged: 1 });

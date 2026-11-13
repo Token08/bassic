@@ -1,4 +1,5 @@
 import { loadLocalEnv } from "./load-local-env.mjs";
+import { decodeEventFromStorage, mergeEventRecords } from "../lib/event-storage.mjs";
 
 loadLocalEnv();
 loadLocalEnv("admin-app/.env.local");
@@ -33,6 +34,7 @@ const endpointChecks = [
     label: "events",
     path: "/events?limit=1",
     validateItem: (item) => {
+      item = decodeEventFromStorage(item);
       requiredText(item, "title", "events", 4);
       requiredString(item, "date", "events");
       requiredBoolean(item, "isPublished", "events");
@@ -180,6 +182,7 @@ try {
 
   const compactStore = await fetchJson("/menu?limit=100");
   const compactContents = Array.isArray(compactStore.contents) ? compactStore.contents : [];
+  for (const item of mergeEventRecords([], compactContents)) endpointChecks.find(check => check.label === "events").validateItem(item);
   const compactHome = readCompactJsonObject(compactContents, "home");
   const compactSiteSettings = readCompactJsonObject(compactContents, "site-settings");
 

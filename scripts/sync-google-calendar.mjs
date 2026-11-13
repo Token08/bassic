@@ -3,7 +3,7 @@ import path from "node:path";
 import { google } from "googleapis";
 import { upsertCalendarEvents } from "./calendar-upsert.mjs";
 import { calendarDescription } from "../lib/calendar-event-content.mjs";
-import { decodeEventFromStorage } from "../lib/event-storage.mjs";
+import { decodeEventFromStorage, mergeEventRecords } from "../lib/event-storage.mjs";
 
 const root = process.cwd();
 const inputPath = process.env.GOOGLE_CALENDAR_SYNC_INPUT || path.join(root, "public", "data", "facebook-events.json");
@@ -148,25 +148,33 @@ async function readManagedFacebookEvents() {
     return [];
   }
 
-  const contents = [];
-  for (let offset = 0; ; offset += 100) {
-    const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/events?limit=100&orders=-date&offset=${offset}`, {
-      headers: { "X-MICROCMS-API-KEY": apiKey },
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000)
-    });
+  async function readAll(endpoint) {
+    const contents = [], ids = new Set();
+    for (let offset = 0; ; offset += 100) {
+      const response = await fetch(`https://${serviceDomain}.microcms.io/api/v1/${endpoint}?limit=100&offset=${offset}`, {
+        headers: { "X-MICROCMS-API-KEY": apiKey },
+        cache: "no-store",
+        signal: AbortSignal.timeout(15000)
+      });
 
-    if (!response.ok) {
-      throw new Error(`CMSイベントを取得できないため、カレンダー同期を停止しました (${response.status})。`);
-    }
+      if (!response.ok) {
+        throw new Error(`CMSイベントを取得できないため、カレンダー同期を停止しました (${response.status})。`);
+      }
 
-    const data = await response.json();
-    if (!Array.isArray(data.contents)) {
-      throw new Error("CMSイベントの応答形式が不正なため、カレンダー同期を停止しました。");
+      const data = await response.json();
+      if (!Array.isArray(data.contents)) {
+        throw new Error("CMSイベントの応答形式が不正なため、カレンダー同期を停止しました。");
+      }
+      for (const item of data.contents) {
+        if (!item || typeof item.id !== "string" || ids.has(item.id)) throw new Error("CMS一覧を最後まで確認できないため、カレンダー同期を停止しました。");
+        ids.add(item.id);
+      }
+      contents.push(...data.contents);
+      if (data.contents.length < 100 || contents.length >= data.totalCount) break;
     }
-    contents.push(...data.contents);
-    if (data.contents.length < 100 || contents.length >= data.totalCount) break;
+    return contents;
   }
+  const contents = mergeEventRecords(await readAll("events"), await readAll("menu"));
   const today = new Intl.DateTimeFormat("sv-SE", { timeZone: timezone, dateStyle: "short" }).format(new Date());
   return contents
     .map(normalizeEvent)

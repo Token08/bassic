@@ -1,5 +1,5 @@
 import {cache} from "react";
-import { decodeEventFromStorage } from "./event-storage.mjs";
+import { decodeEventFromStorage, mergeEventRecords } from "./event-storage.mjs";
 import { createClient } from "microcms-js-sdk";
 import { previewContents } from './preview-context';
 import { emptyVisualSettings, parseVisualSettings } from './editor-document';
@@ -193,7 +193,7 @@ function mergeSiteSettings(settings?: Partial<SiteSettings> | null): SiteSetting
 function visibleEvents(events?: EventItem[]) {
   return (events?.length ? events : fallbackContents.events!)
     .map(decodeEventFromStorage)
-    .filter((event) => event.isPublished)
+    .filter((event) => event.isPublished && typeof event.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(event.date))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -489,7 +489,7 @@ async function readCmsContents(): Promise<CmsContents> {
     siteSettings,
     home,
     heroSlides: heroSlidesByPage(heroSlides),
-    events,
+    events: mergeEventRecords(events, compactStore),
     menu,
     drinkMenuSheets: drinkSheets,
     partyPlans,

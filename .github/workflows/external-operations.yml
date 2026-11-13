@@ -5,6 +5,10 @@ on:
     types: [microcms_publish, bassic_calendar_sync]
   workflow_dispatch:
     inputs:
+      cms_readonly_diagnostics:
+        type: boolean
+        default: false
+        description: Read CMS schema and record counts only; never write to CMS or Google
       check_only:
         type: boolean
         default: false
@@ -24,8 +28,20 @@ env:
   NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.bassic.jp' }}
 
 jobs:
+  cms-readonly-diagnostics:
+    if: github.event_name == 'workflow_dispatch' && inputs.cms_readonly_diagnostics == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node scripts/diagnose-cms-readonly.mjs
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
   check-calendar:
-    if: inputs.check_only == true
+    if: inputs.check_only == true && inputs.cms_readonly_diagnostics != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -49,7 +65,7 @@ jobs:
           fi
 
   operations:
-    if: inputs.check_only != true && ((github.event_name == 'repository_dispatch' && vars.ENABLE_CALENDAR_SYNC == 'true') || (github.event_name != 'repository_dispatch' && (vars.ENABLE_CALENDAR_SYNC == 'true' || vars.ENABLE_SOCIAL_PUBLISHING == 'true' || vars.AUTO_ARCHIVE_PAST_EVENTS == 'true')))
+    if: inputs.cms_readonly_diagnostics != true && inputs.check_only != true && ((github.event_name == 'repository_dispatch' && vars.ENABLE_CALENDAR_SYNC == 'true') || (github.event_name != 'repository_dispatch' && (vars.ENABLE_CALENDAR_SYNC == 'true' || vars.ENABLE_SOCIAL_PUBLISHING == 'true' || vars.AUTO_ARCHIVE_PAST_EVENTS == 'true')))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

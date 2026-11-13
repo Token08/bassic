@@ -5,6 +5,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { packEventRecord } from "../lib/event-storage.mjs";
 
 function run(script, mock, env = {}) {
   return spawnSync(process.execPath, ["--input-type=module", "--eval", `${mock}\nawait import('./scripts/${script}');`], {
@@ -42,6 +43,41 @@ test("calendar accepts a valid empty CMS list without writes", () => {
   };`);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /同期対象イベントがありません/);
+});
+
+test("calendar reads the new JSON record and prefers it over the migrated legacy event", () => {
+  const event = { title: "Updated JSON live", date: "2099-12-12", startTime: "19:00", sourceType: "facebook", sourceUrl: "https://www.facebook.com/events/12345678/", image: { url: "https://images.example.invalid/poster.png" }, isPublished: true };
+  const compact = { ...packEventRecord(event), id: "new" };
+  const legacy = { ...event, id: "old", title: "Old legacy live" };
+  const result = run("sync-google-calendar.mjs", `globalThis.fetch = async url => Response.json({contents: String(url).includes('/menu?') ? [${JSON.stringify(compact)}] : [${JSON.stringify(legacy)}]});`, { GOOGLE_CALENDAR_SYNC_CMS_ONLY: "true" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /確認のみ: 1 件/);
+  assert.match(result.stdout, /Updated JSON live/);
+  assert.match(result.stdout, /https:\/\/images.example.invalid\/poster.png/);
+  assert.doesNotMatch(result.stdout, /Old legacy live/);
+});
+
+test("a malformed new event record stops synchronization before Google authentication", () => {
+  const result = run("sync-google-calendar.mjs", `globalThis.fetch = async url => {
+    if(!String(url).includes('.microcms.io/')) throw Error('Unexpected Google access');
+    return Response.json({contents: String(url).includes('/menu?') ? [{id:'bad',kind:'events',body:'broken'}] : []});
+  };`, { GOOGLE_CALENDAR_SYNC_CMS_ONLY: "true" });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /保存済みイベント/);
+});
+
+test("archiving a JSON event preserves its source, poster and legacy migration identity", () => {
+  const compact = { ...packEventRecord({ title: "Past JSON live", date: "2000-01-01", sourceUrl: "https://www.facebook.com/events/12345678/", image: { url: "https://images.example.invalid/poster.png" }, isPublished: true }, { legacyId: "original" }), id: "stored" };
+  const result = run("archive-past-events.mjs", `globalThis.fetch = async (url, init = {}) => {
+    if(init.method === 'PATCH') {
+      const data = JSON.parse(init.body), body = JSON.parse(data.body);
+      if(!String(url).endsWith('/menu/stored') || body.legacyId !== 'original' || body.event.isPublished !== false || body.event.image.url !== 'https://images.example.invalid/poster.png') throw Error('Archive lost event data');
+      return Response.json({id:'stored'});
+    }
+    return Response.json({contents: String(url).includes('/menu?') ? [${JSON.stringify(compact)}] : []});
+  };`, { AUTO_ARCHIVE_PAST_EVENTS: "true", AUTO_ARCHIVE_PAST_EVENTS_DRY_RUN: "false" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Archived Past JSON live/);
 });
 
 test("calendar does not feed imported Google Calendar events back into the same calendar", () => {

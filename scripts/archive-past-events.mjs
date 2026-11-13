@@ -1,3 +1,6 @@
+import { mergeEventRecords, packEventRecord } from "../lib/event-storage.mjs";
+const compactIds = new Set();
+const compactLegacyIds = new Map();
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
 const apiKey = process.env.MICROCMS_API_KEY;
 const enabled = process.env.AUTO_ARCHIVE_PAST_EVENTS === "true";
@@ -31,18 +34,28 @@ async function main() {
       continue;
     }
 
-    await patchEvent(event.id, { isPublished: false });
+    await patchEvent(event, { isPublished: false });
     console.log(`Archived ${label} (${event.date})`);
   }
 }
 
 async function fetchEvents() {
-  const params = new URLSearchParams({
-    limit: "100",
-    orders: "-date"
-  });
-  const data = await microCmsRequest(`/events?${params.toString()}`);
-  return data.contents || [];
+  async function readAll(endpoint) {
+    const items = [], ids = new Set();
+    for (let offset = 0; ; offset += 100) {
+      const data = await microCmsRequest(`/${endpoint}?limit=100&offset=${offset}`);
+      if (!Array.isArray(data.contents)) throw new Error("Invalid CMS list; no archive writes performed");
+      for (const item of data.contents) {
+        if (!item || typeof item.id !== "string" || ids.has(item.id)) throw new Error("Invalid CMS pagination; no archive writes performed");
+        ids.add(item.id);
+      }
+      items.push(...data.contents);
+      if (data.contents.length < 100 || items.length >= data.totalCount) return items;
+    }
+  }
+  const legacy = await readAll("events"), compact = await readAll("menu");
+  for (const item of compact.filter(item => item.kind === "events")) { compactIds.add(item.id); compactLegacyIds.set(item.id, JSON.parse(item.body).legacyId); }
+  return mergeEventRecords(legacy, compact);
 }
 
 function isBeforeThreshold(value, threshold) {
@@ -59,14 +72,15 @@ function getStartOfPreviousMonth() {
   return new Date(now.getFullYear(), now.getMonth() - 1, 1);
 }
 
-async function patchEvent(id, patch) {
+async function patchEvent(event, patch) {
+  const { id } = event;
   if (!id) {
     return;
   }
 
-  await microCmsRequest(`/events/${encodeURIComponent(id)}`, {
+  await microCmsRequest(`/${compactIds.has(id) ? "menu" : "events"}/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(patch)
+    body: JSON.stringify(compactIds.has(id) ? packEventRecord({ ...event, ...patch }, { legacyId: compactLegacyIds.get(id) }) : patch)
   });
 }
 

@@ -581,9 +581,9 @@ function NoticeBox({ notice }: { notice: Notice }) {
         {notice.tone === "error" && !notice.message.includes("入力内容は残っています") ? <small>入力内容は残っています。</small> : null}
         <details className="field-help">
           <summary>詳しく見る</summary>
-          <small>{helper}</small>
+          {notice.tone !== "error" || notice.requestedAt ? <small>{helper}</small> : null}
           {notice.tone === "error" ? <small className="support-note">
-            直らない場合は、どの画面で何を押したか、表示されたメッセージ、スクリーンショットを保守担当者へ送ってください。
+            このメッセージと、操作した画面のスクリーンショットを保守担当者へ送ってください。
           </small> : null}
         </details>
         {notice.confirmationSteps?.length ? (
@@ -2565,7 +2565,7 @@ function SectionEditor({
         const id = savedData.id || selectedId;
         setSelectedId(id || "new");
         setItems((current) => {
-          const withoutOld = current.filter((item) => item.id !== id);
+          const withoutOld = current.filter((item) => item.id !== id && item.id !== selectedId);
           return id ? [{ ...savedData, id }, ...withoutOld] : current;
         });
       }

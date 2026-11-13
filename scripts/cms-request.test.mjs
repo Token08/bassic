@@ -43,6 +43,15 @@ test("permission failures remain distinct from an ambiguous connection failure",
   } finally { globalThis.fetch = original; console.error = originalLog; }
 });
 
+test("an upstream 504 is identified as an unconfirmed save rather than an input problem", async () => {
+  const original = globalThis.fetch, originalLog = console.error;
+  globalThis.fetch = async () => new Response("Gateway timeout", { status: 504 });
+  console.error = () => {};
+  try {
+    await assert.rejects(cmsRequest("https://example.invalid/events", { method: "POST" }, "/events"), error => error.status === 504 && /CMS 504/.test(error.message) && /未確認/.test(error.message));
+  } finally { globalThis.fetch = original; console.error = originalLog; }
+});
+
 test("a caller cancellation is honored even with the longer write allowance", async () => {
   const original = globalThis.fetch, originalLog = console.error;
   const controller = new AbortController(); controller.abort();
