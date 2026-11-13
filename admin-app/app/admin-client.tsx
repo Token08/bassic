@@ -3155,7 +3155,7 @@ function SectionEditor({
             ) : null}
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} sourceField={renderEditableField(section.fields.find(field => field.key === "sourceUrl")!)}>
               <div className="event-core-fields">
-                {["title", "date", "startTime", "image"].map(key => renderEditableField({ ...section.fields.find(field => field.key === key)!, ...(key === "startTime" ? { label: "開始時刻（START）", required: true } : {}) }))}
+                {["title", "date", "startTime", "image"].map(key => renderEditableField({ ...section.fields.find(field => field.key === key)!, ...(key === "startTime" ? { label: "開始時刻（START）", required: true, placeholder: "未入力（例：19:00）" } : {}) }))}
               </div>
               <details className="event-extra-fields">
                 <summary>詳細を追加（開場・終了・出演者・料金・予約）</summary>
