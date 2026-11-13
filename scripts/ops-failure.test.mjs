@@ -66,6 +66,20 @@ test("a malformed new event record stops synchronization before Google authentic
   assert.match(result.stderr, /保存済みイベント/);
 });
 
+test("archiving a JSON event preserves its source, poster and legacy migration identity", () => {
+  const compact = { ...packEventRecord({ title: "Past JSON live", date: "2000-01-01", sourceUrl: "https://www.facebook.com/events/12345678/", image: { url: "https://images.example.invalid/poster.png" }, isPublished: true }, { legacyId: "original" }), id: "stored" };
+  const result = run("archive-past-events.mjs", `globalThis.fetch = async (url, init = {}) => {
+    if(init.method === 'PATCH') {
+      const data = JSON.parse(init.body), body = JSON.parse(data.body);
+      if(!String(url).endsWith('/menu/stored') || body.legacyId !== 'original' || body.event.isPublished !== false || body.event.image.url !== 'https://images.example.invalid/poster.png') throw Error('Archive lost event data');
+      return Response.json({id:'stored'});
+    }
+    return Response.json({contents: String(url).includes('/menu?') ? [${JSON.stringify(compact)}] : []});
+  };`, { AUTO_ARCHIVE_PAST_EVENTS: "true", AUTO_ARCHIVE_PAST_EVENTS_DRY_RUN: "false" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Archived Past JSON live/);
+});
+
 test("calendar does not feed imported Google Calendar events back into the same calendar", () => {
   const input = join(tmpdir(), `bassic-calendar-${randomUUID()}.json`);
   writeFileSync(input, JSON.stringify({ events: [{ title: "Existing Calendar event", date: "2026-12-01", startTime: "19:00", sourceType: "google_calendar", isPublished: true }] }));
