@@ -29,8 +29,13 @@ function makeFrameHtml(html: string, url: string) {
   doc.querySelectorAll("script, base, meta[http-equiv], link[rel='preload'][as='script'], link[rel='modulepreload']").forEach((node) => node.remove());
   doc.querySelectorAll("iframe[src*='calendar.google.com']").forEach((frame) => {
     const box = doc.createElement("div");
+    box.className = frame.className;
+    for (const name of ["data-visual-id", "data-public-section"]) {
+      const value = frame.getAttribute(name);
+      if (value) box.setAttribute(name, value);
+    }
     box.setAttribute("role", "note");
-    box.style.cssText = "padding:40px 24px;border:1px solid #d8c8ad;border-radius:8px;background:#fff8eb;color:#241c16;text-align:center";
+    box.style.cssText = (frame.getAttribute("style") || "") + ";display:grid;place-items:center;box-sizing:border-box;padding:40px 24px;border:1px solid #d8c8ad;border-radius:8px;background:#fff8eb;color:#241c16;text-align:center";
     box.textContent = "Googleカレンダーの予定は公開サイトで確認できます。ここでは配置だけを表示しています。";
     frame.replaceWith(box);
   });
