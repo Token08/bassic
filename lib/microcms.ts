@@ -1,4 +1,5 @@
 import {cache} from "react";
+import { decodeEventFromStorage } from "./event-storage.mjs";
 import { createClient } from "microcms-js-sdk";
 import { previewContents } from './preview-context';
 import { emptyVisualSettings, parseVisualSettings } from './editor-document';
@@ -191,6 +192,7 @@ function mergeSiteSettings(settings?: Partial<SiteSettings> | null): SiteSetting
 
 function visibleEvents(events?: EventItem[]) {
   return (events?.length ? events : fallbackContents.events!)
+    .map(decodeEventFromStorage)
     .filter((event) => event.isPublished)
     .sort((a, b) => a.date.localeCompare(b.date));
 }
