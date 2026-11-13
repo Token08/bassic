@@ -69,7 +69,14 @@ export async function upsertCalendarEvents({ calendar, calendarId, syncTag, entr
       // A previous request may have succeeded before its response was lost.
       const { data: found } = await calendar.events.get({ calendarId, eventId: entry.id });
       const props = found.extendedProperties?.private;
-      if (props?.syncTag !== syncTag || props?.syncKey !== entry.key || found.status === "cancelled") throw error;
+      if (props?.syncTag !== syncTag || props?.syncKey !== entry.key) throw error;
+      if (found.status === "cancelled") {
+        // A fresh staff save can intentionally republish a deleted managed event.
+        // Scheduled runs with an older source must never undo a manual cancellation.
+        const savedAt = Date.parse(entry.sourceUpdatedAt), cancelledAt = Date.parse(found.updated);
+        if (!Number.isFinite(savedAt) || !Number.isFinite(cancelledAt) || savedAt <= cancelledAt || found.recurringEventId || found.recurrence) throw error;
+        await patch(found, { ...body, status: "confirmed" }); result.updated++; continue;
+      }
       if (matches(found, body)) result.unchanged++;
       else { await patch(found, body); result.updated++; }
     }

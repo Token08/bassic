@@ -23,3 +23,10 @@ test("malformed versioned drafts stop processing", () => {
   assert.throws(() => decodeSocialNoticeRecord({ kind: "social-notices", body: '{"bassicSocialNoticeVersion":1,' }));
   assert.throws(() => decodeSocialNoticeRecord({ kind: "social-notices", body: '{"bassicSocialNoticeVersion":2,"notice":{}}' }));
 });
+
+test("removal keeps a recoverable draft but marks it out of normal operation", () => {
+  const notice = { postText: "Staff copy", image: null, deliveryStatus: "draft", isPublished: false };
+  const decoded = decodeSocialNoticeRecord({ ...packSocialNoticeRecord(notice, { removed: true }), id: "removed" });
+  assert.equal(decoded.__removed, true);
+  assert.equal(decoded.postText, "Staff copy");
+});

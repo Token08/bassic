@@ -1329,7 +1329,7 @@ function checkFacebookEventImportPanel() {
 function checkFacebookEventHandoffDocs() {
   const file = "docs/Bassic_README_納品用.txt";
   const text = existsSync(file) ? readFileSync(file, "utf8") : "";
-  const terms = ["同じ枠内", "開始時刻", "Googleカレンダーで確認・保存", "Bassic", "Xで投稿する", "Instagram", "自動同期は未接続", "画像をPCに保存"];
+  const terms = ["同じ枠内", "開始時刻", "Googleカレンダーで確認・保存", "Bassic", "Xの投稿画面を開く", "Instagram", "自動同期は未接続", "画像をPCに保存"];
   const missing = terms.filter(term => !text.includes(term));
   add("Facebook event handoff docs explain import checks", missing.length === 0, missing.join(", "));
 }
@@ -1595,7 +1595,7 @@ function checkAdminPublishFlowShowsPublicSiteLink() {
     "反映だけをやり直す",
     "公開サイトを開く",
     "再読み込み",
-    "どの画面で何を押したか",
+    "操作した画面",
     "スクリーンショットを保守担当者へ送ってください",
     "support-note",
     "deploy-status-actions",

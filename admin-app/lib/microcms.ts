@@ -374,7 +374,7 @@ export async function getStoredItems(endpointId: "events" | "social-notices") {
     const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);
     return mergeEventRecords(legacy, compact);
   }
-  return (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item)).map(decodeSocialNoticeRecord);
+  return (await getCompactItems()).filter((item) => compactItemMatches(endpointId, item)).map(decodeSocialNoticeRecord).filter(item => !item.__removed);
 }
 
 export function facebookEventIdentity(event: Record<string, unknown>) {
@@ -480,6 +480,13 @@ export async function updateContent(endpointId: string, contentId: string, draft
 
 export async function deleteContent(endpointId: string, contentId: string) {
   const endpoint = getEndpoint(endpointId);
+  if (endpointId === "social-notices") {
+    const existing = (await getStoredItems("social-notices")).find(item => item.id === contentId);
+    if (!existing) throw new Error("SNS下書きが見つかりません。");
+    return microCmsFetch(`/${compactStoreEndpointId}/${encodeURIComponent(contentId)}`, {
+      method: "PATCH", body: JSON.stringify(packSocialNoticeRecord({ ...existing, isPublished: false, deliveryStatus: "draft" }, { removed: true }))
+    });
+  }
 
   if (endpointId === "events") {
     const [legacy, compact] = await Promise.all([readAllItems("events"), getCompactItems()]);

@@ -116,6 +116,7 @@ async function main() {
     entries: events.map(event => ({
       key: getEventDedupeKey(event),
       sourceId: event.sourceId || event.id || getEventDedupeKey(event),
+      sourceUpdatedAt: event.updatedAt,
       body: toGoogleCalendarEvent(event)
     }))
   });

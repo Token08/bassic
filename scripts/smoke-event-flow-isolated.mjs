@@ -38,7 +38,7 @@ const bassicArchiveUrl = "https://www.facebook.com/events/5208864859197487/";
 const image = { url: "https://images.example.invalid/poster.png" };
 const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl, image, isPublished: true }]]);
 const notices = new Map();
-const readNotices = () => [...notices.values()].filter(item => item.kind === "social-notices").map(decodeSocialNoticeRecord);
+const readNotices = () => [...notices.values()].filter(item => item.kind === "social-notices").map(decodeSocialNoticeRecord).filter(item => !item.__removed);
 const compactEvents = new Map();
 let nextMenuId = 1;
 function changeEvent(id, patch) {
@@ -76,9 +76,9 @@ globalThis.fetch = async (input, init) => {
       "@type": "Event",
       url: url.href,
       name: url.href === guidedUrl ? "Guided live" : "Fixture live",
-      startDate: url.href === guidedUrl ? "2027-07-07T19:00:00+09:00" : "2027-05-04T19:30:00-07:00",
+      startDate: url.href === guidedUrl ? "2027-07-07" : "2027-05-04T19:30:00-07:00",
       ...(url.href === guidedUrl ? { image: image.url } : {}),
-      description: "18:00 OPEN / 19:00 START"
+      description: url.href === guidedUrl ? "18:00 OPEN" : "18:00 OPEN / 19:00 START"
     };
     return new Response(`<script type="application/ld+json">${JSON.stringify(event)}</script>`);
   }
@@ -288,6 +288,11 @@ try {
   // Restore the fixture used later to check preservation of staff text.
   await post(`content/social-notices/${readNotices().find(item => item.platform === "x").id}`, { postText: "Staff edited text" }, 200, "PATCH");
   console.log("Partial SNS failure passed: retry uses current saved data, preserves staff edits, creates only the missing platform and rejects withdrawn events.");
+  const removable = (await post("content/social-notices", { ...readNotices()[0], id: undefined, sourceEventId: "soft-remove-fixture" })).result.data;
+  await post(`content/social-notices/${removable.id}`, {}, 200, "DELETE");
+  assert.ok(!(await get("content/social-notices")).contents.some(item => item.id === removable.id));
+  assert.ok(notices.has(removable.id), "Deleted drafts must remain recoverable");
+  notices.delete(removable.id);
 
   socialUnavailable = true;
   const [publication] = await Promise.all([post("deploy", {}), post("event-publish-flow", flow, 502)]);
@@ -369,9 +374,11 @@ try {
       await panel.locator("input#sourceUrl").fill(guidedUrl);
       await panel.getByRole("button",{name:"Facebookから読み取る",exact:true}).click();
       await page.waitForFunction(() => document.querySelector("input#title")?.value === "Guided live");
+      await panel.getByText("未入力：開始時刻", { exact: true }).waitFor();
       await panel.locator("input#title").fill("Compact calendar fixture");
       await panel.locator("input#date").fill("2027-07-07");
       await panel.locator("input#startTime").fill("19:00");
+      assert.equal(await panel.getByText("未入力：開始時刻", { exact: true }).count(), 0);
       assert.equal(await page.getByRole("button",{name:"この端末に保存",exact:true}).count(),0);
       const beforePublish=publishRequests, beforeCalendar=calendarRequests;
       await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
@@ -380,17 +387,28 @@ try {
       assert.equal(await review.locator("iframe").count(),0);
       await review.getByText("Compact calendar fixture",{exact:true}).waitFor();
       await review.getByText("19:00",{exact:true}).waitFor();
+      await review.getByText("未定（カレンダーは仮の2時間枠）",{exact:true}).waitFor();
       assert.equal(publishRequests,beforePublish,"Review must not publish");
       assert.equal(calendarRequests,beforeCalendar,"Review must not register");
       const shots=join(process.env.TEMP||"/tmp","bassic-event-simple-qa"); await mkdir(shots,{recursive:true});
       await page.screenshot({path:join(shots,"calendar-confirmation-desktop.png")});
-      await review.getByRole("button",{name:"Googleカレンダーに登録",exact:true}).click();
+      await review.getByRole("button",{name:"この内容で登録",exact:true}).click();
       await page.getByText("登録内容を保存しました",{exact:true}).waitFor();
       const calendarStatus=page.getByRole("region",{name:"Googleカレンダーの反映状況"});
       await calendarStatus.getByText(/Googleカレンダーに登録中/).waitFor();
       assert.equal(publishRequests,beforePublish,"Events must not dispatch a site build");
       assert.equal(calendarRequests,beforeCalendar+1,"Events must dispatch calendar only");
-      await page.getByRole("button",{name:"SNS用の文面を開く"}).waitFor();
+      const directSocial = page.getByRole("region", { name: "SNSで使う", exact: true });
+      await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).waitFor();
+      assert.match(await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).getAttribute("href"), /Compact\+calendar\+fixture/);
+      await directSocial.getByRole("link", { name: "文面をコピーしてInstagramを開く", exact: true }).waitFor();
+      assert.equal(await page.getByRole("button", { name: "SNS用の文面を開く", exact: true }).count(), 0);
+      const currentX = readNotices().find(item => item.sourceEventId === "77777777" && item.platform === "x");
+      await post(`content/social-notices/${currentX.id}`, { postText: "Staff latest direct-post text" }, 200, "PATCH");
+      await page.evaluate(() => window.dispatchEvent(new Event("bassic-social-draft-saved")));
+      await page.waitForFunction(() => [...document.querySelectorAll('a')].some(link => link.textContent === "Xの投稿画面を開く" && link.href.includes("Staff+latest+direct-post+text")));
+      await page.screenshot({path:join(shots,"direct-social-desktop.png")});
+      assert.equal(calendarRequests,beforeCalendar+1,"Reading saved SNS drafts must not re-register a calendar event");
       const saved=mergeEventRecords([...events.values()],[...compactEvents.values()]).find(item=>item.title==="Compact calendar fixture");
       assert.ok(saved?.id,"Confirmed event must be stored canonically");
       await page.reload();
