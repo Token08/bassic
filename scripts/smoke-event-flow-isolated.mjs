@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { packEventRecord, mergeEventRecords } from "../lib/event-storage.mjs";
+import { decodeSocialNoticeRecord } from "../lib/social-notice-storage.mjs";
 
 const require = createRequire(new URL("../admin-app/package.json", import.meta.url));
 const next = require("next");
@@ -37,6 +38,7 @@ const bassicArchiveUrl = "https://www.facebook.com/events/5208864859197487/";
 const image = { url: "https://images.example.invalid/poster.png" };
 const events = new Map([["legacy", { id: "legacy", title: "Earlier title", sourceUrl: legacyUrl, image, isPublished: true }]]);
 const notices = new Map();
+const readNotices = () => [...notices.values()].filter(item => item.kind === "social-notices").map(decodeSocialNoticeRecord);
 const compactEvents = new Map();
 let nextMenuId = 1;
 function changeEvent(id, patch) {
@@ -97,6 +99,8 @@ globalThis.fetch = async (input, init) => {
     }
     const body = init?.body ?? await input.text();
     const storedPayload = JSON.parse(body);
+    if (storedPayload.kind === "social-notices" && (!storedPayload.body?.includes("bassicSocialNoticeVersion") || storedPayload.image !== undefined))
+      return Response.json({ message: "Unsupported raw SNS field format" }, { status: 400 });
     if (endpoint === "menu" && (storedPayload.kind === "events" || compactEvents.has(id))) collection = compactEvents;
     if (endpoint === "events") return Response.json({ message: "Legacy event writes timed out" }, { status: 504 });
     if (endpoint === "events" && ((storedPayload.image !== undefined && storedPayload.image !== null && (typeof storedPayload.image !== "string" || !storedPayload.image.startsWith("https://images.microcms-assets.io/"))) || (storedPayload.date !== undefined && !/^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/.test(storedPayload.date)))) {
@@ -250,15 +254,16 @@ try {
   const flow = { event: { ...event, ...saved }, platforms: ["x", "instagram"] };
   const first = (await post("event-publish-flow", flow)).result.data;
   assert.deepEqual(first.created, flow.platforms);
-  const xDraft = [...notices.values()].find((notice) => notice.platform === "x");
+  const xDraft = readNotices().find((notice) => notice.platform === "x");
   assert.match(xDraft.postText, /START 19:00/);
   assert.deepEqual(xDraft.image, image);
   assert.equal(xDraft.isPublished, false);
-  xDraft.postText = "Staff edited text";
+  await post(`content/social-notices/${xDraft.id}`, { postText: "Staff edited text" }, 200, "PATCH");
   const second = (await post("event-publish-flow", { ...flow, event: { ...flow.event, startTime: "20:00" } })).result.data;
   assert.deepEqual(second, { created: [], skipped: flow.platforms, review: flow.platforms });
   assert.equal(notices.size, 2);
-  assert.equal(xDraft.postText, "Staff edited text");
+  assert.equal(readNotices().find(item => item.id === xDraft.id).postText, "Staff edited text");
+  assert.deepEqual(readNotices().find(item => item.id === xDraft.id).image, image, "Editing draft text must preserve its poster URL");
 
   // A response may be lost after the first platform was saved. Retry using the
   // saved event, not the old browser payload, and only create the missing draft.
@@ -266,22 +271,22 @@ try {
   loseSocialWriteResponse = true;
   await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms }, 502);
   assert.equal(notices.size, 1);
-  const partial = [...notices.values()][0];
+  const partial = readNotices()[0];
   const partialId = partial.id;
-  partial.postText = "Staff edited after partial failure";
+  await post(`content/social-notices/${partialId}`, { postText: "Staff edited after partial failure" }, 200, "PATCH");
   changeEvent(saved.id, { startTime: "20:00" });
   const recovered = (await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms })).result.data;
   assert.deepEqual(recovered.created, ["instagram"]);
   assert.deepEqual(recovered.skipped, ["x"]);
   assert.equal(notices.size, 2);
-  assert.equal(notices.get(partialId).postText, "Staff edited after partial failure");
-  assert.match([...notices.values()].find(item => item.platform === "instagram").postText, /START 20:00/);
+  assert.equal(readNotices().find(item => item.id === partialId).postText, "Staff edited after partial failure");
+  assert.match(readNotices().find(item => item.platform === "instagram").postText, /START 20:00/);
   changeEvent(saved.id, { isPublished: false });
   await post("event-publish-flow", { eventId: saved.id, platforms: flow.platforms }, 409);
   assert.equal(notices.size, 2);
   changeEvent(saved.id, { isPublished: true, startTime: event.startTime });
   // Restore the fixture used later to check preservation of staff text.
-  [...notices.values()].find(item => item.platform === "x").postText = "Staff edited text";
+  await post(`content/social-notices/${readNotices().find(item => item.platform === "x").id}`, { postText: "Staff edited text" }, 200, "PATCH");
   console.log("Partial SNS failure passed: retry uses current saved data, preserves staff edits, creates only the missing platform and rejects withdrawn events.");
 
   socialUnavailable = true;

@@ -113,7 +113,7 @@ test("SNS delivery failure records the failure and fails the job", () => {
   const result = run("publish-social-notices.mjs", `globalThis.fetch = async (url, init = {}) => {
     if (String(url).includes('api.x.com')) return Response.json({ detail: 'Test delivery failed' }, { status: 503 });
     if (init.method === 'PATCH') {
-      const data = JSON.parse(init.body);
+      const data = JSON.parse(JSON.parse(init.body).body).notice;
       if (data.deliveryStatus !== 'failed') throw Error('Failure was not recorded');
       return Response.json({ id: 'test-notice' });
     }

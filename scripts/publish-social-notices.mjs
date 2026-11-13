@@ -1,3 +1,5 @@
+import { decodeSocialNoticeRecord, packSocialNoticeRecord } from "../lib/social-notice-storage.mjs";
+const storedNotices = new Map();
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
 const apiKey = process.env.MICROCMS_API_KEY;
 const graphVersion = process.env.META_GRAPH_VERSION || "v23.0";
@@ -41,8 +43,10 @@ async function fetchApprovedNotices() {
   });
   const data = await microCmsRequest(`/menu?${params.toString()}`);
 
-  return (data.contents || []).filter(
-    (notice) => notice.kind === "social-notices" && notice.deliveryStatus === "approved" && !notice.externalPostId && notice.isPublished !== false
+  const notices = (data.contents || []).filter(notice => notice.kind === "social-notices").map(decodeSocialNoticeRecord);
+  for (const notice of notices) storedNotices.set(notice.id, notice);
+  return notices.filter(
+    (notice) => notice.deliveryStatus === "approved" && !notice.externalPostId && notice.isPublished !== false
   );
 }
 
@@ -208,7 +212,7 @@ async function patchNotice(id, patch) {
 
   await microCmsRequest(`/menu/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(patch)
+    body: JSON.stringify(packSocialNoticeRecord({ ...storedNotices.get(id), ...patch }))
   });
 }
 
