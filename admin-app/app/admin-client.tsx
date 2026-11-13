@@ -24,7 +24,6 @@ import {
   Pencil,
   Plus,
   RefreshCw,
-  Save,
   Trash2,
   Upload,
   X
@@ -56,6 +55,7 @@ type Notice = {
   actionsUrl?: string;
   requestId?: string;
   retryPublish?: boolean;
+  calendarOnly?: boolean;
   eventDelivery?: { calendar: string; social: string; socialEventId?: string; socialSourceId?: string; socialRetryNeeded?: boolean; event?: CalendarEventInput & { id: string; syncKey?: string } };
   sectionId?: string;
   requestedAt?: string;
@@ -629,6 +629,13 @@ function formatDeployTime(value?: string) {
 
 
 async function requestPublication(notice: Notice): Promise<Notice> {
+  if (notice.calendarOnly) {
+    const { data } = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/calendar-sync", {
+      method: "POST", body: JSON.stringify({ eventId: notice.eventDelivery?.socialEventId })
+    });
+    if (!data?.requestId) throw new Error("カレンダーへの登録依頼を確認できませんでした。");
+    return { ...notice, ...data, tone: "success", retryPublish: false };
+  }
   const { data } = await requestJson<{ actionsUrl: string; requestedAt: string; requestId: string }>("/api/deploy", {
     method: "POST",
     body: "{}"
@@ -651,6 +658,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
       setStatus({ state: "failed" });
       return;
     }
+    if (notice.calendarOnly) { setStatus({ state: "published" }); return; }
     setStatus({ state: "pending" });
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
@@ -680,9 +688,9 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
       controller.abort();
       clearTimeout(timer);
     };
-  }, [requestId, requestedAt]);
+  }, [requestId, requestedAt, notice.calendarOnly]);
 
-  const presentation = {
+  const presentation = notice.calendarOnly ? { label: status.state === "failed" ? "カレンダーへの登録を依頼できませんでした" : "登録内容を保存しました", message: status.state === "failed" ? "内容は保存済みです。再試行してください。" : "Googleカレンダーの登録結果を下で確認できます。", tone: status.state === "failed" ? "error" : "info" } : {
     pending: { label: "公開サイトに反映中", message: "内容は保存済みです。反映まで数分かかります。この画面は閉じても大丈夫です。", tone: "info" },
     published: { label: "公開サイトに反映されました", message: "公開サイトを開き、変更したページを確認してください。", tone: "success" },
     failed: { label: "公開サイトへの反映に失敗しました", message: "内容は保存済みです。反映だけをやり直せます。", tone: "error" },
@@ -691,7 +699,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   const timeLabel = formatDeployTime(notice.requestedAt);
   const actionsUrl = status.actionsUrl || notice.actionsUrl;
   const section = sections.find((item) => item.id === notice.sectionId);
-  const pageUrl = section && getPublicPageUrl(section);
+  const pageUrl = !notice.calendarOnly && section && getPublicPageUrl(section);
 
   async function retry() {
     if (retrying || status.state !== "failed") return;
@@ -726,7 +734,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
   return (
     <section ref={problemRef} tabIndex={-1} role={status.state === "failed" ? "alert" : undefined} className={`deploy-status ${presentation.tone}`} aria-label="最後の反映状況">
       <div>
-        <strong>最後の公開操作</strong>
+        <strong>{notice.calendarOnly ? "イベント登録" : "最後の公開操作"}</strong>
         <span>{notice.sourceLabel || "管理画面から公開"}</span>
       </div>
       <div role="status">
@@ -735,7 +743,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
       </div>
       {notice.eventDelivery ? (
         <dl>
-          <dt>Googleカレンダー</dt><dd>{notice.eventDelivery.event ? <CalendarSyncStatus event={notice.eventDelivery.event} eventId={notice.eventDelivery.socialEventId} active={status.state === "published"} autoEligible={isFacebookEventUrl(notice.eventDelivery.event.sourceUrl || "")} /> : notice.eventDelivery.calendar}</dd>
+          <dt>Googleカレンダー</dt><dd>{notice.eventDelivery.event ? <CalendarSyncStatus event={notice.eventDelivery.event} eventId={notice.eventDelivery.socialEventId} active={notice.calendarOnly || status.state === "published"} autoEligible={isFacebookEventUrl(notice.eventDelivery.event.sourceUrl || "")} /> : notice.eventDelivery.calendar}</dd>
           <dt>SNS下書き</dt><dd>{notice.eventDelivery.social}</dd>
         </dl>
       ) : null}
@@ -753,9 +761,9 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
             {retrying ? "反映を依頼中…" : "反映だけをやり直す"}
           </button>
         ) : null}
-        <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
+        {!notice.calendarOnly ? <a href={pageUrl || publicSiteUrl} target="_blank" rel="noreferrer">
           {pageUrl ? "変更したページを開く" : "公開サイトを開く"}
-        </a>
+        </a> : null}
         {actionsUrl ? (
           <a href={actionsUrl} target="_blank" rel="noreferrer">
             担当者向けの実行ログ
@@ -763,7 +771,7 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
         ) : null}
       </div>
       {retryError ? <p role="alert">反映を依頼できませんでした。この表示を担当者に伝えてください。</p> : null}
-      {status.state === "published" && notice.confirmationSteps?.length ? (
+      {!notice.calendarOnly && status.state === "published" && notice.confirmationSteps?.length ? (
         <details>
           <summary>表示の確認ポイント</summary>
           <ul className="notice-checklist">
@@ -1110,7 +1118,7 @@ function ImageField({ value, onChange, urlOnly = false }: { value: unknown; onCh
   const canPreviewImageUrl = Boolean(trimmedUrl) && isValidManagedImageUrl(trimmedUrl);
 
   function removeImage() {
-    if (!window.confirm("この画像を外しますか？この端末に保存または公開するまではサイトには反映されません。")) {
+    if (!window.confirm("この画像を外しますか？確定するまでは反映されません。")) {
       return;
     }
 
@@ -1147,7 +1155,7 @@ function ImageField({ value, onChange, urlOnly = false }: { value: unknown; onCh
       }
 
       onChange({ url: result.data.url, alt: latestImage.current.alt || "" });
-      setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、この端末に保存または掲載前に確認してください。");
+      setUploadMessage("画像をアップロードしました。まだ公開サイトには反映されていません。画像を開いて確認し、内容を確認してください。");
     } catch (uploadError) {
       if (controller.signal.aborted) return;
       setError(uploadError instanceof Error ? uploadError.message : "画像をアップロードできませんでした。");
@@ -1414,6 +1422,17 @@ function ActualDraftPreview({draft,section,onReady,pathOverride}:{draft:Draft;se
  return error?<p role="alert">{error} 入力内容は残っています。戻って再試行してください。</p>:document?<PublicPageCanvas path={path} title="変更後・未掲載" document={document} targets={[]} onSelect={()=>{}}/>:<p role="status">変更後のページを読み込み中</p>;
 }
 
+function EventRegistrationReview({ draft, onClose, onPublish }: { draft: Draft; onClose: () => void; onPublish: () => void }) {
+  const rows = [["イベント名", getString(draft.title)], ["日付", getString(draft.date).slice(0,10)], ["開始時刻", getString(draft.startTime)], ["開場", getString(draft.openTime)], ["終了", getString(draft.endTime)], ["出演者", getString(draft.performers)], ["料金", getString(draft.price)], ["予約", getString(draft.reservation)]];
+  const image = getImageUrl(draft.image);
+  return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="イベントの登録内容を確認"><div className="preview-modal event-registration-review">
+    <div className="modal-heading"><h2>この内容で登録します</h2><button className="icon-button" type="button" aria-label="閉じる" onClick={onClose}><X size={20}/></button></div>
+    <p>Googleカレンダーに登録し、X・Instagram用の文面を用意します。</p>
+    <dl className="preview-list">{rows.filter(([,value])=>value).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}<div><dt>イベント画像</dt><dd>{image ? <a href={resolvePublicUrl(image,publicSiteUrl)} target="_blank" rel="noreferrer">画像を開いて確認</a> : "画像なし"}</dd></div></dl>
+    <div className="modal-actions"><button className="secondary-button" type="button" onClick={onClose}>戻って直す</button><button className="primary-button" type="button" onClick={onPublish}>Googleカレンダーに登録</button></div>
+  </div></div>;
+}
+
 function PreviewModal({
   draft,
   section,
@@ -1435,6 +1454,8 @@ function PreviewModal({
   const sectionPublicUrl = getPublicPageUrl(section);
   const publicPageLabel = getPublicPageLabel(section);
   const postPublishSteps = getPostPublishSteps(section);
+
+  if (section.id === "events") return <EventRegistrationReview draft={draft} onClose={onClose} onPublish={onPublish} />;
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -1552,7 +1573,7 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
       </div>
       <div>
         <strong>3. 公開を確定</strong>
-        <span>{dirty ? "変更はまだ公開されていません。途中でやめる場合は「この端末に保存」。" : "確認画面で確定するまで、公開サイトは変わりません。"}</span>
+        <span>{dirty ? "変更はまだ公開されていません。移動すると入力内容が消えます。" : "確認画面で確定するまで、公開サイトは変わりません。"}</span>
       </div>
       {sectionPublicUrl ? (
         <div className="public-page-guide">
@@ -1568,22 +1589,6 @@ function EditorGuide({ section, dirty, selectedId }: { section: SectionDefinitio
   );
 }
 
-function SaveChoiceGuide() {
-  return (
-    <div className="save-choice-guide" aria-label="保存方法の違い">
-      <div>
-        <strong>この端末に保存</strong>
-        <span>途中保存。公開サイトには出ません。</span>
-        <span className="sr-only">途中保存や後で確認したい時に使います。</span>
-      </div>
-      <div>
-        <strong>掲載前に確認</strong>
-        <span>見え方を確認してから反映します。</span>
-        <span className="sr-only">入力内容・リンク先・画像を確認します。「公開する」がONの項目だけ公開サイトへ反映します。公開後はPCだけでなくスマホでも見てください。最後にスマホでも表示を確認します。</span>
-      </div>
-    </div>
-  );
-}
 
 function ValidationSummary({ errors, section, onSelect }: { errors: Record<string, string>; section: SectionDefinition; onSelect: (key: string) => void }) {
   const entries = Object.entries(errors);
@@ -1961,7 +1966,7 @@ function getHeroSlidePageLabel(page: string) {
 function confirmLeavingEditor(dirty: boolean, busy: boolean) {
   if (busy) return false;
   return !dirty || window.confirm(
-    "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、この端末に保存または掲載前に確認を押してください。"
+    "保存していない変更があります。移動すると入力内容が消えます。残したい場合は「キャンセル」して、内容を確認して確定してください。"
   );
 }
 
@@ -2105,25 +2110,11 @@ function SectionEditor({
     return JSON.stringify(section.fields.map(({ key }) => original[key] ?? null));
   }
 
-  function showStoredDraft(id: string, original: Draft) {
+  function showStoredDraft(_id: string, original: Draft) {
     setDraft(original);
     setLastSavedAt("");
     draftBaseRef.current = draftBase(original);
-    try {
-      const raw = window.localStorage.getItem(draftStorageKey(id));
-      if (!raw) return;
-      const saved = JSON.parse(raw) as { content: Draft; savedAt: string; base: string };
-      if (!saved.content || typeof saved.content !== "object" || typeof saved.savedAt !== "string") return;
-      if (saved.base !== draftBaseRef.current) {
-        setNotice({ tone: "error", message: "この端末に保存の後に公開データが更新されました。最新の内容を表示しています。" });
-        return;
-      }
-      setDraft(mergeDefaults(section, saved.content));
-      setLastSavedAt(saved.savedAt);
-      setNotice({ tone: "info", message: "このブラウザに保存した下書きを開きました。" });
-    } catch {
-      setNotice({ tone: "error", message: "このブラウザの下書きを読み込めませんでした。" });
-    }
+
   }
 
   async function load() {
@@ -2503,7 +2494,7 @@ function SectionEditor({
   }
 
   function openPreview() {
-    if(section.id==='social-notices'){void save('publish');return;}
+    if(section.id==='social-notices'){void save();return;}
     userInteractedRef.current = true;
     const nextDraft = eventEntry ? { ...draft, isPublished: true } : draft;
     if (eventEntry) {
@@ -2523,25 +2514,8 @@ function SectionEditor({
     setShowPreview(true);
   }
 
-  async function save(mode: "draft" | "publish") {
+  async function save() {
     if (saveInFlightRef.current || loading || loadFailed) return;
-    if (mode === "draft") {
-      try {
-        const savedAt = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-        window.localStorage.setItem(draftStorageKey(selectedId), JSON.stringify({
-          content: draft,
-          savedAt,
-          base: draftBaseRef.current || draftBase(initialMergedDraft)
-        }));
-        setLastSavedAt(savedAt);
-        setDirty(false);
-        setErrors({});
-        setNotice({ tone: "info", message: "このブラウザに下書きを保存しました。同じ端末・ブラウザで続きを編集できます。" });
-      } catch {
-        setNotice({ tone: "error", message: "下書きを保存できませんでした。この画面を開いたまま、入力した内容を控えてください。" });
-      }
-      return;
-    }
     const nextDraft: Draft = withRequiredDefaults({
       ...draft,
       ...(scopedListPage ? { page: scopedListPage } : {})
@@ -2620,16 +2594,17 @@ function SectionEditor({
         } : undefined
       } : undefined;
       setDeploying(true);
-      setNotice({ tone: "info", message: "保存しました。サイトへの反映を依頼しています。" });
+      setNotice({ tone: "info", message: section.id === "events" ? "カレンダーへの登録を依頼しています。" : "保存しました。サイトへの反映を依頼しています。" });
 
       const publishNotice: Notice = {
         tone: "error",
         message: "内容は保存済みです。公開サイトへの反映だけをやり直せます。",
         retryPublish: true,
+        calendarOnly: section.id === "events" && Boolean(preparedDraft.isPublished),
         eventDelivery,
         sectionId: section.id,
         requestedAt: new Date().toISOString(),
-        sourceLabel: `${section.shortTitle}を公開`,
+        sourceLabel: section.id === "events" ? "Googleカレンダーへの登録" : `${section.shortTitle}を公開`,
         confirmationSteps: getPostPublishSteps(section)
       };
       const publishing = requestPublication(publishNotice).catch(() => publishNotice);
@@ -2941,15 +2916,11 @@ function SectionEditor({
   function renderSaveActions() {
     return (
             <div className="form-actions">
-              <button className="secondary-button" type="button" disabled={saving || deploying} onClick={() => void save("draft")}>
-                {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
-                この端末に保存
-              </button>
               <button className="primary-button" type="button" disabled={saving || deploying} onClick={openPreview}>
                 {deploying ? <Loader2 className="spin" size={18} /> : <CheckCircle2 size={18} />}
-                {section.id === "social-notices" ? "SNS下書きを保存" : eventEntry ? "内容を確認してサイトに掲載" : "掲載前に確認"}
+                {section.id === "social-notices" ? "SNS下書きを保存" : section.id === "events" ? "登録内容を確認" : "掲載前に確認"}
               </button>
-              <small className="action-note">{section.id === "social-notices" ? "下書きの保存だけではSNSに投稿されません。" : "途中保存はこのブラウザに残ります。掲載前に内容を確認できます。"}</small>
+              <small className="action-note">{section.id === "social-notices" ? "下書きの保存だけではSNSに投稿されません。" : section.id === "events" ? "確認画面からGoogleカレンダーに登録します。SNSは下書きまで。" : "確認画面で確定するまで公開されません。"}</small>
             </div>
     );
   }
@@ -3139,13 +3110,13 @@ function SectionEditor({
             className="edit-form"
             onSubmit={(event) => {
               event.preventDefault();
-              void save("draft");
+              openPreview();
             }}
           >
             {eventEntry ? (
               <section className="event-entry-guide" aria-label="イベント追加の流れ">
-                <ol><li>URL入力</li><li>確認・修正</li><li>サイト掲載</li><li>カレンダー・SNS</li></ol>
-                <p>カレンダー・SNSは掲載後に各サービスで確定</p>
+                <ol><li>URL入力</li><li>確認・修正</li><li>カレンダー登録</li><li>SNS文面</li></ol>
+                <p>SNSは文面を確認して各サービスで投稿</p>
               </section>
             ) : null}
             {!eventEntry && !relatedEventId && !(editLabel && section.kind === "object") ? <CurrentEditSummary section={section} draft={draft} dirty={dirty} selectedId={selectedId} /> : null}
@@ -3184,7 +3155,7 @@ function SectionEditor({
             ) : null}
             {section.id === "events" ? <FacebookEventImportPanel draft={draft} onApply={applyImportedFacebookEvent} sourceField={renderEditableField(section.fields.find(field => field.key === "sourceUrl")!)}>
               <div className="event-core-fields">
-                {["title", "date", "startTime", "image"].map(key => renderEditableField({ ...section.fields.find(field => field.key === key)!, ...(key === "startTime" ? { label: "開始時刻（START）", required: true } : {}) }))}
+                {["title", "date", "startTime", "image"].map(key => renderEditableField({ ...section.fields.find(field => field.key === key)!, ...(key === "startTime" ? { label: "開始時刻（START）", required: true, placeholder: "未入力（例：19:00）" } : {}) }))}
               </div>
               <details className="event-extra-fields">
                 <summary>詳細を追加（開場・終了・出演者・料金・予約）</summary>
@@ -3208,7 +3179,6 @@ function SectionEditor({
             {section.id === "social-notices" && ["x", "instagram"].includes(getString(draft.platform)) ? (
               <SnsPostingPanel key={selectedId + ":" + getString(draft.platform)} platform={getString(draft.platform)} text={getString(draft.postText)} imageUrl={getImageUrl(draft.image) && isValidManagedImageUrl(getImageUrl(draft.image)) ? resolvePublicUrl(getImageUrl(draft.image), publicSiteUrl) : ""} />
             ) : null}
-            {section.id !== "events" && section.id !== "social-notices" ? <SaveChoiceGuide /> : null}
             {section.kind === "list" && selectedId !== "new" ? (
               <div className="destructive-actions">
                 <button className="secondary-button danger" type="button" disabled={saving || deploying} onClick={() => void deleteSelectedItem()}>
@@ -3224,7 +3194,7 @@ function SectionEditor({
       )}
 
       {showPreview ? (
-        <PreviewModal pathOverride={sourcePage?adminPages.find(page=>page.page===sourcePage)?.publicPath:undefined} draft={previewDraft} previewContext={previewContext} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save("publish")} />
+        <PreviewModal pathOverride={sourcePage?adminPages.find(page=>page.page===sourcePage)?.publicPath:undefined} draft={previewDraft} previewContext={previewContext} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save()} />
       ) : null}
     </div>
   );

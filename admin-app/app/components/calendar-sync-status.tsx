@@ -73,12 +73,12 @@ export function CalendarSyncStatus({ event, eventId, active, autoEligible }: {
     finally { setRetrying(false); }
   }
   const text: Record<State, string> = {
-    waiting: "未確認です。サイト掲載後に確認します。",
+    waiting: "登録結果を確認します。",
     manual: autoEligible ? "自動同期は未接続です。Google側で保存してください。" : "このイベントはGoogle側で追加してください。",
-    pending: "カレンダーへの反映を確認中です。サイトの掲載は続けられます。",
+    pending: "Googleカレンダーに登録中です。数分かかる場合があります。",
     matched: "反映済み。予定の内容が保存したイベントと一致しました。",
     review: "同期済みの予定が重複しています。担当者に確認してください。",
-    unconfirmed: "カレンダーへの反映を確認できませんでした。サイトの掲載内容は残っています。",
+    unconfirmed: "登録を確認できませんでした。内容は保存済みです。もう一度確認してください。",
   };
   const manualUrl = calendarDraftUrl(event);
   return <div className="calendar-sync-status" role="region" aria-label="Googleカレンダーの反映状況">

@@ -628,9 +628,7 @@ try {
         await form.getByRole("button", { name: "編集", exact: true }).count(),
         0,
       );
-      await page
-        .getByRole("button", { name: "この端末に保存", exact: true })
-        .click();
+      assert.equal(await page.getByRole("button", { name: "この端末に保存", exact: true }).count(),0);
       await page
         .getByRole("button", { name: "掲載前に確認", exact: true })
         .click();
@@ -676,62 +674,15 @@ try {
       assert.equal(
         writes,
         writesBeforeBrowser,
-        "UI preview and local saves must not touch the CMS",
+        "UI preview must not touch the CMS",
       );
       await page.screenshot({
         path: process.env.TEMP + "/bassic-full-editor-desktop.png",
       });
       console.log(
-        "Direct editing, local draft save, exact unsaved preview and no publication writes passed.",
+        "Direct editing, no device save, exact unsaved preview and no publication writes passed.",
       );
-      const restored = await page.context().newPage();
-      await restored.goto(base);
-      await restored
-        .getByRole("button", { name: "端末の下書きを開く", exact: true })
-        .waitFor();
-      restored.once("dialog", (dialog) => dialog.accept());
-      await restored
-        .getByRole("button", { name: "端末の下書きを開く", exact: true })
-        .click();
-      const restoredFrame = restored.frameLocator("iframe.public-canvas-frame");
-      await restoredFrame.getByText("未掲載の文章", { exact: true }).waitFor();
-      await restored.route("**/api/visual-editor", (route) =>
-        route.request().method() === "POST"
-          ? route.fulfill({
-              status: 502,
-              json: {
-                ok: false,
-                message: "隔離テスト：プレビューを取得できません",
-              },
-            })
-          : route.continue(),
-      );
-      await restored
-        .getByRole("button", { name: "掲載前に確認", exact: true })
-        .click();
-      await restored
-        .getByRole("alert")
-        .filter({ hasText: "隔離テスト" })
-        .waitFor();
-      await restored.waitForFunction(() =>
-        document.activeElement?.classList.contains("editor-feedback"),
-      );
-      assert.equal(
-        await restored
-          .getByRole("button", { name: "サイトに掲載", exact: true })
-          .count(),
-        0,
-        "Failed preview must not enable publishing",
-      );
-      assert.equal(
-        writes,
-        writesBeforeBrowser,
-        "Restore and failed previews must not write",
-      );
-      console.log(
-        "Unsaved navigation, device switching, local draft restoration and preview failure focus passed.",
-      );
-      await restored.close();
+
       failReads = true;
       const failed = await page.context().newPage();
       await failed.goto(base);
@@ -792,13 +743,7 @@ try {
           true,
           "Global appearance and metadata cannot change during saving",
         );
-        assert.equal(
-          await page
-            .getByRole("button", { name: "端末の下書きを開く", exact: true })
-            .isDisabled(),
-          true,
-          "Draft restoration cannot replace an in-flight save",
-        );
+        assert.equal(await page.getByRole("button",{name:"端末の下書きを開く",exact:true}).count(),0);
         await page
           .getByRole("complementary")
           .getByRole("button", { name: "未掲載の文章", exact: true })
@@ -869,39 +814,9 @@ try {
         .getByRole("button", { name: "イベントスケジュール", exact: true })
         .click();
       const eventDoc = docs.get("/events/");
-      const eventCard = eventDoc.catalog.find(
-        (n) => n.tag === "article" && n.record === "events:event-one",
-      );
-      assert.ok(eventCard);
-      await clonePage
-        .frameLocator("iframe.public-canvas-frame")
-        .locator('[data-bassic-edit="' + eventCard.parent + '"]')
-        .press("Enter");
-      await clonePage
-        .getByRole("complementary")
-        .getByText("カード", { exact: true })
-        .click();
-      await clonePage
-        .getByRole("complementary")
-        .getByRole("button", { name: "Fixture live", exact: true })
-        .click();
-      await clonePage
-        .locator(".visual-child-row")
-        .getByRole("button", { name: "複製", exact: true })
-        .click();
-      await clonePage
-        .getByRole("heading", { name: "複製したカード", exact: true })
-        .waitFor();
-      await clonePage.locator("input#title").waitFor();
-      assert.equal(
-        await clonePage.locator("input#title").inputValue(),
-        "Fixture live",
-      );
-      assert.equal(
-        writes,
-        writesBeforeBrowser + 1,
-        "Duplicating a registered card must open an unpublished draft without saving",
-      );
+      assert.equal(eventDoc.catalog.some(n=>n.record === "events:event-one"),false,"Events use the calendar, not independent cards");
+      await clonePage.frameLocator("iframe.public-canvas-frame").getByText(/ここでは配置だけ/).waitFor();
+      assert.equal(await clonePage.frameLocator("iframe.public-canvas-frame").locator("iframe[src*='calendar.google.com']").count(),0,"Sandbox preview must not leave a spinning Google frame");
       await clonePage.close();
       const cardPage = await context.newPage();
       cardPage.setDefaultTimeout(8000);
