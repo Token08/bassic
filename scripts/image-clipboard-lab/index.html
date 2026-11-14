@@ -1,0 +1,25 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bassic 画像コピー検証</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f3e9;color:#241c18;font:16px/1.6 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:24px}h1{font-size:28px;margin:0 0 8px}h2{font-size:20px}p{margin:8px 0}section{background:#fffdf8;border:1px solid #ddcdbb;border-radius:12px;padding:20px;margin:18px 0}.badge{color:#8c131b;font-weight:bold}select,button,a{font:inherit}select{max-width:100%;padding:10px;margin-bottom:12px}img{display:block;max-width:100%;height:auto;border-radius:6px}button,.button{display:inline-block;border-radius:7px;padding:11px 16px;border:1px solid #b99d82;background:#fff;color:#241c18;text-decoration:none;cursor:pointer}button.primary{background:#a51822;color:white;border-color:#a51822}button:disabled{opacity:.55;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}#paste{min-height:90px;border:2px dashed #b99d82;padding:16px;border-radius:6px}#paste:focus{outline:2px solid #a51822}#pasted{max-width:420px}pre{white-space:pre-wrap;overflow-wrap:anywhere}.note{color:#655649;font-size:14px}[role=alert]{color:#a51822}output{display:block;font-weight:bold}#text{white-space:pre-wrap}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+</style><main>
+<div class="badge">検証専用・本番データの保存や投稿は行いません</div>
+<h1>画像をコピーして貼り付ける</h1>
+<p>取得済みの実画像で操作を確認します。サーバーからの自動取得成功を示す画面ではありません。</p>
+<section><label for="event">検証するイベント</label><br><select id="event"></select><h2 id="title"></h2>
+<img id="poster" alt="Facebookのイベントページと照合した告知画像">
+<div class="actions"><button id="copy-image" class="primary" disabled>画像をコピー</button><button id="copy-text" disabled>投稿文をコピー</button></div>
+<output id="status" role="status" aria-live="polite">画像を準備中…</output>
+<p class="note">画像コピーと文面コピーは上書きし合います。まず画像を貼り付け、その後に文面をコピーしてください。</p>
+<details><summary>投稿文を確認</summary><p id="text"></p></details>
+</section>
+<section><h2>コピーした画像を確認</h2><p>この枠をクリックし、Ctrl＋V（Macは⌘＋V）で貼り付けます。</p>
+<div id="paste" contenteditable="true" role="textbox" aria-label="画像の貼り付け確認" tabindex="0"></div>
+<output id="paste-result" aria-live="polite">まだ貼り付けていません。</output><img id="pasted" alt="クリップボードから貼り付けた画像" hidden>
+<div class="actions"><button id="read-back">コピーした画像データを確認</button></div>
+<output id="read-result" aria-live="polite">コピー直後の検証専用。SNSへの貼り付け成功とは別です。</output>
+<p class="note">この枠に貼れたことと、X・Instagramが受け付けることは別々に確認します。</p>
+</section>
+<section><h2>SNS実画面の確認</h2><div class="actions"><a id="x" class="button" target="_blank" rel="noreferrer">Xの投稿画面を開く</a><a class="button" href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagramを開く</a></div>
+<p class="note">SNSへのログインが必要です。検証では投稿・シェアを確定しません。Instagramは画像追加画面で貼り付けを試します。</p></section>
+</main><script type="module" src="/lab.js"></script></html>
