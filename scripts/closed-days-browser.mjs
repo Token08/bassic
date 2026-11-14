@@ -3,6 +3,8 @@ import { monthRange, shiftDay } from "../lib/closed-days-view.mjs";
 
 export async function rehearseClosedDays(context, base) {
   const page = await context.newPage();
+  const unusedPreviewRequests = [];
+  page.on("request", request => { if (new URL(request.url()).pathname === "/api/site-preview") unusedPreviewRequests.push(request.url()); });
   const current = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 7);
   const next = monthRange(current).end.slice(0, 7);
   const items = new Map();
@@ -119,6 +121,7 @@ export async function rehearseClosedDays(context, base) {
     await panel.getByRole("button", { name: "再読み込み", exact: true }).click();
     await panel.getByText("カレンダーは確認できます。店休日の変更は接続確認後に利用できます。", { exact: true }).waitFor();
     assert.equal(await date(current + "-21").isDisabled(), true);
+    assert.equal(unusedPreviewRequests.length, 0, "Calendar editing must not load an unrelated hidden public-page preview");
     console.log("Closed-day month UI passed: selection, cross-month retention, confirmation, partial retry, lost-response restore, read failure, navigation guard and read-only gate.");
   } finally { await page.close(); }
 }
