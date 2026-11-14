@@ -816,10 +816,11 @@ export function VisualPageEditor({
         : document
           ? "公開中の内容"
           : "読み込み中";
+  const editState = deploy || busy ? "pending" : dirty ? "dirty" : reflected ? "published" : "saved";
   const renderCategory = (cat: string) =>
     categoryNodes(cat).length ? (
       <details key={cat} open={category === cat}>
-        <summary>{cat}</summary>
+        <summary data-count={categoryNodes(cat).length}>{cat}</summary>
         {categoryNodes(cat).map((n) => (
           <button
             type="button"
@@ -921,7 +922,7 @@ export function VisualPageEditor({
         >
           公開中のサイトを開く
         </a>
-        <div>
+        <div className="visual-page-title">
           <h1>
             {page === "FIRST VISIT"
               ? "初めての方へ"
@@ -929,7 +930,7 @@ export function VisualPageEditor({
                 ? "TOPページ"
                 : page}
           </h1>
-          <span role="status" aria-label="編集と掲載の状態">
+          <span className="visual-edit-status" data-state={editState} role="status" aria-label="編集と掲載の状態">
             {statusText}
           </span>
         </div>
@@ -1779,6 +1780,7 @@ export function VisualPageEditor({
         </div>
         <aside className="visual-editor-sidebar">
           <h2>{node ? displayLabel(node) : "変更する場所"}</h2>
+          {!node ? <p className="visual-section-hint">ページの上から順に表示</p> : null}
           <details>
             <summary>登録情報・非表示の項目</summary>
             {(page === "EVENT SCHEDULE"
@@ -1858,15 +1860,17 @@ export function VisualPageEditor({
               </details>
             </>
           ) : (
-            relevant.map((n) => (
+            relevant.map((n, index) => (
               <button
-                className="visual-target-choice"
+                className="visual-target-choice visual-section-choice"
                 key={n.id}
                 type="button"
+                aria-label={displayLabel(n) + (n.hidden ? "（非表示）" : "")}
                 onClick={() => select(n.id)}
               >
-                {displayLabel(n)}
-                {n.hidden ? "（非表示）" : ""}
+                <span className="visual-section-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                <span className="visual-section-name">{displayLabel(n)}{n.hidden ? <small>非表示</small> : null}</span>
+                <span className="visual-section-arrow" aria-hidden="true">›</span>
               </button>
             ))
           )}
@@ -2210,7 +2214,7 @@ export function VisualPageEditor({
         </aside>
       </div>
       <div className="visual-savebar">
-        <span>{statusText}</span>
+        <div className="visual-save-state"><span className="visual-edit-status" data-state={editState}>{statusText}</span></div>
         <button
           type="button"
           className="primary-button"

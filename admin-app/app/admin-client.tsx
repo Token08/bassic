@@ -3378,6 +3378,7 @@ function PageBasedDashboard({
   const [overview, setOverview] = useState<PageOverview>(emptyOverview);
   const [overviewError, setOverviewError] = useState(false);
   const editing = Boolean(editor);
+  const calendarEditor = activeEditLabel?.startsWith("イベント追加") || activeEditLabel === "店休日を追加";
   const editingArea = useRef<HTMLDivElement>(null);
   const detailsArea = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -3475,8 +3476,6 @@ function PageBasedDashboard({
     });
     return () => controller.abort();
   }, [extraEndpoints, lastDeploy?.requestedAt]);
-  const targets = orderedGroups.map(([group, entry]) => ({ key: entry.layout.key, label: entry.layout.key.startsWith("custom-") ? entry.layout.heading || group : group }));
-  const selectedKey = selection?.layout.key;
   const relatedSections = new Set(selection?.actions.map((action) => action.sectionId) || []);
   if (activePage.page === "EVENT SCHEDULE") {
     relatedSections.add("events");
@@ -3484,11 +3483,6 @@ function PageBasedDashboard({
   }
   if (activePage.page === "ACCESS") relatedSections.add("site-settings");
   const relevantStatus = opsStatus ? { ...opsStatus, alerts: opsStatus.alerts.filter((alert) => relatedSections.has(alert.sectionId)) } : undefined;
-
-  function selectCanvasSection(key: string) {
-    const group = orderedGroups.find(([, entry]) => entry.layout.key === key)?.[0];
-    if (group) onGroupChange(group);
-  }
 
   function renderActions(actions: PageAdminAction[], group: string) {
     return (
@@ -3561,12 +3555,7 @@ function PageBasedDashboard({
       <div className="page-heading workspace-heading">
         <div>
           <p className="eyebrow">{activePage.title}</p>
-          {editing ? <p className="workspace-location" aria-label="現在の編集場所">{activeEditLabel || activePage.title}</p> : (
-            <>
-              <h1>編集する場所</h1>
-              <p>ページ内の写真・文章を選択</p>
-            </>
-          )}
+          <p className="workspace-location" aria-label="現在の編集場所">{activeEditLabel || activePage.title}</p>
         </div>
         <a className="secondary-button site-link-button" href={publicSiteUrl} target="_blank" rel="noreferrer">
           <ExternalLink size={18} />
@@ -3574,27 +3563,17 @@ function PageBasedDashboard({
         </a>
       </div>
 
-      {!activeEditLabel?.startsWith("イベント追加") && activeEditLabel !== "店休日を追加" ? <ol className="workspace-steps" aria-label="操作の流れ">
+      {!calendarEditor ? <ol className="workspace-steps" aria-label="操作の流れ">
         <li><span>1</span>ページ</li>
-        <li aria-current={!editing ? "step" : undefined}><span>2</span>編集箇所</li>
-        <li aria-current={editing ? "step" : undefined}><span>3</span>編集・掲載</li>
+        <li><span>2</span>編集箇所</li>
+        <li aria-current="step"><span>3</span>編集・掲載</li>
       </ol> : null}
 
-      <div className={`visual-editor-workspace${activeEditLabel?.startsWith("イベント追加") || activeEditLabel === "店休日を追加" ? " event-entry-workspace" : ""}`}>
+      <div className={`visual-editor-workspace${calendarEditor ? " event-entry-workspace" : ""}`}>
         <div className="visual-editor-center">
-          <div hidden={editing}>
-            <PublicPageCanvas
-              path={activePage.publicPath}
-              title={activePage.title}
-              targets={targets}
-              selected={selectedKey}
-              onSelect={selectCanvasSection}
-              revision={lastDeploy?.requestedAt}
-            />
-          </div>
           {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : null}
         </div>
-        {!activeEditLabel?.startsWith("イベント追加") && activeEditLabel !== "店休日を追加" ? <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
+        {!calendarEditor ? <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
             <OpsStatusPanel status={relevantStatus} onRetry={onRefreshOps} onSelect={(id) => onSelect({ id })} />
             <section className="page-section-picker" aria-label={activePage.page + "の編集セクション"}>
               <div className="page-section-heading">
@@ -3632,10 +3611,6 @@ function PageBasedDashboard({
       </div>
 
       {hasSetupProblem ? <SetupStatus health={health} /> : null}
-      {!editing && lastDeploy ? (lastDeploy.requestId || lastDeploy.retryPublish) ? (
-        <DeployStatusCard key={lastDeploy.requestId || lastDeploy.requestedAt} notice={lastDeploy} onRetry={onDeployNotice} onOpenSocialDrafts={onOpenSocialDrafts} />
-      ) : <NoticeBox notice={lastDeploy} /> : null}
-
     </div>
   );
 }
