@@ -107,6 +107,12 @@ npm run deploy:admin:prod
 
 ## Vercel設定
 
+店休日の月間カレンダーは `/api/closed-days` の認証付き読み取り・変更APIを使います。書き込み先はサーバーの `GOOGLE_CALENDAR_ID` に固定し、本番では店舗のID以外を拒否します。接続は `GOOGLE_CALENDAR_WRITE_SERVICE_ACCOUNT_JSON`、または `GOOGLE_CALENDAR_CLOSED_DAYS_USE_EXISTING_ACCOUNT=true` で既存のサーバー専用接続を明示的に再利用します。イベント反映確認の読み取り専用スコープは変更しません。
+
+非公開の使い捨てカレンダーで `scripts/verify-closed-days-private.mjs` を実行し、成功時のアカウント指紋を `GOOGLE_CALENDAR_CLOSED_DAYS_ACCOUNT_FINGERPRINT` に設定します。`GOOGLE_CALENDAR_CLOSED_DAYS_ENABLED=true` にすると、ビルド時と実行時にそのアカウントとの一致を検証してから変更を許可します。鍵の値は出力しません。Preview環境は常に読み取り専用です。通常のPR検証はすべてモックで、実Googleのテストは Event regression の手動入力 `live_closed_days_qa=true` のときだけ実施します。作成した専用カレンダーだけを最後に削除します。
+
+予定の競合はETagで検知し、連休の分割では残す日を先に作成・読み戻してから元の予定を取り消します。復旧時は同じ操作が作ったコピーだけを対象にします。不明な結果は端末に操作IDと選択を保持し、同じ内容を再確認します。停止する場合は `GOOGLE_CALENDAR_CLOSED_DAYS_ENABLED=false` にして再デプロイします。既存の予定は消えません。
+
 機材PDFのアップロードは認証付きの `/api/pdf` を使います。既存の `GITHUB_DISPATCH_TOKEN`（対象リポジトリのContents書き込み権限）で、検証済みのPDFを `public/assets/pdf/uploads/<SHA256>.pdf` に保管します。同じファイルは再利用し、既存ファイルを上書きしません。アップロード時点ではCMSの掲載リンクを変更せず、確認後の掲載で切り替えます。配信には公開リポジトリのraw URLを使うため、ファイル自体はアップロード直後から公開されます。3MB以内に制限し、Vercel Previewでは書き込みを禁止しています。microCMSの有料ファイルプランは不要です。
 
 VercelのRoot Directoryを `admin-app` に設定してデプロイします。公開サイト側の `next.config.ts` は `output: "export"` のままなので、GitHub Pages運用には影響しません。

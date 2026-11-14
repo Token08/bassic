@@ -11,15 +11,36 @@ on:
       - "package*.json"
       - ".github/workflows/event-regression.yml"
   workflow_dispatch:
+    inputs:
+      live_closed_days_qa:
+        description: "Create a private disposable calendar to verify closed-day writes (never the store calendar)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
   group: event-regression-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
+  private-calendar-qa:
+    if: github.event_name == 'workflow_dispatch' && inputs.live_closed_days_qa == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify only a newly created private calendar
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+        run: node --experimental-strip-types scripts/verify-closed-days-private.mjs
   isolated-events:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -38,10 +59,13 @@ jobs:
       - run: npm ci --prefix admin-app
       - run: npm run test:events
       - run: npm run test:publish-safety
+      - run: npm run test:closed-days
       - run: npm run build
       - run: npm run build:admin-app
       # All provider writes stay in memory. No CMS or calendar secrets are used.
       - name: Rehearse isolated event APIs (browser coverage runs locally)
         run: npm run smoke:events:isolated
+      - name: Rehearse closed-day APIs without provider writes
+        run: npm run smoke:closed-days
       - name: Rehearse full-site editing without provider writes
         run: npm run smoke:visual-editor
