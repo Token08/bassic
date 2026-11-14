@@ -142,10 +142,10 @@ async function removeDays(calendar: CalendarAccess, snapshot: DayEvent, dates: S
       if (!found || !sameRetained(found, copy, operation, original.id)) throw Error("残す店休日を確認できませんでした。");
     }
   } catch (error) {
-    if (!deleteAttempted || [404, 410].includes(statusOf(error) || 0)) {
+    if (!deleteAttempted || [404, 410, 412].includes(statusOf(error) || 0)) {
       try { await rollbackCopies(); }
       catch { throw Object.assign(Error("元の予定は変更していません。作成したコピーの復旧確認が必要です。担当者へ連絡してください。"), { unknown: true }); }
-      if ([404, 410].includes(statusOf(error) || 0)) throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
+      if ([404, 410, 412].includes(statusOf(error) || 0)) throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
       throw Object.assign(error instanceof Error ? error : Error("予定を変更できませんでした。"), { definitive: true });
     }
     // Never remove retained dates unless the original is confirmed to still exist.
