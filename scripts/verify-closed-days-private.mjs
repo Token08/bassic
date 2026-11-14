@@ -53,9 +53,18 @@ try {
   assert.equal((await access.get(live.id)).summary, "Live show");
   console.log("Private calendar: add, retry, remove, re-add, split rollback, recurrence exception and ETag conflict passed.");
   console.log("VERIFIED_ACCOUNT_FINGERPRINT=" + createHash("sha256").update(credentials.client_email).digest("hex"));
+} catch (error) {
+  // Google client errors may contain request headers. Never log the raw object.
+  console.error("Private calendar QA failed: " + (error instanceof Error ? error.message : "provider error"));
+  process.exitCode = 1;
 } finally {
   if (disposableId && disposableId !== productionId && disposableId !== process.env.GOOGLE_CALENDAR_ID) {
-    await api.calendars.delete({ calendarId: disposableId });
-    console.log("Disposed only the private calendar created by this test.");
+    try {
+      await api.calendars.delete({ calendarId: disposableId });
+      console.log("Disposed only the private calendar created by this test.");
+    } catch (error) {
+      console.error("Private calendar cleanup needs review: " + (error instanceof Error ? error.message : "provider error"));
+      process.exitCode = 1;
+    }
   }
 }
