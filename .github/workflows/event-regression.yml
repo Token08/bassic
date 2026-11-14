@@ -54,7 +54,8 @@ jobs:
         run: npm run smoke:visual-editor
   public-image-probe:
     if: github.event_name == 'workflow_dispatch' && inputs.public_image_probe == true
-    runs-on: ubuntu-latest
+    # Keep the experimental browser version on its supported OS, independently of latest-runner migrations.
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v6
