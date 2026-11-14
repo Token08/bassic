@@ -5,7 +5,8 @@
 </style><main>
 <div class="badge">検証専用・本番データの保存や投稿は行いません</div>
 <h1>画像をコピーして貼り付ける</h1>
-<p>取得済みの実画像で操作を確認します。サーバーからの自動取得成功を示す画面ではありません。</p>
+<p id="lab-summary">取得済みの実画像で操作を確認します。サーバーからの自動取得成功を示す画面ではありません。</p>
+<section id="fetch-section" hidden><h2>URLから告知画像を取得</h2><p class="note">検証対象の公開イベント3件限定です。取得中は独立ブラウザを起動します。ログインや投稿は行いません。</p><label for="source-url">FacebookイベントURL</label><br><input id="source-url" type="url" maxlength="250" style="font:inherit;width:100%;padding:10px" value="https://www.facebook.com/events/1821212975591464/"><div class="actions"><button id="fetch-image" class="primary">画像を取得</button></div><output id="fetch-result" role="status" aria-live="polite">URLを貼り、画像を取得してください。</output></section>
 <section><label for="event">検証するイベント</label><br><select id="event"></select><h2 id="title"></h2>
 <img id="poster" alt="Facebookのイベントページと照合した告知画像">
 <div class="actions"><button id="copy-image" class="primary" disabled>画像をコピー</button><button id="copy-text" disabled>投稿文をコピー</button></div>

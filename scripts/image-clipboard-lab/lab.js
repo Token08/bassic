@@ -2,6 +2,9 @@ const $=id=>document.getElementById(id);
 const response=await fetch('/manifest');
 if(!response.ok)throw Error('Local manifest unavailable');
 const items=await response.json();
+const capabilities=await(await fetch('/capabilities')).json();
+$('fetch-section').hidden=!capabilities.probeEnabled;
+if(capabilities.probeEnabled)$('lab-summary').textContent='公開イベントのURLから画像を取得し、コピーまで試せます。本番・SNSへの投稿は行いません。';
 const select=$('event'), image=$('poster'), copyImage=$('copy-image'), copyText=$('copy-text'), status=$('status');
 let prepared=null,version=0,pasteUrl='';
 items.forEach((item,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=item.title;select.append(option);});
@@ -49,4 +52,23 @@ $('read-back').addEventListener('click',async()=>{
     $('read-result').textContent=`クリップボード内の実画像を確認：${bitmap.width} × ${bitmap.height} / ${blob.type} / ${blob.size.toLocaleString()} bytes`;
     bitmap.close();
   } catch { $('read-result').textContent='この環境ではクリップボードの読取確認ができません。コピー成功とは別に確認が必要です。'; }
+});
+$('fetch-image').addEventListener('click',async()=>{
+  const button=$('fetch-image'),result=$('fetch-result');button.disabled=true;
+  result.textContent='画像を取得中…';result.setAttribute('role','status');
+  try {
+    const response=await fetch('/probe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:$('source-url').value.trim()}),signal:AbortSignal.timeout(70000)});
+    const payload=await response.json();
+    if(!response.ok||!payload.ok){result.textContent=payload.message||'画像を取得できませんでした。';result.setAttribute('role','alert');return;}
+    const item=payload.data;const index=items.findIndex(value=>value.title===item.title);
+    let slot=index;
+    if(slot<0){slot=items.length;items.push(item);const option=document.createElement('option');option.value=String(slot);option.textContent=item.title;select.append(option);}else{items[slot]=item;}
+    select.value=String(slot);
+    // Bypass the browser's decoded-image cache when replacing the same event.
+    items[slot].image=item.image+'?revision='+Date.now();
+    await prepare();
+    if(!prepared)throw Error('image-decode-failed');
+    result.textContent=`告知画像を取得しました：${item.width} × ${item.height}。画像をコピーできます。`;
+  }catch{result.textContent='画像を取得できませんでした。取得済みとは扱いません。';result.setAttribute('role','alert');}
+  finally{button.disabled=false;}
 });

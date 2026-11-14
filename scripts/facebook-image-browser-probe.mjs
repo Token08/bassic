@@ -34,7 +34,7 @@ async function downloadImage(value) {
   }
   throw Error('image-redirect-limit');
 }
-export async function browserProbe(browser,eventUrl,outputDirectory) {
+export async function browserProbe(browser,eventUrl,outputDirectory,{onImage}={}) {
   const metadata=await probeEventImage(eventUrl);
   const result={id:metadata.id,title:metadata.title,photoId:metadata.photoId,httpReason:metadata.reason||'transport-succeeded'};
   if(!metadata.title||!metadata.photoId)return {...result,ok:false,reason:'event-photo-metadata-unavailable'};
@@ -55,7 +55,8 @@ export async function browserProbe(browser,eventUrl,outputDirectory) {
     const cover=selectCover(snapshot.candidates,metadata.photoId);
     const {bytes,type}=await downloadImage(cover.src);
     const fileName=`${metadata.id}.${type==='image/png'?'png':'jpg'}`;
-    await mkdir(outputDirectory,{recursive:true});await writeFile(resolve(outputDirectory,fileName),bytes);
+    if(outputDirectory){await mkdir(outputDirectory,{recursive:true});await writeFile(resolve(outputDirectory,fileName),bytes);}
+    if(onImage)await onImage({bytes,type});
     return {...result,ok:true,fileName,type,bytes:bytes.length,width:cover.width,height:cover.height};
   } catch(error) {
     // Playwright errors may contain signed URLs. Only record a fixed diagnostic.
