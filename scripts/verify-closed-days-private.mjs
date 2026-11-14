@@ -1,4 +1,4 @@
-// Explicit live test: create a private disposable calendar, never use the store ID.
+// Explicit live test: write only to a private disposable calendar; store reads use a read-only token.
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { google } from "googleapis";
@@ -51,6 +51,13 @@ try {
   await api.events.patch({ calendarId: disposableId, eventId: changed.id, requestBody: { description: "Changed by another staff member" } });
   assert.equal((await run([remove("2027-06-01", changed)]))[0].state, "conflict");
   assert.equal((await access.get(live.id)).summary, "Live show");
+  const storeReader = await calendarAccess(json, productionId, false);
+  const month = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 7);
+  const from = month + "-01";
+  const until = new Date(Date.parse(month + "-28T00:00:00Z") + 4 * 86400000).toISOString().slice(0, 8) + "01";
+  const visibleStoreEvents = await storeReader.list(from, until);
+  assert.ok(Array.isArray(visibleStoreEvents));
+  console.log("Store calendar read-only connection verified. Store write calls: 0.");
   console.log("Private calendar: add, retry, remove, re-add, split rollback, recurrence exception and ETag conflict passed.");
   console.log("VERIFIED_ACCOUNT_FINGERPRINT=" + createHash("sha256").update(credentials.client_email).digest("hex"));
 } catch (error) {

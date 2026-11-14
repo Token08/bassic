@@ -22,7 +22,7 @@ permissions:
 
 concurrency:
   group: event-regression-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   private-calendar-qa:
@@ -59,10 +59,13 @@ jobs:
       - run: npm ci --prefix admin-app
       - run: npm run test:events
       - run: npm run test:publish-safety
+      - run: npm run test:closed-days
       - run: npm run build
       - run: npm run build:admin-app
       # All provider writes stay in memory. No CMS or calendar secrets are used.
       - name: Rehearse isolated event APIs (browser coverage runs locally)
         run: npm run smoke:events:isolated
+      - name: Rehearse closed-day APIs without provider writes
+        run: npm run smoke:closed-days
       - name: Rehearse full-site editing without provider writes
         run: npm run smoke:visual-editor

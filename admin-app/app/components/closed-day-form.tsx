@@ -23,6 +23,7 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
   const request = useRef<AbortController | null>(null);
   const alive = useRef(true), inFlight = useRef(false);
   const errorRef = useErrorFocus<HTMLDivElement>(Boolean(error), error + tick);
+  const reviewRef = useErrorFocus<HTMLElement>(review, review);
   const changes = Object.values(pending).sort((a, b) => a.date.localeCompare(b.date));
   const unresolved = results.some(r => r.state !== "applied");
   const unknown = results.some(r => r.state === "unknown");
@@ -88,7 +89,7 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
     try {
       const response = await fetchWithTimeout("/api/closed-days", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation, changes }) }, 58000);
       const result = await response.json();
-      if (!response.ok || !result.ok || !Array.isArray(result.data?.results)) throw Error(result.message || "反映結果を確認できませんでした。");
+      if (!response.ok || !result.ok || !Array.isArray(result.data?.results)) throw Object.assign(Error(result.message || "反映結果を確認できませんでした。"), { status: response.status });
       if (!alive.current) return;
       const returned: DayResult[] = result.data.results;
       if (returned.length !== changes.length || new Set(returned.map(r => r.date)).size !== returned.length || returned.some(r => !pending[r.date] || !["applied", "failed", "unknown", "conflict"].includes(r.state))) throw Error("反映結果を確認できませんでした。");
@@ -100,7 +101,9 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
       await load(month, true);
     } catch (e) {
       if (!alive.current) return;
-      setResults(waiting); setError(e instanceof Error ? e.message : "反映結果を確認できませんでした。"); setTick(v => v + 1); setNotice("");
+      const rejected = [400, 401, 403, 413].includes((e as { status?: number }).status || 0);
+      setResults(rejected ? changes.map(c => ({ date: c.date, state: "failed", message: "変更は受け付けられませんでした。" })) : waiting);
+      setError(e instanceof Error ? e.message : "反映結果を確認できませんでした。"); setTick(v => v + 1); setNotice("");
     } finally { inFlight.current = false; if (alive.current) setBusy(false); }
   }
   function clear() {
@@ -138,13 +141,13 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
         })}
       </div>
     </>}
-    {changes.length ? <section className="closed-calendar-selection" aria-label="選択した変更"><h2>{changes.length}日選択中</h2><ul>{changes.map(c => <li key={c.date}>{c.date}：{c.action === "add" ? "追加" : "取り消し"}{c.events.length > 1 ? `（${c.events.length}件）` : ""}</li>)}</ul>
+    {changes.length ? <section className={`closed-calendar-selection${review ? " is-reviewing" : ""}`} aria-label="選択した変更"><h2>{changes.length}日選択中</h2><ul>{changes.map(c => <li key={c.date}>{c.date}：{c.action === "add" ? "追加" : "取り消し"}{c.events.length > 1 ? `（${c.events.length}件）` : ""}</li>)}</ul>
       {results.filter(r => r.state !== "applied").map(r => <p className="form-error" key={r.date}>{r.date}：{r.message || "未完了です。"}</p>)}
       {unresolved ? <p>未完了分だけ同じ変更の結果を再確認します。{unknown ? "結果を確認するまで選択を残しています。" : "選び直す場合は選択をクリアしてください。"}</p> : null}
       <div className="closed-calendar-actions"><button type="button" className="secondary-button" disabled={busy || unknown} onClick={clear}>選択をクリア</button><button type="button" className="primary-button" disabled={busy || loading || !data?.canWrite || changes.length > 31} onClick={() => setReview(true)}>{unresolved ? "未完了分を再確認" : "変更を反映"}</button></div>
       {changes.length > 31 ? <p className="form-error">一度に31日まで選べます。</p> : null}
     </section> : null}
-    {review ? <section className="notice info" aria-label="店休日の変更確認"><h2>この内容で反映しますか？</h2><ul>{changes.map(c => <li key={c.date}>{c.date} {c.action === "add" ? "店休日を追加" : `店休日を取り消し：${c.events.map(e => e.title).join("・")}`}{data?.events.some(e => !e.editable && overlaps(e, c.date)) ? "（ほかの予定あり）" : ""}</li>)}</ul><p>取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={() => setReview(false)}>戻る</button><button className="primary-button" type="button" disabled={busy} onClick={() => void apply()}>この内容で反映</button></div></section> : null}
+    {review ? <section ref={reviewRef} tabIndex={-1} className="notice info" aria-label="店休日の変更確認"><h2>この内容で反映しますか？</h2><ul>{changes.map(c => <li key={c.date}>{c.date} {c.action === "add" ? "店休日を追加" : `店休日を取り消し：${c.events.map(e => e.title).join("・")}`}{data?.events.some(e => !e.editable && overlaps(e, c.date)) ? "（ほかの予定あり）" : ""}</li>)}</ul><p>取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={() => setReview(false)}>戻る</button><button className="primary-button" type="button" disabled={busy} onClick={() => void apply()}>この内容で反映</button></div></section> : null}
     {busy ? <p role="status">反映結果を確認中です。画面を閉じずにお待ちください。</p> : null}
   </section>;
 }

@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { applyClosedDays, dayEvent, editableClosedDay, monthRange } from "../admin-app/lib/closed-days.ts";
+import { closedDaysConnection, shopCalendarId } from "../admin-app/lib/closed-days-connection.ts";
 class MemoryCalendar {
   items = new Map(); writes = 0; before = () => {}; after = () => {};
   constructor(events = []) { for (const event of events) this.items.set(event.id, structuredClone(event)); }
@@ -105,4 +106,27 @@ test("month ranges are independent of local timezone and handle leap years", () 
   assert.deepEqual(monthRange("2028-02"), { start: "2028-02-01", end: "2028-03-01" });
   assert.deepEqual(monthRange("2026-12"), { start: "2026-12-01", end: "2027-01-01" });
   assert.throws(() => monthRange("2026-13"));
+});
+
+test("related dates remain together after a partial verification failure", async () => {
+  const original = holiday("legacy", "2026-12-01", "2026-12-06"), cal = new MemoryCalendar([original]);
+  const changes = [remove("2026-12-02", original), remove("2026-12-04", original)], operation = randomUUID();
+  let once = true;
+  cal.before = (kind, value) => { if (kind === "list" && value === "2026-12-02" && cal.items.get("legacy")?.status === "cancelled" && once) { once = false; throw Error("read timeout"); } };
+  assert.ok((await run(cal, changes, operation)).every(r => r.state === "unknown"));
+  assert.ok((await run(cal, changes, operation)).every(r => r.state === "applied"));
+  assert.deepEqual((await cal.list("2026-12-01", "2026-12-06")).map(e => [e.start.date, e.end.date]).sort(), [["2026-12-01", "2026-12-02"], ["2026-12-03", "2026-12-04"], ["2026-12-05", "2026-12-06"]]);
+});
+test("write gates require the verified account, explicit opt-in and store-only production target", () => {
+  const email = "fixture@example.invalid";
+  const env = { GOOGLE_CALENDAR_ID: shopCalendarId, GOOGLE_CALENDAR_READ_SERVICE_ACCOUNT_JSON: JSON.stringify({ client_email: email, private_key: "fixture" }),
+    GOOGLE_CALENDAR_CLOSED_DAYS_USE_EXISTING_ACCOUNT: "true", GOOGLE_CALENDAR_CLOSED_DAYS_ENABLED: "true", GOOGLE_CALENDAR_CLOSED_DAYS_ACCOUNT_FINGERPRINT: createHash("sha256").update(email).digest("hex"), VERCEL_ENV: "production" };
+  assert.equal(closedDaysConnection(env).writable, true);
+  for (const patch of [{ GOOGLE_CALENDAR_CLOSED_DAYS_USE_EXISTING_ACCOUNT: "false" }, { GOOGLE_CALENDAR_CLOSED_DAYS_ENABLED: "false" }, { GOOGLE_CALENDAR_CLOSED_DAYS_ACCOUNT_FINGERPRINT: "wrong" }, { VERCEL_ENV: "preview" }, { GOOGLE_CALENDAR_ID: "personal-calendar" }]) assert.equal(closedDaysConnection({ ...env, ...patch }).writable, false);
+});
+test("concurrent removal of the source never resurrects its other dates", async () => {
+  const original = holiday("legacy", "2026-12-01", "2026-12-04"), cal = new MemoryCalendar([original]);
+  cal.after = kind => { if (kind === "insert") cal.items.set("legacy", { ...original, status: "cancelled", etag: '"other-staff"' }); };
+  assert.equal((await run(cal, [remove("2026-12-02", original)]))[0].state, "conflict");
+  assert.equal((await cal.list("2026-12-01", "2026-12-04")).length, 0);
 });

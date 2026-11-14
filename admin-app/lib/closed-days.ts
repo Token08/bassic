@@ -105,12 +105,21 @@ async function removeDays(calendar: CalendarAccess, snapshot: DayEvent, dates: S
       throw Object.assign(Error("残す店休日の確認が必要です。担当者へ連絡してください。"), { unknown: true });
     }
   }
-  if (!original || original.status === "cancelled") { await verifyCopies(); return; }
+  if (!original || original.status === "cancelled") {
+    if (expectedBodies.length && !(await copies()).length) throw Object.assign(Error("元の予定が変更されています。再読み込みして確認してください。"), { status: 412 });
+    await verifyCopies(); return;
+  }
   if (!editableClosedDay(original) || original.etag !== snapshot.etag || original.start?.date !== snapshot.start || original.end?.date !== snapshot.end || original.summary !== snapshot.title) {
     throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
   }
   const bodies = retainedBodies(original, dates, operation);
   const retained: CalendarItem[] = [];
+  let deleteAttempted = false;
+  async function rollbackCopies() {
+    for (const found of await copies()) {
+      if (bodies.some(body => sameRetained(found, body, operation, original!.id))) await calendar.remove(found.id, found.etag);
+    }
+  }
   try {
     for (const body of bodies) {
       let found = false;
@@ -122,6 +131,9 @@ async function removeDays(calendar: CalendarAccess, snapshot: DayEvent, dates: S
       }
       if (!found) throw Error("残す予定の履歴を確認する必要があります。担当者へ連絡してください。");
     }
+    const latest = await calendar.get(original.id);
+    if (!latest || latest.status === "cancelled" || latest.etag !== original.etag) throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
+    deleteAttempted = true;
     await calendar.remove(original.id, original.etag);
     const after = await calendar.get(original.id);
     if (after && after.status !== "cancelled") throw Error("取り消し結果を確認できませんでした。");
@@ -130,6 +142,12 @@ async function removeDays(calendar: CalendarAccess, snapshot: DayEvent, dates: S
       if (!found || !sameRetained(found, copy, operation, original.id)) throw Error("残す店休日を確認できませんでした。");
     }
   } catch (error) {
+    if (!deleteAttempted || [404, 410].includes(statusOf(error) || 0)) {
+      try { await rollbackCopies(); }
+      catch { throw Object.assign(Error("元の予定は変更していません。作成したコピーの復旧確認が必要です。担当者へ連絡してください。"), { unknown: true }); }
+      if ([404, 410].includes(statusOf(error) || 0)) throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
+      throw Object.assign(error instanceof Error ? error : Error("予定を変更できませんでした。"), { definitive: true });
+    }
     // Never remove retained dates unless the original is confirmed to still exist.
     let source: CalendarItem | null;
     try { source = await calendar.get(original.id); }
@@ -140,11 +158,10 @@ async function removeDays(calendar: CalendarAccess, snapshot: DayEvent, dates: S
     }
     // Roll back only the copies made by this operation, with ETags.
     try {
-      for (const found of await copies()) {
-        if (bodies.some(body => sameRetained(found, body, operation, original.id))) await calendar.remove(found.id, found.etag);
-      }
+      await rollbackCopies();
     } catch { throw Object.assign(Error("元の店休日は残っています。復旧の確認が必要です。担当者へ連絡してください。"), { unknown: true }); }
-    throw error;
+    if (source.etag !== original.etag) throw Object.assign(Error("予定が変更されています。再読み込みして確認してください。"), { status: 412 });
+    throw Object.assign(error instanceof Error ? error : Error("予定を変更できませんでした。"), { definitive: true });
   }
 }
 export async function applyClosedDays(calendar: CalendarAccess, calendarId: string, changes: DayChange[], operation: string): Promise<DayResult[]> {
@@ -159,7 +176,7 @@ export async function applyClosedDays(calendar: CalendarAccess, calendarId: stri
   }
   for (const { snapshot, dates } of removals.values()) {
     try { await removeDays(calendar, snapshot, dates, operation); }
-    catch (error) { for (const date of dates) results.set(date, { date, state: (error as { unknown?: boolean }).unknown ? "unknown" : statusOf(error) === 412 ? "conflict" : "failed", message: error instanceof Error ? error.message : "取り消せませんでした。" }); }
+    catch (error) { for (const date of dates) results.set(date, { date, state: statusOf(error) === 412 ? "conflict" : (error as { definitive?: boolean }).definitive ? "failed" : "unknown", message: error instanceof Error ? error.message : "取り消せませんでした。" }); }
   }
   for (const change of changes) {
     if (results.has(change.date)) continue;

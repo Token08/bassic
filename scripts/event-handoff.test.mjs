@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { calendarDraftUrl, xPostUrl } from "../admin-app/lib/event-handoff.ts";
 import { calendarDescription } from "../lib/calendar-event-content.mjs";
-import { closedDayDraftUrl } from "../admin-app/lib/closed-day.ts";
 
 test("calendar draft preserves Japanese content, JST and image links without making writes", () => {
   const url = new URL(calendarDraftUrl({ title: "Bassic ライヴ & DJ", date: "2026-12-12", startTime: "19:00", endTime: "22:00", imageUrl: "https://example.com/poster.png?a=1&b=2", sourceUrl: "https://www.facebook.com/events/12345678/", price: "3,000円", reservation: "メール予約" }));

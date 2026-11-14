@@ -42,8 +42,7 @@ export class GoogleClosedDays implements CalendarAccess {
     return await (await this.request("?sendUpdates=none", { method: "POST", body: JSON.stringify(body) })).json();
   }
   async remove(id: string, etag: string) {
-    try { await this.request("/" + encodeURIComponent(id) + "?sendUpdates=none", { method: "DELETE", headers: { "If-Match": etag } }); }
-    catch (error) { if (![404, 410].includes((error as { status: number }).status)) throw error; }
+    await this.request("/" + encodeURIComponent(id) + "?sendUpdates=none", { method: "DELETE", headers: { "If-Match": etag } });
   }
 }
 
