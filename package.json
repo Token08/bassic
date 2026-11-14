@@ -5,6 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:facebook-images": "node --test scripts/facebook-image-probe.test.mjs scripts/facebook-image-browser-probe.test.mjs scripts/image-clipboard-lab.test.mjs",
+    "lab:images": "node scripts/image-clipboard-lab.mjs",
     "test:pdf": "node --experimental-strip-types --test scripts/pdf-upload.test.mjs",
     "test:events": "node --test scripts/facebook-event-time.test.mjs scripts/ops-failure.test.mjs scripts/calendar-upsert.test.mjs scripts/fetch-with-timeout.test.mjs scripts/event-storage.test.mjs scripts/cms-request.test.mjs scripts/social-notice-storage.test.mjs",
     "smoke:events:isolated": "node scripts/smoke-event-flow-isolated.mjs",
