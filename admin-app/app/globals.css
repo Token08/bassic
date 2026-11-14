@@ -2701,6 +2701,25 @@ a.current-edit-page:hover {
   justify-self: start;
 }
 
+.closed-calendar-toolbar, .closed-calendar-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.closed-calendar-toolbar h2 { margin: 0 auto; }
+.closed-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.closed-calendar-weekday { text-align: center; font-weight: 800; padding: 8px 0; }
+.closed-calendar-day { border: 1px solid var(--line); border-radius: 8px; background: #fffdf8; overflow: hidden; min-width: 0; }
+.closed-calendar-date { display: flex; width: 100%; min-height: 85px; align-items: flex-start; flex-direction: column; gap: 6px; padding: 10px; border: 0; background: transparent; text-align: left; }
+.closed-calendar-date strong { font-size: 1.15rem; }
+.closed-calendar-date span, .closed-calendar-date small { font-size: 0.76rem; }
+.closed-calendar-day.is-closed { background: #f9e6e3; border-color: var(--accent); }
+.closed-calendar-day.is-pending { outline: 2px solid #936724; outline-offset: -2px; background: #fff0cf; }
+.closed-calendar-day ul { padding: 0 8px 8px 22px; margin: 0; font-size: 0.76rem; max-height: 90px; overflow-y: auto; overflow-wrap: anywhere; }
+.closed-calendar-selection { border: 1px solid var(--line); border-radius: 10px; padding: 18px; background: #fffdf8; }
+.closed-calendar-selection > ul { display: flex; gap: 6px 20px; flex-wrap: wrap; padding-left: 20px; }
+@media (max-width: 700px) {
+  .closed-calendar-date { min-height: 72px; padding: 5px; }
+  .closed-calendar-date span { font-size: 0.65rem; }
+  .closed-calendar-day ul { padding-left: 15px; font-size: 0.65rem; }
+}
+
 .admin-shortcuts .closed-day-add-button {
   display: flex;
   align-items: center;

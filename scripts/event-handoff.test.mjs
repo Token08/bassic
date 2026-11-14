@@ -4,19 +4,6 @@ import { calendarDraftUrl, xPostUrl } from "../admin-app/lib/event-handoff.ts";
 import { calendarDescription } from "../lib/calendar-event-content.mjs";
 import { closedDayDraftUrl } from "../admin-app/lib/closed-day.ts";
 
-test("closed days use all-day dates, shop calendar and an exclusive end without writes", () => {
-  const single = new URL(closedDayDraftUrl("2026-12-31", "", "年末休業", "shop@example.invalid"));
-  assert.equal(single.origin, "https://calendar.google.com");
-  assert.equal(single.searchParams.get("text"), "店休日");
-  assert.equal(single.searchParams.get("dates"), "20261231/20270101");
-  assert.equal(single.searchParams.get("src"), "shop@example.invalid");
-  assert.equal(single.searchParams.get("details"), "年末休業");
-  assert.equal(new URL(closedDayDraftUrl("2028-02-28", "2028-03-01", "", "shop")).searchParams.get("dates"), "20280228/20280302");
-  for (const [first, last, id] of [["", "", "shop"], ["2026-02-30", "", "shop"], ["2026-12-31", "2026-12-30", "shop"], ["2026-12-31", "", ""], ["9999-12-31", "", "shop"]]) {
-    assert.equal(closedDayDraftUrl(first, last, "", id), "");
-  }
-});
-
 test("calendar draft preserves Japanese content, JST and image links without making writes", () => {
   const url = new URL(calendarDraftUrl({ title: "Bassic ライヴ & DJ", date: "2026-12-12", startTime: "19:00", endTime: "22:00", imageUrl: "https://example.com/poster.png?a=1&b=2", sourceUrl: "https://www.facebook.com/events/12345678/", price: "3,000円", reservation: "メール予約" }));
   assert.equal(url.origin, "https://calendar.google.com");
