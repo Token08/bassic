@@ -11,6 +11,11 @@ on:
       - "package*.json"
       - ".github/workflows/event-regression.yml"
   workflow_dispatch:
+    inputs:
+      public_image_probe:
+        type: boolean
+        default: false
+        description: Read-only image feasibility probe for three fixed public Bassic events; no credentials or posts
 
 permissions:
   contents: read
@@ -21,6 +26,7 @@ concurrency:
 
 jobs:
   isolated-events:
+    if: inputs.public_image_probe != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -46,3 +52,30 @@ jobs:
         run: npm run smoke:events:isolated
       - name: Rehearse full-site editing without provider writes
         run: npm run smoke:visual-editor
+  public-image-probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.public_image_probe == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install isolated public-page browser runtime
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bassic-image-probe" --no-save --package-lock=false --ignore-scripts playwright@1.58.2
+          "$RUNNER_TEMP/bassic-image-probe/node_modules/.bin/playwright" install --with-deps chromium --only-shell
+      - name: Read three public event images without accounts or provider writes
+        env:
+          BASSIC_QA_PLAYWRIGHT: ${{ runner.temp }}/bassic-image-probe/node_modules/playwright
+        run: |
+          node scripts/facebook-image-browser-probe.mjs --execute-public-probe "$RUNNER_TEMP/bassic-image-results" https://www.facebook.com/events/1821212975591464/ https://www.facebook.com/events/29205926255674734/ https://www.facebook.com/events/2385993572172152/
+          node --input-type=module -e 'import fs from "node:fs"; const r=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/bassic-image-results/browser-report.json","utf8")); if(r.results.length!==3 || !r.results.every(x=>x.ok)) process.exit(1);'
+      - name: Retain sanitized diagnostic report only (no image files)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: public-image-probe-report
+          path: ${{ runner.temp }}/bassic-image-results/browser-report.json
+          retention-days: 3
+          if-no-files-found: ignore
