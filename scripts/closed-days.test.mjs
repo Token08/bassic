@@ -130,3 +130,14 @@ test("concurrent removal of the source never resurrects its other dates", async 
   assert.equal((await run(cal, [remove("2026-12-02", original)]))[0].state, "conflict");
   assert.equal((await cal.list("2026-12-01", "2026-12-04")).length, 0);
 });
+test("a conditional-delete conflict rolls back only this operation's copies", async () => {
+  const original = holiday("legacy", "2026-12-01", "2026-12-04"), cal = new MemoryCalendar([original]);
+  cal.before = (kind, id) => {
+    if (kind === "remove" && id === "legacy") {
+      cal.items.set("legacy", { ...original, status: "cancelled", etag: '"other-operation"' });
+      throw Object.assign(Error("conditional conflict"), { status: 412 });
+    }
+  };
+  assert.equal((await run(cal, [remove("2026-12-02", original)]))[0].state, "conflict");
+  assert.equal((await cal.list("2026-12-01", "2026-12-04")).length, 0);
+});
