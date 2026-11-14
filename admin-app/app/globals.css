@@ -2691,6 +2691,28 @@ a.current-edit-page:hover {
   border-top: 1px solid var(--line);
 }
 
+.closed-day-form,
+.closed-day-form form {
+  display: grid;
+  gap: 18px;
+}
+
+.closed-day-form > .text-button {
+  justify-self: start;
+}
+
+.admin-shortcuts .closed-day-add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  background: #fffdf8;
+}
+
 .admin-shortcuts .event-add-button {
   display: flex;
   align-items: center;
