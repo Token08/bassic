@@ -44,6 +44,21 @@ export async function rehearseClosedDays(context, base) {
     assert.equal(await panel.getByRole("button", { name: "Googleカレンダーで保存" }).count(), 0);
     await date(current + "-10").click(); await date(current + "-10").click();
     assert.equal(await panel.getByRole("region", { name: "選択した変更" }).count(), 0, "Clicking twice clears an unsubmitted selection");
+    // Select a whole cell, including its lower empty area, and return from review.
+    const liveDay = date(current + "-06");
+    const box = await liveDay.boundingBox();
+    await liveDay.click({ position: { x: box.width - 8, y: box.height - 8 } });
+    assert.equal(await liveDay.getAttribute("aria-pressed"), "true");
+    const beforeReview = await page.evaluate(() => window.scrollY);
+    await panel.getByRole("button", { name: "変更を反映", exact: true }).click();
+    const review = panel.getByRole("region", { name: "店休日の変更確認", exact: true });
+    await review.getByText("ほかの予定あり", { exact: true }).waitFor();
+    await review.screenshot({ path: process.env.TEMP + "/bassic-closed-calendar-review.png" });
+    await review.getByRole("button", { name: "戻る", exact: true }).click();
+    await page.waitForFunction(y => Math.abs(window.scrollY - y) < 70, beforeReview);
+    await liveDay.press("Space");
+    assert.equal(await liveDay.getAttribute("aria-pressed"), "false");
+    assert.equal(calls.length, 0, "Reviewing and cancelling must not send changes");
     await date(current + "-10").click();
     await panel.getByRole("button", { name: "翌月", exact: true }).click();
     await date(next + "-03").click();
@@ -94,6 +109,11 @@ export async function rehearseClosedDays(context, base) {
     await page.getByRole("button", { name: "MENU", exact: true }).click();
     assert.match(await date(current + "-20").innerText(), /追加予定/);
     await page.screenshot({ path: process.env.TEMP + "/bassic-closed-calendar.png", fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator(".closed-calendar-board").scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, "Phone layout must not overflow horizontally");
+    await page.screenshot({ path: process.env.TEMP + "/bassic-closed-calendar-phone.png" });
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await panel.getByRole("button", { name: "選択をクリア", exact: true }).click();
     writable = false;
     await panel.getByRole("button", { name: "再読み込み", exact: true }).click();

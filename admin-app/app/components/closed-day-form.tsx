@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, ArrowLeft, CalendarDays, Check, CheckCircle2, ChevronLeft, ChevronRight, Info, Loader2, Minus, MousePointer2, Plus, RefreshCw } from "lucide-react";
 import { monthRange, overlaps, shiftDay, validDay } from "@public/lib/closed-days-view.mjs";
 import type { DayChange, DayEvent, DayResult } from "@/lib/closed-days";
 import { useErrorFocus } from "@/lib/use-error-focus";
@@ -22,6 +23,7 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
   const [tick, setTick] = useState(0);
   const request = useRef<AbortController | null>(null);
   const alive = useRef(true), inFlight = useRef(false);
+  const reviewScroll = useRef(0), reviewTrigger = useRef<HTMLButtonElement>(null);
   const errorRef = useErrorFocus<HTMLDivElement>(Boolean(error), error + tick);
   const reviewRef = useErrorFocus<HTMLElement>(review, review);
   const changes = Object.values(pending).sort((a, b) => a.date.localeCompare(b.date));
@@ -118,36 +120,64 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
     if (next >= "1900-01" && next <= "9998-12") setMonth(next);
     setReview(false);
   }
+  function openReview() { reviewScroll.current = window.scrollY; setReview(true); }
+  function closeReview() {
+    setReview(false);
+    requestAnimationFrame(() => {
+      if (!alive.current) return;
+      reviewTrigger.current?.focus({ preventScroll: true });
+      window.scrollTo({ top: reviewScroll.current, behavior: "auto" });
+    });
+  }
   const range = monthRange(month), days: string[] = [];
   for (let date = range.start; date < range.end; date = shiftDay(date, 1)) days.push(date);
-  return <section className="closed-day-form" aria-label="店休日カレンダー">
-    <button className="text-button" type="button" disabled={busy} onClick={onBack}>← 戻る</button><h1>店休日を追加・取り消し</h1>
-    {error ? <div ref={errorRef} tabIndex={-1} role="alert" className="notice error">{error}</div> : null}
-    {notice ? <p role="status" className="notice info">{notice}</p> : null}
-    <div className="closed-calendar-toolbar"><button type="button" className="secondary-button" disabled={busy} onClick={() => move(-1)}>前月</button><h2>{month.replace("-", "年")}月</h2><button type="button" className="secondary-button" disabled={busy} onClick={() => move(1)}>翌月</button><button type="button" className="secondary-button" disabled={busy} onClick={() => setMonth(today().slice(0, 7))}>今月</button><button type="button" className="secondary-button" disabled={busy || loading} onClick={() => void load(month)}>再読み込み</button></div>
-    <p>日付を選ぶ → 変更を反映。店休日を選ぶと取り消せます。</p>
-    {loading ? <p role="status">予定を読み込んでいます…</p> : !data ? <button type="button" className="secondary-button" onClick={() => void load(month)}>もう一度読み込む</button> : <>
-      {!data.canWrite ? <p className="notice info">カレンダーは確認できます。店休日の変更は接続確認後に利用できます。</p> : null}
-      <div className="closed-calendar-grid" aria-label={month + "の予定"}>
-        {["日", "月", "火", "水", "木", "金", "土"].map(day => <div className="closed-calendar-weekday" key={day}>{day}</div>)}
-        {Array.from({ length: new Date(range.start + "T00:00:00Z").getUTCDay() }, (_, i) => <div className="closed-calendar-blank" key={"blank" + i} />)}
-        {days.map(date => {
-          const events = data.events.filter(e => overlaps(e, date)), closed = events.filter(e => e.editable), selection = pending[date];
-          const state = selection ? selection.action === "add" ? "追加予定" : "取り消し予定" : closed.length ? "店休日" : "";
-          return <div className={`closed-calendar-day${closed.length ? " is-closed" : ""}${selection ? " is-pending" : ""}`} key={date}>
-            <button type="button" className="closed-calendar-date" aria-label={date + (state ? " " + state : " 店休日を追加")} aria-pressed={Boolean(selection)} disabled={!data.canWrite || busy || unresolved} onClick={() => toggle(date)}><strong>{Number(date.slice(-2))}</strong>{date === today() ? <small>今日</small> : null}{state ? <span>{state}</span> : null}</button>
-            <ul>{events.map(e => <li key={e.id}>{e.title}{e.recurring ? "（繰り返し）" : ""}</li>)}</ul>
-          </div>;
-        })}
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const leading = new Date(range.start + "T00:00:00Z").getUTCDay();
+  const trailing = (7 - ((leading + days.length) % 7)) % 7;
+  const additions = changes.filter(c => c.action === "add"), removals = changes.filter(c => c.action === "remove");
+  const label = (date: string, full = false) => `${full ? date.slice(0, 4) + "年" : ""}${Number(date.slice(5, 7))}${full ? "月" : "/"}${Number(date.slice(8, 10))}${full ? "日" : ""}（${weekdays[new Date(date + "T00:00:00Z").getUTCDay()]}）`;
+  return <section className="closed-day-form" aria-label="店休日カレンダー" aria-busy={busy}>
+    <button className="text-button closed-calendar-back" aria-label="イベントスケジュールへ戻る" type="button" disabled={busy} onClick={onBack}><ArrowLeft size={16} aria-hidden="true" /> 戻る</button>
+    <header className="closed-calendar-heading"><div><p className="eyebrow">店休日の設定</p><h1>店休日を追加・取り消し</h1></div><span className="closed-calendar-connection"><CalendarDays size={15} aria-hidden="true" /> Bassicのカレンダー</span></header>
+    {error ? <div ref={errorRef} tabIndex={-1} role="alert" className="notice error closed-calendar-feedback"><AlertCircle size={18} aria-hidden="true" /><span>{error}</span></div> : null}
+    {notice ? <div role="status" className={`notice ${notice === "反映済みです。" ? "success" : "info"} closed-calendar-feedback`}>{notice === "反映済みです。" ? <CheckCircle2 size={18} aria-hidden="true" /> : <Info size={18} aria-hidden="true" />}<span>{notice}</span></div> : null}
+    <div className="closed-calendar-board">
+      <div className="closed-calendar-toolbar">
+        <div className="closed-calendar-month-nav"><button type="button" className="secondary-button" disabled={busy} onClick={() => move(-1)}><ChevronLeft size={17} aria-hidden="true" /> 前月</button><button type="button" className="secondary-button" disabled={busy} onClick={() => move(1)}>翌月 <ChevronRight size={17} aria-hidden="true" /></button></div>
+        <h2 className="closed-calendar-month"><span>{month.slice(0, 4)}年</span><strong>{Number(month.slice(5))}月</strong></h2>
+        <div className="closed-calendar-tools"><button type="button" className="secondary-button" disabled={busy} onClick={() => setMonth(today().slice(0, 7))}>今月</button><button type="button" className="secondary-button" disabled={busy || loading} onClick={() => void load(month)}><RefreshCw size={15} className={loading ? "spin" : undefined} aria-hidden="true" /> 再読み込み</button></div>
       </div>
-    </>}
-    {changes.length ? <section className={`closed-calendar-selection${review ? " is-reviewing" : ""}`} aria-label="選択した変更"><h2>{changes.length}日選択中</h2><ul>{changes.map(c => <li key={c.date}>{c.date}：{c.action === "add" ? "追加" : "取り消し"}{c.events.length > 1 ? `（${c.events.length}件）` : ""}</li>)}</ul>
-      {results.filter(r => r.state !== "applied").map(r => <p className="form-error" key={r.date}>{r.date}：{r.message || "未完了です。"}</p>)}
-      {unresolved ? <p>未完了分だけ同じ変更の結果を再確認します。{unknown ? "結果を確認するまで選択を残しています。" : "選び直す場合は選択をクリアしてください。"}</p> : null}
-      <div className="closed-calendar-actions"><button type="button" className="secondary-button" disabled={busy || unknown} onClick={clear}>選択をクリア</button><button type="button" className="primary-button" disabled={busy || loading || !data?.canWrite || changes.length > 31} onClick={() => setReview(true)}>{unresolved ? "未完了分を再確認" : "変更を反映"}</button></div>
+      <div className="closed-calendar-guide"><p>日付を選んで、まとめて変更。</p><div className="closed-calendar-legend" aria-label="表示の意味"><span className="legend-closed"><span aria-hidden="true">●</span> 店休日</span><span className="legend-add"><Plus size={13} aria-hidden="true" /> 追加予定</span><span className="legend-remove"><Minus size={13} aria-hidden="true" /> 取り消し予定</span></div></div>
+      {loading ? <div className="closed-calendar-placeholder" role="status"><Loader2 size={24} className="spin" aria-hidden="true" /><p>予定を読み込んでいます…</p></div> : !data ? <div className="closed-calendar-placeholder"><CalendarDays size={30} aria-hidden="true" /><p>カレンダーを表示できませんでした。</p><button type="button" className="secondary-button" onClick={() => void load(month)}>もう一度読み込む</button></div> : <>
+        {!data.canWrite ? <p className="notice info">カレンダーは確認できます。店休日の変更は接続確認後に利用できます。</p> : null}
+        <div className="closed-calendar-grid" aria-label={month + "の予定"}>
+          {weekdays.map((day, index) => <div className={`closed-calendar-weekday${index === 0 ? " is-sunday" : index === 6 ? " is-saturday" : ""}`} key={day}>{day}</div>)}
+          {Array.from({ length: leading }, (_, i) => <div className="closed-calendar-outside" aria-hidden="true" key={"before" + i}>{Number(shiftDay(range.start, i - leading).slice(-2))}</div>)}
+          {days.map(date => {
+            const events = data.events.filter(e => overlaps(e, date)), closed = events.filter(e => e.editable), selection = pending[date];
+            const otherEvents = events.filter(e => !e.editable);
+            const state = selection ? selection.action === "add" ? "追加予定" : "取り消し予定" : closed.length ? "店休日" : "";
+            const dayOfWeek = new Date(date + "T00:00:00Z").getUTCDay();
+            return <button type="button" key={date} className={`closed-calendar-day${closed.length ? " is-closed" : ""}${selection ? " is-" + selection.action : ""}${date === today() ? " is-today" : ""}${dayOfWeek === 0 ? " is-sunday" : ""}`} aria-label={date + (state ? " " + state : " 店休日を追加")} aria-current={date === today() ? "date" : undefined} aria-pressed={Boolean(selection)} aria-describedby={otherEvents.length ? "closed-calendar-events-" + date : undefined} disabled={!data.canWrite || busy || unresolved} onClick={() => toggle(date)} title={events.map(e => e.title).join("\n")}>
+              <span className="closed-calendar-date-heading"><strong>{Number(date.slice(-2))}</strong>{date === today() ? <small>今日</small> : null}</span>
+              {state ? <span className={`closed-calendar-state${selection ? " state-" + selection.action : ""}`}>{selection?.action === "add" ? <Plus size={13} aria-hidden="true" /> : selection?.action === "remove" ? <Minus size={13} aria-hidden="true" /> : <span className="closed-calendar-dot" aria-hidden="true">●</span>}<span className="closed-state-full">{state}{!selection && closed.length > 1 ? ` ${closed.length}件` : ""}</span><span className="closed-state-short" aria-hidden="true">{selection ? selection.action === "add" ? "追加" : "取消" : closed.length > 1 ? `休 ${closed.length}件` : "店休日"}</span></span> : null}
+              {closed.some(e => e.recurring) ? <span className="closed-calendar-recurring"><RefreshCw size={11} aria-hidden="true" /> 繰り返し</span> : null}
+              {otherEvents.length ? <span id={"closed-calendar-events-" + date} className="closed-calendar-events" aria-label="当日の予定">{otherEvents.map(e => <span className="closed-calendar-event" key={e.id}>{e.title}</span>)}</span> : null}
+            </button>;
+          })}
+          {Array.from({ length: trailing }, (_, i) => <div className="closed-calendar-outside" aria-hidden="true" key={"after" + i}>{i + 1}</div>)}
+        </div>
+        <p className="closed-calendar-footnote"><Info size={14} aria-hidden="true" /> ライブなどの予定は確認のみ。変更するのは店休日だけです。</p>
+      </>}
+    </div>
+    {changes.length ? <section className={`closed-calendar-selection${review ? " is-reviewing" : ""}`} aria-label="選択した変更">
+      <div className="closed-calendar-selection-main"><div className="closed-calendar-selection-summary"><h2>{changes.length}日選択中</h2><div className="closed-calendar-counts">{additions.length ? <span className="count-add"><Plus size={13} aria-hidden="true" />追加 {additions.length}日</span> : null}{removals.length ? <span className="count-remove"><Minus size={13} aria-hidden="true" />取り消し {removals.length}日</span> : null}</div></div><div className="closed-calendar-actions"><button type="button" className="text-button" disabled={busy || unknown} onClick={clear}>選択をクリア</button><button type="button" ref={reviewTrigger} className="primary-button" disabled={busy || loading || !data?.canWrite || changes.length > 31} onClick={openReview}>{busy ? <Loader2 size={17} className="spin" aria-hidden="true" /> : <Check size={17} aria-hidden="true" />}{unresolved ? "未完了分を再確認" : "変更を反映"}</button></div></div>
+      <details className="closed-calendar-selected-dates"><summary>選択した日付を見る</summary><ul>{changes.map(c => <li className={"selected-" + c.action} key={c.date}><span>{c.action === "add" ? "＋" : "－"}</span>{label(c.date)}{c.events.length > 1 ? `（${c.events.length}件）` : ""}</li>)}</ul></details>
+      {results.filter(r => r.state !== "applied").map(r => <p className="form-error" key={r.date}>{label(r.date)}：{r.message || "未完了です。"}</p>)}
+      {unresolved ? <p className="closed-calendar-recovery">未完了分だけ同じ変更の結果を再確認します。{unknown ? "結果を確認するまで選択を残しています。" : "選び直す場合は選択をクリアしてください。"}</p> : null}
       {changes.length > 31 ? <p className="form-error">一度に31日まで選べます。</p> : null}
-    </section> : null}
-    {review ? <section ref={reviewRef} tabIndex={-1} className="notice info" aria-label="店休日の変更確認"><h2>この内容で反映しますか？</h2><ul>{changes.map(c => <li key={c.date}>{c.date} {c.action === "add" ? "店休日を追加" : `店休日を取り消し：${c.events.map(e => e.title).join("・")}`}{data?.events.some(e => !e.editable && overlaps(e, c.date)) ? "（ほかの予定あり）" : ""}</li>)}</ul><p>取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={() => setReview(false)}>戻る</button><button className="primary-button" type="button" disabled={busy} onClick={() => void apply()}>この内容で反映</button></div></section> : null}
-    {busy ? <p role="status">反映結果を確認中です。画面を閉じずにお待ちください。</p> : null}
+    </section> : <p className="closed-calendar-empty-selection"><MousePointer2 size={15} aria-hidden="true" /> 店休日にする日、取り消す日を選んでください。</p>}
+    {review ? <section ref={reviewRef} tabIndex={-1} className="closed-calendar-review" aria-label="店休日の変更確認"><header><span className="eyebrow">変更内容の確認</span><h2>この内容で反映しますか？</h2></header><div className="closed-calendar-review-groups">{([{ action: "add", title: "店休日を追加", list: additions }, { action: "remove", title: "店休日を取り消し", list: removals }] as const).filter(group => group.list.length).map(group => <div className={"closed-calendar-review-group review-" + group.action} key={group.action}><h3>{group.action === "add" ? <Plus size={16} aria-hidden="true" /> : <Minus size={16} aria-hidden="true" />}{group.title}<span>{group.list.length}日</span></h3><ul>{group.list.map(c => <li key={c.date}><strong>{label(c.date, true)}</strong>{c.action === "remove" ? <small>{c.events.map(e => e.title).join("・")}</small> : null}{data?.events.some(e => !e.editable && overlaps(e, c.date)) ? <span className="closed-calendar-overlap"><Info size={13} aria-hidden="true" />ほかの予定あり</span> : null}</li>)}</ul></div>)}</div><p className="closed-calendar-footnote"><Info size={14} aria-hidden="true" /> 取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={closeReview}>戻る</button><button className="primary-button" type="button" disabled={busy} onClick={() => void apply()}><Check size={17} aria-hidden="true" /> この内容で反映</button></div></section> : null}
+    {busy ? <p role="status" className="closed-calendar-feedback"><Loader2 size={17} className="spin" aria-hidden="true" />反映結果を確認中です。画面を閉じずにお待ちください。</p> : null}
   </section>;
 }

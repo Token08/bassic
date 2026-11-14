@@ -2701,27 +2701,127 @@ a.current-edit-page:hover {
   justify-self: start;
 }
 
-.closed-calendar-toolbar, .closed-calendar-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.closed-calendar-toolbar h2 { margin: 0 auto; }
-.closed-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
-.closed-calendar-weekday { text-align: center; font-weight: 800; padding: 8px 0; }
-.closed-calendar-day { border: 1px solid var(--line); border-radius: 8px; background: #fffdf8; overflow: hidden; min-width: 0; }
-.closed-calendar-date { display: flex; width: 100%; min-height: 85px; align-items: flex-start; flex-direction: column; gap: 6px; padding: 10px; border: 0; background: transparent; text-align: left; }
-.closed-calendar-date strong { font-size: 1.15rem; }
-.closed-calendar-date span, .closed-calendar-date small { font-size: 0.76rem; }
-.closed-calendar-day.is-closed { background: #f9e6e3; border-color: var(--accent); }
-.closed-calendar-day.is-pending { outline: 2px solid #936724; outline-offset: -2px; background: #fff0cf; }
-.closed-calendar-day ul { padding: 0 8px 8px 22px; margin: 0; font-size: 0.76rem; max-height: 90px; overflow-y: auto; overflow-wrap: anywhere; }
-.closed-calendar-selection { position: sticky; bottom: 12px; z-index: 12; border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: #fffdf8; box-shadow: 0 5px 20px #20191618; }
-.closed-calendar-selection.is-reviewing { position: static; }
-.closed-calendar-selection > ul { display: flex; gap: 6px 20px; flex-wrap: wrap; padding-left: 20px; max-height: 90px; overflow-y: auto; }
+/* Store calendar: presentation only; Google mutation and retry logic stay separate. */
+.closed-day-form { gap: 16px; }
+.closed-day-form h1, .closed-day-form h2, .closed-day-form h3, .closed-day-form p { margin: 0; }
+.closed-calendar-back { display: inline-flex; align-items: center; gap: 6px; padding: 0; min-height: 26px; font-size: .86rem; color: var(--muted); }
+.closed-calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 2px 0 6px; }
+.closed-calendar-heading h1 { font-size: clamp(1.35rem, 2vw, 1.85rem); line-height: 1.4; }
+.closed-calendar-heading .eyebrow { font-size: .74rem; margin-bottom: 5px; }
+.closed-calendar-connection { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; color: var(--muted); font-size: .78rem; }
+.closed-calendar-board { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fffdf8; box-shadow: 0 4px 18px #20191606; }
+.closed-calendar-toolbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 18px 20px 14px; }
+.closed-calendar-month-nav, .closed-calendar-tools, .closed-calendar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.closed-calendar-tools { justify-content: flex-end; }
+.closed-calendar-toolbar .secondary-button { min-height: 36px; padding: 7px 10px; font-size: .8rem; gap: 4px; }
+.closed-calendar-month { display: flex; align-items: baseline; justify-content: center; gap: 9px; white-space: nowrap; }
+.closed-calendar-month span { color: var(--muted); font-size: .85rem; font-weight: 500; }
+.closed-calendar-month strong { font-size: 1.85rem; line-height: 1.15; }
+.closed-calendar-guide { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 0 20px 16px; color: var(--muted); font-size: .82rem; }
+.closed-calendar-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; font-size: .73rem; }
+.closed-calendar-legend > span { display: inline-flex; align-items: center; gap: 4px; }
+.legend-closed { color: #8c3238; }
+.legend-add { color: #846018; }
+.legend-remove { color: #a14949; }
+.closed-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
+.closed-calendar-weekday { text-align: center; font-size: .77rem; font-weight: 700; padding: 9px 0; background: #f7f3eb; color: var(--muted); }
+.closed-calendar-weekday.is-sunday { color: #a33b42; }
+.closed-calendar-weekday.is-saturday { color: #967131; }
+.closed-calendar-day { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 7px; min-height: 110px; min-width: 0; padding: 10px; border: 0; border-radius: 0; background: #fffdf8; color: var(--ink); text-align: left; position: relative; transition: background .12s, box-shadow .12s; }
+.closed-calendar-day:not(:disabled):hover { background: #faf1df; box-shadow: inset 0 0 0 2px #bfa06b; }
+.closed-calendar-day:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; z-index: 1; }
+.closed-calendar-day:disabled { opacity: 1; cursor: default; }
+.closed-calendar-date-heading { display: flex; align-items: center; gap: 5px; min-height: 26px; }
+.closed-calendar-date-heading strong { display: inline-grid; place-items: center; min-width: 26px; height: 26px; font-size: .97rem; font-weight: 700; border-radius: 50%; }
+.closed-calendar-date-heading small { font-size: .65rem; color: var(--accent); }
+.closed-calendar-day.is-sunday .closed-calendar-date-heading strong { color: #a33b42; }
+.closed-calendar-day.is-today .closed-calendar-date-heading strong { background: var(--accent); color: #fff; }
+.closed-calendar-day.is-closed { background: #f7ebe8; }
+.closed-calendar-day.is-add { background: #fff1cc; box-shadow: inset 0 0 0 2px #b58a35; }
+.closed-calendar-day.is-remove { background: #f2e7e5; }
+.closed-calendar-day.is-remove::after { content: ""; position: absolute; inset: 3px; border: 1px dashed #a14949; border-radius: 4px; pointer-events: none; }
+.closed-calendar-state { display: inline-flex; align-items: center; align-self: flex-start; gap: 3px; color: #8c3238; font-size: .73rem; font-weight: 800; line-height: 1.5; }
+.closed-calendar-state > .closed-calendar-dot { font-size: .5rem; }
+.closed-state-short { display: none; }
+.closed-calendar-state.state-add { color: #785512; }
+.closed-calendar-state.state-remove { color: #9b3e43; }
+.closed-calendar-recurring { display: inline-flex; align-items: center; gap: 3px; font-size: .64rem; color: var(--muted); }
+.closed-calendar-events { display: grid; gap: 4px; min-width: 0; max-height: 82px; overflow-y: auto; }
+.closed-calendar-event { display: block; padding: 4px 5px; border-left: 2px solid #bda68b; border-radius: 3px; background: #eee9e0; color: #5f574e; font-size: .75rem; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.closed-calendar-outside { padding: 10px 14px; min-height: 110px; background: #f6f3ec; color: #c2b9ac; font-size: .9rem; }
+.closed-calendar-footnote { display: flex; align-items: flex-start; gap: 6px; padding: 12px 18px; color: var(--muted); font-size: .75rem; line-height: 1.7; }
+.closed-calendar-footnote svg { flex-shrink: 0; margin-top: 3px; }
+.closed-calendar-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 15px; padding: 30px; color: var(--muted); font-size: .9rem; text-align: center; }
+.closed-calendar-feedback { display: flex; align-items: flex-start; gap: 8px; }
+.closed-calendar-feedback > svg { flex-shrink: 0; margin-top: 2px; }
+.closed-calendar-selection { position: sticky; bottom: 12px; z-index: 12; border: 1px solid #cdbb9c; border-radius: 12px; padding: 14px 18px; background: #fffdf8; box-shadow: 0 8px 28px #2019161a; }
+.closed-calendar-selection.is-reviewing { position: static; box-shadow: none; }
+.closed-calendar-selection-main { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.closed-calendar-selection-summary { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.closed-calendar-selection h2 { font-size: 1rem; }
+.closed-calendar-counts { display: flex; gap: 10px; font-size: .78rem; }
+.closed-calendar-counts > span { display: inline-flex; align-items: center; gap: 2px; }
+.count-add { color: #846018; }
+.count-remove { color: #9b3e43; }
+.closed-calendar-selection .primary-button, .closed-calendar-review .primary-button { gap: 6px; }
+.closed-calendar-selection .text-button { font-size: .78rem; color: var(--muted); }
+.closed-calendar-selected-dates { margin-top: 8px; font-size: .77rem; color: var(--muted); }
+.closed-calendar-selected-dates summary { width: fit-content; }
+.closed-calendar-selected-dates ul { display: flex; gap: 6px; flex-wrap: wrap; list-style: none; margin: 8px 0 0; padding: 0; max-height: 90px; overflow-y: auto; }
+.closed-calendar-selected-dates li { display: inline-flex; align-items: center; gap: 3px; padding: 4px 8px; border-radius: 5px; background: #f8efda; color: #846018; }
+.closed-calendar-selected-dates li.selected-remove { background: #f5e6e4; color: #9b3e43; }
+.closed-calendar-empty-selection { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 5px; color: var(--muted); font-size: .8rem; }
+.closed-calendar-recovery { margin-top: 10px !important; color: var(--muted); font-size: .8rem; }
+.closed-calendar-review { display: grid; gap: 16px; padding: 22px; border: 1px solid #cdbb9c; border-radius: 12px; background: #fffdf8; }
+.closed-calendar-review h2 { font-size: 1.2rem; margin-top: 4px; }
+.closed-calendar-review-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.closed-calendar-review-group { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.closed-calendar-review-group h3 { display: flex; align-items: center; gap: 5px; padding: 10px 12px; background: #f8efda; color: #785512; font-size: .85rem; }
+.closed-calendar-review-group h3 > span { margin-left: auto; font-size: .75rem; }
+.closed-calendar-review-group.review-remove h3 { background: #f5e6e4; color: #9b3e43; }
+.closed-calendar-review-group ul { display: grid; gap: 0; list-style: none; margin: 0; padding: 0 12px; }
+.closed-calendar-review-group li { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.closed-calendar-review-group li:last-child { border-bottom: 0; }
+.closed-calendar-review-group li strong { font-size: .85rem; }
+.closed-calendar-review-group li small { font-size: .75rem; color: var(--muted); }
+.closed-calendar-overlap { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; color: #936724; }
+.closed-calendar-review > .closed-calendar-footnote { padding: 0; }
+.closed-calendar-review > .closed-calendar-actions { justify-content: flex-end; }
 .closed-day-form [tabindex="-1"] { scroll-margin-top: 110px; }
-@media (max-width: 700px) {
-  .closed-calendar-date { min-height: 72px; padding: 5px; }
-  .closed-calendar-date span { font-size: 0.65rem; }
-  .closed-calendar-day ul { padding-left: 15px; font-size: 0.65rem; }
+@media (max-width: 800px) {
+  .closed-calendar-connection { display: none; }
+  .closed-calendar-toolbar { padding: 14px 12px 10px; gap: 8px; }
+  .closed-calendar-toolbar .secondary-button { padding: 7px; }
+  .closed-calendar-toolbar .secondary-button svg { display: none; }
+  .closed-calendar-month { flex-direction: column; align-items: center; gap: 0; }
+  .closed-calendar-month strong { font-size: 1.5rem; }
+  .closed-calendar-guide { padding: 0 12px 12px; }
+  .closed-calendar-day { min-height: 94px; padding: 6px; gap: 5px; }
+  .closed-calendar-outside { min-height: 94px; padding: 9px; }
+  .closed-calendar-state { font-size: .64rem; }
+  .closed-calendar-state svg { width: 10px; }
+  .closed-calendar-event { font-size: .63rem; padding: 3px; }
+  .closed-calendar-selection { padding: 12px; }
 }
-
+@media (max-width: 480px) {
+  .closed-calendar-toolbar { grid-template-columns: 1fr 1fr; }
+  .closed-calendar-month { grid-area: 1 / 1 / 2 / 3; flex-direction: row; gap: 7px; }
+  .closed-calendar-month-nav { grid-area: 2 / 1; }
+  .closed-calendar-tools { grid-area: 2 / 2; }
+  .closed-calendar-month-nav, .closed-calendar-tools { flex-wrap: nowrap; gap: 5px; }
+  .closed-calendar-toolbar .secondary-button { width: auto; flex: 1; font-size: .73rem; }
+  .closed-calendar-day { padding: 5px 3px; min-height: 88px; }
+  .closed-calendar-date-heading strong { min-width: 23px; height: 23px; font-size: .85rem; }
+  .closed-calendar-date-heading small, .closed-calendar-recurring { display: none; }
+  .closed-calendar-state { font-size: .58rem; gap: 0; }
+  .closed-state-full { display: none; }
+  .closed-state-short { display: inline; }
+  .closed-calendar-legend { gap: 10px; }
+  .closed-calendar-selection-main { gap: 10px; }
+  .closed-calendar-selection .closed-calendar-actions { display: grid; grid-template-columns: auto 1fr; width: 100%; gap: 8px; }
+  .closed-calendar-selection .closed-calendar-actions button { width: auto; }
+  .closed-calendar-review { padding: 16px; }
+}
 .admin-shortcuts .closed-day-add-button {
   display: flex;
   align-items: center;
