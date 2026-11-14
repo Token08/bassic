@@ -5,6 +5,7 @@ import "./globals.css";
 import { absoluteUrl, site } from "@public/lib/site";
 import { languageAlternates } from "@public/lib/seo";
 import { assetPath } from "@public/lib/assets";
+import { brandIcons } from "@public/lib/brand-icons";
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ["latin"],
@@ -50,8 +51,8 @@ export const metadata: Metadata = {
     images: [absoluteUrl("/ogp.png")]
   },
   icons: {
-    icon: assetPath("/favicon.svg"),
-    apple: assetPath("/apple-touch-icon.png")
+    icon: assetPath(brandIcons.icon),
+    apple: assetPath(brandIcons.apple)
   }
 };
 
