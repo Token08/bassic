@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
 import { PdfField } from "./components/pdf-field";
+import { ClosedDayForm } from "./components/closed-day-form";
 import { SnsPostingPanel } from "./components/sns-posting-panel";
 import { CalendarSyncStatus } from "./components/calendar-sync-status";
 import { EventSocialActions } from "./components/event-social-actions";
@@ -3565,13 +3566,13 @@ function PageBasedDashboard({
         </a>
       </div>
 
-      {!activeEditLabel?.startsWith("イベント追加") ? <ol className="workspace-steps" aria-label="操作の流れ">
+      {!activeEditLabel?.startsWith("イベント追加") && activeEditLabel !== "店休日を追加" ? <ol className="workspace-steps" aria-label="操作の流れ">
         <li><span>1</span>ページ</li>
         <li aria-current={!editing ? "step" : undefined}><span>2</span>編集箇所</li>
         <li aria-current={editing ? "step" : undefined}><span>3</span>編集・掲載</li>
       </ol> : null}
 
-      <div className={`visual-editor-workspace${activeEditLabel?.startsWith("イベント追加") ? " event-entry-workspace" : ""}`}>
+      <div className={`visual-editor-workspace${activeEditLabel?.startsWith("イベント追加") || activeEditLabel === "店休日を追加" ? " event-entry-workspace" : ""}`}>
         <div className="visual-editor-center">
           <div hidden={editing}>
             <PublicPageCanvas
@@ -3585,7 +3586,7 @@ function PageBasedDashboard({
           </div>
           {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : null}
         </div>
-        {!activeEditLabel?.startsWith("イベント追加") ? <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
+        {!activeEditLabel?.startsWith("イベント追加") && activeEditLabel !== "店休日を追加" ? <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
             <OpsStatusPanel status={relevantStatus} onSelect={(id) => onSelect({ id })} />
             <section className="page-section-picker" aria-label={activePage.page + "の編集セクション"}>
               <div className="page-section-heading">
@@ -3809,14 +3810,19 @@ export default function AdminClient() {
             ))}
           </div>
           <div className="admin-shortcuts">
-            <p>イベントの更新</p>
+            <p>Googleカレンダーの更新</p>
             <button className="event-add-button" type="button" disabled={editorState.busy} onClick={() => {
               if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setDashboardPage("EVENT SCHEDULE");
               setExpandedGroup("開催イベント");
               setActiveSection({ id: "events", itemId: "new", eventEntry: true, initialDraft: { isPublished: false }, editLabel: "イベント追加", sourcePage: "EVENT SCHEDULE" });
             }}><Plus size={18} /> イベントを追加</button>
-            <small>FacebookのURLから始める</small>
+            <button className="secondary-button closed-day-add-button" type="button" disabled={editorState.busy} onClick={() => {
+              if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
+              setDashboardPage("EVENT SCHEDULE");
+              setExpandedGroup(null);
+              setActiveSection({ id: "closed-days", editLabel: "店休日を追加", sourcePage: "EVENT SCHEDULE" });
+            }}><Plus size={18} /> 店休日を追加</button>
           </div>
           <div className="admin-shortcuts">
             <a className="analytics-link" href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer" aria-label="アクセス解析（別タブで開く）">
@@ -3851,7 +3857,11 @@ export default function AdminClient() {
             health={health}
             opsStatus={opsStatus}
             activeEditLabel={activeSection?.editLabel}
-            editor={activeSection ? (
+            editor={activeSection?.id === "closed-days" ? (
+              <ClosedDayForm onBack={() => {
+                if (confirmLeavingEditor(editorState.dirty, editorState.busy)) setActiveSection(null);
+              }} onEditorState={rememberEditorState} />
+            ) : activeSection ? (
               <SectionEditor
                 key={JSON.stringify(activeSection)}
                 sectionId={activeSection.id}

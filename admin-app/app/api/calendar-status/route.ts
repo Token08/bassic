@@ -2,6 +2,7 @@ import { createSign } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedRequest } from "@/lib/auth";
 import { calendarDescription } from "@public/lib/calendar-event-content.mjs";
+import { externalEmbeds } from "@public/lib/editable-content";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,8 @@ export async function GET(request: NextRequest) {
   if (!isAuthenticatedRequest(request)) return NextResponse.json({ ok: false }, { status: 401 });
   const configured = process.env.GOOGLE_CALENDAR_SYNC_ENABLED === "true" &&
     Boolean(process.env.GOOGLE_CALENDAR_READ_SERVICE_ACCOUNT_JSON && process.env.GOOGLE_CALENDAR_ID);
-  return NextResponse.json({ ok: true, data: { configured } }, { headers: { "Cache-Control": "private, no-store" } });
+  const calendarId = process.env.GOOGLE_CALENDAR_ID?.trim() || new URL(externalEmbeds.googleCalendarPublicUrl).searchParams.get("src") || "";
+  return NextResponse.json({ ok: true, data: { configured, calendarId } }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 async function getReadToken(config: string) {
