@@ -15,6 +15,7 @@ import {
   type VisualStyle,
 } from "@public/lib/editor-document";
 import { useErrorFocus } from "@/lib/use-error-focus";
+import { publicationDeadline, canLookUpPublication } from "@public/lib/publication-timing.mjs";
 import { summarizeVisualChanges, visualHistory } from "@/lib/publish-review";
 import type { PublishStatus } from "@/lib/deploy-status";
 const pagePaths: Record<string, string> = {
@@ -201,7 +202,7 @@ export function VisualPageEditor({
             pending?.revision === value.revision &&
             typeof pending.id === "string" &&
             /^[a-f0-9-]{36}$/.test(pending.id) &&
-            Date.parse(pending.requestedAt) > Date.now() - 15 * 60000
+            Number.isFinite(Date.parse(pending.requestedAt))
           ) {
             setDeploy({ id: pending.id, requestedAt: pending.requestedAt });
             setCanRetryDeployment(true);
@@ -631,8 +632,11 @@ export function VisualPageEditor({
     if (!deploy?.id) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout>;
-    const until = Date.now() + 15 * 60000;
+    const until = publicationDeadline(deploy.requestedAt);
     async function poll() {
+      if (!canLookUpPublication(deploy!.requestedAt)) {
+        setFailure(true); setNotice("保存内容は残っています。以前の公開依頼の結果を確認できません。公開サイトを確認してください。"); finishDeployment(); return;
+      }
       try {
         const result = await api<PublishStatus>("/api/deploy?" + new URLSearchParams(deploy!));
         if (stopped) return;
@@ -671,7 +675,7 @@ export function VisualPageEditor({
       if (!stopped && Date.now() < until) timer = setTimeout(poll, 5000);
       else if (!stopped) {
         setFailure(true);
-        setNotice("反映を確認できませんでした。");
+        setNotice("保存内容は残っています。反映結果を確認できませんでした。公開サイトを確認し、未反映の場合は反映だけをやり直してください。");
         finishDeployment();
       }
     }

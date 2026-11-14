@@ -2697,6 +2697,16 @@ a.current-edit-page:hover {
   gap: 18px;
 }
 
+.ops-health-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 12px; }
+.ops-health-service { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.ops-health-service header { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.ops-health-service header span { margin-left: auto; font-size: .75rem; }
+.ops-health-service p { margin: 0; font-size: .85rem; }
+.ops-health-service small, .ops-health-service details { color: var(--muted); font-size: .75rem; }
+.ops-health-service.state-ok header { color: var(--green); }
+.ops-health-service.state-error { border-color: var(--accent); }
+.ops-health-service.state-error header, .ops-health-service.state-unknown header { color: var(--accent); }
+
 .closed-day-form > .text-button {
   justify-self: start;
 }
