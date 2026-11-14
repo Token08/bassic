@@ -1,0 +1,25 @@
+name: Operations watch
+on:
+  schedule:
+    - cron: "27 * * * *"
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+concurrency:
+  group: operations-watch
+  cancel-in-progress: false
+jobs:
+  readonly-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Inspect public pages, login protection and latest update jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CALENDAR_SYNC_EXPECTED: ${{ vars.ENABLE_CALENDAR_SYNC }}
+        run: node scripts/check-operations-health.mjs

@@ -1,4 +1,5 @@
 import { rehearseClosedDays } from "./closed-days-browser.mjs";
+import { rehearseOperations } from "./operations-browser.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
@@ -135,6 +136,7 @@ try {
     return { data: result.data, response: r };
   }
   await call("visual-editor", "GET", null, 401);
+  await call("operations-health", "GET", null, 401);
   const login = await call("login", "POST", { password });
   cookie = login.response.headers.get("set-cookie").split(";")[0];
   fixtureRequestId = crypto.randomUUID();
@@ -959,6 +961,7 @@ try {
       await legacyPdfPage.close();
       console.log("PDF registration form uses the same upload flow without publishing.");
       await rehearseClosedDays(context, base);
+      await rehearseOperations(context, base);
       assert.equal(writes, writesBeforeBrowser + 1, "Closed-day UI must not publish CMS content");
       console.log(
         "Edited card duplication and history restoration preserve unpublished content without CMS writes.",

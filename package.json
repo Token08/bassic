@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:operations": "node --test scripts/operations-health.test.mjs",
     "test:closed-days": "node --experimental-strip-types --test scripts/closed-days.test.mjs",
     "smoke:closed-days": "node scripts/smoke-closed-days-isolated.mjs",
     "test:pdf": "node --experimental-strip-types --test scripts/pdf-upload.test.mjs",

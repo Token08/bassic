@@ -263,11 +263,11 @@ export async function GET(request: NextRequest) {
         alerts
       }
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         ok: false,
-        message: error instanceof Error ? error.message : "Could not load operations status."
+        message: "確認項目を読み込めませんでした。時間をおいてもう一度確認してください。"
       },
       { status: 500 }
     );

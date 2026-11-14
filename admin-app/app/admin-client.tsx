@@ -5,6 +5,7 @@ import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib
 import { AdminImage } from "./components/admin-image";
 import { PdfField } from "./components/pdf-field";
 import { ClosedDayForm } from "./components/closed-day-form";
+import { OperationsHealthPanel } from "./components/operations-health-panel";
 import { SnsPostingPanel } from "./components/sns-posting-panel";
 import { CalendarSyncStatus } from "./components/calendar-sync-status";
 import { EventSocialActions } from "./components/event-social-actions";
@@ -38,6 +39,7 @@ import { getSection, homeFieldGroups, sections, type FieldDefinition, type Secti
 import { resolvePublicUrl } from "@/lib/public-site-url";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { useErrorFocus } from "@/lib/use-error-focus";
+import { publicationDeadline, canLookUpPublication } from "@public/lib/publication-timing.mjs";
 
 type Draft = Record<string, unknown>;
 type ApiResult<T = unknown> = {
@@ -97,6 +99,7 @@ type OpsAlert = {
 type OpsStatus = {
   generatedAt: string;
   alerts: OpsAlert[];
+  loadError?: boolean;
 };
 
 type FacebookEventPreview = {
@@ -665,9 +668,10 @@ function DeployStatusCard({ notice, onRetry, onOpenSocialDrafts }: { notice: Not
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     const query = new URLSearchParams({ id: requestId, requestedAt });
-    const deadline = Date.now() + 15 * 60_000;
+    const deadline = publicationDeadline(requestedAt);
 
     async function poll() {
+      if (!canLookUpPublication(requestedAt!)) { setStatus({ state: "unconfirmed" }); return; }
       try {
         const result = await requestJson<PublishStatus>(`/api/deploy?${query}`, { signal: controller.signal });
         if (controller.signal.aborted) return;
@@ -850,7 +854,8 @@ function SetupStatus({ health }: { health?: HealthState }) {
   );
 }
 
-function OpsStatusPanel({ status, onSelect }: { status?: OpsStatus; onSelect: (id: string) => void }) {
+function OpsStatusPanel({ status, onSelect, onRetry }: { status?: OpsStatus; onSelect: (id: string) => void; onRetry?: () => void }) {
+  if (status?.loadError) return <section className="notice error" role="alert"><strong>確認項目を読み込めませんでした。</strong><p>入力内容は変わっていません。もう一度確認してください。</p><button type="button" className="secondary-button" onClick={onRetry}>もう一度確認</button></section>;
   if (!status?.alerts?.length) {
     return null;
   }
@@ -3340,6 +3345,7 @@ function PageBasedDashboard({
   onDeployNotice,
   health,
   opsStatus,
+  onRefreshOps,
   editor,
   activeEditLabel,
   onOpenSocialDrafts,
@@ -3353,6 +3359,7 @@ function PageBasedDashboard({
   onDeployNotice: (notice: Notice) => void;
   health?: HealthState;
   opsStatus?: OpsStatus;
+  onRefreshOps: () => void;
   editor?: ReactNode;
   activeEditLabel?: string;
   onOpenSocialDrafts: (sourceId: string) => void;
@@ -3533,7 +3540,8 @@ function PageBasedDashboard({
         {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : <>
           <div className="page-heading"><h1>詳細設定</h1><p>保守・ページ構成</p></div>
           {hasSetupProblem ? <SetupStatus health={health} /> : null}
-          <OpsStatusPanel status={opsStatus} onSelect={(id) => onSelect({ id })} />
+          <OperationsHealthPanel />
+          <OpsStatusPanel status={opsStatus} onRetry={onRefreshOps} onSelect={(id) => onSelect({ id })} />
           <DashboardSectionGroup title="ページ構成" description="" sections={maintenanceSections} onSelect={(id) => onSelect({ id })} compact />
         </>}
       </div>
@@ -3587,7 +3595,7 @@ function PageBasedDashboard({
           {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : null}
         </div>
         {!activeEditLabel?.startsWith("イベント追加") && activeEditLabel !== "店休日を追加" ? <aside className="visual-editor-sidebar" aria-label="選択箇所の編集">
-            <OpsStatusPanel status={relevantStatus} onSelect={(id) => onSelect({ id })} />
+            <OpsStatusPanel status={relevantStatus} onRetry={onRefreshOps} onSelect={(id) => onSelect({ id })} />
             <section className="page-section-picker" aria-label={activePage.page + "の編集セクション"}>
               <div className="page-section-heading">
                 <div>
@@ -3656,12 +3664,13 @@ export default function AdminClient() {
   const [opsStatus, setOpsStatus] = useState<OpsStatus | undefined>();
 
   async function loadOpsStatus() {
+    setOpsStatus(undefined);
     try {
       const response = await fetchWithTimeout("/api/ops-status", { cache: "no-store" }, 10000);
       const result = (await response.json().catch(() => null)) as ApiResult<OpsStatus> | null;
-      setOpsStatus(result?.ok ? result.data : undefined);
+      setOpsStatus(response.ok && result?.ok && Array.isArray(result.data?.alerts) ? result.data : { generatedAt: new Date().toISOString(), alerts: [], loadError: true });
     } catch {
-      setOpsStatus(undefined);
+      setOpsStatus({ generatedAt: new Date().toISOString(), alerts: [], loadError: true });
     }
   }
 
@@ -3834,7 +3843,7 @@ export default function AdminClient() {
               setExpandedGroup(null);
               setDashboardPage("DETAILS");
             }}>詳細設定</button>
-            {opsStatus?.alerts.length ? <small>要確認 {opsStatus.alerts.length}件</small> : null}
+            {opsStatus?.loadError ? <small>確認項目を読み込めませんでした</small> : opsStatus?.alerts.length ? <small>要確認 {opsStatus.alerts.length}件</small> : null}
           </div>
         </nav>
         <div className="admin-workspace-content">
@@ -3856,6 +3865,7 @@ export default function AdminClient() {
             onEditorState={rememberEditorState}
             health={health}
             opsStatus={opsStatus}
+            onRefreshOps={() => void loadOpsStatus()}
             activeEditLabel={activeSection?.editLabel}
             editor={activeSection?.id === "closed-days" ? (
               <ClosedDayForm onBack={() => {

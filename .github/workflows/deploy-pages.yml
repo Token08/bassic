@@ -55,7 +55,9 @@ jobs:
 
       - name: Check operation failure handling
         if: github.event_name != 'schedule'
-        run: node --experimental-strip-types --test scripts/ops-failure.test.mjs scripts/public-site-url.test.mjs scripts/calendar-upsert.test.mjs scripts/facebook-event-time.test.mjs scripts/pdf-upload.test.mjs
+        run: |
+          node --experimental-strip-types --test scripts/ops-failure.test.mjs scripts/public-site-url.test.mjs scripts/calendar-upsert.test.mjs scripts/facebook-event-time.test.mjs scripts/pdf-upload.test.mjs scripts/operations-health.test.mjs
+          python3 -B scripts/backup-public-release.test.py
 
       - name: Check microCMS schema
         env:
@@ -182,6 +184,7 @@ jobs:
           if ! gh release view bassic-production >/dev/null 2>&1; then
             gh release create bassic-production --target "$GITHUB_SHA" --latest=false --title "Bassic production site package" --notes "Signed static files for the Bassic website."
           fi
+          python3 scripts/backup-public-release.py
           gh release upload bassic-production bassic-site.release --clobber
       - name: Confirm release served by the production site
         if: vars.LOLIPOP_PULL_ENABLED == 'true'

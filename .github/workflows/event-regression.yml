@@ -9,7 +9,7 @@ on:
       - "lib/**"
       - "scripts/**"
       - "package*.json"
-      - ".github/workflows/event-regression.yml"
+      - ".github/workflows/**"
   workflow_dispatch:
     inputs:
       live_closed_days_qa:
@@ -59,6 +59,8 @@ jobs:
       - run: npm ci --prefix admin-app
       - run: npm run test:events
       - run: npm run test:publish-safety
+      - run: npm run test:operations
+      - run: python3 -B scripts/backup-public-release.test.py
       - run: npm run test:closed-days
       - run: npm run build
       - run: npm run build:admin-app
