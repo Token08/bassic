@@ -39,8 +39,9 @@ $('paste').addEventListener('paste',event=>{
 });
 select.addEventListener('change',()=>void prepare());await prepare();
 $('read-back').addEventListener('click',async()=>{
+  $('read-result').textContent='コピーした画像データを確認中…';
   try {
-    const clipboard=await navigator.clipboard.read();
+    const clipboard=await Promise.race([navigator.clipboard.read(),new Promise((_,reject)=>setTimeout(()=>reject(Error('clipboard-read-timeout')),5000))]);
     const item=clipboard.find(item=>item.types.includes('image/png'));
     if(!item){$('read-result').textContent='クリップボードにPNG画像はありません。';return;}
     const blob=await item.getType('image/png');
