@@ -60,7 +60,7 @@ export async function browserProbe(browser,eventUrl,outputDirectory) {
   } catch(error) {
     // Playwright errors may contain signed URLs. Only record a fixed diagnostic.
     const reason=error?.name==='TimeoutError'?'public-page-did-not-render-target-cover':
-      /^(ambiguous-cover|event-cover-not-rendered|event-title-mismatch|image-[a-z-]+|unapproved-host)$/.test(error.message)?error.message:'browser-probe-failed';
+      /^(ambiguous-cover|event-cover-not-rendered|event-title-mismatch|image-[a-z-]+|image-http-[1-5]\d\d|unapproved-host)$/.test(error.message)?error.message:'browser-probe-failed';
     return {...result,ok:false,reason};
   } finally {await context.close();}
 }
