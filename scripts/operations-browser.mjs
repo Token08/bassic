@@ -10,7 +10,9 @@ export async function rehearseOperations(context, base) {
   await page.goto(base);
   await page.getByRole("heading", { name: "TOPページ", exact: true }).waitFor();
   assert.equal(await page.getByRole("region", { name: "公開・連携の状況" }).count(), 0, "Maintenance checks stay outside normal editing");
-  await page.getByRole("button", { name: "詳細設定", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: "初めての方へ", exact: true }).count(), 0);
+  await page.getByRole("button", { name: "稼働状況", exact: true }).click();
+  assert.equal(await page.locator(".maintenance-legacy-settings").getAttribute("open"), null, "Legacy settings stay closed by default");
   const health = page.getByRole("region", { name: "公開・連携の状況" });
   await health.getByRole("alert").waitFor();
   await page.getByText("確認項目を読み込めませんでした。", { exact: true }).waitFor();

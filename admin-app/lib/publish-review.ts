@@ -21,7 +21,6 @@ const pageNames: Record<string, string> = {
   "/menu/": "MENU",
   "/party/": "貸切・機材",
   "/access/": "アクセス",
-  "/first-visit/": "初めての方へ",
 };
 export function pageLabel(path: string) {
   const locale = /^\/(en|ko|zh-hant|zh-hans)(\/.*)$/.exec(path);

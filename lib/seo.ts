@@ -41,12 +41,6 @@ export const pageSeo = {
     title: "アクセス | 福岡 天神駅徒歩約4分・親不孝通り WITH天神5F",
     description:
       "public bar Bassic.へのアクセス。福岡市中央区天神3-4-19 WITH天神5F、天神駅から徒歩約4分。Google Map、現在地からのルート、電話、メールを確認できます。"
-  },
-  firstVisit: {
-    path: pageRoutes.firstVisit.path,
-    title: "初めての方へ | 福岡 天神 親不孝通りの入りやすいバー",
-    description:
-      "public bar Bassic.に初めて来る方へ。雰囲気、料金、チャージ、喫煙、ひとり来店、予約、アクセスを分かりやすく案内します。"
   }
 } as const;
 

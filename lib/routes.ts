@@ -1,6 +1,6 @@
 import type { LocalizedPageKey } from "./i18n";
 
-export type SitePageKey = "home" | "firstVisit" | "events" | "menu" | "party" | "access";
+export type SitePageKey = "home" | "events" | "menu" | "party" | "access";
 
 export type SitePageRoute = {
   key: SitePageKey;
@@ -11,7 +11,6 @@ export type SitePageRoute = {
 
 export const pageRoutes = {
   home: { key: "home", path: "/", sitemapPriority: 1, localized: true },
-  firstVisit: { key: "firstVisit", path: "/first-visit/", sitemapPriority: 0.9, localized: false },
   events: { key: "events", path: "/events/", sitemapPriority: 0.9, localized: true },
   menu: { key: "menu", path: "/menu/", sitemapPriority: 0.9, localized: true },
   party: { key: "party", path: "/party/", sitemapPriority: 0.8, localized: true },

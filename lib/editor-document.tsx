@@ -145,13 +145,12 @@ export const visualPaths = [
   "/menu/",
   "/party/",
   "/access/",
-  "/first-visit/",
 ];
 export function allowedVisualPath(path: string) {
   return (
-    /^\/(?:(?:en|ko|zh-hant|zh-hans)\/)?(?:(?:events|menu|party|access|first-visit)\/)?$/.test(
+    /^\/(?:(?:en|ko|zh-hant|zh-hans)\/)?(?:(?:events|menu|party|access)\/)?$/.test(
       path,
-    ) && !/^\/(en|ko|zh-hant|zh-hans)\/first-visit\/$/.test(path)
+    )
   );
 }
 const styleKeys = new Set([
@@ -371,6 +370,8 @@ export function parseVisualSettings(value: unknown): VisualSettings {
     }
   };
   check(data.shared);
+  // Retired standalone page: keep other settings usable when loading older data.
+  delete data.pages["/first-visit/"];
   for (const [path, page] of Object.entries(data.pages)) {
     if (!allowedVisualPath(path)) throw Error("対象ページを確認してください。");
     check(page);

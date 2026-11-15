@@ -20,7 +20,6 @@ import Events from "@public/app/events/page";
 import Menu from "@public/app/menu/page";
 import Party from "@public/app/party/page";
 import Access from "@public/app/access/page";
-import FirstVisit from "@public/app/first-visit/page";
 import { renderLocalizedPage } from "@public/lib/localized-page";
 import type { CmsContents } from "@public/lib/types";
 export const runtime = "nodejs";
@@ -157,7 +156,6 @@ export async function POST(r: NextRequest) {
       "/menu/": Menu,
       "/party/": Party,
       "/access/": Access,
-      "/first-visit/": FirstVisit,
     };
     const tree = await previewContents.run(snapshot, () =>
       locale

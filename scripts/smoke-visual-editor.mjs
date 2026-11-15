@@ -171,7 +171,6 @@ try {
     "/menu/",
     "/party/",
     "/access/",
-    "/first-visit/",
     ...["en", "ko", "zh-hant", "zh-hans"].flatMap((l) =>
       ["", "events/", "menu/", "party/", "access/"].map(
         (p) => "/" + l + "/" + p,
@@ -199,7 +198,12 @@ try {
     docs.set(path, { ...data, catalog });
   }
   assert.equal(writes, 0, "Preview must never save");
-  console.log("All 26 pages render editable catalogs without writes.");
+  await call("visual-editor", "POST", { path: "/first-visit/", settings: initial }, 400);
+  const retiredSettings = structuredClone(initial);
+  retiredSettings.pages["/first-visit/"] = { nodes: {} };
+  const migrated = (await call("visual-editor", "POST", { path: "/", settings: retiredSettings })).data;
+  assert.match(migrated.html, /id="bassic-editor-catalog"/, "Retired page settings must not prevent editing the remaining pages");
+  console.log(`All ${pages.length} pages render editable catalogs without writes; retired page is rejected safely.`);
   for (const [path, doc] of docs) {
     const text = doc.catalog.find(
       (n) =>

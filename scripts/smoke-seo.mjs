@@ -3,10 +3,10 @@ import { join } from "node:path";
 
 const outDir = join(process.cwd(), "out");
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.bassic.jp").replace(/\/$/, "");
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const japanesePages = [
   { path: "/", file: "index.html" },
-  { path: "/first-visit/", file: "first-visit/index.html" },
   { path: "/events/", file: "events/index.html" },
   { path: "/menu/", file: "menu/index.html" },
   { path: "/party/", file: "party/index.html" },
@@ -120,9 +120,16 @@ for (const fragment of forbiddenSeoUrlFragments) {
   }
 }
 
+if (sitemap.includes("/first-visit/")) failures.push("Retired standalone page must not appear in the sitemap");
+const retired = readOutFile("first-visit/index.html");
+if (!retired.includes(`content="0;url=${basePath}/"`) || !retired.includes('content="noindex,follow"')) {
+  failures.push("Retired URL must direct visitors to TOP without indexing the old page");
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
 }
+
 
 console.log(`SEO smoke check passed for ${pages.length} pages.`);

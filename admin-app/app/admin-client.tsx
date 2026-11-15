@@ -3530,13 +3530,17 @@ function PageBasedDashboard({
 
   if (selectedPage === "DETAILS") {
     return (
-      <div className="dashboard" ref={detailsArea} tabIndex={-1} aria-label="詳細設定">
+      <div className="dashboard" ref={detailsArea} tabIndex={-1} aria-label="稼働状況">
         {editor ? <div ref={editingArea} tabIndex={-1} className="visual-editor-form" aria-label="編集中の項目">{editor}</div> : <>
-          <div className="page-heading"><h1>詳細設定</h1><p>保守・ページ構成</p></div>
+          <div className="page-heading"><h1>稼働状況</h1></div>
           {hasSetupProblem ? <SetupStatus health={health} /> : null}
           <OperationsHealthPanel />
           <OpsStatusPanel status={opsStatus} onRetry={onRefreshOps} onSelect={(id) => onSelect({ id })} />
-          <DashboardSectionGroup title="ページ構成" description="" sections={maintenanceSections} onSelect={(id) => onSelect({ id })} compact />
+          <details className="maintenance-legacy-settings">
+            <summary>保守用の旧設定</summary>
+            <p>通常の更新は左のページ選択から行います。</p>
+            <DashboardSectionGroup title="ページ構成" description="" sections={maintenanceSections} onSelect={(id) => onSelect({ id })} compact />
+          </details>
         </>}
       </div>
     );
@@ -3794,7 +3798,7 @@ export default function AdminClient() {
             ))}
           </div>
           <div className="admin-shortcuts">
-            <p>Googleカレンダーの更新</p>
+            <p>カレンダーの更新</p>
             <button className="event-add-button" type="button" disabled={editorState.busy} onClick={() => {
               if (!confirmLeavingEditor(editorState.dirty, editorState.busy)) return;
               setDashboardPage("EVENT SCHEDULE");
@@ -3817,7 +3821,7 @@ export default function AdminClient() {
               setActiveSection(null);
               setExpandedGroup(null);
               setDashboardPage("DETAILS");
-            }}>詳細設定</button>
+            }}>稼働状況</button>
             {opsStatus?.loadError ? <small>確認項目を読み込めませんでした</small> : opsStatus?.alerts.length ? <small>要確認 {opsStatus.alerts.length}件</small> : null}
           </div>
         </nav>
