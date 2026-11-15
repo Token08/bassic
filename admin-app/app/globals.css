@@ -2587,6 +2587,9 @@ a.current-edit-page:hover {
 .ops-health-service:is(.state-error, .state-unknown) .ops-health-badge { background: #f8e9e7; color: var(--accent-dark); }
 .ops-health-service.state-error { border-color: var(--accent); }
 .ops-health-service.state-error header, .ops-health-service.state-unknown header { color: var(--accent); }
+.maintenance-legacy-settings { margin-top: 24px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.maintenance-legacy-settings > summary { cursor: pointer; color: var(--muted); font-size: .85rem; font-weight: 700; }
+.maintenance-legacy-settings > p { color: var(--muted); font-size: .85rem; }
 
 .closed-day-form > .text-button {
   justify-self: start;

@@ -84,8 +84,7 @@ export const editableMedia = {
   },
   pageHeroImages: {
     menu: brandImage("/assets/menu-refresh/menu-hero.jpg", "Bassic.の料理とドリンク"),
-    access: brandImage("/assets/brand/access-hero.jpg", "Bassic.のバーカウンターと照明"),
-    firstVisit: brandImage("/assets/drive/index_back/warm-interior.jpg", "温かい照明のBassic.店内")
+    access: brandImage("/assets/brand/access-hero.jpg", "Bassic.のバーカウンターと照明")
   },
   foodTeaser: brandImage("/assets/drive/index_back/table-food.jpg", "Bassic.の料理が並ぶテーブル"),
   eventPoster: brandImage("/assets/drive/brf-2023.jpg", "Bassic. Rock Fes poster")

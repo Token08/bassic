@@ -6,7 +6,6 @@ export const publicPaths = [
   "/menu/",
   "/party/",
   "/access/",
-  "/first-visit/",
   ...["en", "ko", "zh-hant", "zh-hans"].flatMap((locale) =>
     ["", "events/", "menu/", "party/", "access/"].map(
       (path) => "/" + locale + "/" + path,

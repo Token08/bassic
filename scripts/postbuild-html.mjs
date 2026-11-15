@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 
 const outDir = path.join(process.cwd(), "out");
@@ -49,7 +49,8 @@ console.log(`Postbuild HTML check complete. Updated ${updated} file(s).`);
 // GitHub Pages has no server-side redirects. Preserve the old site's entry URLs
 // with immediate HTML redirects and a canonical pointing at the replacement.
 const legacyRoutes = {
-  "bassic.html": "/first-visit/",
+  "bassic.html": "/",
+  "first-visit/index.html": "/",
   "calendar.html": "/events/",
   "menu.html": "/menu/",
   "party.html": "/party/",
@@ -63,10 +64,11 @@ if (new URL(siteUrl).hostname.endsWith(".github.io")) {
 for (const [file, route] of Object.entries(legacyRoutes)) {
   const target = `${basePath}${route}`;
   const canonical = `${siteUrl}${route}`;
+  await mkdir(path.dirname(path.join(outDir, file)), { recursive: true });
   await writeFile(path.join(outDir, file), `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ページを移動しました | public bar Bassic.</title>
-<link rel="canonical" href="${canonical}"><meta http-equiv="refresh" content="0;url=${target}"></head>
+<meta name="robots" content="noindex,follow"><link rel="canonical" href="${canonical}"><meta http-equiv="refresh" content="0;url=${target}"></head>
 <body><p>ページを移動しました。<a href="${target}">新しいページを開く</a></p></body></html>\n`);
 }
 console.log(`Created ${Object.keys(legacyRoutes).length} legacy URL redirects.`);

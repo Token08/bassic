@@ -104,6 +104,5 @@ export const adminPages: PageAdminItem[] = [
       { label: "住所・電話・Google Map・営業時間", description: "店舗基本情報と地図リンクを編集します。", sectionId: "site-settings" }
     ]
   },
-  { page: 'FIRST VISIT', title: '初めての方へ', description: '初めての方向けページ', publicPath: '/first-visit/', publicLabel: '初めての方向けページを確認', actions: [] },
 ];
 

@@ -24,7 +24,6 @@ const pagePaths: Record<string, string> = {
   MENU: "/menu/",
   "PARTY & RENTAL": "/party/",
   ACCESS: "/access/",
-  "FIRST VISIT": "/first-visit/",
   "ONLINE STORE": "/",
 };
 async function api<T = any>(path: string, init?: RequestInit): Promise<T> {
@@ -924,9 +923,7 @@ export function VisualPageEditor({
         </a>
         <div className="visual-page-title">
           <h1>
-            {page === "FIRST VISIT"
-              ? "初めての方へ"
-              : page === "TOP"
+            {page === "TOP"
                 ? "TOPページ"
                 : page}
           </h1>
@@ -938,7 +935,7 @@ export function VisualPageEditor({
           言語
           <select
             value={locale}
-            disabled={page === "FIRST VISIT" || busy || !!deploy}
+            disabled={busy || !!deploy}
             onChange={(e) => {
               if (
                 dirty &&

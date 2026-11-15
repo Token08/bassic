@@ -62,13 +62,6 @@ export const pageHeroes = {
     image: editableMedia.pageHeroImages.access.src,
     imageAlt: editableMedia.pageHeroImages.access.alt,
     className: "access-hero"
-  },
-  firstVisit: {
-    eyebrow: "First Visit",
-    title: "初めてでも、入りやすい音楽バー。",
-    lead: "ひとりでも、ライヴ前後でも、音楽の話をしたい夜でも。来店前に知りたいことをまとめました。",
-    image: editableMedia.pageHeroImages.firstVisit.src,
-    imageAlt: editableMedia.pageHeroImages.firstVisit.alt
   }
 } satisfies Record<string, PageHeroContent>;
 
