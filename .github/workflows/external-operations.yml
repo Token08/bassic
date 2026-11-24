@@ -5,6 +5,10 @@ on:
     types: [microcms_publish, bassic_calendar_sync]
   workflow_dispatch:
     inputs:
+      calendar_only:
+        type: boolean
+        default: false
+        description: Run only calendar synchronization
       cms_readonly_diagnostics:
         type: boolean
         default: false
@@ -102,7 +106,7 @@ jobs:
           fi
 
       - name: Publish approved social notices
-        if: ${{ !cancelled() && vars.ENABLE_SOCIAL_PUBLISHING == 'true' && github.event_name != 'repository_dispatch' }}
+        if: ${{ !cancelled() && vars.ENABLE_SOCIAL_PUBLISHING == 'true' && github.event_name != 'repository_dispatch' && inputs.calendar_only != true }}
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
           MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
@@ -115,7 +119,7 @@ jobs:
         run: npm run publish:social
 
       - name: Archive old published events
-        if: ${{ !cancelled() && vars.AUTO_ARCHIVE_PAST_EVENTS == 'true' && github.event_name != 'repository_dispatch' }}
+        if: ${{ !cancelled() && vars.AUTO_ARCHIVE_PAST_EVENTS == 'true' && github.event_name != 'repository_dispatch' && inputs.calendar_only != true }}
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
           MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
