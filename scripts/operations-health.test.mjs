@@ -54,6 +54,11 @@ test("pending, failed, stale and explicitly disabled processes are distinguished
   assert.equal(states(await operationsHealth(fixture({ pending: true }))).publish, "pending");
   assert.equal(states(await operationsHealth(fixture({ publishFailed: true }))).publish, "error");
   assert.equal(states(await operationsHealth(fixture({ stale: true }))).calendar, "error");
+  const stale = await operationsHealth(fixture({ stale: true }));
+  assert.equal(states(stale).publish, "ok");
+  assert.equal(stale.services.find(service => service.id === "calendar").reason, "stale-schedule");
+  const failed = await operationsHealth(fixture({ stale: true, calendarFailed: true }));
+  assert.equal(failed.services.find(service => service.id === "calendar").reason, undefined);
   assert.equal(states(await operationsHealth(fixture({ disabled: true }))).calendar, "disabled");
 });
 test("reloading a publication cannot restart its waiting window", () => {
