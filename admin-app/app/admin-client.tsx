@@ -889,10 +889,21 @@ function OpsStatusPanel({ status, onSelect, onRetry }: { status?: OpsStatus; onS
   );
 }
 
-function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: HealthState }) {
+function LoginScreen({ onLogin, health, googleLogin }: { onLogin: () => void; health?: HealthState; googleLogin: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+
+  useEffect(() => {
+    if (!googleLogin) return;
+    const failure = new URLSearchParams(window.location.search).get("login");
+    if (failure === "denied") {
+      setGoogleError("店舗用のGoogleアカウントを選んでください。");
+    } else if (failure === "failed") {
+      setGoogleError("Googleログインを完了できませんでした。もう一度お試しください。");
+    }
+  }, [googleLogin]);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -911,6 +922,17 @@ function LoginScreen({ onLogin, health }: { onLogin: () => void; health?: Health
       setLoading(false);
     }
   }
+
+  if (googleLogin) return (
+    <main className="login-shell">
+      <section className="login-panel">
+        <p className="eyebrow">Bassic. 管理画面</p>
+        <h1>管理画面にログイン</h1>
+        {googleError && <p role="alert" className="form-error">{googleError}</p>}
+        <a className="primary-button" href="/api/login/google">Googleでログイン</a>
+      </section>
+    </main>
+  );
 
   return (
     <main className="login-shell">
@@ -3619,7 +3641,7 @@ function PageBasedDashboard({
   );
 }
 
-export default function AdminClient() {
+export default function AdminClient({ googleLogin = false }: { googleLogin?: boolean }) {
   const [editorState, setEditorState] = useState({ dirty: false, busy: false });
   const editorStateRef=useRef(editorState);
   const rememberEditorState=useCallback((value:{dirty:boolean;busy:boolean})=>{editorStateRef.current=value;setEditorState(value);},[]);
@@ -3760,7 +3782,7 @@ export default function AdminClient() {
   }
 
   if (!authenticated) {
-    return <LoginScreen onLogin={() => void checkSession()} health={health} />;
+    return <LoginScreen onLogin={() => void checkSession()} health={health} googleLogin={googleLogin} />;
   }
 
   return (

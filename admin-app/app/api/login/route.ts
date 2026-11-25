@@ -4,6 +4,9 @@ import { createSessionToken, setSessionCookie } from "@/lib/auth";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (process.env.ADMIN_AUTH_MODE === "google") {
+    return NextResponse.json({ ok: false, message: "Googleでログインしてください。" }, { status: 405 });
+  }
   const { password } = (await request.json().catch(() => ({}))) as { password?: string };
   const expectedPassword = process.env.ADMIN_PASSWORD;
 

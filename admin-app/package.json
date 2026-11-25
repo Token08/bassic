@@ -13,6 +13,7 @@
     "@types/node": "22.19.3",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "google-auth-library": "10.7.0",
     "lucide-react": "0.468.0",
     "microcms-js-sdk": "^3.4.0",
     "next": "15.5.29",

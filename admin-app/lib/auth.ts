@@ -9,6 +9,8 @@ const useSecureCookie = process.env.NODE_ENV === "production" || process.env.ADM
 type SessionPayload = {
   exp: number;
   nonce: string;
+  googleSubject?: string;
+  googleEmail?: string;
 };
 
 function getSecret() {
@@ -40,10 +42,12 @@ function safeCompare(a: string, b: string) {
   return aBuffer.length === bBuffer.length && timingSafeEqual(aBuffer, bBuffer);
 }
 
-export function createSessionToken() {
+export function createSessionToken(googleSubject?: string, googleEmail?: string) {
   const payload: SessionPayload = {
     exp: Math.floor(Date.now() / 1000) + maxAgeSeconds,
-    nonce: randomBytes(16).toString("hex")
+    nonce: randomBytes(16).toString("hex"),
+    googleSubject,
+    googleEmail
   };
   const encoded = toBase64Url(JSON.stringify(payload));
 
@@ -63,6 +67,8 @@ export function verifySessionToken(token?: string | null) {
 
   try {
     const payload = JSON.parse(fromBase64Url(encoded)) as SessionPayload;
+    if (process.env.ADMIN_AUTH_MODE === "google" &&
+        (!payload.googleSubject || !payload.googleEmail || payload.googleEmail !== process.env.ADMIN_GOOGLE_EMAIL?.trim().toLowerCase())) return false;
 
     return Boolean(payload.exp && payload.exp > Math.floor(Date.now() / 1000));
   } catch {
