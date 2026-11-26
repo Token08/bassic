@@ -248,6 +248,7 @@ a {
 }
 
 .login-shell {
+  grid-template-columns: minmax(0, 1fr);
   background:
     linear-gradient(135deg, rgba(32, 25, 22, 0.88), rgba(111, 15, 21, 0.84));
   background-color: #201916;
@@ -275,7 +276,8 @@ a {
 }
 
 .login-panel h1 {
-  font-size: clamp(1.8rem, 8vw, 2.4rem);
+  font-size: clamp(1.5rem, 7vw, 2.25rem);
+  text-wrap: balance;
 }
 
 .login-copy {
