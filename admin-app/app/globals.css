@@ -2776,7 +2776,7 @@ a.current-edit-page:hover {
   font-size: 1.1rem;
 }
 
-.admin-page-nav button,
+.admin-page-nav button:not(dialog button),
 .admin-page-nav .analytics-link {
   min-height: 44px;
   padding: 8px 10px;
@@ -2796,7 +2796,7 @@ a.current-edit-page:hover {
   text-decoration: none;
 }
 
-.admin-page-nav button:hover,
+.admin-page-nav button:not(dialog button):hover,
 .admin-page-nav .analytics-link:hover,
 .admin-page-nav .analytics-link:focus-visible {
   border-color: var(--line);
@@ -2808,6 +2808,41 @@ a.current-edit-page:hover {
   background: #f7ecda;
   color: #860c16;
   box-shadow: inset 3px 0 0 var(--accent);
+}
+
+
+.admin-page-nav .facebook-announcement-button {
+  gap: 6px;
+  padding-inline: 6px;
+  border-color: var(--accent);
+  background: var(--panel);
+  color: var(--accent-dark);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.admin-page-nav .facebook-announcement-button svg {
+  flex-shrink: 0;
+}
+
+.admin-page-nav .facebook-announcement-button:hover,
+.admin-page-nav .facebook-announcement-button:focus-visible {
+  border-color: var(--accent);
+  background: #f7ecda;
+}
+
+.facebook-announcement-dialog textarea {
+  display: block;
+  padding: 12px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.facebook-announcement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .page-section-heading p {
@@ -2828,7 +2863,7 @@ a.current-edit-page:hover {
     display: flex;
     overflow-x: auto;
   }
-  .admin-page-nav button {
+  .admin-page-nav button:not(dialog button) {
     flex: 0 0 auto;
   }
 }
