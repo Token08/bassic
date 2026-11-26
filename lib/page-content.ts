@@ -131,10 +131,10 @@ export const homeMenuTeaser = {
 };
 
 export const localSearchSection = {
-  eyebrow: "Local Search",
-  title: "福岡・天神で、音楽も料理も楽しめるバーを探している方へ。",
+  eyebrow: "About Bassic.",
+  title: "福岡・天神の親不孝通りで、音楽とお酒を。",
   lead:
-    "public bar Bassic.は、福岡市中央区天神・親不孝通りにあるミュージックバーです。ライヴバー、DJイベント、バーご飯、貸切パーティーまで、Google検索やGoogle Mapから初めて来る方にも分かりやすい情報をまとめています。",
+    "public bar Bassic.は、福岡・天神の親不孝通りにあるミュージックバーです。ライヴやDJを楽しむ夜も、ふらりと一杯飲みに来る夜も。ライヴのない日は、通常のバー営業でお酒や料理を楽しめます。",
   cards: [
     {
       icon: "map",
