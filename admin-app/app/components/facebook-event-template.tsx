@@ -3,16 +3,14 @@
 import { ClipboardCopy, NotebookPen } from "lucide-react";
 import { useRef, useState } from "react";
 
-const template = `日程：［年］年［月］月［日］日（［曜日］）
-タイトル：［イベント名］
-出演：［出演者］
-OPEN：［18:30］ / START：［19:00］
-料金：前売 ［金額］ / 当日 ［金額］
-予約：［予約フォームURL］
-お問い合わせ：［連絡先］
-注意事項：［必要な場合に記入］
-
---- SNS転載ここまで ---`;
+const template = `日程：
+タイトル：
+出演：
+OPEN： / START：
+料金：
+予約：
+お問い合わせ：
+注意事項：`;
 
 export function FacebookEventTemplate() {
   const dialog = useRef<HTMLDialogElement>(null);
