@@ -1,5 +1,6 @@
 "use client";
 
+import { ClipboardCopy, NotebookPen } from "lucide-react";
 import { useRef, useState } from "react";
 
 const template = `日程：［年］年［月］月［日］日（［曜日］）
@@ -16,12 +17,13 @@ OPEN：［18:30］ / START：［19:00］
 export function FacebookEventTemplate() {
   const dialog = useRef<HTMLDialogElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
+  const [announcement, setAnnouncement] = useState(template);
   const [status, setStatus] = useState("");
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(template);
-      setStatus("テンプレートをコピーしました。");
+      await navigator.clipboard.writeText(announcement);
+      setStatus("告知文をコピーしました。");
     } catch {
       field.current?.focus();
       field.current?.select();
@@ -31,20 +33,26 @@ export function FacebookEventTemplate() {
 
   return (
     <>
-      <button type="button" className="secondary-button" aria-haspopup="dialog" onClick={() => {
+      <button type="button" className="secondary-button facebook-announcement-button" aria-haspopup="dialog" onClick={() => {
         setStatus("");
         dialog.current?.showModal();
-      }}>Facebookイベント告知</button>
-      <dialog ref={dialog} aria-labelledby="facebook-event-template-title"
+      }}><NotebookPen size={16} aria-hidden="true" />Facebookイベント告知</button>
+      <dialog className="facebook-announcement-dialog" ref={dialog} aria-labelledby="facebook-event-template-title"
         style={{ width: "min(38rem, calc(100% - 2rem))", maxHeight: "calc(100dvh - 2rem)", padding: "1.25rem", border: "1px solid var(--line)", borderRadius: 8, background: "var(--panel)", color: "inherit" }}>
         <h2 id="facebook-event-template-title">Facebookイベント告知テンプレート</h2>
-        <p>Facebookイベントの説明欄の先頭に貼り付けてください。予約・お問い合わせ・注意事項は、必要な行だけ残します。詳しい紹介文は区切り行の下に書けます。</p>
-        <textarea ref={field} aria-label="Facebookイベント告知テンプレート" value={template} readOnly
+        <p>ここで告知文を書き、コピーしてFacebookイベントの説明欄に貼り付けます。予約・お問い合わせ・注意事項は必要な行だけ残してください。</p>
+        <textarea ref={field} aria-label="Facebookイベントの告知文" value={announcement} onChange={(event) => {
+          setAnnouncement(event.target.value);
+          setStatus("");
+        }}
           rows={12} style={{ width: "100%", font: "inherit" }} />
         <p role="status">{status}</p>
-        <button type="button" className="primary-button" onClick={() => void copy()}>テンプレートをコピー</button>
-        {" "}
-        <button type="button" className="secondary-button" onClick={() => dialog.current?.close()}>閉じる</button>
+        <div className="facebook-announcement-actions">
+          <button type="button" className="secondary-button" onClick={() => dialog.current?.close()}>閉じる</button>
+          <button type="button" className="primary-button" disabled={!announcement.trim()} onClick={() => void copy()}>
+            <ClipboardCopy size={16} aria-hidden="true" />告知文をコピー
+          </button>
+        </div>
       </dialog>
     </>
   );
