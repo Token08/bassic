@@ -30,7 +30,13 @@ function hasUsableEnvValue(key: string) {
 }
 
 export function getAdminEnvChecks(): AdminEnvCheck[] {
-  return envDefinitions.map((definition) => ({
+  const definitions = process.env.ADMIN_AUTH_MODE === "google"
+    ? envDefinitions.filter(definition => definition.key !== "ADMIN_PASSWORD").concat(
+      ["ADMIN_GOOGLE_CLIENT_ID", "ADMIN_GOOGLE_CLIENT_SECRET", "ADMIN_GOOGLE_EMAIL", "ADMIN_GOOGLE_ORIGIN"].map(key =>
+        ({ key, label: "Googleログイン設定", requiredFor: "login" as const }))
+    )
+    : envDefinitions;
+  return definitions.map((definition) => ({
     ...definition,
     present: hasUsableEnvValue(definition.key)
   }));
