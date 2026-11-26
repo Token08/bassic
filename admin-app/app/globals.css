@@ -276,8 +276,8 @@ a {
 }
 
 .login-panel h1 {
-  font-size: clamp(1.5rem, 7vw, 2.25rem);
-  text-wrap: balance;
+  font-size: min(2rem, 8vw);
+  white-space: nowrap;
 }
 
 .login-copy {
