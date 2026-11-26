@@ -1,5 +1,6 @@
 "use client";
 
+import { FacebookEventTemplate } from "./components/facebook-event-template";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { adminPages, type ActiveSectionState, type PageAdminAction } from "@/lib/admin-pages";
 import { AdminImage } from "./components/admin-image";
@@ -3835,6 +3836,7 @@ export default function AdminClient({ googleLogin = false }: { googleLogin?: boo
             }}><Plus size={18} /> 店休日を追加</button>
           </div>
           <div className="admin-shortcuts">
+            <FacebookEventTemplate />
             <a className="analytics-link" href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer" aria-label="アクセス解析（別タブで開く）">
               アクセス解析 <ExternalLink size={16} aria-hidden="true" />
             </a>
