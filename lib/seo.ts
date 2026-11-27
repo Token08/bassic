@@ -28,7 +28,7 @@ export const pageSeo = {
     path: pageRoutes.menu.path,
     title: "メニュー | ファズカレー・タコス・ドリンク | 福岡 天神",
     description:
-      "福岡・天神 親不孝通りのミュージックバー public bar Bassic. のメニュー。ファズカレー、タコス＆ポテト、バーご飯、ドリンク各種、テーブル・チャージ500円/お一人様を写真で確認できます。"
+      "福岡・天神の親不孝通りにあるミュージックバー、public bar Bassic.のメニュー。ファズカレーやタコス＆ポテト、スコッチをはじめとするウイスキー、ワイン、シャンパン、焼酎、カクテルをご用意しています。"
   },
   party: {
     path: pageRoutes.party.path,
