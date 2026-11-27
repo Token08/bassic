@@ -48,10 +48,11 @@ export function CalendarSyncStatus({ event, eventId, active, autoEligible }: {
     async function start() {
       setState("waiting");
       setCanSync(false);
+      if (!autoEligible) { setState("manual"); return; }
       try {
         const config = await request("/api/calendar-status");
         if (stopped) return;
-        if (!config.configured || !autoEligible) { setState("manual"); return; }
+        if (!config.configured) { setState("manual"); return; }
         setCanSync(true);
         setState("pending");
         await poll();
@@ -72,6 +73,8 @@ export function CalendarSyncStatus({ event, eventId, active, autoEligible }: {
     } catch (cause) { setError(cause instanceof Error ? cause.message : "再反映を依頼できませんでした。"); }
     finally { setRetrying(false); }
   }
+  if (!active) return <span>登録の依頼待ち</span>;
+
   const text: Record<State, string> = {
     waiting: "登録結果を確認します。",
     manual: autoEligible ? "自動同期は未接続です。Google側で保存してください。" : "このイベントはGoogle側で追加してください。",

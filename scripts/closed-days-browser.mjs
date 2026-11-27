@@ -42,6 +42,7 @@ export async function rehearseClosedDays(context, base) {
     const panel = page.getByRole("region", { name: "店休日カレンダー", exact: true });
     const date = value => panel.getByRole("button", { name: new RegExp("^" + value + " ") });
     await date(current + "-05").waitFor();
+    assert.equal(await date(current + "-05").getAttribute("aria-label"), current + "-05 店休日を取り消す");
     await panel.getByText("Live show", { exact: true }).waitFor();
     assert.equal(await panel.getByRole("button", { name: "Googleカレンダーで保存" }).count(), 0);
     await date(current + "-10").click(); await date(current + "-10").click();
@@ -58,6 +59,13 @@ export async function rehearseClosedDays(context, base) {
     await review.screenshot({ path: process.env.TEMP + "/bassic-closed-calendar-review.png" });
     await review.getByRole("button", { name: "戻る", exact: true }).click();
     await page.waitForFunction(y => Math.abs(window.scrollY - y) < 70, beforeReview);
+    await panel.getByRole("button", { name: "翌月", exact: true }).click();
+    await date(next + "-03").waitFor();
+    await panel.getByRole("button", { name: "変更を反映", exact: true }).click();
+    await review.getByText("ほかの予定あり", { exact: true }).waitFor();
+    await panel.getByRole("button", { name: "再読み込み", exact: true }).click();
+    await review.waitFor({ state: "hidden" });
+    await panel.getByRole("button", { name: "前月", exact: true }).click();
     await liveDay.press("Space");
     assert.equal(await liveDay.getAttribute("aria-pressed"), "false");
     assert.equal(calls.length, 0, "Reviewing and cancelling must not send changes");

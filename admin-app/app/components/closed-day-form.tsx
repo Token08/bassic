@@ -6,12 +6,13 @@ import type { DayChange, DayEvent, DayResult } from "@/lib/closed-days";
 import { useErrorFocus } from "@/lib/use-error-focus";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 type MonthData = { month: string; events: DayEvent[]; canWrite: boolean };
+type PendingDayChange = DayChange & { hasOtherEvents?: boolean };
 const draftKey = "bassic-closed-days-pending-v1";
 const today = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
 export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; onEditorState: (value: { dirty: boolean; busy: boolean }) => void }) {
   const [month, setMonth] = useState(today().slice(0, 7));
   const [data, setData] = useState<MonthData>();
-  const [pending, setPending] = useState<Record<string, DayChange>>({});
+  const [pending, setPending] = useState<Record<string, PendingDayChange>>({});
   const [operation, setOperation] = useState("");
   const [results, setResults] = useState<DayResult[]>([]);
   const [ready, setReady] = useState(false);
@@ -32,7 +33,7 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
   const load = useCallback(async (value: string, keepError = false) => {
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
-    setLoading(true); if (!keepError) setError(""); setData(undefined);
+    setReview(false); setLoading(true); if (!keepError) setError(""); setData(undefined);
     try {
       const response = await fetchWithTimeout("/api/closed-days?month=" + encodeURIComponent(value), { signal: controller.signal, cache: "no-store" }, 20000);
       const result = await response.json();
@@ -76,20 +77,26 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
     setPending(current => {
       const next = { ...current };
       if (next[date]) delete next[date];
-      else next[date] = { date, action: data.events.some(e => e.editable && overlaps(e, date)) ? "remove" : "add", events: data.events.filter(e => e.editable && overlaps(e, date)) };
+      else {
+        const events = data.events.filter(event => overlaps(event, date));
+        const closedDays = events.filter(event => event.editable);
+        next[date] = { date, action: closedDays.length ? "remove" : "add", events: closedDays, hasOtherEvents: events.some(event => !event.editable) };
+      }
       return next;
     });
     setOperation(crypto.randomUUID());
   }
   async function apply() {
-    if (inFlight.current || !changes.length || !data?.canWrite) return;
+    if (inFlight.current || loading || !changes.length || !data?.canWrite) return;
     inFlight.current = true; setBusy(true); setError(""); setNotice("反映中です…"); setReview(false);
     // Persist an uncertain state before sending so refresh cannot lose an in-flight operation.
     const waiting: DayResult[] = changes.map(change => ({ date: change.date, state: "unknown", message: "反映結果を確認中です。" }));
     setResults(waiting);
     try { window.localStorage.setItem(draftKey, JSON.stringify({ pending, operation, results: waiting })); } catch {}
     try {
-      const response = await fetchWithTimeout("/api/closed-days", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation, changes }) }, 58000);
+      const response = await fetchWithTimeout("/api/closed-days", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        operation, changes: changes.map(({ date, action, events }) => ({ date, action, events }))
+      }) }, 58000);
       const result = await response.json();
       if (!response.ok || !result.ok || !Array.isArray(result.data?.results)) throw Object.assign(Error(result.message || "反映結果を確認できませんでした。"), { status: response.status });
       if (!alive.current) return;
@@ -136,6 +143,12 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
   const trailing = (7 - ((leading + days.length) % 7)) % 7;
   const additions = changes.filter(c => c.action === "add"), removals = changes.filter(c => c.action === "remove");
   const label = (date: string, full = false) => `${full ? date.slice(0, 4) + "年" : ""}${Number(date.slice(5, 7))}${full ? "月" : "/"}${Number(date.slice(8, 10))}${full ? "日" : ""}（${weekdays[new Date(date + "T00:00:00Z").getUTCDay()]}）`;
+  const otherEventLabel = (change: PendingDayChange) => {
+    const hasOtherEvents = data?.month === change.date.slice(0, 7)
+      ? data.events.some(event => !event.editable && overlaps(event, change.date))
+      : change.hasOtherEvents;
+    return hasOtherEvents === true ? "ほかの予定あり" : hasOtherEvents === false ? "" : "ほかの予定は未確認";
+  };
   return <section className="closed-day-form" aria-label="店休日カレンダー" aria-busy={busy}>
     <button className="text-button closed-calendar-back" aria-label="イベントスケジュールへ戻る" type="button" disabled={busy} onClick={onBack}><ArrowLeft size={16} aria-hidden="true" /> 戻る</button>
     <header className="closed-calendar-heading"><div><p className="eyebrow">店休日の設定</p><h1>店休日を追加・取り消し</h1></div><span className="closed-calendar-connection"><CalendarDays size={15} aria-hidden="true" /> Bassicのカレンダー</span></header>
@@ -158,7 +171,7 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
             const otherEvents = events.filter(e => !e.editable);
             const state = selection ? selection.action === "add" ? "追加予定" : "取り消し予定" : closed.length ? "店休日" : "";
             const dayOfWeek = new Date(date + "T00:00:00Z").getUTCDay();
-            return <button type="button" key={date} className={`closed-calendar-day${closed.length ? " is-closed" : ""}${selection ? " is-" + selection.action : ""}${date === today() ? " is-today" : ""}${dayOfWeek === 0 ? " is-sunday" : ""}`} aria-label={date + (state ? " " + state : " 店休日を追加")} aria-current={date === today() ? "date" : undefined} aria-pressed={Boolean(selection)} aria-describedby={otherEvents.length ? "closed-calendar-events-" + date : undefined} disabled={!data.canWrite || busy || unresolved} onClick={() => toggle(date)} title={events.map(e => e.title).join("\n")}>
+            return <button type="button" key={date} className={`closed-calendar-day${closed.length ? " is-closed" : ""}${selection ? " is-" + selection.action : ""}${date === today() ? " is-today" : ""}${dayOfWeek === 0 ? " is-sunday" : ""}`} aria-label={date + (selection ? " " + state : closed.length ? " 店休日を取り消す" : " 店休日を追加")} aria-current={date === today() ? "date" : undefined} aria-pressed={Boolean(selection)} aria-describedby={otherEvents.length ? "closed-calendar-events-" + date : undefined} disabled={!data.canWrite || busy || unresolved} onClick={() => toggle(date)} title={events.map(e => e.title).join("\n")}>
               <span className="closed-calendar-date-heading"><strong>{Number(date.slice(-2))}</strong>{date === today() ? <small>今日</small> : null}</span>
               {state ? <span className={`closed-calendar-state${selection ? " state-" + selection.action : ""}`}>{selection?.action === "add" ? <Plus size={13} aria-hidden="true" /> : selection?.action === "remove" ? <Minus size={13} aria-hidden="true" /> : <span className="closed-calendar-dot" aria-hidden="true">●</span>}<span className="closed-state-full">{state}{!selection && closed.length > 1 ? ` ${closed.length}件` : ""}</span><span className="closed-state-short" aria-hidden="true">{selection ? selection.action === "add" ? "追加" : "取消" : closed.length > 1 ? `休 ${closed.length}件` : "店休日"}</span></span> : null}
               {closed.some(e => e.recurring) ? <span className="closed-calendar-recurring"><RefreshCw size={11} aria-hidden="true" /> 繰り返し</span> : null}
@@ -177,7 +190,10 @@ export function ClosedDayForm({ onBack, onEditorState }: { onBack: () => void; o
       {unresolved ? <p className="closed-calendar-recovery">未完了分だけ同じ変更の結果を再確認します。{unknown ? "結果を確認するまで選択を残しています。" : "選び直す場合は選択をクリアしてください。"}</p> : null}
       {changes.length > 31 ? <p className="form-error">一度に31日まで選べます。</p> : null}
     </section> : <p className="closed-calendar-empty-selection"><MousePointer2 size={15} aria-hidden="true" /> 店休日にする日、取り消す日を選んでください。</p>}
-    {review ? <section ref={reviewRef} tabIndex={-1} className="closed-calendar-review" aria-label="店休日の変更確認"><header><span className="eyebrow">変更内容の確認</span><h2>この内容で反映しますか？</h2></header><div className="closed-calendar-review-groups">{([{ action: "add", title: "店休日を追加", list: additions }, { action: "remove", title: "店休日を取り消し", list: removals }] as const).filter(group => group.list.length).map(group => <div className={"closed-calendar-review-group review-" + group.action} key={group.action}><h3>{group.action === "add" ? <Plus size={16} aria-hidden="true" /> : <Minus size={16} aria-hidden="true" />}{group.title}<span>{group.list.length}日</span></h3><ul>{group.list.map(c => <li key={c.date}><strong>{label(c.date, true)}</strong>{c.action === "remove" ? <small>{c.events.map(e => e.title).join("・")}</small> : null}{data?.events.some(e => !e.editable && overlaps(e, c.date)) ? <span className="closed-calendar-overlap"><Info size={13} aria-hidden="true" />ほかの予定あり</span> : null}</li>)}</ul></div>)}</div><p className="closed-calendar-footnote"><Info size={14} aria-hidden="true" /> 取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={closeReview}>戻る</button><button className="primary-button" type="button" disabled={busy} onClick={() => void apply()}><Check size={17} aria-hidden="true" /> この内容で反映</button></div></section> : null}
+    {review ? <section ref={reviewRef} tabIndex={-1} className="closed-calendar-review" aria-label="店休日の変更確認"><header><span className="eyebrow">変更内容の確認</span><h2>この内容で反映しますか？</h2></header><div className="closed-calendar-review-groups">{([{ action: "add", title: "店休日を追加", list: additions }, { action: "remove", title: "店休日を取り消し", list: removals }] as const).filter(group => group.list.length).map(group => <div className={"closed-calendar-review-group review-" + group.action} key={group.action}><h3>{group.action === "add" ? <Plus size={16} aria-hidden="true" /> : <Minus size={16} aria-hidden="true" />}{group.title}<span>{group.list.length}日</span></h3><ul>{group.list.map(c => {
+      const eventLabel = otherEventLabel(c);
+      return <li key={c.date}><strong>{label(c.date, true)}</strong>{c.action === "remove" ? <small>{c.events.map(e => e.title).join("・")}</small> : null}{eventLabel ? <span className="closed-calendar-overlap"><Info size={13} aria-hidden="true" />{eventLabel}</span> : null}</li>;
+    })}</ul></div>)}</div><p className="closed-calendar-footnote"><Info size={14} aria-hidden="true" /> 取り消すのは選んだ日だけです。ライブなどの予定は変更しません。</p><div className="closed-calendar-actions"><button className="secondary-button" type="button" onClick={closeReview}>戻る</button><button className="primary-button" type="button" disabled={busy || loading || !data?.canWrite} onClick={() => void apply()}><Check size={17} aria-hidden="true" /> この内容で反映</button></div></section> : null}
     {busy ? <p role="status" className="closed-calendar-feedback"><Loader2 size={17} className="spin" aria-hidden="true" />反映結果を確認中です。画面を閉じずにお待ちください。</p> : null}
   </section>;
 }

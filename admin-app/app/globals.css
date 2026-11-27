@@ -1334,12 +1334,6 @@ a.current-edit-page:hover {
   gap: 14px;
 }
 
-.editable-field-heading > div {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
 .editable-field-heading span {
   display: flex;
   flex-wrap: wrap;
@@ -1358,39 +1352,6 @@ a.current-edit-page:hover {
   font-size: 0.72rem;
 }
 
-.editable-field-heading strong {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--ink);
-  font-size: 0.98rem;
-  line-height: 1.55;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.editable-field-heading strong.empty {
-  color: var(--muted);
-}
-
-.editable-field-preview {
-  display: grid;
-  gap: 8px;
-}
-
-.editable-field-preview img {
-  width: min(100%, 280px);
-  max-height: 140px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.editable-field-preview small {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 800;
-  line-height: 1.55;
-}
-
 .facebook-import-panel {
   display: grid;
   gap: 10px;
@@ -1406,7 +1367,6 @@ a.current-edit-page:hover {
 .event-edit-panel .editable-field-card { background: var(--panel); }
 .event-edit-panel .editable-field-card.editing { border-color: var(--line); }
 .event-edit-panel .editable-field-card.has-error { border-color: var(--accent); background: #fff3ef; }
-.event-edit-panel .event-edit-caption { margin: 4px 0; font-weight: 700; }
 .event-edit-panel .import-message { margin: 0; overflow-wrap: anywhere; }
 .event-extra-fields { border-top: 1px solid var(--line); padding-top: 12px; }
 .event-extra-fields summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
@@ -2377,10 +2337,6 @@ a.current-edit-page:hover {
     display: grid;
   }
 
-  .editable-field-heading .secondary-button {
-    width: fit-content;
-  }
-
   .page-section-heading,
   .page-section-row {
     grid-template-columns: 1fr;
@@ -2765,12 +2721,6 @@ a.current-edit-page:hover {
   padding-left: 22px;
 }
 
-.event-entry-guide p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
 .event-entry-heading {
   margin-block: 12px 4px;
   font-size: 1.1rem;
@@ -3007,7 +2957,6 @@ a.current-edit-page:hover {
 .visual-editor-sidebar .action-preview-button .page-overview-image { width: 60px; height: 54px; }
 .visual-editor-section-list summary { cursor: pointer; font-weight: 700; margin-block: 6px; }
 .visual-editor-form .editor .editor-topbar { flex-wrap: wrap; }
-.editable-field-heading strong { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (max-width: 1050px) {
   .visual-editor-workspace { grid-template-columns: minmax(0, 1fr); }
@@ -3075,7 +3024,9 @@ a.current-edit-page:hover {
 .visual-editor-grid>.visual-editor-sidebar h2 {font-size:1.1rem;line-height:1.5;margin:0 0 12px}
 .visual-editor-main>[hidden] {display:none}
 .preview-modal:has(.public-page-canvas) {width:min(1320px,96vw);max-width:none}
-.event-registration-review { width:min(640px,94vw); }
+.event-registration-review { width:min(640px,94vw); max-height:min(760px,calc(100dvh - 32px)); margin:auto; border:1px solid var(--line); color:inherit; }
+.event-registration-review:not([open]) { display:none; }
+.event-registration-review::backdrop { background:rgba(0, 0, 0, .55); }
 .event-registration-review .preview-list dd { white-space:pre-wrap; overflow-wrap:anywhere; }
 .event-registration-review .modal-actions { position:sticky; bottom:0; padding:16px 0 0; background:var(--surface, #fffdf8); }
 @media(max-width:1100px){.visual-editor-grid {grid-template-columns:minmax(0,1fr) 260px}}
@@ -3092,5 +3043,8 @@ a.current-edit-page:hover {
 .deploy-status .sns-draft-panel .deploy-status-actions { display: flex; justify-content: flex-start; gap: 8px; }
 .deploy-status .sns-draft-panel a.primary-button { color: #fffdf8; text-decoration: none; white-space: normal; text-align: center; }
 .social-draft-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.instagram-post-steps { display: grid; gap: 12px; margin: 0; padding-inline-start: 1.5rem; }
+.instagram-post-steps li > * { margin-block: 0 5px; }
+.instagram-post-steps small { display: block; overflow-wrap: anywhere; }
 @media (max-width: 900px) { .event-social-actions { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .event-registration-status > dl { grid-template-columns: 1fr; } }
