@@ -421,6 +421,7 @@ try {
       const [download] = await Promise.all([page.waitForEvent("download"), savePoster.click()]);
       assert.equal(download.suggestedFilename(), "Bassic-Compact calendar fixture.png");
       assert.deepEqual(await readFile(await download.path()), poster);
+      await instagram.getByRole("status").filter({ hasText: /Bassic-Compact calendar fixture\.png.*Safari.*Finder/ }).waitFor();
       await savePoster.click();
       await instagram.getByText(/自動で保存できませんでした/).waitFor();
       assert.equal(await instagram.getByRole("link", { name: "画像を開く", exact: true }).getAttribute("href"), image.url);

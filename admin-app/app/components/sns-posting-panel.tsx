@@ -35,7 +35,9 @@ export function SnsPostingPanel({ platform, text, imageUrl, eventTitle, compact 
       link.download = `${title ? `Bassic-${title}` : "bassic-event"}.${extension[blob.type] || "img"}`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setImageMessage(`ブラウザのダウンロード一覧で「${link.download}」の保存先を確認できます。`);
+      setImageMessage(instagram
+        ? `ダウンロード一覧で「${link.download}」を探してください。MacのSafariでは、右上のダウンロード一覧でファイル名の横にある虫眼鏡を押すと、Finderで保存先が開きます。`
+        : `ブラウザのダウンロード一覧で「${link.download}」の保存先を確認できます。`);
     } catch {
       setImageMessage("自動で保存できませんでした。「画像を開く」から、右クリックまたは長押しして画像を保存してください。");
     } finally { setSavingImage(false); }
@@ -44,7 +46,7 @@ export function SnsPostingPanel({ platform, text, imageUrl, eventTitle, compact 
     <strong>{instagram ? "Instagram" : "X"}</strong>
     {compact ? <details ref={draftText}><summary>投稿文を確認</summary><p className="social-draft-text">{text}</p></details> : null}
     {instagram ? <small>{imageUrl
-      ? "画像を保存してからInstagramを開き、「作成」で保存したファイルを選びます。キャプションに文面を貼り付けてください。"
+      ? "画像を保存してからInstagramを開き、「作成」→「コンピューターから選択」で添付します。キャプションに文面を貼り付けてください。"
       : "添付する告知画像を端末に用意し、Instagramの「作成」で選んでください。"}</small> : null}
     <div className="deploy-status-actions">
       {!instagram ? <a className="primary-button" href={xPostUrl(text)} target="_blank" rel="noreferrer">Xの投稿画面を開く</a> : null}
