@@ -409,19 +409,29 @@ try {
       const directSocial = page.getByRole("region", { name: "SNSで使う", exact: true });
       await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).waitFor();
       assert.match(await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).getAttribute("href"), /Compact\+calendar\+fixture/);
-      await directSocial.getByRole("link", { name: "文面をコピーしてInstagramを開く", exact: true }).waitFor();
       const instagram = directSocial.getByRole("region", { name: "Instagramの投稿準備" });
+      const instagramSteps = instagram.getByRole("listitem");
+      assert.equal(await instagramSteps.count(), 3);
+      assert.equal(await instagramSteps.nth(2).getByRole("link", { name: "Instagramを開く", exact: true }).getAttribute("href"), "https://www.instagram.com/");
       const poster = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z+zwAAAAASUVORK5CYII=", "base64");
       await page.route(image.url, route => route.fulfill({
         contentType: "image/png",
         headers: { "Access-Control-Allow-Origin": "*" },
         body: poster
       }), { times: 1 });
-      const savePoster = instagram.getByRole("button", { name: "告知画像を保存" });
+      const savePoster = instagramSteps.nth(0).getByRole("button", { name: "告知画像を保存" });
       const [download] = await Promise.all([page.waitForEvent("download"), savePoster.click()]);
       assert.equal(download.suggestedFilename(), "Bassic-Compact calendar fixture.png");
       assert.deepEqual(await readFile(await download.path()), poster);
-      await instagram.getByRole("status").filter({ hasText: /Bassic-Compact calendar fixture\.png.*Safari.*Finder/ }).waitFor();
+      await instagramSteps.nth(0).getByRole("status").filter({ hasText: /Bassic-Compact calendar fixture\.png/ }).waitFor();
+      await instagramSteps.nth(0).getByText(/Safari.*Finder/).waitFor();
+      await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+      const captionText = readNotices().find(item => item.sourceEventId === "77777777" && item.platform === "instagram").postText;
+      const copyCaption = instagramSteps.nth(1).getByRole("button", { name: "投稿文をコピー", exact: true });
+      await copyCaption.click();
+      await instagram.getByRole("status").filter({ hasText: /Instagramのキャプション欄で貼り付け/ }).waitFor();
+      const copiedCaption = await page.evaluate(() => navigator.clipboard.readText());
+      assert.equal(copiedCaption.replace(/\r\n/g, "\n"), captionText);
       await savePoster.click();
       await instagram.getByText(/自動で保存できませんでした/).waitFor();
       assert.equal(await instagram.getByRole("link", { name: "画像を開く", exact: true }).getAttribute("href"), image.url);
@@ -435,6 +445,8 @@ try {
           value: async () => { throw new DOMException("Fixture clipboard denial", "NotAllowedError"); }
         });
       });
+      await copyCaption.click();
+      await instagramSteps.nth(1).getByText(captionText, { exact: true }).waitFor();
       const xDraft = directSocial.locator(".sns-draft-panel").filter({ has: page.getByRole("link", { name: "Xの投稿画面を開く", exact: true }) });
       await xDraft.getByRole("button", { name: "投稿文をコピー", exact: true }).click();
       await xDraft.getByText(/表示されている投稿文を選択してコピー/).waitFor();

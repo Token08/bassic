@@ -3043,5 +3043,8 @@ a.current-edit-page:hover {
 .deploy-status .sns-draft-panel .deploy-status-actions { display: flex; justify-content: flex-start; gap: 8px; }
 .deploy-status .sns-draft-panel a.primary-button { color: #fffdf8; text-decoration: none; white-space: normal; text-align: center; }
 .social-draft-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.instagram-post-steps { display: grid; gap: 12px; margin: 0; padding-inline-start: 1.5rem; }
+.instagram-post-steps li > * { margin-block: 0 5px; }
+.instagram-post-steps small { display: block; overflow-wrap: anywhere; }
 @media (max-width: 900px) { .event-social-actions { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .event-registration-status > dl { grid-template-columns: 1fr; } }
