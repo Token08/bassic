@@ -371,6 +371,9 @@ try {
       assert.equal(await page.frameLocator("iframe.public-canvas-frame").locator("iframe[src*='calendar.google.com']").count(),0);
       await page.getByRole("button",{name:"イベントを追加",exact:true}).click();
       const panel=page.getByRole("region",{name:"Facebookイベント取り込み"});
+      await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
+      await page.getByRole("alert",{name:"操作結果"}).waitFor();
+      assert.equal(await page.getByText("未保存の変更あり",{exact:true}).count(), 0);
       await panel.locator("input#sourceUrl").fill(guidedUrl);
       await panel.getByRole("button",{name:"Facebookから読み取る",exact:true}).click();
       await page.waitForFunction(() => document.querySelector("input#title")?.value === "Guided live");
@@ -384,12 +387,17 @@ try {
       await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
       const review=page.getByRole("dialog",{name:"イベントの登録内容を確認"});
       await review.getByRole("heading",{name:"この内容で登録します"}).waitFor();
+      assert.equal(await review.evaluate(element => element.contains(document.activeElement)), true);
       assert.equal(await review.locator("iframe").count(),0);
       await review.getByText("Compact calendar fixture",{exact:true}).waitFor();
       await review.getByText("19:00",{exact:true}).waitFor();
       await review.getByText("未定（カレンダーは仮の2時間枠）",{exact:true}).waitFor();
       assert.equal(publishRequests,beforePublish,"Review must not publish");
       assert.equal(calendarRequests,beforeCalendar,"Review must not register");
+      await page.keyboard.press("Escape");
+      await review.waitFor({ state: "hidden" });
+      assert.equal(await panel.locator("input#title").inputValue(), "Compact calendar fixture");
+      await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
       const shots=join(process.env.TEMP||"/tmp","bassic-event-simple-qa"); await mkdir(shots,{recursive:true});
       await page.screenshot({path:join(shots,"calendar-confirmation-desktop.png")});
       await review.getByRole("button",{name:"この内容で登録",exact:true}).click();
@@ -407,6 +415,15 @@ try {
       await post(`content/social-notices/${currentX.id}`, { postText: "Staff latest direct-post text" }, 200, "PATCH");
       await page.evaluate(() => window.dispatchEvent(new Event("bassic-social-draft-saved")));
       await page.waitForFunction(() => [...document.querySelectorAll('a')].some(link => link.textContent === "Xの投稿画面を開く" && link.href.includes("Staff+latest+direct-post+text")));
+      await page.evaluate(() => {
+        Object.defineProperty(navigator.clipboard, "writeText", {
+          value: async () => { throw new DOMException("Fixture clipboard denial", "NotAllowedError"); }
+        });
+      });
+      const xDraft = directSocial.locator(".sns-draft-panel").filter({ has: page.getByRole("link", { name: "Xの投稿画面を開く", exact: true }) });
+      await xDraft.getByRole("button", { name: "投稿文をコピー", exact: true }).click();
+      await xDraft.getByText(/表示されている投稿文を選択してコピー/).waitFor();
+      await xDraft.getByText("Staff latest direct-post text", { exact: true }).waitFor();
       await directSocial.scrollIntoViewIfNeeded();
       await page.screenshot({path:join(shots,"direct-social-desktop.png")});
       assert.equal(calendarRequests,beforeCalendar+1,"Reading saved SNS drafts must not re-register a calendar event");
@@ -424,11 +441,41 @@ try {
       await page.getByRole("dialog",{name:"イベントの登録内容を確認"}).waitFor();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
       await page.screenshot({path:join(shots,"calendar-confirmation-mobile.png")});
+      await page.route("**/api/content/events", route => route.fulfill({
+        status: 503, json: { ok: false, message: "イベントを保存できませんでした。" }
+      }), { times: 1 });
       await page.getByRole("button", { name: "この内容で登録", exact: true }).click();
+      const failedSave = page.getByRole("alert", { name: "操作結果" });
+      await failedSave.getByText("イベントを保存できませんでした。", { exact: true }).waitFor();
+      assert.equal(await failedSave.evaluate(element => document.activeElement === element), true);
+      assert.equal(await page.locator("input#title").inputValue(), "Mobile calendar fixture");
+      await page.getByRole("button", { name: "登録内容を確認", exact: true }).click();
+      await page.route("**/api/calendar-sync", route => route.fulfill({ status: 503, json: { ok: false } }), { times: 1 });
+      await page.getByRole("button", { name: "この内容で登録", exact: true }).click();
+      const failedRegistration = page.getByRole("alert", { name: "最後の反映状況" });
+      await failedRegistration.getByText("カレンダーへの登録を依頼できませんでした", { exact: true }).waitFor();
+      await failedRegistration.getByText(/イベントは保存済みです。/).waitFor();
+      assert.equal(await page.locator("input#title").inputValue(), "Mobile calendar fixture");
+      assert.equal(await failedRegistration.getByText(/Googleカレンダーに登録中/).count(), 0);
+      await failedRegistration.getByRole("link",{name:"Xの投稿画面を開く",exact:true}).waitFor();
+      await failedRegistration.getByRole("button", { name: "カレンダー登録を再試行", exact: true }).click();
       await page.getByRole("region", { name: "SNSで使う", exact: true }).getByRole("link", { name: "Xの投稿画面を開く", exact: true }).waitFor();
       await page.getByRole("region", { name: "SNSで使う", exact: true }).scrollIntoViewIfNeeded();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
       await page.screenshot({path:join(shots,"direct-social-mobile.png")});
+      await page.getByRole("button",{name:"イベントを追加",exact:true}).click();
+      assert.equal(await page.locator("input#title").inputValue(), "");
+      await page.locator("input#sourceUrl").fill("https://example.invalid/event");
+      await page.locator("input#title").fill("Manual calendar fixture");
+      await page.locator("input#date").fill("2027-07-09");
+      await page.locator("input#startTime").fill("21:00");
+      const beforeManualCalendar = calendarRequests;
+      await page.getByRole("button",{name:"登録内容を確認",exact:true}).click();
+      await review.getByText(/カレンダーは保存後にGoogle側で追加/).waitFor();
+      await review.getByRole("button",{name:"この内容で登録",exact:true}).click();
+      await page.getByRole("link",{name:"Googleカレンダーで確認・保存",exact:true}).waitFor();
+      await page.getByRole("link",{name:"Xの投稿画面を開く",exact:true}).waitFor();
+      assert.equal(calendarRequests, beforeManualCalendar, "A manual event must not dispatch calendar sync");
       console.log("Simplified event UI passed: compact review, calendar-only dispatch, no device save, independent SNS, clean new event, mobile layout.");
     } finally {await browser.close();}
   }

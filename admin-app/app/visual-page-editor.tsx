@@ -145,7 +145,6 @@ export function VisualPageEditor({
     notice + String(retry) + String(errorTick),
   );
   const path = (locale ? "/" + locale : "") + (pagePaths[page] || "/");
-  const draftKey = "bassic-visual-draft-v1";
   const dirty = loaded && JSON.stringify(settings) !== baseline;
   const changes = useMemo(() => {
     if (!review || !baseline) return [];
@@ -258,6 +257,19 @@ export function VisualPageEditor({
       setNotice(e.message);
     });
   }, [path, loaded, refresh]);
+  async function reloadPreview() {
+    setBusy(true);
+    setFailure(false);
+    try {
+      await refresh(settings);
+      setNotice("");
+    } catch (error) {
+      setFailure(true);
+      setNotice((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   const node = catalog.find((n) => n.id === selected),
     local = settings.pages[path] || { nodes: {} },
     target = scope === "shared" ? settings.shared : local,
@@ -584,36 +596,54 @@ export function VisualPageEditor({
     publishInFlight.current = true;
     setBusy(true);
     setFailure(false);
+    let saved = false;
     try {
       const next = await api("/api/visual-editor", {
         method: "PUT",
         body: JSON.stringify({ settings, baseRevision: baseRevision.current }),
       });
+      saved = true;
       savedSettings.current = next;
       setCanRetryDeployment(true);
       setSettings(next);
       setBaseline(JSON.stringify(next));
       baseRevision.current = next.revision || "";
-      try {
-        localStorage.removeItem(draftKey);
-      } catch {}
-      const result = await api("/api/deploy", { method: "POST" });
-      trackDeployment({
-        id: result.requestId || result.id,
-        requestedAt: result.requestedAt,
-      });
-      setNotice("サイト反映中");
       setReview(false);
+      await requestDeployment();
     } catch (e) {
       setFailure(true);
-      setNotice((e as Error).message + " 入力内容は残っています。");
+      setNotice((e as Error).message + (saved
+        ? " 変更は保存済みです。掲載だけを再試行できます。"
+        : " 入力内容は残っています。"));
     } finally {
       publishInFlight.current = false;
       setBusy(false);
     }
   }
-  function trackDeployment(value: { id: string; requestedAt: string }) {
+  async function retryDeployment() {
+    if (publishInFlight.current) return;
+    publishInFlight.current = true;
+    setBusy(true);
+    setErrorTick((value) => value + 1);
+    try {
+      await requestDeployment();
+      setFailure(false);
+    } catch (error) {
+      setFailure(true);
+      setNotice((error as Error).message + " 変更は保存済みです。");
+    } finally {
+      publishInFlight.current = false;
+      setBusy(false);
+    }
+  }
+  async function requestDeployment() {
+    const result = await api("/api/deploy", { method: "POST" });
+    const value = {
+      id: result.requestId || result.id,
+      requestedAt: result.requestedAt,
+    };
     setDeploy(value);
+    setNotice("サイト反映中");
     try {
       localStorage.setItem(
         "bassic-visual-deploy-v1",
@@ -804,6 +834,8 @@ export function VisualPageEditor({
   ).href;
   const reflected =
     !!settings.revision && document?.publishedRevision === settings.revision;
+  const canRetrySaved =
+    !dirty && !deploy && (canRetryDeployment || Boolean(document && settings.revision && !reflected));
   const statusText = deploy
     ? "サイト反映中"
     : dirty
@@ -875,31 +907,11 @@ export function VisualPageEditor({
               掲載したページを確認
             </a>
           ) : null}
-          {failure && canRetryDeployment ? (
+          {failure && canRetrySaved ? (
             <button
               type="button"
               disabled={busy}
-              onClick={async () => {
-                if (publishInFlight.current) return;
-                publishInFlight.current = true;
-                setBusy(true);
-                setErrorTick((value) => value + 1);
-                try {
-                  const r = await api("/api/deploy", { method: "POST" });
-                  trackDeployment({
-                    id: r.requestId || r.id,
-                    requestedAt: r.requestedAt,
-                  });
-                  setFailure(false);
-                  setNotice("サイト反映中");
-                } catch (e) {
-                  setFailure(true);
-                  setNotice((e as Error).message);
-                } finally {
-                  publishInFlight.current = false;
-                  setBusy(false);
-                }
-              }}
+              onClick={retryDeployment}
             >
               保存済みの内容を再反映
             </button>
@@ -1772,7 +1784,13 @@ export function VisualPageEditor({
               />
             </div>
           ) : (
-            <div className="loading-panel">ページを読み込み中</div>
+            <div className="loading-panel">
+              {failure ? (
+                <button type="button" className="secondary-button" disabled={busy} onClick={() => void reloadPreview()}>
+                  プレビューを再読み込み
+                </button>
+              ) : "ページを読み込み中"}
+            </div>
           )}
         </div>
         <aside className="visual-editor-sidebar">
@@ -2212,14 +2230,16 @@ export function VisualPageEditor({
       </div>
       <div className="visual-savebar">
         <div className="visual-save-state"><span className="visual-edit-status" data-state={editState}>{statusText}</span></div>
-        <button
-          type="button"
-          className="primary-button"
-          disabled={busy || !!deploy}
-          onClick={review ? publish : preview}
-        >
-          {busy ? "処理中" : review ? "サイトに掲載" : "掲載前に確認"}
-        </button>
+        {dirty || (canRetrySaved && !failure) ? (
+          <button
+            type="button"
+            className="primary-button"
+            disabled={busy || !!deploy}
+            onClick={dirty ? (review ? publish : preview) : retryDeployment}
+          >
+            {busy ? "処理中" : !dirty ? "保存済みの内容を再反映" : review ? "サイトに掲載" : "掲載前に確認"}
+          </button>
+        ) : null}
       </div>
     </div>
   );
