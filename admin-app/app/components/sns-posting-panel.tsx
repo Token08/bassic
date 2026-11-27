@@ -35,7 +35,7 @@ export function SnsPostingPanel({ platform, text, imageUrl, eventTitle, compact 
       link.download = `${title ? `Bassic-${title}` : "bassic-event"}.${extension[blob.type] || "img"}`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setImageMessage(`保存するファイル名は「${link.download}」です。`);
+      setImageMessage(`ブラウザのダウンロード一覧で「${link.download}」の保存先を確認できます。`);
     } catch {
       setImageMessage("自動で保存できませんでした。「画像を開く」から、右クリックまたは長押しして画像を保存してください。");
     } finally { setSavingImage(false); }
