@@ -3172,7 +3172,7 @@ function SectionEditor({
               ) : null}
             </div>
             {section.id === "social-notices" && ["x", "instagram"].includes(getString(draft.platform)) ? (
-              <SnsPostingPanel key={selectedId + ":" + getString(draft.platform)} platform={getString(draft.platform)} text={getString(draft.postText)} imageUrl={getImageUrl(draft.image) && isValidManagedImageUrl(getImageUrl(draft.image)) ? resolvePublicUrl(getImageUrl(draft.image), publicSiteUrl) : ""} />
+              <SnsPostingPanel key={selectedId + ":" + getString(draft.platform)} platform={getString(draft.platform)} text={getString(draft.postText)} eventTitle={getString(draft.sourceEventTitle)} imageUrl={getImageUrl(draft.image) && isValidManagedImageUrl(getImageUrl(draft.image)) ? resolvePublicUrl(getImageUrl(draft.image), publicSiteUrl) : ""} />
             ) : null}
             {section.kind === "list" && selectedId !== "new" ? (
               <div className="destructive-actions">

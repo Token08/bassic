@@ -56,7 +56,7 @@ export function EventSocialActions({ sourceId, revision, onEdit }: { sourceId: s
         const image = draft.image;
         const rawImage = typeof image === "object" && image ? text((image as Draft).url) : text(image);
         const imageUrl = rawImage ? imageLink(rawImage) : "";
-        return <SnsPostingPanel key={platform} platform={platform} text={text(draft.postText)} imageUrl={imageUrl} compact />;
+        return <SnsPostingPanel key={platform} platform={platform} text={text(draft.postText)} imageUrl={imageUrl} eventTitle={text(draft.sourceEventTitle)} compact />;
       })}
     </div> : null}
     {onEdit ? <button type="button" className="text-button" onClick={onEdit}>下書きを編集する</button> : null}

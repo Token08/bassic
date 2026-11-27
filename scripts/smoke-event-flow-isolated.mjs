@@ -4,7 +4,7 @@ import { generateKeyPairSync } from "node:crypto";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { packEventRecord, mergeEventRecords } from "../lib/event-storage.mjs";
 import { decodeSocialNoticeRecord } from "../lib/social-notice-storage.mjs";
@@ -410,6 +410,20 @@ try {
       await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).waitFor();
       assert.match(await directSocial.getByRole("link", { name: "Xの投稿画面を開く", exact: true }).getAttribute("href"), /Compact\+calendar\+fixture/);
       await directSocial.getByRole("link", { name: "文面をコピーしてInstagramを開く", exact: true }).waitFor();
+      const instagram = directSocial.getByRole("region", { name: "Instagramの投稿準備" });
+      const poster = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z+zwAAAAASUVORK5CYII=", "base64");
+      await page.route(image.url, route => route.fulfill({
+        contentType: "image/png",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: poster
+      }), { times: 1 });
+      const savePoster = instagram.getByRole("button", { name: "告知画像を保存" });
+      const [download] = await Promise.all([page.waitForEvent("download"), savePoster.click()]);
+      assert.equal(download.suggestedFilename(), "Bassic-Compact calendar fixture.png");
+      assert.deepEqual(await readFile(await download.path()), poster);
+      await savePoster.click();
+      await instagram.getByText(/自動で保存できませんでした/).waitFor();
+      assert.equal(await instagram.getByRole("link", { name: "画像を開く", exact: true }).getAttribute("href"), image.url);
       assert.equal(await page.getByRole("button", { name: "SNS用の文面を開く", exact: true }).count(), 0);
       const currentX = readNotices().find(item => item.sourceEventId === "77777777" && item.platform === "x");
       await post(`content/social-notices/${currentX.id}`, { postText: "Staff latest direct-post text" }, 200, "PATCH");
@@ -475,6 +489,9 @@ try {
       await review.getByRole("button",{name:"この内容で登録",exact:true}).click();
       await page.getByRole("link",{name:"Googleカレンダーで確認・保存",exact:true}).waitFor();
       await page.getByRole("link",{name:"Xの投稿画面を開く",exact:true}).waitFor();
+      const instagramWithoutImage = page.getByRole("region", { name: "Instagramの投稿準備" });
+      await instagramWithoutImage.getByText(/添付する告知画像を端末に用意/).waitFor();
+      assert.equal(await instagramWithoutImage.getByRole("button", { name: "告知画像を保存" }).count(), 0);
       assert.equal(calendarRequests, beforeManualCalendar, "A manual event must not dispatch calendar sync");
       console.log("Simplified event UI passed: compact review, calendar-only dispatch, no device save, independent SNS, clean new event, mobile layout.");
     } finally {await browser.close();}
