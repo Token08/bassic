@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.5 <23"
           cache: npm
       - run: npm ci
       - name: Verify only a newly created private calendar
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.5 <23"
           cache: npm
           cache-dependency-path: |
             package-lock.json

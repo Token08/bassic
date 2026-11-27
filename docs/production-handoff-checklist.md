@@ -16,6 +16,8 @@ FTP接続元の制限を維持したまま初回公開する場合は、検査�
 
 2026-11-10 に `LOLIPOP_PULL_ENABLED` を有効化した。管理画面と同じ `microcms_publish` を送り、[実行番号1144](https://github.com/Token08/bassic/actions/runs/42740258747) が本番で返ることを確認した。失敗時は実行ログの生成・署名・本番確認のうち失敗した段階を調べる。自動公開を停止する場合は `LOLIPOP_PULL_ENABLED` を無効にし、署名済みファイルの取得も止める必要があればロリポップの `Bassic site publish` を停止する。
 
+ロリポップでPHPの系列を変更した場合は、ロリポップ！ドメインのPHP設定を確認してから `Bassic site publish` のcronを再設定する。cronは登録時のPHP系列を使うため、ドメイン設定の変更だけでは切り替わらない。再設定後は、署名付きリリースの取得と本番の `/_bassic-build.json` の更新を確認する。[ロリポップのcron設定マニュアル](https://lolipop.jp/manual/user/cron/)
+
 公開前から納品後までの確認リストです。納品先にはGitHubではなく、サイトURLと管理画面URLを渡す前提で整理しています。
 
 ## 1. 公開前に決めること
