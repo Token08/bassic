@@ -1421,7 +1421,7 @@ function ActualDraftPreview({draft,section,onReady,pathOverride}:{draft:Draft;se
  return error?<p role="alert">{error} 入力内容は残っています。戻って再試行してください。</p>:document?<PublicPageCanvas path={path} title="変更後・未掲載" document={document} targets={[]} onSelect={()=>{}}/>:<p role="status">変更後のページを読み込み中</p>;
 }
 
-function EventRegistrationReview({ draft, busy, onClose, onPublish }: { draft: Draft; busy: boolean; onClose: () => void; onPublish: () => void }) {
+function EventRegistrationReview({ draft, publishEvent, busy, onClose, onPublish }: { draft: Draft; publishEvent: boolean; busy: boolean; onClose: () => void; onPublish: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -1433,12 +1433,14 @@ function EventRegistrationReview({ draft, busy, onClose, onPublish }: { draft: D
   const rows = [["イベント名", getString(draft.title)], ["日付", dateLabel], ["開始時刻", getString(draft.startTime)], ["開場", getString(draft.openTime)], ["終了時刻", getString(draft.endTime) || "未定（カレンダーは仮の2時間枠）"], ["出演者", getString(draft.performers)], ["料金", getString(draft.price)], ["予約", getString(draft.reservation)]];
   const image = getImageUrl(draft.image);
   return <dialog ref={dialogRef} className="preview-modal event-registration-review" aria-label="イベントの登録内容を確認" aria-busy={busy} onCancel={event => { event.preventDefault(); if (!busy) onClose(); }}>
-    <div className="modal-heading"><h2>この内容で登録します</h2><button className="icon-button" type="button" aria-label="閉じる" disabled={busy} onClick={onClose}><X size={20}/></button></div>
-    <p>{isFacebookEventUrl(getString(draft.sourceUrl))
+    <div className="modal-heading"><h2>{publishEvent ? "この内容で登録します" : "非公開で保存します"}</h2><button className="icon-button" type="button" aria-label="閉じる" disabled={busy} onClick={onClose}><X size={20}/></button></div>
+    <p>{!publishEvent
+      ? "登録済みの予定を取り消す場合は、Googleカレンダーで変更してください。"
+      : isFacebookEventUrl(getString(draft.sourceUrl))
       ? "Googleカレンダーへの登録を依頼し、X・Instagram用の文面を用意します。"
       : "イベントを保存し、X・Instagram用の文面を用意します。カレンダーは保存後にGoogle側で追加してください。"}</p>
     <dl className="preview-list">{rows.filter(([,value])=>value).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}<div><dt>イベント画像</dt><dd>{image ? <a href={resolvePublicUrl(image,publicSiteUrl)} target="_blank" rel="noreferrer">画像を開いて確認</a> : "画像なし"}</dd></div></dl>
-    <div className="modal-actions"><button className="secondary-button" type="button" autoFocus disabled={busy} onClick={onClose}>戻って直す</button><button className="primary-button" type="button" disabled={busy} onClick={onPublish}>{busy ? "登録処理中…" : "この内容で登録"}</button></div>
+    <div className="modal-actions"><button className="secondary-button" type="button" autoFocus disabled={busy} onClick={onClose}>戻って直す</button><button className="primary-button" type="button" disabled={busy} onClick={onPublish}>{busy ? "処理中…" : publishEvent ? "この内容で登録" : "非公開で保存"}</button></div>
   </dialog>;
 }
 
@@ -2239,7 +2241,7 @@ function SectionEditor({
 
   useEffect(() => {
     if (section.id !== "events" || !notice?.validation) return;
-    const remaining = validate(withRequiredDefaults(draft));
+    const remaining = validate(withRequiredDefaults(eventEntry ? { ...draft, isPublished: true } : draft));
     if (!Object.keys(remaining).length) setNotice(null);
     // Recheck existing errors after typing or importing; do not focus on each keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3187,7 +3189,7 @@ function SectionEditor({
       )}
 
       {showPreview && section.id === "events" ? (
-        <EventRegistrationReview draft={previewDraft} busy={saving || deploying} onClose={() => setShowPreview(false)} onPublish={() => void save()} />
+        <EventRegistrationReview draft={previewDraft} publishEvent={Boolean(eventEntry || draft.isPublished)} busy={saving || deploying} onClose={() => setShowPreview(false)} onPublish={() => void save()} />
       ) : showPreview ? (
         <PreviewModal pathOverride={sourcePage?adminPages.find(page=>page.page===sourcePage)?.publicPath:undefined} draft={previewDraft} section={{ ...section, fields: editableFields }} onClose={() => setShowPreview(false)} onPublish={() => void save()} />
       ) : null}
